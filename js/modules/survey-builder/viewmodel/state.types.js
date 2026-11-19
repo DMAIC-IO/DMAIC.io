@@ -6,7 +6,6 @@
  * @property {string|null} selectedSectionId
  * @property {{ key: string, questionId: string, optionIds: string[] }[]} conditionDraft
  * @property {string[]} expandedResponses
- * @property {Array<{ key: string, name: string, status: 'ok'|'older'|'duplicate'|'foreign'|'invalid', unknownRecipient: boolean, orphans: number }>} importLog
  * @property {boolean} rankingOpen
  * @property {string[]} vocSelected
  * @property {number} kanoRev

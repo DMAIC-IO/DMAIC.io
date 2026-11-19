@@ -16580,7 +16580,7 @@ export const AGENT_REGISTRY = {
       },
       "saveAsModel": {
         "params": [],
-        "returns": "string|null",
+        "returns": "Promise<string|null>",
         "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`)."
       }
     },
@@ -23359,7 +23359,7 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "columns": {
-        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, values?: any[] }>",
+        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, valueCount: number, values?: any[] }>",
         "help": "",
         "bulk": false,
         "derived": true

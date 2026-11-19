@@ -43,6 +43,12 @@ export default createModule({
   descriptor,
   Model: SurveyModel,
   State: UiState,
+  config: {
+    actions: [
+      // Shows the results tab and opens the file picker (responses.js).
+      { icon: 'action.upload', title: 'importAnswers', agentAction: 'importResponse', onClick: (/** @type {any} */ d) => d.importAnswers() },
+    ],
+  },
   asyncTasks: {
     buildSurveyFile: asyncTask({
       /**

@@ -219,6 +219,34 @@ suite('x-command', () => {
     assertDeepEqual([...model.columns.a], ['wichtig']);
   });
 
+  test('Löschknopf ohne Rückfrage des Kommandos: fragt allgemein, genau einmal', async () => {
+    const html = '<button x-command="removeItem" data-arg-col="a" data-arg-idx="0"><span data-icon="action.delete"></span></button>';
+    const { $, model, asked } = await mount(html, { columns: { a: ['eins'] } });
+    $('button').click();
+    await flush();
+    assertEqual(asked.length, 1);
+    assertEqual(asked[0].message, 'common.confirmDelete');
+    assertDeepEqual([...model.columns.a], []);
+  });
+
+  test('Löschknopf mit Rückfrage des Kommandos: nur diese, nicht zusätzlich die allgemeine', async () => {
+    const html = '<button x-command="removeItem" data-arg-col="a" data-arg-idx="0" data-confirm-delete>x</button>';
+    const { $, model, asked } = await mount(html, { columns: { a: ['wichtig'] } });
+    $('button').click();
+    await flush();
+    assertDeepEqual(asked.map((a) => a.message), ['modules.ct.confirm.removeImportant|{"n":1}']);
+    assertDeepEqual([...model.columns.a], []);
+  });
+
+  test('data-confirm-delete="off" fragt ohne Rückfrage des Kommandos nicht', async () => {
+    const html = '<button x-command="removeItem" data-arg-col="a" data-arg-idx="0" data-confirm-delete="off"><span data-icon="action.delete"></span></button>';
+    const { $, model, asked } = await mount(html, { columns: { a: ['eins'] } });
+    $('button').click();
+    await flush();
+    assertEqual(asked.length, 0);
+    assertDeepEqual([...model.columns.a], []);
+  });
+
   test('Fehler gehen an notify', async () => {
     const { $, notified } = await mount('<button x-command="removeItem" data-arg-col="a" data-arg-idx="5">x</button>', { columns: { a: ['eins'] } });
     $('button').click();

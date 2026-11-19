@@ -17,7 +17,11 @@
  * Feste Argumente stehen als `data-arg-<kebab>` am Element und werden beim
  * Auslösen gelesen (`data-arg-from-col` → `fromCol`). Liefert `confirm` der
  * Kommando-Definition eine Rückfrage, fragt nur die Oberfläche
- * (`runUiCommand`), nie ein direkter Aufruf.
+ * (`runUiCommand`), nie ein direkter Aufruf. Ein Löschknopf (Papierkorb-Icon
+ * oder Löschmarke, siehe `isDeleteButton` in core/delete-confirm.js) mit `x-command`
+ * fragt immer, und genau einmal: die Rückfrage des Kommandos oder, wenn es
+ * keine hat, die allgemeine „Wirklich löschen?“. Ebenso der Löschen-Knopf
+ * eines `x-dialog` mit `data-dialog-delete`.
  *
  * `x-dialog.dblclick` öffnet beim Doppelklick; aus eigenem Code `openDialogAt`/
  * `ctx.openDialog` mit denselben Optionen wie die `data-dialog-*`-Attribute.
@@ -40,6 +44,7 @@ import { applyAttributes, readElement, writeElement, rejectionHint, invariantHin
 import { isBug } from './value-channel.js';
 import { clearRejection, markRejection } from './param-input.js';
 import { bindChoiceGroup, focusChoice, isChoiceGroup } from './choice-group.js';
+import { isDeleteButton } from './delete-confirm.js';
 
 const registered = new WeakSet();
 /** Formular-Element → Steuerung. */
@@ -182,19 +187,19 @@ export function isUiCommand(ui, name) {
  * Kommando `name`, läuft das gleichnamige Viewmodel-Kommando aus `ui.vmCommands`
  * (als Methode von `ui.component`) — für `x-command` und ebenso für die
  * Aktionsknöpfe der Werkzeugleiste (`runActionCommand` in js/ui/workspace.js).
+ * Mit `opts.confirmDelete` (ein Löschknopf) fragt es auch ohne `confirm`
+ * der Definition, dann allgemein (`common.confirmDelete`).
  * @param {{ model: any, dialog: any, i18n: any, moduleId: string, vmCommands?: Record<string, any>, component?: any }} ui
  * @param {string} name @param {object} args
+ * @param {{ confirmDelete?: boolean }} [opts]
  * @returns {Promise<{ ok: true, result: any } | { ok: false, error: any } | { ok: false, cancelled: true }>}
  */
-export async function runUiCommand(ui, name, args) {
+export async function runUiCommand(ui, name, args, opts = {}) {
   try {
     const vmDef = vmCommandDef(ui, name);
-    if (vmDef) return await runVmCommand(ui, name, vmDef, args);
+    if (vmDef) return await runVmCommand(ui, name, vmDef, args, opts);
     const ask = confirmOf(ui.model, name, args);
-    if (ask) {
-      const ok = await ui.dialog.confirm({ message: ui.i18n.t(`modules.${ui.moduleId}.${ask.key}`, ask.params), danger: true });
-      if (!ok) return { ok: false, cancelled: true };
-    }
+    if (!(await askFirst(ui, ask, opts))) return { ok: false, cancelled: true };
     return { ok: true, result: await ui.model[name](args) };
   } catch (error) {
     return { ok: false, error };
@@ -206,18 +211,30 @@ export async function runUiCommand(ui, name, args) {
  * (`confirm` mit der Komponente als `this`), dann die Methode der Komponente.
  * @param {{ model: any, dialog: any, i18n: any, moduleId: string, component?: any }} ui
  * @param {string} name @param {any} def @param {object} args
+ * @param {{ confirmDelete?: boolean }} opts
  * @returns {Promise<{ ok: true, result: any } | { ok: false, cancelled: true }>}
  * @throws {Error} ungültige Argumente oder Fehler aus `run`
  */
-async function runVmCommand(ui, name, def, args) {
-  if (def.confirm) {
-    const ask = def.confirm.call(ui.component, checkParams(name, def.params, args, ui.model)) ?? null;
-    if (ask) {
-      const ok = await ui.dialog.confirm({ message: ui.i18n.t(`modules.${ui.moduleId}.${ask.key}`, ask.params), danger: true });
-      if (!ok) return { ok: false, cancelled: true };
-    }
-  }
+async function runVmCommand(ui, name, def, args, opts) {
+  const ask = def.confirm ? def.confirm.call(ui.component, checkParams(name, def.params, args, ui.model)) ?? null : null;
+  if (!(await askFirst(ui, ask, opts))) return { ok: false, cancelled: true };
   return { ok: true, result: await ui.component[name](args) };
+}
+
+/**
+ * Die Rückfrage vor einem Kommando: die des Kommandos (`ask`), sonst bei
+ * einem Löschknopf die allgemeine. Ohne beides wird nicht gefragt.
+ * @param {{ dialog: any, i18n: any, moduleId: string }} ui
+ * @param {{ key: string, params?: object }|null} ask
+ * @param {{ confirmDelete?: boolean }} opts
+ * @returns {Promise<boolean>} ob das Kommando laufen darf
+ */
+async function askFirst(ui, ask, opts) {
+  if (ask) return ui.dialog.confirm({ message: ui.i18n.t(`modules.${ui.moduleId}.${ask.key}`, ask.params), danger: true });
+  if (opts.confirmDelete) {
+    return ui.dialog.confirm({ message: ui.i18n.t('common.confirmDelete'), danger: true, confirmLabel: ui.i18n.t('common.delete') });
+  }
+  return true;
 }
 
 /**
@@ -540,9 +557,11 @@ export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
         return false;
       },
       ...(del ? {
+        // The delete command asks itself (runUiCommand), not the generic layer.
+        deleteAsks: true,
         onDelete: () => {
           if (done) return true;
-          runUiCommand(ui, del, deleteArgs()).then((r) => {
+          runUiCommand(ui, del, deleteArgs(), { confirmDelete: true }).then((r) => {
             if (r.ok) finish();
             else if ('error' in r) ui.notify(r.error?.message ?? String(r.error), 'error');
           });
@@ -592,7 +611,7 @@ export function registerCommandDirectives(Alpine) {
     setHelpKey(el, `modules.${ui.moduleId}.actions.${name}.help`);
     const onClick = async () => {
       const current = data._ui;
-      const r = await runUiCommand(current, name, readFixedArgs(el, params, current.model));
+      const r = await runUiCommand(current, name, readFixedArgs(el, params, current.model), { confirmDelete: isDeleteButton(el) });
       if (r.ok) closeDialogAround(el);
       else if ('error' in r) current.notify(r.error?.message ?? String(r.error), 'error');
     };

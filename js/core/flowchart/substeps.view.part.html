@@ -54,7 +54,7 @@
           <button type="button" class="dmike-table__grip fc-substep-grip" :aria-label="t('substepGrip')"></button>
           <span class="fc-substep-number" x-text="substepNum(i, j)"></span>
           <input class="fc-substep-title" type="text" x-field="sub.title" :placeholder="t('substepPlaceholder')">
-          <button type="button" class="fc-substep-remove" x-command="removeSubstep"
+          <button type="button" class="fc-substep-remove" data-confirm-delete x-command="removeSubstep"
                   :data-arg-step-id="step.id" :data-arg-substep-id="sub.id" :title="t('common.delete')" :aria-label="t('common.delete')">
             <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
           </button>

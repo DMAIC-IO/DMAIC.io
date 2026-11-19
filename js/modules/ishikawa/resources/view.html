@@ -128,7 +128,7 @@
                        :value="e.name" spellcheck="false"
                        @keydown="expertEditKey(e.id, $event)" @blur="commitExpertRename(e.id, $event)" />
                 <button type="button" class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" data-help-key=""
-                        x-command="removeExpert" :data-arg-expert-id="e.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                        data-confirm-delete x-command="removeExpert" :data-arg-expert-id="e.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
               </span>
             </template>
           </div>
@@ -279,7 +279,7 @@
                     </template>
                   </button>
                   <button type="button" class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" data-help-key=""
-                          x-command="removeRow" :data-arg-row-id="vr.row.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                          data-confirm-delete x-command="removeRow" :data-arg-row-id="vr.row.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div></td>
               </tr>
             </template>
@@ -342,7 +342,7 @@
                   <span class="ishikawa__snap-name" x-text="s.name"></span>
                   <span class="ishikawa__snap-badge" x-text="snapBadge(s)"></span>
                   <button type="button" class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" data-help-key=""
-                          x-command="removeSnapshot" :data-arg-snapshot-id="s.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                          data-confirm-delete x-command="removeSnapshot" :data-arg-snapshot-id="s.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div>
               </template>
             </div>
@@ -421,7 +421,7 @@
                               x-dialog="hypLink" :data-arg-experiment-id="x.id" :data-dialog-title="t('chooseHypotheses')" x-text="expLinkText(x)"></button></td>
                   <td><div class="ishikawa__row-actions">
                     <button type="button" class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" data-help-key=""
-                            x-command="removeExperiment" :data-arg-experiment-id="x.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                            data-confirm-delete x-command="removeExperiment" :data-arg-experiment-id="x.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                   </div></td>
                 </tr>
               </template>

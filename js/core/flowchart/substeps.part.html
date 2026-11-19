@@ -47,7 +47,7 @@
           <button class="fc-substep-remove" data-action="remove-substep"
                   :data-parent-id="step.id" :data-substep-id="sub.id"
                   :title="t('common.delete')"
-                  @click.stop="removeSubstep(step.id, sub.id)">
+                  data-confirm-delete @click.stop="removeSubstep(step.id, sub.id)">
             <span class="icon" style="--icon-size: 12px" data-icon="action.close" aria-hidden="true"></span>
           </button>
         </div>

@@ -44,7 +44,7 @@
                 <button class="pairwise__chip-remove" type="button"
                   data-action="remove" :data-idx="i"
                   :title="t('removeCriterion')" :aria-label="t('removeCriterion')"
-                  @click="removeCriterion(i)">×</button>
+                  data-confirm-delete @click="removeCriterion(i)">×</button>
               </span>
             </template>
           </div>

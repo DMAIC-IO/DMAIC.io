@@ -890,6 +890,7 @@
     "cancel": "Abbrechen",
     "save": "Speichern",
     "delete": "Löschen",
+    "confirmDelete": "Wirklich löschen?",
     "edit": "Bearbeiten",
     "add": "Hinzufügen",
     "remove": "Entfernen",

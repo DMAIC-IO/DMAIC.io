@@ -24,7 +24,7 @@
                 <template x-if="model.factors.length > 1">
                   <button class="btn btn--icon-sm btn--danger mdg-btn-remove" type="button"
                     data-help-key="modules.model-data-generator.actions.removeFactor.help"
-                    :data-idx="i" :title="t('remove')" @click="removeFactor(i)">×</button>
+                    :data-idx="i" :title="t('remove')" data-confirm-delete @click="removeFactor(i)">×</button>
                 </template>
               </span>
             </div>
@@ -37,7 +37,7 @@
           <span x-text="'+ ' + t('addFactor')"></span>
         </button>
 
-        <div class="dmike-split__section-title" data-help-key="modules.model-data-generator.actions.setYName.help" x-text="t('outputTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.model-data-generator.actions.setYName.help" x-text="t('outputTitle')"></span></div>
         <input class="field mdg-inp" type="text" id="mdg-y-name"
           x-model="model.yName" placeholder="Y">
 

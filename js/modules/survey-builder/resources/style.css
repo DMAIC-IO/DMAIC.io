@@ -231,6 +231,26 @@
   min-width: 6rem;
 }
 
+/* Status cell in the recipients table: a faint tint of the status colour
+   (not sent / sent / answered). Mixed with transparent so it sits on the
+   row background in light and dark mode alike. The hover selector keeps
+   the tint while the pointer is on the row: the generic table hover rule
+   (`.dmike-table tr:hover td`) would otherwise replace it. */
+.survey-builder__recipients td.survey-builder__status--not-sent,
+.survey-builder__recipients.dmike-table tr:hover td.survey-builder__status--not-sent {
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+.survey-builder__recipients td.survey-builder__status--sent,
+.survey-builder__recipients.dmike-table tr:hover td.survey-builder__status--sent {
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+}
+
+.survey-builder__recipients td.survey-builder__status--answered,
+.survey-builder__recipients.dmike-table tr:hover td.survey-builder__status--answered {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
 .survey-builder__outdated {
   display: block;
   font-size: var(--font-size-xs);
@@ -243,44 +263,28 @@
 
 /* ── Results tab ──────────────────────────────────────────────── */
 
-.survey-builder__dropzone {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-m);
-  border: 1px dashed var(--color-border-primary);
-  border-radius: var(--border-radius-sm);
-}
-
 .survey-builder__subtitle {
-  margin: var(--spacing-sm) 0 var(--spacing-xs);
-  font-size: var(--font-size-sm);
+  margin: var(--spacing-l) 0 var(--spacing-sm);
+  font-size: var(--font-size-md);
   font-weight: 600;
 }
 
-.survey-builder__import-log,
+.survey-builder__summary > .survey-builder__subtitle:first-child {
+  margin-top: var(--spacing-m);
+}
+
+.survey-builder__summary .survey-builder__counts {
+  margin: 0 0 var(--spacing-sm);
+}
+
+.survey-builder__more {
+  margin-top: var(--spacing-sm);
+}
+
 .survey-builder__texts {
   margin: 0 0 var(--spacing-sm);
   padding-left: var(--spacing-l);
   font-size: var(--font-size-sm);
-}
-
-.survey-builder__import-log li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
-
-.survey-builder__file {
-  font-weight: 600;
-}
-
-.survey-builder__import--ok [data-ref="importStatus"] {
-  color: var(--color-success);
-}
-
-.survey-builder__import--rejected [data-ref="importStatus"] {
-  color: var(--color-error);
 }
 
 .survey-builder__details {
@@ -302,14 +306,33 @@
 }
 
 .survey-builder__block {
-  margin-top: var(--spacing-m);
-  padding-top: var(--spacing-sm);
+  margin-top: var(--spacing-l);
+  padding-top: var(--spacing-ml);
   border-top: 1px solid var(--color-border-primary);
 }
 
 .survey-builder__block-title {
-  margin: 0;
+  margin: 0 0 var(--spacing-xs);
   font-size: var(--font-size-md);
+}
+
+.survey-builder__block .survey-builder__counts {
+  margin: 0 0 var(--spacing-sm);
+}
+
+/* Table (with the "other" answers or the Kano hand-over) on the left, the
+   chart beside it — a short table no longer leaves a wide empty strip
+   above a chart that spans the full width. A wide table gets at most 60 %
+   and wraps its texts, so the chart keeps room to read. */
+.survey-builder__block-body--side {
+  display: grid;
+  grid-template-columns: fit-content(60%) minmax(20rem, 1fr);
+  gap: var(--spacing-l);
+  align-items: start;
+}
+
+.survey-builder__block-body--side > .survey-builder__chart-cell > .survey-builder__chart {
+  margin-top: 0;
 }
 
 .survey-builder__stats {
@@ -349,7 +372,8 @@
 /* ── Summary, group comparison, report ────────────────────────── */
 
 .survey-builder__summary {
-  padding-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-ml);
+  margin-bottom: var(--spacing-ml);
   border-bottom: 1px solid var(--color-border-primary);
 }
 
@@ -372,7 +396,7 @@
 }
 
 .survey-builder__group-part {
-  margin-top: var(--spacing-m);
+  margin-top: var(--spacing-l);
 }
 
 .survey-builder__part-title {

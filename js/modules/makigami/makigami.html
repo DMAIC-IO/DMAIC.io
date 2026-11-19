@@ -227,7 +227,7 @@
                         :title="t('deleteStep')"
                         :aria-label="t('deleteStep')"
                         type="button"
-                        @click="deleteStep(step.id)">
+                        data-confirm-delete="off" @click="deleteStep(step.id)">
                         <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                       </button>
                     </div>
@@ -271,7 +271,7 @@
                         :title="t('deleteRole')"
                         :aria-label="t('deleteRole')"
                         type="button"
-                        @click="deleteRole(role.id)">
+                        data-confirm-delete="off" @click="deleteRole(role.id)">
                         <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                       </button>
                     </div>

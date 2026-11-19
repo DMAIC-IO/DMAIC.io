@@ -311,10 +311,10 @@
       }
     },
     "importResponse": {
-      "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei erscheint nur im Protokoll.",
+      "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei wird abgelehnt und als Meldung angezeigt.",
       "params": {
         "json": "Der Inhalt der Antwortdatei als Text.",
-        "fileName": "Der Name, der im Protokoll steht.",
+        "fileName": "Der Dateiname, der in der Meldung steht.",
         "command": "Das Kommando als ein Objekt mit json und fileName."
       }
     },
@@ -452,9 +452,6 @@
     },
     "conditionDraft": {
       "help": "Der Entwurf einer neuen Bedingung für den gewählten Abschnitt oder die gewählte Frage: Quelle und Optionen. setConditions übernimmt sie. Rein eine Ansicht; sie wird nicht gespeichert."
-    },
-    "importLog": {
-      "help": "Das Protokoll der in dieser Sitzung eingelesenen Antwortdateien: je Datei der Name, ob sie übernommen oder abgelehnt wurde und die Hinweise dazu. Rein eine Ansicht; es wird nicht gespeichert."
     },
     "expandedResponses": {
       "help": "Die ids der Antworten, deren Einzelheiten aufgeklappt sind. Rein eine Ansicht; sie wird nicht gespeichert."

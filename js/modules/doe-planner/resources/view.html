@@ -49,10 +49,10 @@
             </div>
             <table class="doe__evop-table">
               <thead><tr>
-                <th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th>
-                <th data-help-key="modules.doe-planner.types.DoeColumns.effect" x-text="t('effect')"></th>
-                <th data-help-key="modules.doe-planner.types.DoeColumns.evopErrorLimit" x-text="t('evopErrorLimit')"></th>
-                <th data-help-key="modules.doe-planner.types.DoeColumns.evopSignificant" x-text="t('evopSignificant')"></th>
+                <th><span data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></span></th>
+                <th><span data-help-key="modules.doe-planner.types.DoeColumns.effect" x-text="t('effect')"></span></th>
+                <th><span data-help-key="modules.doe-planner.types.DoeColumns.evopErrorLimit" x-text="t('evopErrorLimit')"></span></th>
+                <th><span data-help-key="modules.doe-planner.types.DoeColumns.evopSignificant" x-text="t('evopSignificant')"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(e, ei) in shownEvop.effects" :key="ei">
@@ -91,7 +91,7 @@
     </div>
 
     <!-- ── Factors ─────────────────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.factors.help" x-text="t('stepFactors')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.factors.help" x-text="t('stepFactors')"></span></div>
     <div class="doe__factors-list">
       <template x-for="(f, fi) in model.factors" :key="f.id">
         <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factorKind(f)">
@@ -109,7 +109,7 @@
               <option value="categorical" :selected="isKind(f, 'categorical')" x-text="t('factorKindCategorical')"></option>
             </select>
             <button class="doe__factor-remove-btn" type="button" :data-factor-id="f.id" data-help-key=""
-                    :title="t('removeFactor')" x-command="removeFactor" :data-arg-id="f.id">&#10005;</button>
+                    :title="t('removeFactor')" data-confirm-delete x-command="removeFactor" :data-arg-id="f.id">&#10005;</button>
           </div>
           <div class="doe__levels-row">
             <button class="doe__insert-level-btn" type="button" :data-factor-id="f.id" data-insert-at="0" data-help-key=""
@@ -124,7 +124,7 @@
                          :placeholder="levelPlaceholder(f)" />
                   <template x-if="canRemoveLevel(f)">
                     <button class="doe__remove-level-btn" type="button" :data-factor-id="f.id" :data-level-idx="li" data-help-key=""
-                            :title="t('removeLevel')" x-command="removeLevel" :data-arg-id="f.id" :data-arg-index="li">&#10005;</button>
+                            :title="t('removeLevel')" data-confirm-delete x-command="removeLevel" :data-arg-id="f.id" :data-arg-index="li">&#10005;</button>
                   </template>
                 </div>
                 <button class="doe__insert-level-btn" type="button" :data-factor-id="f.id" :data-insert-at="afterLevel(li)" data-help-key=""
@@ -138,7 +138,7 @@
     <button class="btn btn--sm doe__add-factor-btn" type="button" x-command="addFactor"><span x-text="addFactorLabel"></span></button>
 
     <!-- ── Responses ───────────────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.responses.help" x-text="t('stepResponses')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.responses.help" x-text="t('stepResponses')"></span></div>
     <div class="doe__responses-list">
       <template x-for="(r, ri) in model.responses" :key="ri">
         <div class="doe__response-row" :data-response-idx="ri">
@@ -150,7 +150,7 @@
                    x-model.lazy="r.unit" :placeholder="t('responseUnitPlaceholder')" />
             <template x-if="canRemoveResponse">
               <button class="doe__response-remove-btn" type="button" :data-idx="ri" data-help-key=""
-                      :title="t('removeResponse')" x-command="removeResponse" :data-arg-index="ri">&#10005;</button>
+                      :title="t('removeResponse')" data-confirm-delete x-command="removeResponse" :data-arg-index="ri">&#10005;</button>
             </template>
           </div>
         </div>
@@ -159,7 +159,7 @@
     <button class="btn btn--sm doe__add-response-btn" type="button" x-command="addResponse"><span x-text="addResponseLabel"></span></button>
 
     <!-- ── Design type ─────────────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.designType.help" x-text="t('stepDesignType')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.designType.help" x-text="t('stepDesignType')"></span></div>
 
     <template x-if="recommendation">
       <div class="doe__recommendation">
@@ -197,7 +197,7 @@
     <!-- Resolution table (frac) -->
     <template x-if="isType('frac')">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.selectResolution.help" x-text="t('resTableTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.selectResolution.help" x-text="t('resTableTitle')"></span></div>
         <div class="doe__res-info" x-text="resInfoText"></div>
         <div class="doe__res-table-wrap">
           <table class="doe__res-table">
@@ -256,7 +256,7 @@
             </template>
             <template x-if="aliasDetail.aliases.length">
               <table class="doe__res-alias-table">
-                <thead><tr><th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.types.DoeColumns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
+                <thead><tr><th><span data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></span></th><th><span data-help-key="modules.doe-planner.types.DoeColumns.aliasedWith" x-text="t('aliasedWith')"></span></th></tr></thead>
                 <tbody>
                   <template x-for="(a, ai) in aliasDetail.aliases" :key="ai">
                     <tr>
@@ -286,7 +286,7 @@
     <!-- Plackett-Burman -->
     <template x-if="isType('pb')">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.selectPB.help" x-text="t('pbTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.selectPB.help" x-text="t('pbTitle')"></span></div>
         <div class="doe__pb-info" x-text="pbInfoText"></div>
         <table class="doe__pb-table">
           <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
@@ -322,7 +322,7 @@
     <!-- Taguchi -->
     <template x-if="isType('taguchi')">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.selectTaguchi.help" x-text="t('taguchiTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.selectTaguchi.help" x-text="t('taguchiTitle')"></span></div>
         <div class="doe__taguchi-info" x-text="taguchiInfoText"></div>
         <template x-if="hasTaguchiCandidates">
           <table class="doe__taguchi-table">
@@ -406,7 +406,7 @@
               <li class="doe__forbidden-row" :data-rule-idx="ri">
                 <span class="doe__forbidden-rule" x-text="forbiddenRuleText(rule)"></span>
                 <button type="button" class="doe__forbidden-remove-btn" :data-rule-idx="ri" data-help-key=""
-                        :title="t('forbiddenRemoveTitle')" x-command="removeForbiddenVertex" :data-arg-index="ri">&#10005;</button>
+                        :title="t('forbiddenRemoveTitle')" data-confirm-delete x-command="removeForbiddenVertex" :data-arg-index="ri">&#10005;</button>
               </li>
             </template>
           </ul>
@@ -448,7 +448,7 @@
     </template>
 
     <!-- ── Parameters ──────────────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.options.help" x-text="t('stepParameters')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.options.help" x-text="t('stepParameters')"></span></div>
     <div class="doe__param-group">
       <div class="field-checks">
         <div class="doe__randomize-row">
@@ -706,7 +706,7 @@
                     </template>
                     <template x-if="shownAssessment.aliasRows.length">
                       <table class="doe__alias-table">
-                        <thead><tr><th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.types.DoeColumns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
+                        <thead><tr><th><span data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></span></th><th><span data-help-key="modules.doe-planner.types.DoeColumns.aliasedWith" x-text="t('aliasedWith')"></span></th></tr></thead>
                         <tbody>
                           <template x-for="(a, ai) in shownAssessment.aliasRows" :key="ai">
                             <tr>
@@ -733,7 +733,7 @@
                       <p class="doe__eval-note" x-text="t('powerSaturated')"></p>
                     </template>
                     <table class="doe__power-table">
-                      <thead><tr><th data-help-key="modules.doe-planner.types.DoeColumns.effectSize" x-text="t('effectSize')"></th><th data-help-key="modules.doe-planner.types.DoeColumns.power" x-text="t('power')"></th><th></th></tr></thead>
+                      <thead><tr><th><span data-help-key="modules.doe-planner.types.DoeColumns.effectSize" x-text="t('effectSize')"></span></th><th><span data-help-key="modules.doe-planner.types.DoeColumns.power" x-text="t('power')"></span></th><th></th></tr></thead>
                       <tbody>
                         <template x-for="(row, pi) in shownAssessment.powerRows" :key="pi">
                           <tr :class="row.rating">
@@ -771,12 +771,12 @@
                     <table class="doe__alias-table doe__dispersion-table">
                       <thead>
                         <tr>
-                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionPoint" x-text="t('dispersionPoint')"></th>
-                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionN">n</th>
-                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionMean" x-text="t('dispersionMean')"></th>
-                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionS">s</th>
-                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionVar">s&sup2;</th>
-                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionLnVar">ln(s&sup2;)</th>
+                          <th><span data-help-key="modules.doe-planner.types.DoeColumns.dispersionPoint" x-text="t('dispersionPoint')"></span></th>
+                          <th><span data-help-key="modules.doe-planner.types.DoeColumns.dispersionN">n</span></th>
+                          <th><span data-help-key="modules.doe-planner.types.DoeColumns.dispersionMean" x-text="t('dispersionMean')"></span></th>
+                          <th><span data-help-key="modules.doe-planner.types.DoeColumns.dispersionS">s</span></th>
+                          <th><span data-help-key="modules.doe-planner.types.DoeColumns.dispersionVar">s&sup2;</span></th>
+                          <th><span data-help-key="modules.doe-planner.types.DoeColumns.dispersionLnVar">ln(s&sup2;)</span></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -808,10 +808,10 @@
                               <table class="doe__alias-table doe__dispersion-coef-table">
                                 <thead>
                                   <tr>
-                                    <th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th>
-                                    <th data-help-key="modules.doe-planner.types.DoeColumns.coefficient" x-text="t('coefficient')"></th>
-                                    <th data-help-key="modules.doe-planner.types.DoeColumns.effect" x-text="t('effect')"></th>
-                                    <th data-help-key="modules.doe-planner.types.DoeColumns.pValue">p</th>
+                                    <th><span data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></span></th>
+                                    <th><span data-help-key="modules.doe-planner.types.DoeColumns.coefficient" x-text="t('coefficient')"></span></th>
+                                    <th><span data-help-key="modules.doe-planner.types.DoeColumns.effect" x-text="t('effect')"></span></th>
+                                    <th><span data-help-key="modules.doe-planner.types.DoeColumns.pValue">p</span></th>
                                   </tr>
                                 </thead>
                                 <tbody>

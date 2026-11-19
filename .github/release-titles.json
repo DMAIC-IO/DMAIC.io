@@ -78,5 +78,25 @@
   "1.5.0": {
     "de": "Morphologischer Kasten, Kontexthilfe per Alt-Taste in allen Modulen, Paarvergleich-Export als CSV/JSON und neue Beispiele für Regelkarten, Hypothesentests und Regression",
     "en": "Morphological box, Alt-key context help across all modules, pairwise comparison export as CSV/JSON, and new examples for control charts, hypothesis tests and regression"
+  },
+  "1.6.0": {
+    "de": "Kurs „Statistik-Grundlagen“ mit sechs Lektionen, Agentenfläche mit Lesen vor Schreiben und neuen Tabellenaktionen, Umfrage-Antworten über die Aktionsleiste importieren",
+    "en": "Statistics basics course with six lessons, agent interface with read-before-write and new worksheet actions, import survey answers from the action bar"
+  },
+  "1.6.1": {
+    "de": "Fragebogen-Generator: Grafik neben der Tabelle und mehr Luft in der Ergebnisansicht",
+    "en": "Survey builder: chart beside the table and more room in the results view"
+  },
+  "1.6.2": {
+    "de": "Fragebogen-Generator: alle Grafiken der Ergebnisansicht neben ihrer Tabelle",
+    "en": "Survey builder: every results chart beside its table"
+  },
+  "1.6.3": {
+    "de": "Balkendiagramme: lange Achsenbeschriftungen umbrechen statt drehen",
+    "en": "Bar charts: wrap long axis labels instead of rotating them"
+  },
+  "1.6.4": {
+    "de": "DoE-Planer: Vorschau-Tabelle immer sichtbar, Abschnitte klappen einzeln",
+    "en": "DoE planner: run preview always visible, sections collapse one at a time"
   }
 }

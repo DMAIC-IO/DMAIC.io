@@ -277,7 +277,7 @@
                 <td><input class="field" type="text" data-field="group" x-model="r.group"></td>
                 <td><input class="field" type="email" data-field="email" x-model="r.email"></td>
                 <td><input class="field" type="text" data-field="note" x-model="r.note"></td>
-                <td>
+                <td class="survey-builder__status" :class="recipientStatusClass(r.id)">
                   <span data-ref="status" x-text="recipientStatusLabel(r.id)"></span>
                   <span class="survey-builder__outdated" data-ref="outdated"
                         x-show="isOutdated(r.id)" x-text="outdatedHint(r)"></span>
@@ -298,28 +298,10 @@
     </section>
 
     <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')">
-      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.actions.importResponse.help" x-text="t('importAnswers')"></span></div>
-      <div class="survey-builder__dropzone" data-ref="dropzone"
-           x-file-drop="importFiles" data-file-drop-multiple data-file-drop-accept=".json,application/json">
-        <button class="btn btn--sm" type="button" data-ref="importButton" data-help-key="" data-file-drop-open>
-          <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span><span x-text="t('importAnswers')"></span>
-        </button>
-        <span class="survey-builder__hint" x-text="t('importHint')"></span>
-      </div>
-      <div x-show="hasImportLog">
-        <div class="survey-builder__subtitle" x-text="t('importLogTitle')"></div>
-        <ul class="survey-builder__import-log" data-ref="importLog">
-          <template x-for="entry in state.importLog" :key="entry.key">
-            <li :class="importStatusClass(entry)">
-              <span class="survey-builder__file" data-ref="fileName" x-text="entry.name"></span>
-              <span data-ref="importStatus" x-text="importStatusLabel(entry)"></span>
-              <span class="survey-builder__hint" data-ref="importNotes" x-text="noteLine(entry)"></span>
-            </li>
-          </template>
-        </ul>
-      </div>
+      <div hidden x-ref="importDrop" data-ref="importDrop"
+           x-file-drop="importFiles" data-file-drop-multiple data-file-drop-accept=".json,application/json"></div>
 
-      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></span></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></span></div>
       <p class="survey-builder__hint" data-ref="responsesEmpty" x-show="!hasResponses" x-text="t('responsesEmpty')"></p>
       <div class="dmike-table-wrap" x-show="hasResponses">
         <table class="dmike-table survey-builder__responses" data-ref="responses">
@@ -359,8 +341,8 @@
         </table>
       </div>
 
+      <div class="dmike-split__output-section" x-show="hasResponses"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.survey-builder.fields.results.help" x-text="t('evaluationTitle')"></span></div>
       <div data-ref="evaluation" x-show="hasResponses">
-        <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.results.help" x-text="t('evaluationTitle')"></span></div>
         <div class="survey-builder__toolbar">
           <label class="survey-builder__counts" data-help-key="modules.survey-builder.actions.setFilter.help" x-text="t('filterLabel')"></label>
           <select class="field" data-ref="filter" data-help-key="" @change="filterChanged($event)">
@@ -417,12 +399,13 @@
                 </template>
               </tbody>
             </table>
-            <button class="btn btn--sm" type="button" data-ref="rankingToggle" data-help-key="" x-show="hasMoreRanking"
+            <button class="btn btn--sm survey-builder__more" type="button" data-ref="rankingToggle" data-help-key="" x-show="hasMoreRanking"
                     @click="toggleRanking()" x-text="rankingToggleLabel"></button>
           </div>
 
           <div x-show="hasKanoOverview">
             <div class="survey-builder__subtitle" x-text="t('report.kanoTitle')"></div>
+            <div class="survey-builder__block-body" :class="sideClass(overviewCharts)">
             <table class="dmike-table survey-builder__stats" data-ref="kanoOverview">
               <thead>
                 <tr>
@@ -444,6 +427,7 @@
                 <template x-if="cellIs(cell, 'scatter')"><div class="survey-builder__chart" :data-chart="cell.key" x-widget="scatter-chart" x-widget-config="cell.config"></div></template>
               </div>
             </template>
+            </div>
           </div>
 
           <p class="survey-builder__counts" data-ref="freeText" x-text="freeTextLine"></p>
@@ -473,6 +457,7 @@
           <template x-for="part in comparisonParts" :key="part.key">
             <div class="survey-builder__group-part" :data-group-question-id="part.questionId">
               <h4 class="survey-builder__part-title" x-text="part.title"></h4>
+              <div class="survey-builder__block-body" :class="sideClass(groupCharts(part))">
               <table class="dmike-table survey-builder__stats">
                 <thead>
                   <tr>
@@ -501,6 +486,7 @@
                   <template x-if="cellIs(cell, 'bar')"><div class="survey-builder__chart" :data-chart="cell.key" x-widget="bar-chart" x-widget-config="cell.config"></div></template>
                 </div>
               </template>
+              </div>
             </div>
           </template>
         </section>
@@ -512,7 +498,8 @@
               <p class="survey-builder__counts" data-ref="blockN" x-text="b.nLine"></p>
 
               <template x-if="isChoice(b)">
-                <div class="survey-builder__block-body">
+                <div class="survey-builder__block-body" :class="sideClass(questionCharts(b))">
+                  <div class="survey-builder__block-main">
                   <table class="dmike-table survey-builder__stats">
                     <thead><tr><th><span data-help-key="modules.survey-builder.types.OptionStat.text" x-text="t('colOption')"></span></th><th><span data-help-key="modules.survey-builder.types.OptionStat.count" x-text="t('colCount')"></span></th><th><span data-help-key="modules.survey-builder.types.OptionStat.share" x-text="t('colShare')"></span></th></tr></thead>
                     <tbody>
@@ -544,6 +531,7 @@
                       </template>
                     </ul>
                   </div>
+                  </div>
                   <template x-for="cell in questionCharts(b)" :key="cell.key">
                     <div class="survey-builder__chart-cell">
                       <template x-if="cellIs(cell, 'bar')"><div class="survey-builder__chart" :data-chart="cell.key" x-widget="bar-chart" x-widget-config="cell.config"></div></template>
@@ -553,7 +541,7 @@
               </template>
 
               <template x-if="blockIs(b, 'rating')">
-                <div class="survey-builder__block-body">
+                <div class="survey-builder__block-body" :class="sideClass(questionCharts(b))">
                   <table class="dmike-table survey-builder__stats">
                     <thead>
                       <tr>
@@ -584,7 +572,8 @@
               </template>
 
               <template x-if="blockIs(b, 'kano')">
-                <div class="survey-builder__block-body">
+                <div class="survey-builder__block-body" :class="sideClass(questionCharts(b))">
+                  <div class="survey-builder__block-main">
                   <table class="dmike-table survey-builder__stats">
                     <thead>
                       <tr>
@@ -619,6 +608,7 @@
                             :disabled="isHandoverRunning('handOverToKano')" @click="handOver(b.key)">
                       <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('handOverKano')"></span>
                     </button>
+                  </div>
                   </div>
                   <template x-for="cell in questionCharts(b)" :key="cell.key">
                     <div class="survey-builder__chart-cell">

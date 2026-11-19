@@ -118,8 +118,8 @@ suite('value-distribution widget', () => {
   test('value widget seeds per mount unless injected', () => {
     const run = (params) => {
       const { sim } = mount({ processes: ['fill-a'], stats: ['mean'], ...params });
-      sim.measure('fill-a', 1);
-      return sim.cell('fill-a', 'mean');
+      // Five readings: one rounded display value collides by chance too often.
+      return Array.from({ length: 5 }, () => { sim.measure('fill-a', 1); return sim.cell('fill-a', 'mean'); }).join('|');
     };
     assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
     assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
@@ -244,8 +244,8 @@ suite('sample-estimate widget', () => {
   test('estimate widget seeds per mount unless injected', () => {
     const run = (params) => {
       const { sim } = mount({ n: 10, ...params });
-      sim.draw(1);
-      return sim.cell('mean');
+      // Five readings: one rounded display value collides by chance too often.
+      return Array.from({ length: 5 }, () => { sim.draw(1); return sim.cell('mean'); }).join('|');
     };
     assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
     assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
@@ -296,8 +296,8 @@ suite('variance-check widget', () => {
   test('variance widget seeds per mount unless injected', () => {
     const run = (params) => {
       const { sim } = mount({ n: 3, ...params });
-      sim.draw(10);
-      return sim.cell('avgByNMinus1');
+      // Five readings: one rounded display value collides by chance too often.
+      return Array.from({ length: 5 }, () => { sim.draw(10); return sim.cell('avgByNMinus1'); }).join('|');
     };
     assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
     assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');

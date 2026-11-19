@@ -40,6 +40,9 @@ export const recipientsView = (ctx) => ({
   /** @param {string} id @returns {string} the translated send status */
   recipientStatusLabel(id) { return this.t(STATUS_LABELS[withReaders(this.model).recipientStatus(id)]); },
 
+  /** @param {string} id @returns {string} modifier class tinting the status cell by send status */
+  recipientStatusClass(id) { return `survey-builder__status--${withReaders(this.model).recipientStatus(id)}`; },
+
   /** @param {string} id @returns {boolean} the sent file predates the current version */
   isOutdated(id) { return withReaders(this.model).isOutdated(id); },
 

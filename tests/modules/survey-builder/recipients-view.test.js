@@ -8,7 +8,7 @@
  * (entries `recipientFile.example.<lang>`).
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { mount, stored, settle, until, typeIn, de, helpEntry } from './view-harness.js';
+import { mount, stored, settle, typeIn, de, helpEntry } from './view-harness.js';
 import { loadTexts } from '../../../js/modules/survey-builder/viewmodel/texts.js';
 
 /** @param {string} path relative to this file @returns {Promise<any>} */
@@ -102,7 +102,7 @@ suite('survey-builder recipients: list', () => {
     assertTrue(shown(a.$('[data-ref="anonymousInfo"]')), 'anonymous hint shown');
   });
 
-  test('deleting an answered recipient asks with its name; declined it stays, confirmed its answer stays without recipient', async () => {
+  test('deleting an answered recipient asks with its name, another one the generic question; declined it stays, confirmed its answer stays without recipient', async () => {
     const no = await mount(withRecipients(), { confirm: false });
     row(no, 'rc1').querySelector('[data-action="deleteRecipient"]').click();
     await settle();
@@ -115,7 +115,8 @@ suite('survey-builder recipients: list', () => {
     assertEqual(yes.vm().model.responses[0].recipientId, null);
     row(yes, 'rc2').querySelector('[data-action="deleteRecipient"]').click();
     await settle();
-    assertEqual(yes.confirms.length, 1, 'a recipient without answer goes without asking');
+    // Every delete asks (generic delete confirmation): without an answer the generic question.
+    assertDeepEqual(yes.confirms.map((c) => c.message), [de('confirmRecipientDelete', { name: 'Anna' }), 'common.confirmDelete']);
     assertEqual(yes.vm().model.recipients.length, 0);
   });
 });
@@ -202,7 +203,9 @@ suite('survey-builder recipients: file cancelled', () => {
 });
 
 suite('survey-builder recipients: reading answers', () => {
-  test('three files (ok, foreign, the same again) and a broken one: one response, a log line each, texts as before', async () => {
+  const note = (file, reason) => de('importFileNote', { file, reason });
+
+  test('three files (ok, foreign, the same again) and a broken one: one response, a toast per rejected file, one summary toast', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
     await h.vm().importFiles([
       answerFile('a.json', 'r2', { recipientId: 'gone' }),
@@ -214,42 +217,57 @@ suite('survey-builder recipients: reading answers', () => {
     const m = h.vm().model;
     assertDeepEqual(m.responses.map((r) => r.id), ['r1', 'r2']);
     assertDeepEqual(h.calls('importResponse').map((a) => a.fileName), ['a.json', 'f.json', 'kopie.json', 'x.json']);
-    const lines = h.$$('[data-ref="importLog"] li');
-    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="fileName"]').textContent), ['a.json', 'f.json', 'kopie.json', 'x.json']);
-    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="importStatus"]').textContent),
-      [de('importOk'), de('importForeign'), de('importDuplicate'), de('importInvalid')]);
-    assertEqual(lines[0].querySelector('[data-ref="importNotes"]').textContent, de('importUnknownRecipient'));
-    assertTrue(lines[0].classList.contains('survey-builder__import--ok'), 'ok line');
-    assertTrue(lines[1].classList.contains('survey-builder__import--rejected'), 'foreign line');
-    assertTrue(lines[3].classList.contains('survey-builder__import--rejected'), 'invalid line');
-    assertDeepEqual(h.notes, []);
+    assertDeepEqual(h.notes, [
+      [note('a.json', de('importUnknownRecipient')), 'info'],
+      [note('f.json', de('importForeign')), 'error'],
+      [note('kopie.json', de('importDuplicate')), 'warning'],
+      [note('x.json', de('importInvalid')), 'error'],
+      [de('importDone', { count: 1 }), 'success'],
+    ]);
+    assertEqual(h.$$('[data-ref="importLog"]').length, 0, 'no import log any more');
   });
 
-  test('a file for a known recipient makes them answered; dropped files arrive through x-file-drop', async () => {
+  test('a file for a known recipient makes them answered; a caveat goes out as an info toast', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
-    const zone = h.$('[data-ref="dropzone"]');
-    assertEqual(zone.getAttribute('x-file-drop'), 'importFiles');
-    const dt = new DataTransfer();
-    dt.items.add(answerFile('b.json', 'r4', { recipientId: 'rc2', answers: { q1: 'Gut', q9: 'weg' } }));
-    zone.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
-    await until(() => h.vm().model.responses.length === 2);
+    await h.vm().importFiles([answerFile('b.json', 'r4', { recipientId: 'rc2', answers: { q1: 'Gut', q9: 'weg' } })]);
     await settle();
     assertEqual(h.vm().model.recipientStatus('rc2'), 'answered');
-    const line = h.$$('[data-ref="importLog"] li')[0];
-    assertEqual(line.querySelector('[data-ref="importNotes"]').textContent, de('importOrphans', { count: 1 }));
+    assertDeepEqual(h.notes, [
+      [note('b.json', de('importOrphans', { count: 1 })), 'info'],
+      [de('importDone', { count: 1 }), 'success'],
+    ]);
   });
 
-  test('a file of an older version is read in and logged as older', async () => {
+  test('a file of an older version is read in, with an info toast', async () => {
     const h = await mount(withRecipients({ tab: 'results', survey: { ...withRecipients().survey, version: 2 } }));
     await h.vm().importFiles([answerFile('alt.json', 'r5')]);
     await settle();
     assertDeepEqual(h.vm().model.responses.map((r) => r.id), ['r1', 'r5']);
-    const line = h.$$('[data-ref="importLog"] li')[0];
-    assertEqual(line.querySelector('[data-ref="importStatus"]').textContent, de('importOlder'));
-    assertTrue(line.classList.contains('survey-builder__import--ok'), 'older counts as taken in');
+    assertDeepEqual(h.notes, [[note('alt.json', de('importOlder')), 'info'], [de('importDone', { count: 1 }), 'success']]);
   });
 
-  test('a failing import command: an invalid line, commandFailed, the cause logged but not shown', async () => {
+  test('an empty pick does nothing', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    await h.vm().importFiles([]);
+    await settle();
+    assertDeepEqual(h.notes, []);
+  });
+
+  test('the action bar shows the results tab and opens the file picker of the hidden x-file-drop', async () => {
+    const h = await mount(withRecipients({ tab: 'draft' }));
+    const drop = h.$('[data-ref="importDrop"]');
+    assertEqual(drop.getAttribute('x-file-drop'), 'importFiles');
+    assertTrue(drop.hidden, 'no visible drop zone');
+    const input = drop.querySelector('input[type="file"]');
+    let opened = 0;
+    input.addEventListener('click', (e) => { e.preventDefault(); opened += 1; });
+    h.vm().importAnswers();
+    await settle();
+    assertEqual(h.vm().model.tab, 'results');
+    assertEqual(opened, 1);
+  });
+
+  test('a failing import command: an invalid toast, commandFailed, the cause logged but not shown', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
     const model = h.vm()._ui.model;
     const real = model.importResponse;
@@ -264,9 +282,7 @@ suite('survey-builder recipients: reading answers', () => {
       console.warn = warn;
       model.importResponse = real;
     }
-    const line = h.$$('[data-ref="importLog"] li')[0];
-    assertEqual(line.querySelector('[data-ref="importStatus"]').textContent, de('importInvalid'));
-    assertDeepEqual(h.notes, [[de('commandFailed'), 'error']]);
+    assertDeepEqual(h.notes, [[de('commandFailed'), 'error'], [note('a.json', de('importInvalid')), 'error']]);
     assertEqual(warned.length, 1);
     assertEqual(warned[0][0], '[survey-builder] importResponse failed');
     assertEqual(warned[0][1].message, 'parser exploded');
@@ -274,42 +290,32 @@ suite('survey-builder recipients: reading answers', () => {
     assertEqual(h.vm().model.responses.length, 1);
   });
 
-  test('an import through the agent surface gets one log line, one through the interface too', async () => {
+  test('an import through the agent surface gets its toast too, but no summary', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
     const agentFile = answerFile('agent.json', 'r2', { recipientId: 'gone' });
     // The command of the mounted model, as the agent surface runs it.
     const res = h.vm()._ui.model.importResponse({ json: await agentFile.text(), fileName: 'agent.json' });
     assertEqual(res.status, 'ok');
     await settle();
-    let lines = h.$$('[data-ref="importLog"] li');
-    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="fileName"]').textContent), ['agent.json']);
-    assertEqual(lines[0].querySelector('[data-ref="importStatus"]').textContent, de('importOk'));
-    assertEqual(lines[0].querySelector('[data-ref="importNotes"]').textContent, de('importUnknownRecipient'));
-
-    await h.vm().importFiles([answerFile('ui.json', 'r3')]);
-    await settle();
-    lines = h.$$('[data-ref="importLog"] li');
-    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="fileName"]').textContent), ['agent.json', 'ui.json']);
-    assertDeepEqual(h.vm().model.responses.map((r) => r.id), ['r1', 'r2', 'r3']);
+    assertDeepEqual(h.notes, [[note('agent.json', de('importUnknownRecipient')), 'info']]);
   });
 
-  test('an import of another instance writes no line here', async () => {
+  test('an import of another instance raises no toast here', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
     h.bus.emit('command:executed', {
       instanceId: 'other', command: 'importResponse', args: { fileName: 'fremd.json' },
-      result: { status: 'ok', orphanIds: [], unknownRecipient: false },
+      result: { status: 'foreign', orphanIds: [], unknownRecipient: false },
     });
     await settle();
-    assertEqual(h.$$('[data-ref="importLog"] li').length, 0);
+    assertDeepEqual(h.notes, []);
   });
 
-  test('an unreadable file is logged as invalid with its own text', async () => {
+  test('an unreadable file counts as no answer file', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
     const broken = { name: 'kaputt.json', text: async () => { throw new Error('disk on fire'); } };
     await h.vm().importFiles([broken]);
     await settle();
-    const line = h.$$('[data-ref="importLog"] li')[0];
-    assertEqual(line.querySelector('[data-ref="importStatus"]').textContent, de('importInvalid'));
+    assertDeepEqual(h.notes, [[note('kaputt.json', de('importInvalid')), 'error']]);
     assertTrue(!h.container.textContent.includes('disk on fire'), 'no error message shown');
   });
 });

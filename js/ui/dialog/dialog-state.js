@@ -37,6 +37,9 @@ export function buildDialogState(variant, opts = {}, t) {
     confirmLabel: opts.confirmLabel ?? (CONFIRM_LABEL[variant] ? t(CONFIRM_LABEL[variant]) : ''),
     cancelLabel: opts.cancelLabel ?? t('common.cancel'),
     deleteLabel: opts.deleteLabel ?? t('common.delete'),
+    // `data-confirm-delete` of the delete button: the generic confirmation
+    // (core/delete-confirm.js) asks, unless `onDelete` asks itself.
+    deleteConfirm: opts.deleteAsks === true ? 'off' : '',
     hasConfirm,
     hasCancel,
     hasDelete,

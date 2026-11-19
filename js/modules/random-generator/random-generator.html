@@ -132,7 +132,7 @@
                          :value="a.weight" @change="onAttributeInput(a.id, 'weight', $event)">
                   <button class="rg-attr-row__remove" :data-i="i"
                           :title="t('removeAttribute')" :aria-label="t('removeAttribute')"
-                          x-text="removeGlyph()" @click="removeAttribute(a.id)"></button>
+                          x-text="removeGlyph()" data-confirm-delete @click="removeAttribute(a.id)"></button>
                 </div>
               </template>
             </div>

@@ -73,7 +73,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { dialog, notify }) 
     const date = exportStamp();
     if (scope === 'all') {
       const json = await stateManager.exportAllJSON();
-      downloadJSON(json, `dmaic-io_alle_projekte_${date}.json`);
+      downloadJSON(json, `qprovement_alle_projekte_${date}.json`);
     } else {
       const json = stateManager.exportJSON();
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');

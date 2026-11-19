@@ -45,7 +45,7 @@ export function exportStamp(now = new Date()) {
  */
 export async function exportAllProjects({ stateManager, eventBus, i18n, notify }) {
   const json = await stateManager.exportAllJSON();
-  downloadJSON(json, `dmaic-io_alle_projekte_${exportStamp()}.json`);
+  downloadJSON(json, `qprovement_alle_projekte_${exportStamp()}.json`);
   eventBus.emit('project:exported');
   notify?.(i18n.t('app.export'), 'success', 'status.ok');
 }

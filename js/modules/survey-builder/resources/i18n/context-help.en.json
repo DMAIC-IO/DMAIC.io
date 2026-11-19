@@ -311,10 +311,10 @@
       }
     },
     "importResponse": {
-      "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.",
+      "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one is rejected with a notification.",
       "params": {
         "json": "The content of the answer file as text.",
-        "fileName": "The name shown in the log.",
+        "fileName": "The file name shown in the notification.",
         "command": "The command as one object with json and fileName."
       }
     },
@@ -452,9 +452,6 @@
     },
     "conditionDraft": {
       "help": "The draft of a new condition for the selected section or question: source and options. setConditions takes it over. A pure view; it is not saved."
-    },
-    "importLog": {
-      "help": "The log of the answer files read in this session: per file the name, whether it was taken in or rejected, and the notes on it. A pure view; it is not saved."
     },
     "expandedResponses": {
       "help": "The ids of the responses whose details are expanded. A pure view; it is not saved."

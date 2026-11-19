@@ -219,7 +219,7 @@ export function createDialogService({ i18n }) {
    * promise stays pending, and the error is not caught here — it surfaces as
    * an uncaught error in the console. Catch inside the callback to recover.
    * @param {{ title: string, content: Node, size?: string, confirmLabel?: string,
-   *   cancelLabel?: string, hideConfirm?: boolean, deleteLabel?: string,
+   *   cancelLabel?: string, hideConfirm?: boolean, deleteLabel?: string, deleteAsks?: boolean,
    *   onMount?: (body: HTMLElement, api: {confirm: Function, cancel: Function}) => void,
    *   onConfirm?: (body: HTMLElement) => (boolean|void),
    *   onDelete?: (body: HTMLElement) => (boolean|void),

@@ -2,14 +2,16 @@
  * D.Mike — Survey builder: view part "responses" (viewmodel/responses.js)
  *
  * The upper part of the results tab: reading answer files and the list of
- * responses. Files come through `x-file-drop` (picker or drop, several at
- * once); each runs the model command `importResponse`. Every import of
- * this instance — from the interface or from an agent — gets a line in the
- * import log of this session (UI state): read in, older version, read
- * before, foreign or no answer file, with the notes on an unknown recipient
- * and on answers to questions that are gone. The line is written when the
- * command has run; a file whose command did not run counts as no answer
- * file and is logged by the interface itself.
+ * responses. „Antworten einlesen“ in the action bar shows the results tab
+ * and opens the file picker (`x-file-drop` on a hidden element, several
+ * files at once); each file runs the model command `importResponse`.
+ * Feedback goes out as toasts only, the files taken in show up in the list:
+ * after every import of this instance — from the interface or from an agent
+ * — a file read before, a foreign or no answer file gets a toast, and so
+ * does a file taken in with a caveat (older version, unknown recipient,
+ * answers to questions that are gone). A pick from the interface ends with
+ * one toast that counts the files taken in. A file whose command did not
+ * run counts as no answer file.
  *
  * One response at a time folds open (`state.expandedResponses`); deleting
  * one asks first (the command's `confirm`). After every `removeResponse` of
@@ -21,16 +23,15 @@ import { documentOrder, isVisible } from '../domain/conditions.js';
 import { legacyAnswers } from '../domain/answers.js';
 import { formatAnswer } from '../domain/stats.js';
 import { formatDateTime, localeOf, questionLabel, recipientName, KANO_CATEGORIES } from '../domain/labels.js';
-import { uid } from '../../../core/uid.js';
 
 /**
  * @typedef {import('../domain/model.types.js').SurveyModelFields['responses'][number]} Response
- * @typedef {import('./state.types.js').UiState['importLog'][number]} LogEntry
+ * @typedef {'ok'|'older'|'duplicate'|'foreign'|'invalid'} ImportStatus
  */
 
-/** Text key per import status. */
+/** Text key per import status that needs a toast. @type {Record<string, string>} */
 const IMPORT_LABELS = {
-  ok: 'importOk', older: 'importOlder', duplicate: 'importDuplicate', foreign: 'importForeign', invalid: 'importInvalid',
+  older: 'importOlder', duplicate: 'importDuplicate', foreign: 'importForeign', invalid: 'importInvalid',
 };
 
 /** @type {import('./state.types.js').SurveyBuilderViewFn} */
@@ -48,17 +49,16 @@ export const responsesView = (ctx) => {
     },
 
     /**
-     * After `importResponse` of this instance: its line in the import log.
-     * After `removeResponse`: close the row of the deleted response.
+     * After `importResponse` of this instance: the toast of the file, if it
+     * needs one. After `removeResponse`: close the row of the deleted response.
      * @param {{ instanceId?: string, command?: string, args?: any, result?: any }} e
      */
     afterResponsesCommand(e) {
       if (e?.instanceId !== ctx.instanceId) return;
       if (e.command === 'importResponse') {
         const res = e.result ?? {};
-        this.logImport({
-          key: uid(), name: String(e.args?.fileName ?? ''), status: res.status ?? 'invalid',
-          unknownRecipient: Boolean(res.unknownRecipient), orphans: (res.orphanIds ?? []).length,
+        this.notifyImport(String(e.args?.fileName ?? ''), {
+          status: res.status ?? 'invalid', unknownRecipient: Boolean(res.unknownRecipient), orphans: (res.orphanIds ?? []).length,
         });
         return;
       }
@@ -70,60 +70,67 @@ export const responsesView = (ctx) => {
     // ── Import ────────────────────────────────────────────────
 
     /**
-     * The files from the picker or a drop (`x-file-drop`), one after the other.
+     * Action bar „Antworten einlesen“: shows the results tab, where the
+     * answers read in appear, and opens the file picker.
+     */
+    importAnswers() {
+      // Through the tab bar (`x-set="model.tab"`), as a click on the tab.
+      /** @type {HTMLElement|null} */ (this.$root.querySelector('[data-ref="tabs"] [data-tab="results"]'))?.click();
+      /** @type {HTMLInputElement|null|undefined} */ (this.$refs.importDrop?.querySelector('input[type="file"]'))?.click();
+    },
+
+    /**
+     * The files from the picker (`x-file-drop`), one after the other; one
+     * toast at the end counts the files taken in.
      * @param {Array<{ name: string, text: () => Promise<string> }>} files
      * @returns {Promise<void>}
      */
     async importFiles(files) {
+      if (files.length === 0) return;
+      let taken = 0;
       for (const file of files) {
         let json = '';
         try { json = await file.text(); } catch { /* unreadable: no answer file */ }
-        await this.importOne(json, file.name);
+        const status = await this.importOne(json, file.name);
+        if (status === 'ok' || status === 'older') taken += 1;
       }
+      if (taken > 0) ctx.notify(this.t('importDone', { count: taken }), 'success');
     },
 
     /**
-     * One file: the command. Its line in the import log comes from
-     * `afterResponsesCommand`; a file whose command did not run is logged
-     * here as no answer file.
+     * One file: the command. Its toast comes from `afterResponsesCommand`; a
+     * file whose command did not run gets the toast of no answer file here.
      * @param {string} json @param {string} fileName
-     * @returns {Promise<void>}
+     * @returns {Promise<ImportStatus>}
      */
     async importOne(json, fileName) {
       const r = await runUiCommand(this._ui, 'importResponse', { json, fileName });
-      if (r.ok) return;
+      if (r.ok) return r.result?.status ?? 'invalid';
       if ('error' in r) {
         console.warn('[survey-builder] importResponse failed', r.error);
         ctx.notify(this.t('commandFailed'), 'error');
       }
-      this.logImport({ key: uid(), name: fileName, status: 'invalid', unknownRecipient: false, orphans: 0 });
+      this.notifyImport(fileName, { status: 'invalid', unknownRecipient: false, orphans: 0 });
+      return 'invalid';
     },
 
-    /** @param {LogEntry} entry a line of the import log, appended */
-    logImport(entry) {
-      this.state.importLog = [...this.state.importLog, entry];
-    },
-
-    /** @returns {boolean} a file was read in this session */
-    get hasImportLog() { return this.state.importLog.length > 0; },
-
-    /** @param {LogEntry} entry @returns {string} the translated status */
-    importStatusLabel(entry) { return this.t(IMPORT_LABELS[entry.status] || 'importInvalid'); },
-
-    /** @param {LogEntry} entry @returns {Record<string, boolean>} class map of the log line */
-    importStatusClass(entry) {
-      return {
-        'survey-builder__import--ok': entry.status === 'ok' || entry.status === 'older',
-        'survey-builder__import--rejected': entry.status === 'foreign' || entry.status === 'invalid',
-      };
-    },
-
-    /** @param {LogEntry} entry @returns {string} the notes of a log line, joined */
-    noteLine(entry) {
-      const notes = [];
-      if (entry.unknownRecipient) notes.push(this.t('importUnknownRecipient'));
-      if (entry.orphans > 0) notes.push(this.t('importOrphans', { count: entry.orphans }));
-      return notes.join(' · ');
+    /**
+     * The toast of one answer file: a rejected file as warning (read before)
+     * or error, a file taken in with a caveat as info, a plain one none.
+     * @param {string} fileName
+     * @param {{ status: ImportStatus, unknownRecipient: boolean, orphans: number }} entry
+     */
+    notifyImport(fileName, { status, unknownRecipient, orphans }) {
+      if (status === 'ok' || status === 'older') {
+        const notes = [];
+        if (status === 'older') notes.push(this.t(IMPORT_LABELS.older));
+        if (unknownRecipient) notes.push(this.t('importUnknownRecipient'));
+        if (orphans > 0) notes.push(this.t('importOrphans', { count: orphans }));
+        if (notes.length > 0) ctx.notify(this.t('importFileNote', { file: fileName, reason: notes.join(' · ') }), 'info');
+        return;
+      }
+      const reason = this.t(IMPORT_LABELS[status] || IMPORT_LABELS.invalid);
+      ctx.notify(this.t('importFileNote', { file: fileName, reason }), status === 'duplicate' ? 'warning' : 'error');
     },
 
     // ── List ──────────────────────────────────────────────────

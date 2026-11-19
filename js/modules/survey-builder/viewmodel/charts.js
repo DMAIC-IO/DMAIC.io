@@ -127,6 +127,13 @@ export const chartsView = () => ({
   /** @param {{ key: string }} b block @returns {ChartCell[]} the cells of one question block */
   questionCharts(b) { return this.chartsAt(`q:${b.key}`); },
 
+  /**
+   * Table and chart side by side — only where a chart is drawn.
+   * @param {ChartCell[]} cells the cells of one place
+   * @returns {Record<string, boolean>} class map of the block body
+   */
+  sideClass(cells) { return { 'survey-builder__block-body--side': cells.length > 0 }; },
+
   /** @param {ChartCell} cell @param {'bar'|'scatter'} kind @returns {boolean} */
   cellIs(cell, kind) { return cell.kind === kind; },
 });

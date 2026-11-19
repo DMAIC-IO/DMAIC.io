@@ -50,6 +50,11 @@ suite('buildDialogState', () => {
     assertTrue(buildDialogState('form', { title: 'F', onDelete: () => {} }, t).hasDelete);
   });
 
+  test('form: the delete button goes through the generic confirmation unless onDelete asks itself', () => {
+    assertEqual(buildDialogState('form', { title: 'F', onDelete: () => {} }, t).deleteConfirm, '');
+    assertEqual(buildDialogState('form', { title: 'F', onDelete: () => {}, deleteAsks: true }, t).deleteConfirm, 'off');
+  });
+
   test('form: hideConfirm drops only the confirm button', () => {
     const s = buildDialogState('form', { title: 'F', hideConfirm: true }, t);
     assertTrue(!s.hasConfirm && s.hasCancel && s.hasFooter);
