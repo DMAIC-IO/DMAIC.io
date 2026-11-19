@@ -1,10 +1,11 @@
 /**
  * Widget datagrid — Raster über `table()` (P7); fehlt `x-widget-table`, wirft das
- * Widget `datagrid: x-widget-table is required`. GridView (Zeichnen, virtualisiert) und GridInput (Bedienung)
- * über der `TableData` des Models. Das Widget ändert nie selbst Daten: jede
- * Bedienung meldet eine Rolle, das Widget ruft `command(config.commands[role],
- * { ...config.commandArgs, ...args })`. Fehlt die Rolle in `commands`, ist ihr
- * Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke. Die Ansichtsereignisse `contextMenu { id, columnId, row }` und
+ * Widget `datagrid: x-widget-table is required`. GridView (Zeichnen,
+ * virtualisiert) und GridInput (Bedienung) über der `TableData` des Models.
+ * Das Widget ändert nie selbst Daten: jede Bedienung meldet eine Rolle, das
+ * Widget ruft `command(config.commands[role], { ...config.commandArgs, ...args })`.
+ * Fehlt die Rolle in `commands`, ist ihr Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke. Die
+ * Ansichtsereignisse `contextMenu { id, columnId, row }` und
  * `openFormulaEditor { columnId, row }` sind keine Datenrollen; sie gehen an
  * `config.commands.contextMenu` bzw. `.openFormulaEditor`, falls hinterlegt.
  *

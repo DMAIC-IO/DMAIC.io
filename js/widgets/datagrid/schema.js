@@ -1,6 +1,6 @@
 /**
- * Tabelle aus dem Model eines Moduls über `table()` (P7, F1.14): `table` ist die `TableData` des Models
- * (nur Art und Identität geprüft, kein Kopieren), `columns` die Spaltenköpfe in
+ * Tabelle aus dem Model eines Moduls über `table()` (P7, F1.14): `table` ist
+ * die `TableData` des Models (nur Art und Identität geprüft, kein Kopieren), `columns` die Spaltenköpfe in
  * Model-Form (Sperre in `meta.lock/reason/managedBy`), `formulas` die Formeln
  * je Spalten-Id und Zeile, `rev` der Zähler `model.$tableRev`. `config` trägt
  * `readOnly`, `features`, `commands` (Rolle → Kommando des Moduls; fehlt eine

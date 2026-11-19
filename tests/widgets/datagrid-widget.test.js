@@ -2,8 +2,8 @@
  * Widget datagrid über `table()` (P7): Ansicht und Bedienung des Rasters an
  * einem Model mit `TableData`. Eingaben gehen als Kommandos (Rolle →
  * `config.commands`, `config.commandArgs` eingemischt) hinaus, das Widget
- * zeichnet nach `$tableRev` neu und ändert nie selbst Daten. Mit `config.rows`
- * läuft der Altweg.
+ * zeichnet nach `$tableRev` neu und ändert nie selbst Daten. Die Altform
+ * `config.rows` ist entfernt und wirft.
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
@@ -134,6 +134,7 @@ async function host(opts = {}) {
         };
       },
       get legacy() {
+        return { rows: [['1'], ['2']], columns: [{ key: 'a', name: 'A', type: 'numeric', lock: null, format: null }], readOnly: false, contextMenu: [] };
       },
     };
     Object.defineProperty(comp, '_ui', {
@@ -320,8 +321,11 @@ suite('datagrid widget über table()', () => {
   });
 
   test('Altform config.rows wirft: Schema lehnt die Eingabe ab, kein Raster', async () => {
-    const { el, warnings } = await host({ warnings: true, attrs: 'x-widget-config="legacy"' });
-    assertTrue(warnings.some((w) => w.includes('invalid datagrid.config')), `Warnung: ${warnings.join(' | ')}`);
+    const { el, warnings } = await host({
+      warnings: true,
+      attrs: 'x-widget-table="model.data" x-widget-columns="cols" x-widget-formulas="formulas" x-widget-rev="model.$tableRev" x-widget-config="legacy"',
+    });
+    assertTrue(warnings.some((w) => w.includes('unknown datagrid.config key "rows"')), `Warnung: ${warnings.join(' | ')}`);
     assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
     assertEqual(el.querySelectorAll('.datagrid__table').length, 0, 'kein Raster');
   });
