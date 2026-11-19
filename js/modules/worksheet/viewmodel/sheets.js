@@ -144,6 +144,31 @@ export function sheetsView(ctx) {
       return m ? `left:${m.x}px;top:${m.y}px` : '';
     },
 
+    /**
+     * @noagent Legt das offene Reitermenü in den sichtbaren Bereich des
+     * Moduls. Die Reiter sitzen unten: ragt das Menü unter den Rand, klappt es
+     * über den Mauspunkt. `position: fixed` bezieht sich hier nicht auf das
+     * Fenster (der Arbeitsbereich hat `contain: layout paint` und schneidet ab),
+     * daher wird der Versatz des umgebenden Blocks gemessen und abgezogen.
+     * Läuft einmal je Öffnen (`x-init` im `x-if`).
+     * @param {HTMLElement} el das Menü
+     */
+    placeTabMenu(el) {
+      requestAnimationFrame(() => {
+        const m = this.state.tabMenu;
+        if (!m) return;
+        const r = el.getBoundingClientRect();
+        const area = (el.closest('.worksheet') ?? document.documentElement).getBoundingClientRect();
+        const bottom = Math.min(area.bottom, window.innerHeight);
+        const right = Math.min(area.right, window.innerWidth);
+        const offX = r.left - m.x;
+        const offY = r.top - m.y;
+        const top = Math.max(area.top, m.y + r.height > bottom ? m.y - r.height : m.y);
+        const left = Math.max(area.left, Math.min(m.x, right - r.width));
+        this.state.tabMenu = { ...m, x: left - offX, y: top - offY };
+      });
+    },
+
     /** Ist das Kontextmenü offen? */
     get tabMenuOpen() { return this.state.tabMenu !== null; },
 

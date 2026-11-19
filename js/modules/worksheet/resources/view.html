@@ -108,7 +108,7 @@
 
   <!-- ═══ Kontextmenü eines Reiters ═══ -->
   <template x-if="tabMenuOpen">
-    <div class="context-menu worksheet__tab-menu" role="menu" :style="tabMenuStyle">
+    <div class="context-menu worksheet__tab-menu" role="menu" :style="tabMenuStyle" x-init="placeTabMenu($el)">
       <div class="context-menu__item" role="menuitem" data-menu-id="rename" @click="tabMenuRename()">
         <span x-text="t('renameSheet')"></span>
       </div>
