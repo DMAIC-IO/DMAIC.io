@@ -178,6 +178,51 @@ suite('triz-function-analysis: Viewmodel im Browser', () => {
     assertEqual(container.querySelectorAll('[data-role="component"]').length, 7);
   });
 
+  test('newComponent(target) bei vorhandenem Ziel: still, Model unverändert', async () => {
+    const { vm, notes } = await mount(await toothbrush());
+    const before = JSON.stringify(vm().model.components);
+    await vm().newComponent('target');
+    assertDeepEqual(notes, []);
+    assertEqual(JSON.stringify(vm().model.components), before);
+  });
+
+  test('Klick auf einen Nachteil schaltet um, Klick auf eine Karte nicht', async () => {
+    const { vm, $ } = await mount(await toothbrush());
+    const dis = /** @type {HTMLElement} */ ($('[data-role="disadvantage"]'));
+    const id = dis.dataset.id;
+    dis.click();
+    await settle();
+    assertEqual(vm().state.selectedId, id);
+    dis.click();
+    await settle();
+    assertEqual(vm().state.selectedId, null);
+    const card = /** @type {HTMLElement} */ ($(`[data-role="function"][data-id="${id}"]`));
+    card.click();
+    await settle();
+    card.click();
+    await settle();
+    assertEqual(vm().state.selectedId, id);
+  });
+
+  test('Löschen des Gewählten hebt die Auswahl auf, auch mitgelöscht', async () => {
+    const { vm } = await mount(await toothbrush());
+    const fn = vm().model.functions.find((f) => f.carrier === 'c-griff');
+    vm().select({ id: fn.id });
+    vm().model.removeFunction({ id: fn.id });
+    await settle();
+    assertEqual(vm().state.selectedId, null);
+    vm().select({ id: 'c-hand' });
+    const viaCascade = vm().model.functions.find((f) => f.carrier === 'c-hand');
+    vm().select({ id: viaCascade.id, toggle: false });
+    vm().model.removeComponent({ id: 'c-hand' });
+    await settle();
+    assertEqual(vm().state.selectedId, null);
+    vm().select({ id: 'c-griff' });
+    vm().model.swapDirection({ id: vm().model.functions[0].id });
+    await settle();
+    assertEqual(vm().state.selectedId, 'c-griff', 'andere Kommandos lassen die Auswahl stehen');
+  });
+
   test('exports.image ohne Komponenten liefert null', async () => {
     const { vm } = await mount();
     assertEqual(vm()._ui.exports.image.call(vm()), null);

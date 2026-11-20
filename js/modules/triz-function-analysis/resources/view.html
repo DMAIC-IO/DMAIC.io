@@ -192,7 +192,7 @@
             <h4 class="tfa__dis-title" x-text="g.title"></h4>
             <ul class="tfa__dis-list">
               <template x-for="d in g.items" :key="d.functionId">
-                <li class="tfa__dis" data-role="disadvantage" :data-id="d.functionId" x-command="select" :data-arg-id="d.functionId" data-arg-toggle="false" data-help-key="">
+                <li class="tfa__dis" data-role="disadvantage" :data-id="d.functionId" x-command="select" :data-arg-id="d.functionId" data-help-key="">
                   <span x-text="d.carrier"></span> <strong x-text="d.verb"></strong> <span x-text="d.object"></span><span class="tfa__dis-param" x-text="paramText(d)"></span>
                 </li>
               </template>

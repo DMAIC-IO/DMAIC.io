@@ -103,7 +103,20 @@ export default createModule({
       ctx.notify(t('commandFailed'), 'error');
     };
 
+    /** @type {((e: { instanceId?: string }) => void)|null} */
+    let onCommand = null;
+
     return {
+      init() {
+        // Wie im Altmodul: verschwindet das Gewählte (Löschen, auch mitgelöscht), endet die Auswahl.
+        onCommand = (e) => { if (e?.instanceId === ctx.instanceId) this.dropStaleSelection(); };
+        ctx.eventBus?.on?.('command:executed', onCommand);
+      },
+      destroy() {
+        if (onCommand) ctx.eventBus?.off?.('command:executed', onCommand);
+        onCommand = null;
+      },
+
       get TABS() { return TABS; },
       get GROUPS() { return GROUPS; },
 
@@ -218,6 +231,13 @@ export default createModule({
       inGroup(c, kind) { return c.kind === kind; },
       /** Die Gruppe Zielobjekt bietet kein zweites Ziel an. @param {string} kind @returns {boolean} */
       canAdd(kind) { return kind !== 'target' || !this.model.components.some((c) => c.kind === 'target'); },
+      /** Eine Auswahl auf eine nicht mehr vorhandene Komponente oder Funktion aufheben. */
+      dropStaleSelection() {
+        const id = this.state.selectedId;
+        if (id === null) return;
+        const known = this.model.components.some((c) => c.id === id) || this.model.functions.some((f) => f.id === id);
+        if (!known) this.state.selectedId = null;
+      },
       /** @param {Component} c @returns {boolean} */
       isSystem(c) { return c.kind === 'system'; },
 
@@ -227,6 +247,8 @@ export default createModule({
        * @returns {Promise<void>}
        */
       async newComponent(kind) {
+        // Enter in der Zielzeile: es gibt schon ein Ziel, die Oberfläche legt keines an.
+        if (!this.canAdd(kind)) return;
         const r = await runUiCommand(this._ui, 'addComponent', { kind });
         if (!r.ok) {
           if ('error' in r) fail('addComponent', r.error, this.t);
@@ -264,11 +286,7 @@ export default createModule({
       async discardIfEmpty(c) {
         if (c.name.trim() || !this.model.components.some((x) => x.id === c.id)) return;
         const r = await runUiCommand(this._ui, 'discardComponentIfEmpty', { id: c.id });
-        if (!r.ok) {
-          if ('error' in r) fail('discardComponentIfEmpty', r.error, this.t);
-          return;
-        }
-        if (r.result && this.state.selectedId === c.id) this.state.selectedId = null;
+        if (!r.ok && 'error' in r) fail('discardComponentIfEmpty', r.error, this.t);
       },
 
       // ── Interaktionsmatrix ──
