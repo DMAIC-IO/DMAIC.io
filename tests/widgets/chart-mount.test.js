@@ -225,9 +225,44 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     a.root.remove();
     const sm2 = fakeState({ title: 'Alt' });
     const b = await host(tpl, { cm: fakeManager(), sm: sm2, model: { chartEdits: { showLegend: false } } });
-    assertEqual(sm2.log.reads.length, 0);
-    assertEqual(sm2.log.cleared.length, 0);
+    assertDeepEqual(JSON.parse(JSON.stringify(b.data.model.chartEdits)), { title: 'Alt', showLegend: false });
+    assertEqual(sm2.log.cleared.length, 1);
     b.root.remove();
+  });
+
+  test('Übernahme alter chartEdits: Feld gewinnt, Alteintrag wird gelöscht', async () => {
+    const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
+    const sm = fakeState({ title: 'X', showYTicks: true });
+    const a = await host(tpl, { cm: fakeManager(), sm, model: { chartEdits: { title: 'Y' } } });
+    assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { title: 'Y', showYTicks: true });
+    assertEqual(sm.log.cleared.length, 2);
+    assertTrue(sm.log.cleared.every((c) => c[3] === null));
+    a.root.remove();
+    const sm2 = fakeState({ title: 'X' });
+    const b = await host(tpl, { cm: fakeManager(), sm: sm2, model: { chartEdits: { title: 'Y' } } });
+    assertDeepEqual(JSON.parse(JSON.stringify(b.data.model.chartEdits)), { title: 'Y' });
+    assertEqual(sm2.log.cleared.length, 1);
+    b.root.remove();
+  });
+
+  test('Übernahme alter chartEdits: Feldwerte mit Reihen bleiben unverändert', async () => {
+    const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
+    const sm = fakeState({ title: 'X' });
+    const series = [{ name: 'A', fillColor: 'red' }];
+    const a = await host(tpl, { cm: fakeManager(), sm, model: { chartEdits: { series } } });
+    assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { series, title: 'X' });
+    a.root.remove();
+  });
+
+  test('Übernahme alter chartEdits: ohne Alteintrag kein Schreiben', async () => {
+    const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
+    for (const old of [null, {}]) {
+      const sm = fakeState(old);
+      const a = await host(tpl, { cm: fakeManager(), sm, model: { chartEdits: { title: 'Y' } } });
+      assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { title: 'Y' });
+      assertEqual(sm.log.cleared.length, 0);
+      a.root.remove();
+    }
   });
 
   test('Regelkarte: Grenzen als Zahl, Indizes als Set', async () => {

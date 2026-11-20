@@ -192,18 +192,20 @@ function resetToDefaults(chart, patch, keys, cfg) {
 }
 
 /**
- * Einen Eintrag aus `chartEdits` der Projektebene einmalig übernehmen, wenn
- * das Feld noch leer ist, und ihn danach dort entfernen.
+ * Einen Eintrag aus `chartEdits` der Projektebene feldweise übernehmen — Werte
+ * im Feld gewinnen, nur fehlende Schlüssel kommen aus dem Alteintrag — und ihn
+ * danach dort entfernen.
  * @param {any} props @param {any} value @param {any} services @param {{ base: readonly string[] }} editable
  * @returns {void}
  */
 function adoptLegacy(props, value, services, editable) {
   const key = props.legacyEditKey;
   const sm = services.stateManager;
-  if (!value || !key || !sm?.getChartEdits || Object.keys(value.get() ?? {}).length > 0) return;
+  if (!value || !key || !sm?.getChartEdits) return;
   const old = sm.getChartEdits(services.instanceId, key);
   if (!old || Object.keys(old).length === 0) return;
   const picked = Object.fromEntries(Object.entries(old).filter(([k]) => editable.base.includes(k)));
-  if (!value.set(picked)) return;
+  const current = value.get() ?? {};
+  if (!value.set({ ...picked, ...current })) return;
   for (const k of Object.keys(old)) sm.setChartEdit(services.instanceId, key, k, null);
 }
