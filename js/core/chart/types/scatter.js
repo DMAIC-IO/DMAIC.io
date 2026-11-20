@@ -383,6 +383,7 @@ export default class ScatterChart extends ChartBase {
    */
   _buildTypeEditor(inner, t, onUpdate, onChange) {
     this._closeConnectLinePicker();
+    this._connectLineSwatches = [];
     if (!this.config.editConnectLine) return;
     const series = this.config.series || [];
     const chartColors = getChartColors();
@@ -425,6 +426,7 @@ export default class ScatterChart extends ChartBase {
         this._connectLinePicker = picker;
       });
       detail.appendChild(colorRow);
+      this._connectLineSwatches.push({ swatch, color: lineColor });
 
       detail.appendChild(edSelectRow(t('lineStyle'), dashes, cur().dash || 'solid', (v) => write({ dash: v })));
 
@@ -432,9 +434,22 @@ export default class ScatterChart extends ChartBase {
     });
   }
 
+  /**
+   * Re-render, then sync the connecting-line swatches: a line without its own
+   * colour follows the series colour, which the base editor may just have changed.
+   * @override
+   */
+  render() {
+    super.render();
+    (this._connectLineSwatches || []).forEach(({ swatch, color }) => {
+      swatch.style.background = color();
+    });
+  }
+
   /** @override */
   destroy() {
     this._closeConnectLinePicker();
+    this._connectLineSwatches = [];
     super.destroy();
   }
 

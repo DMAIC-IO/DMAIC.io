@@ -123,6 +123,11 @@ suite('Scatter type — connecting line editor', () => {
     assertEqual(m.host.querySelector('svg polyline').getAttribute('stroke'), color);
     assertTrue(!('color' in m.chart.config.series[0].connectLine), 'no connectLine.color');
     assertTrue(color.includes('255'), `new colour applied (${color})`);
+    // The line row's swatch (no own colour) shows the new series colour too.
+    const probe = document.createElement('div');
+    probe.style.background = color;
+    const lineSwatch = sections(m.inner)[0].querySelector('.dmike-chart-ed-color-swatch');
+    assertEqual(lineSwatch.style.background, probe.style.background);
     done(m);
   });
 
