@@ -3,16 +3,20 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import { State } from '../../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, autoLayout, resolvePositions, buildFunctionDiagram,
 } from '../../../js/modules/triz-function-analysis/domain/diagram.js';
 
+/**
+ * Plain module data with every list present (the diagram functions read only data).
+ * @param {object} d @returns {object}
+ */
+const data = (d) => ({ components: [], interactions: [], exclusions: [], functions: [], positions: {}, labels: {}, ...d });
 const comp = (id, kind) => ({ id, name: id.toUpperCase(), kind, note: '' });
 
 /** Two boxes side by side: a (system) at (0,0), b (target) at (220,0). */
 function pair(functions) {
-  return State.fromJSON({
+  return data({
     components: [comp('a', 'system'), comp('b', 'target')],
     functions,
     positions: { a: { x: 0, y: 0 }, b: { x: 220, y: 0 } },
@@ -46,12 +50,12 @@ suite('triz-function-analysis — autoLayout', () => {
   });
 
   test('resolvePositions: stored positions win, others get their auto slot', () => {
-    const s = State.fromJSON({ components: [comp('t', 'target'), comp('s1', 'system')], positions: { t: { x: 5, y: 7 } } });
+    const s = data({ components: [comp('t', 'target'), comp('s1', 'system')], positions: { t: { x: 5, y: 7 } } });
     assertDeepEqual(resolvePositions(s), { t: { x: 5, y: 7 }, s1: { x: 0, y: 84 } });
   });
 
   test('resolvePositions orders by interactions and functions', () => {
-    const s = State.fromJSON({
+    const s = data({
       components: [comp('t', 'target'), comp('near', 'system'), comp('far', 'system')],
       interactions: [{ a: 'far', b: 'near' }],
       functions: [fnc('f', 'near', 't')],
@@ -146,7 +150,7 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
   });
 
   test('long names are shortened in the export boxes', () => {
-    const s = State.fromJSON({ components: [{ id: 'x', name: 'Ein sehr langer Komponentenname', kind: 'system' }] });
+    const s = data({ components: [{ id: 'x', name: 'Ein sehr langer Komponentenname', kind: 'system' }] });
     const text = buildFunctionDiagram(s).nodes[0].lines[0].text;
     assertTrue(text.length <= 20 && text.endsWith('…'), text);
   });

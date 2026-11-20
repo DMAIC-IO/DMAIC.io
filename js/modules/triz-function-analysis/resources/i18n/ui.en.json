@@ -19,5 +19,99 @@
   },
   "announce": {
     "move": "\"{name}\" moved to ({x}, {y})"
-  }
+  },
+  "tab": {
+    "components": "Components",
+    "interactions": "Interactions",
+    "model": "Function model",
+    "valueCost": "Value & Cost"
+  },
+  "group": {
+    "target": "Target",
+    "system": "System components",
+    "supersystem": "Supersystem elements"
+  },
+  "kind": {
+    "target": "Target",
+    "system": "System component",
+    "supersystem": "Supersystem"
+  },
+  "col": {
+    "name": "Name",
+    "note": "Note",
+    "cost": "Cost",
+    "kind": "Kind"
+  },
+  "namePlaceholder": "Name",
+  "notePlaceholder": "Note",
+  "costPlaceholder": "Cost",
+  "costUnit": "€",
+  "vc": {
+    "component": "Component",
+    "value": "Value",
+    "normValue": "Norm. value",
+    "cost": "Cost",
+    "normCost": "Norm. cost",
+    "axisValue": "Function value (normalised)",
+    "axisCost": "Cost (normalised)",
+    "emptyComponents": "Add system components in the Components tab.",
+    "emptyCosts": "Enter costs for the system components in the Components tab."
+  },
+  "addComponent": "Add",
+  "removeComponent": "Delete component",
+  "unnamed": "(unnamed)",
+  "targetDemoted": "\"{name}\" is now a system component – there is only one target.",
+  "matrixCorner": "Interacts with",
+  "matrixEmpty": "Add at least two components on the \"Components\" tab.",
+  "matrixSummary": "{count} interactions, {open} without a function",
+  "pairLocked": "Used by {count} function(s) – delete those functions first.",
+  "pairExcluded": "Explicitly excluded – no interaction",
+  "openPairs": "Open pairs",
+  "noOpenPairs": "No open pairs.",
+  "functions": "Functions",
+  "noFunctions": "No functions yet. Click an open pair.",
+  "verb": "Function (verb)",
+  "verbPlaceholder": "e.g. removes",
+  "verbMissing": "(no verb)",
+  "parameter": "Parameter",
+  "parameterPlaceholder": "e.g. plaque",
+  "type": {
+    "useful": "useful",
+    "harmful": "harmful"
+  },
+  "level": {
+    "adequate": "adequate",
+    "insufficient": "insufficient",
+    "excessive": "excessive"
+  },
+  "rank": {
+    "basic": "Basic function",
+    "additional": "Additional function",
+    "auxiliary": "Auxiliary function"
+  },
+  "rankCode": {
+    "basic": "B",
+    "additional": "Ad",
+    "auxiliary": "A{level}"
+  },
+  "swapDirection": "Reverse direction",
+  "addOnPair": "Add another arrow on this pair",
+  "removeFunction": "Delete function",
+  "resetLayout": "Reset layout",
+  "showRanks": "Show function ranks",
+  "diagramEmpty": "No components yet.",
+  "legend": {
+    "solid": "useful, adequate",
+    "dashed": "insufficient",
+    "bold": "excessive",
+    "wave": "harmful"
+  },
+  "disadvantages": "Disadvantages",
+  "noDisadvantages": "No disadvantages – all functions are useful and adequate.",
+  "disadvantage": {
+    "harmful": "Harmful functions",
+    "insufficient": "Insufficient functions",
+    "excessive": "Excessive functions"
+  },
+  "commandFailed": "The change was not applied."
 }

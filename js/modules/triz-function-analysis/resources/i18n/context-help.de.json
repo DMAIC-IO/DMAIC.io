@@ -1,0 +1,254 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "components": {
+      "help": "Die Komponenten mit id, name, kind (target, system, supersystem), note und cost in Euro oder null. Es gibt höchstens ein Zielobjekt.",
+      "id": {
+        "help": "Die id der Komponente."
+      },
+      "name": {
+        "help": "Der Name der Komponente."
+      },
+      "kind": {
+        "help": "Die Art: target (Zielobjekt), system (Systemkomponente) oder supersystem (Supersystem-Element)."
+      },
+      "note": {
+        "help": "Eine freie Notiz zur Komponente."
+      },
+      "cost": {
+        "help": "Die Kosten in Euro für die Wert-Kosten-Analyse, mindestens 0; leer ohne Kosten. Nur bei Systemkomponenten eingebbar."
+      }
+    },
+    "interactions": {
+      "help": "Die angekreuzten Komponentenpaare a, b (ungeordnet): diese Komponenten interagieren.",
+      "a": {
+        "help": "Die id der einen Komponente (die kleinere der beiden)."
+      },
+      "b": {
+        "help": "Die id der anderen Komponente."
+      }
+    },
+    "exclusions": {
+      "help": "Die Paare a, b, die ausdrücklich nicht interagieren.",
+      "a": {
+        "help": "Die id der einen Komponente (die kleinere der beiden)."
+      },
+      "b": {
+        "help": "Die id der anderen Komponente."
+      }
+    },
+    "functions": {
+      "help": "Die gerichteten Funktionen mit id, carrier (Träger), verb, object, parameter, type (useful, harmful), level (adequate, insufficient, excessive; leer bei schädlichen) und note.",
+      "id": {
+        "help": "Die id der Funktion."
+      },
+      "carrier": {
+        "help": "Die id der Komponente, die die Funktion ausübt."
+      },
+      "verb": {
+        "help": "Das Verb der Funktion, z. B. „entfernt“."
+      },
+      "object": {
+        "help": "Die id der Komponente, auf die die Funktion wirkt."
+      },
+      "parameter": {
+        "help": "Der Parameter des Objekts, den die Funktion verändert, z. B. „Belag“."
+      },
+      "type": {
+        "help": "useful (nützlich) oder harmful (schädlich)."
+      },
+      "level": {
+        "help": "Wie gut eine nützliche Funktion erfüllt wird: adequate, insufficient oder excessive; null bei schädlichen."
+      },
+      "note": {
+        "help": "Eine freie Notiz zur Funktion."
+      }
+    },
+    "positions": {
+      "help": "Von Hand verschobene Kastenpositionen x, y je Komponenten-id; fehlt eine id, steht der Kasten auf seinem automatischen Platz."
+    },
+    "labels": {
+      "help": "Von Hand verschobene Pfeilbeschriftungen x, y je Funktions-id; der Pfeil knickt dort."
+    },
+    "showRanks": {
+      "help": "Ob das Funktionsmodell die Rangkennzeichen an den Verben zeigt."
+    },
+    "openPairs": {
+      "help": "Angekreuzte Paare a, b, die noch keine Funktion nutzt — die nächsten Kandidaten für addFunction."
+    },
+    "ranks": {
+      "help": "Abgeleiteter Rang jeder vollständigen nützlichen Funktion: basic (wirkt auf das Zielobjekt), additional (auf ein Supersystem-Element) oder auxiliary (auf eine Systemkomponente), bei auxiliary mit level als kürzestem Abstand zu einer Basis- oder Zusatzfunktion."
+    },
+    "disadvantages": {
+      "help": "Die funktionalen Nachteile: jede schädliche, unzureichende oder übermäßige Funktion mit Träger- und Objektnamen, Verb, Parameter und kind."
+    },
+    "valueCost": {
+      "help": "Je Systemkomponente Funktionswert und Kosten, beide auf 0 bis 10 normiert. Oben links im Diagramm (hoher Preis, wenig Wert) stehen die Trimmkandidaten."
+    },
+    "activeTab": {
+      "help": "Der geöffnete Reiter: components, interactions, model oder valueCost."
+    },
+    "matrixComponents": {
+      "help": "Die Komponenten in der Reihenfolge der Interaktionsmatrix: Zielobjekt, Systemkomponenten, Supersystem-Elemente. Nur Ansicht."
+    },
+    "placed": {
+      "help": "Die Lage jedes Kastens im Funktionsmodell: von Hand verschoben oder auf dem automatischen Platz. Nur Ansicht."
+    },
+    "diagram": {
+      "help": "Die Zeichnung des Funktionsmodells: Umrisse der Kästen, Pfeile und Verbbeschriftungen. Nur Ansicht."
+    },
+    "valueCostChart": {
+      "help": "Das Diagramm Wert & Kosten: normierter Funktionswert gegen normierte Kosten je Systemkomponente mit Kosten. Nur Ansicht."
+    },
+    "vcRows": {
+      "help": "Die Zeilen der Tabelle Wert & Kosten im Zahlenformat der App-Sprache. Nur Ansicht."
+    },
+    "openPairChips": {
+      "help": "Die offenen Paare als Knöpfe; ein Klick legt eine Funktion an. Nur Ansicht."
+    },
+    "pairBlocks": {
+      "help": "Die Funktionen je Komponentenpaar, beide Richtungen in einem Block. Nur Ansicht."
+    },
+    "disadvantageGroups": {
+      "help": "Die Nachteile nach Art gruppiert: schädlich, unzureichend, übermäßig. Nur Ansicht."
+    }
+  },
+  "actions": {
+    "addComponent": {
+      "help": "Legt eine Komponente an. Es gibt genau ein Zielobjekt; ist schon eines da, wird ein weiteres abgelehnt.",
+      "params": {
+        "kind": "target (Zielobjekt), system (Systemkomponente) oder supersystem (Supersystem-Element).",
+        "name": "Der Name der Komponente, leer erlaubt.",
+        "command": "Das Kommando als ein Objekt mit kind und name."
+      }
+    },
+    "setComponentKind": {
+      "help": "Ändert die Art einer Komponente. Wird sie zum Zielobjekt, wird das bisherige Zielobjekt zur Systemkomponente.",
+      "params": {
+        "id": "Die id der Komponente aus components.",
+        "kind": "target, system oder supersystem.",
+        "command": "Das Kommando als ein Objekt mit id und kind."
+      }
+    },
+    "removeComponent": {
+      "help": "Löscht eine Komponente samt ihrer Interaktionen und Funktionen.",
+      "params": {
+        "id": "Die id der Komponente aus components.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "setPairState": {
+      "help": "Legt fest, ob zwei Komponenten interagieren. Ein angekreuztes Paar, das Funktionen nutzen, bleibt angekreuzt; die Änderung wird abgelehnt.",
+      "params": {
+        "a": "Die id der ersten Komponente.",
+        "b": "Die id der zweiten Komponente; die Reihenfolge spielt keine Rolle.",
+        "state": "ticked (interagieren), excluded (ausdrücklich keine Interaktion) oder none (noch nicht bewertet).",
+        "command": "Das Kommando als ein Objekt mit a, b und state."
+      }
+    },
+    "addFunction": {
+      "help": "Legt eine Funktion Träger → Objekt an, nützlich und ausreichend, noch ohne Verb. Das Paar wird in der Matrix angekreuzt.",
+      "params": {
+        "carrier": "Die id der Komponente, die die Funktion ausübt.",
+        "object": "Die id der Komponente, auf die sie wirkt.",
+        "command": "Das Kommando als ein Objekt mit carrier und object."
+      }
+    },
+    "setFunctionType": {
+      "help": "Markiert eine Funktion als nützlich oder schädlich. Schädlich löscht die Stufe, nützlich setzt sie auf ausreichend.",
+      "params": {
+        "id": "Die id der Funktion aus functions.",
+        "type": "useful oder harmful.",
+        "command": "Das Kommando als ein Objekt mit id und type."
+      }
+    },
+    "setFunctionLevel": {
+      "help": "Setzt, wie gut eine nützliche Funktion erfüllt wird. Bei einer schädlichen Funktion wird die Änderung abgelehnt.",
+      "params": {
+        "id": "Die id der Funktion aus functions.",
+        "level": "adequate (ausreichend), insufficient (unzureichend) oder excessive (übermäßig).",
+        "command": "Das Kommando als ein Objekt mit id und level."
+      }
+    },
+    "swapDirection": {
+      "help": "Vertauscht Träger und Objekt einer Funktion.",
+      "params": {
+        "id": "Die id der Funktion aus functions.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "removeFunction": {
+      "help": "Löscht eine Funktion.",
+      "params": {
+        "id": "Die id der Funktion aus functions.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "moveComponent": {
+      "help": "Setzt den Kasten einer Komponente im Funktionsmodell an eine feste Stelle.",
+      "params": {
+        "id": "Die id der Komponente aus components.",
+        "x": "Linke Kante in Pixeln, mindestens 0.",
+        "y": "Obere Kante in Pixeln, mindestens 0.",
+        "command": "Das Kommando als ein Objekt mit id, x und y."
+      }
+    },
+    "moveLabel": {
+      "help": "Setzt die Verbbeschriftung einer Funktion an eine feste Stelle; der Pfeil knickt dort.",
+      "params": {
+        "id": "Die id der Funktion aus functions.",
+        "x": "Mitte der Beschriftung in Pixeln, mindestens 0.",
+        "y": "Mitte der Beschriftung in Pixeln, mindestens 0.",
+        "command": "Das Kommando als ein Objekt mit id, x und y."
+      }
+    },
+    "resetLayout": {
+      "help": "Setzt alle Kästen auf ihren automatischen Platz zurück und begradigt alle Pfeile.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "discardComponentIfEmpty": {
+      "help": "Entfernt eine Komponente ohne Namen, die weder in einem Paar noch in einer Funktion vorkommt, und liefert true; sonst bleibt sie und es kommt false zurück.",
+      "params": {
+        "id": "Die id der Komponente aus components.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "select": {
+      "help": "Hebt eine Komponente oder Funktion im Funktionsmodell hervor; ein zweiter Klick auf denselben Kasten oder dieselbe Beschriftung hebt die Auswahl auf. Nur eine Ansicht, nicht gespeichert.",
+      "params": {
+        "id": "Die id einer Komponente oder Funktion.",
+        "toggle": "true (Vorgabe) hebt eine bestehende Auswahl derselben id auf, false wählt immer.",
+        "command": "Das Kommando als ein Objekt mit id und toggle."
+      }
+    }
+  },
+  "types": {
+    "OpenPair": {
+      "a": "Die id der einen Komponente (die kleinere der beiden).",
+      "b": "Die id der anderen Komponente."
+    },
+    "FunctionRank": {
+      "functionId": "Die id der Funktion.",
+      "rank": "basic (wirkt auf das Zielobjekt), additional (auf ein Supersystem-Element) oder auxiliary (auf eine Systemkomponente).",
+      "level": "Bei auxiliary der kürzeste Abstand zu einer Basis- oder Zusatzfunktion (1 = A₁); leer ohne Weg dorthin und bei den anderen Rängen."
+    },
+    "Disadvantage": {
+      "functionId": "Die id der Funktion.",
+      "carrier": "Der Name des Trägers.",
+      "verb": "Das Verb der Funktion.",
+      "object": "Der Name des Objekts.",
+      "parameter": "Der Parameter des Objekts, den die Funktion verändert.",
+      "kind": "harmful (schädlich), insufficient (unzureichend) oder excessive (übermäßig)."
+    },
+    "ValueCostRow": {
+      "id": "Die id der Systemkomponente.",
+      "name": "Der Name der Komponente.",
+      "value": "Funktionswert: 3 je Basis-, 2 je Zusatz- und 1 je Hilfsfunktion, die die Komponente ausübt.",
+      "normValue": "Der Funktionswert, auf 0 bis 10 normiert am größten Wert.",
+      "cost": "Die eingetragenen Kosten in Euro, oder leer.",
+      "normCost": "Die Kosten, auf 0 bis 10 normiert an den höchsten Kosten, oder leer."
+    }
+  }
+}

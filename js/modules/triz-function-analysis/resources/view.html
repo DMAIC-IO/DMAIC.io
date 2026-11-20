@@ -1,11 +1,10 @@
 <section class="module-container tfa" x-data="trizFunctionAnalysis">
   <div class="module-container__body tfa__body">
 
-    <div class="dmike-tabs tfa__tabs" role="tablist" x-tablist data-help-key="modules.triz-function-analysis.actions.setTab.help">
+    <div class="dmike-tabs tfa__tabs" role="tablist" x-tablist x-set="model.activeTab" data-help-key="modules.triz-function-analysis.fields.activeTab.help">
       <template x-for="tab in TABS" :key="tab">
-        <button type="button" class="dmike-tab" role="tab" :class="tabClass(tab)"
-          :aria-selected="tab === model.activeTab ? 'true' : 'false'" :tabindex="tab === model.activeTab ? 0 : -1"
-          data-role="tab" :data-tab="tab" @click="setTab(tab)" x-text="tabLabel(tab)"></button>
+        <button type="button" class="dmike-tab" role="tab" :class="tabClass(tab)" :value="tab"
+          data-role="tab" :data-tab="tab" x-text="tabLabel(tab)"></button>
       </template>
     </div>
 
@@ -13,42 +12,43 @@
     <div class="dmike-tab-content" :class="contentClass('components')"
       data-tab-content="components" x-show="model.activeTab === 'components'">
       <div class="tfa__row tfa__row--head" x-show="model.components.length > 0">
-        <span data-help-key="modules.triz-function-analysis.actions.setComponentName.help" x-text="t('col.name')"></span>
-        <span data-help-key="modules.triz-function-analysis.actions.setComponentNote.help" x-text="t('col.note')"></span>
-        <span data-help-key="modules.triz-function-analysis.actions.setComponentCost.help" x-text="t('col.cost')"></span>
+        <span data-help-key="modules.triz-function-analysis.fields.components.name.help" x-text="t('col.name')"></span>
+        <span data-help-key="modules.triz-function-analysis.fields.components.note.help" x-text="t('col.note')"></span>
+        <span data-help-key="modules.triz-function-analysis.fields.components.cost.help" x-text="t('col.cost')"></span>
         <span data-help-key="modules.triz-function-analysis.actions.setComponentKind.help" x-text="t('col.kind')"></span>
         <span></span>
       </div>
       <template x-for="kind in GROUPS" :key="kind">
         <section class="tfa__group" :data-group="kind">
           <h3 class="tfa__group-title" x-text="groupLabel(kind)"></h3>
-          <template x-for="c in componentsOf(kind)" :key="c.id">
-            <div class="tfa__row" data-role="component" :data-id="c.id">
-              <input class="field tfa__name" type="text" data-role="component-name"
-                :value="c.name" :placeholder="t('namePlaceholder')"
-                @input="setComponentName(c.id, $event.target.value)" @keydown.enter.prevent="newComponent(kind)" @blur="discardIfEmpty(c)">
-              <input class="field tfa__note" type="text" data-role="component-note"
-                :value="c.note" :placeholder="t('notePlaceholder')" @input="setComponentNote(c.id, $event.target.value)">
-              <span class="tfa__cost">
-                <template x-if="c.kind === 'system'">
-                  <span class="tfa__cost-field">
-                    <input class="field" type="number" min="0" step="any" data-role="component-cost"
-                      :value="costValue(c)" :placeholder="t('costPlaceholder')" :aria-label="t('costPlaceholder')"
-                      @change="costChanged(c, $event)">
-                    <span class="tfa__cost-unit" x-text="t('costUnit')"></span>
-                  </span>
-                </template>
-              </span>
-              <select class="field tfa__kind" data-role="component-kind" @change="kindChanged(c, $event)">
-                <option value="target" :selected="c.kind === 'target'" x-text="t('kind.target')"></option>
-                <option value="system" :selected="c.kind === 'system'" x-text="t('kind.system')"></option>
-                <option value="supersystem" :selected="c.kind === 'supersystem'" x-text="t('kind.supersystem')"></option>
-              </select>
-              <button type="button" class="btn btn--sm" data-role="component-remove"
-                :title="t('removeComponent')" :aria-label="t('removeComponent')" data-confirm-delete="off" @click="deleteComponent(c)">
-                <span class="icon icon--sm" data-icon="action.delete"></span>
-              </button>
-            </div>
+          <template x-for="c in model.components" :key="c.id">
+            <template x-if="inGroup(c, kind)">
+              <div class="tfa__row" data-role="component" :data-id="c.id">
+                <input class="field tfa__name" type="text" data-role="component-name"
+                  x-model="c.name" :placeholder="t('namePlaceholder')"
+                  @keydown.enter.prevent="newComponent(kind)" @blur="discardIfEmpty(c)">
+                <input class="field tfa__note" type="text" data-role="component-note"
+                  x-model="c.note" :placeholder="t('notePlaceholder')">
+                <span class="tfa__cost">
+                  <template x-if="isSystem(c)">
+                    <span class="tfa__cost-field">
+                      <input class="field" data-role="component-cost" x-field="c.cost" data-help-key=""
+                        :placeholder="t('costPlaceholder')" :aria-label="t('costPlaceholder')">
+                      <span class="tfa__cost-unit" x-text="t('costUnit')"></span>
+                    </span>
+                  </template>
+                </span>
+                <select class="field tfa__kind" data-role="component-kind" @change="kindChanged(c, $event)">
+                  <option value="target" :selected="c.kind === 'target'" x-text="t('kind.target')"></option>
+                  <option value="system" :selected="c.kind === 'system'" x-text="t('kind.system')"></option>
+                  <option value="supersystem" :selected="c.kind === 'supersystem'" x-text="t('kind.supersystem')"></option>
+                </select>
+                <button type="button" class="btn btn--sm" data-role="component-remove" data-help-key=""
+                  :title="t('removeComponent')" :aria-label="t('removeComponent')" x-command="removeComponent" :data-arg-id="c.id">
+                  <span class="icon icon--sm" data-icon="action.delete"></span>
+                </button>
+              </div>
+            </template>
           </template>
           <button type="button" class="btn btn--sm tfa__add" data-role="component-add" data-help-key="modules.triz-function-analysis.actions.addComponent.help" :data-kind="kind"
             x-show="canAdd(kind)" @click="newComponent(kind)">
@@ -68,19 +68,19 @@
           <thead>
             <tr>
               <th class="tfa__corner"><span data-help-key="modules.triz-function-analysis.actions.setPairState.help" x-text="t('matrixCorner')"></span></th>
-              <template x-for="c in matrixComponents()" :key="c.id">
+              <template x-for="c in matrixComponents" :key="c.id">
                 <th scope="col" :class="headClass(c)" x-text="c.name"></th>
               </template>
             </tr>
           </thead>
           <tbody>
-            <template x-for="(r, ri) in matrixComponents()" :key="r.id">
+            <template x-for="(r, ri) in matrixComponents" :key="r.id">
               <tr>
                 <th scope="row" :class="headClass(r)" x-text="r.name"></th>
-                <template x-for="(c, ci) in matrixComponents()" :key="c.id">
+                <template x-for="(c, ci) in matrixComponents" :key="c.id">
                   <td :class="cellClass(ri, ci)">
                     <button type="button" class="tfa__cell-btn" data-role="cell" :data-a="r.id" :data-b="c.id"
-                      :data-state="cellState(r, c)" x-show="ci > ri" :aria-pressed="isTicked(r, c) ? 'true' : 'false'"
+                      :data-state="cellState(r, c)" x-show="ci > ri" :aria-pressed="cellPressed(r, c)"
                       :title="cellTitle(r, c)" @click="toggleCell(r, c)">
                       <span class="icon icon--sm" data-icon="action.confirm" x-show="isTicked(r, c)"></span>
                       <span class="icon icon--sm tfa__cell-excluded" data-icon="action.close" x-show="isExcluded(r, c)"></span>
@@ -101,14 +101,14 @@
         <div class="dmike-split__input">
           <div class="dmike-split__section-title"><span data-help-key="modules.triz-function-analysis.actions.addFunction.help" x-text="t('openPairs')"></span></div>
           <div class="tfa__chips">
-            <template x-for="p in openPairChips()" :key="p.key">
+            <template x-for="p in openPairChips" :key="p.key">
               <button type="button" class="tfa__chip" data-role="open-pair" @click="createFromPair(p)" x-text="p.label"></button>
             </template>
           </div>
-          <p class="tfa__hint" x-show="openPairChips().length === 0" x-text="t('noOpenPairs')"></p>
+          <p class="tfa__hint" x-show="openPairChips.length === 0" x-text="t('noOpenPairs')"></p>
 
           <div class="dmike-split__section-title"><span data-help-key="modules.triz-function-analysis.fields.functions.help" x-text="t('functions')"></span></div>
-          <template x-for="g in pairBlocks()" :key="g.key">
+          <template x-for="g in pairBlocks" :key="g.key">
             <section class="tfa__pair" data-role="pair" :data-key="g.key">
               <header class="tfa__pair-head">
                 <span class="tfa__pair-name" data-role="pair-label" x-text="g.label"></span>
@@ -118,28 +118,28 @@
                 </button>
               </header>
               <template x-for="fn in g.functions" :key="fn.id">
-                <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" @click="selectFunction(fn.id)">
+                <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" x-command="select" :data-arg-id="fn.id" data-arg-toggle="false" data-help-key="">
                   <div class="tfa__fn-row">
-                    <button type="button" class="btn btn--sm tfa__dir" data-role="fn-swap" :title="t('swapDirection')"
-                      :aria-label="directionLabel(fn)" @click.stop="swapDirection(fn.id)">
+                    <button type="button" class="btn btn--sm tfa__dir" data-role="fn-swap" :title="t('swapDirection')" data-help-key=""
+                      :aria-label="directionLabel(fn)" x-command="swapDirection" :data-arg-id="fn.id" @click.stop>
                       <span class="icon icon--sm" data-icon="nav.arrow-right" x-show="isForward(fn, g)"></span>
                       <span class="icon icon--sm" data-icon="nav.arrow-left" x-show="isBackward(fn, g)"></span>
                     </button>
                     <input class="field" type="text" data-role="fn-verb" :aria-label="t('verb')"
-                      :placeholder="t('verbPlaceholder')" :value="fn.verb" @input="setFunctionVerb(fn.id, $event.target.value)">
-                    <button type="button" class="btn btn--sm" data-role="fn-remove" :title="t('removeFunction')"
-                      :aria-label="t('removeFunction')" @click.stop="removeFunction(fn.id)">
+                      :placeholder="t('verbPlaceholder')" x-model="fn.verb">
+                    <button type="button" class="btn btn--sm" data-role="fn-remove" :title="t('removeFunction')" data-help-key=""
+                      :aria-label="t('removeFunction')" x-command="removeFunction" :data-arg-id="fn.id" data-confirm-delete="off" @click.stop>
                       <span class="icon icon--sm" data-icon="action.delete"></span>
                     </button>
                   </div>
                   <div class="tfa__fn-row">
                     <input class="field" type="text" data-role="fn-parameter" :aria-label="t('parameter')"
-                      :placeholder="t('parameterPlaceholder')" :value="fn.parameter" @input="setFunctionParameter(fn.id, $event.target.value)">
-                    <select class="field" data-role="fn-type" @change="setFunctionType(fn.id, $event.target.value)">
+                      :placeholder="t('parameterPlaceholder')" x-model="fn.parameter">
+                    <select class="field" data-role="fn-type" @change="typeChanged(fn, $event)">
                       <option value="useful" :selected="fn.type === 'useful'" x-text="t('type.useful')"></option>
                       <option value="harmful" :selected="fn.type === 'harmful'" x-text="t('type.harmful')"></option>
                     </select>
-                    <select class="field" data-role="fn-level" x-show="fn.type === 'useful'" @change="setFunctionLevel(fn.id, $event.target.value)">
+                    <select class="field" data-role="fn-level" x-show="isUseful(fn)" @change="levelChanged(fn, $event)">
                       <option value="adequate" :selected="fn.level === 'adequate'" x-text="t('level.adequate')"></option>
                       <option value="insufficient" :selected="fn.level === 'insufficient'" x-text="t('level.insufficient')"></option>
                       <option value="excessive" :selected="fn.level === 'excessive'" x-text="t('level.excessive')"></option>
@@ -155,22 +155,23 @@
 
         <div class="dmike-split__output" data-role="diagram-pane">
           <div class="tfa__toolbar">
-            <button type="button" class="btn btn--sm" data-role="reset-layout" data-help-key="modules.triz-function-analysis.actions.resetLayout.help" @click="resetLayout()">
+            <button type="button" class="btn btn--sm" data-role="reset-layout" data-help-key="modules.triz-function-analysis.actions.resetLayout.help" x-command="resetLayout">
               <span class="icon icon--sm" data-icon="action.reset"></span>
               <span x-text="t('resetLayout')"></span>
             </button>
-            <label class="field-check tfa__toggle" data-help-anchor="box" data-help-key="modules.triz-function-analysis.actions.setShowRanks.help">
-              <input type="checkbox" data-role="show-ranks" :checked="model.showRanks" @change="setShowRanks($event.target.checked)">
+            <label class="field-check tfa__toggle" data-help-anchor="box" data-help-key="modules.triz-function-analysis.fields.showRanks.help">
+              <input type="checkbox" data-role="show-ranks" x-model="model.showRanks">
               <span x-text="t('showRanks')"></span>
             </label>
           </div>
           <p class="tfa__hint" x-show="model.components.length === 0" x-text="t('diagramEmpty')"></p>
           <div class="tfa__stage">
-            <div class="tfa__canvas" data-role="canvas" :style="canvasStyle()" x-effect="drawArrows()">
-              <div class="tfa__arrows" data-ref="arrows" @pointerdown="startLabelDrag($event)"></div>
+            <div class="tfa__canvas" data-role="canvas" :style="canvasStyle()">
+              <div class="tfa__arrows" x-widget="node-diagram" x-widget-config="diagram"></div>
               <template x-for="c in model.components" :key="c.id">
-                <div class="tfa__node" :class="nodeClass(c)" data-role="node" :data-id="c.id"
-                  :style="nodeStyle(c)" :title="c.name" @pointerdown="startDrag(c, $event)"><span class="tfa__node-text" x-text="c.name"></span></div>
+                <div class="tfa__node" tabindex="0" :class="nodeClass(c)" data-role="node" :data-id="c.id"
+                  :data-tfa-x="nodeX(c)" :data-tfa-y="nodeY(c)" :style="nodeStyle(c)" :title="c.name"
+                  x-command="select" :data-arg-id="c.id" data-help-key=""><span class="tfa__node-text" x-text="c.name"></span></div>
               </template>
             </div>
           </div>
@@ -185,13 +186,13 @@
 
       <section class="tfa__disadvantages" data-role="disadvantages">
         <h3 class="tfa__group-title"><span data-help-key="modules.triz-function-analysis.fields.disadvantages.help" x-text="t('disadvantages')"></span></h3>
-        <p class="tfa__hint" x-show="disadvantageGroups().length === 0" x-text="t('noDisadvantages')"></p>
-        <template x-for="g in disadvantageGroups()" :key="g.kind">
+        <p class="tfa__hint" x-show="disadvantageGroups.length === 0" x-text="t('noDisadvantages')"></p>
+        <template x-for="g in disadvantageGroups" :key="g.kind">
           <div class="tfa__dis-group" :data-kind="g.kind">
             <h4 class="tfa__dis-title" x-text="g.title"></h4>
             <ul class="tfa__dis-list">
               <template x-for="d in g.items" :key="d.functionId">
-                <li class="tfa__dis" data-role="disadvantage" :data-id="d.functionId" @click="select(d.functionId)">
+                <li class="tfa__dis" data-role="disadvantage" :data-id="d.functionId" x-command="select" :data-arg-id="d.functionId" data-arg-toggle="false" data-help-key="">
                   <span x-text="d.carrier"></span> <strong x-text="d.verb"></strong> <span x-text="d.object"></span><span class="tfa__dis-param" x-text="paramText(d)"></span>
                 </li>
               </template>
@@ -206,8 +207,8 @@
       data-tab-content="valueCost" x-show="model.activeTab === 'valueCost'">
       <p class="tfa__hint" data-role="value-cost-empty" x-show="valueCostEmpty()" x-text="valueCostEmpty()"></p>
       <!-- Stays in the DOM so the chart is created once -->
-      <div class="tfa__vc-chart" data-ref="value-cost-chart" x-show="!valueCostEmpty()" x-effect="drawValueCost()"></div>
-      <table class="tfa__vc-table" data-role="value-cost-table" x-show="vcRows().length > 0">
+      <div class="tfa__vc-chart" data-ref="value-cost-chart" x-show="hasValueCost()" x-widget="scatter-chart" x-widget-config="valueCostChart"></div>
+      <table class="tfa__vc-table" data-role="value-cost-table" x-show="vcRows.length > 0">
         <thead>
           <tr>
             <th scope="col"><span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.types.ValueCostRow.name" x-text="t('vc.component')"></span></th>
@@ -218,7 +219,7 @@
           </tr>
         </thead>
         <tbody>
-          <template x-for="r in vcRows()" :key="r.id">
+          <template x-for="r in vcRows" :key="r.id">
             <tr data-role="value-cost-row" :data-id="r.id">
               <td x-text="r.name"></td>
               <td class="tfa__vc-num" x-text="r.value"></td>

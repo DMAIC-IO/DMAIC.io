@@ -1,0 +1,71 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die **{{term:funktionsanalyse|Funktionsanalyse}}** ist der übliche erste Schritt einer {{term:triz|TRIZ}}-Problemanalyse. Sie zerlegt ein technisches System in seine Komponenten, hält fest, welche Komponenten miteinander in {{term:wechselwirkung|Wechselwirkung}} stehen, und beschreibt jede Wechselwirkung als Funktion: **Träger – Verb – Objekt**."
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Komponenten** — ein Zielobjekt (worauf die Hauptfunktion wirkt), die Systemkomponenten und die Elemente des {{term:supersystem|Supersystems}}.",
+            "**Interaktionen** — in der Matrix werden die Paare angekreuzt, die sich berühren oder beeinflussen. Jedes Kreuz ist ein Kandidat für mindestens eine Funktion. Ein zweiter Klick setzt ein „x“: Das Paar ist bewusst ausgeschlossen, ein dritter leert die Zelle wieder.",
+            "**Funktionsmodell** — jedes Paar hat einen eigenen Block, ein Klick auf ein offenes Paar legt ihn mit dem ersten Pfeil an. + legt einen weiteren Pfeil auf dem Paar an (etwa für die Gegenrichtung), der Pfeilknopf kehrt die Richtung um. Jede Funktion ist nützlich (ausreichend, unzureichend, übermäßig) oder schädlich. Der Rang ergibt sich aus dem Objekt: Wirkung auf das Zielobjekt = Basisfunktion, auf das Supersystem = Zusatzfunktion, auf eine Systemkomponente = Hilfsfunktion. Hilfsfunktionen sind nach ihrem Abstand gestuft: A₁ wirkt auf eine Komponente, die selbst eine Basis- oder Zusatzfunktion trägt, A₂ auf eine, die eine A₁-Funktion trägt, und so weiter; der kürzeste Weg zählt. Ohne Weg zu einer Basis- oder Zusatzfunktion steht nur „A“. **Funktionsränge anzeigen** schreibt die Kürzel B, Ad und A₁…Aₙ an die Pfeile, auch im Export."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Schädliche, unzureichende und übermäßige Funktionen erscheinen in der **Nachteilsliste**. Sie sind der Ausgangspunkt für die {{term:substanz-feld-analyse|Stoff-Feld-Analyse}} und für die Widerspruchswerkzeuge."
+        }
+      ]
+    },
+    "notation": {
+      "title": "Notation im Diagramm",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Durchgezogener Pfeil** — nützlich, ausreichend.",
+            "**Gestrichelter Pfeil** — nützlich, aber unzureichend.",
+            "**Dicker Pfeil** — nützlich, aber übermäßig.",
+            "**Wellenlinie (rot)** — schädliche Funktion.",
+            "**Oval** — Zielobjekt; **Kasten** — Systemkomponente; **Sechseck (gestrichelt)** — Supersystem-Element."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Komponenten lassen sich verschieben, ebenso die Verben an den Pfeilen: Der Pfeil knickt dann am Verb. Die Anordnung wird gespeichert. „Anordnung zurücksetzen“ stellt die automatische Startanordnung wieder her und macht alle Pfeile wieder gerade. Ein Klick auf eine Komponente oder eine Funktion hebt sie und die zugehörigen Pfeile hervor."
+        }
+      ]
+    },
+    "valueCost": {
+      "title": "Wert & Kosten",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Im Reiter **Komponenten** bekommt jede Systemkomponente ein Feld für ihre Kosten in Euro. Zielobjekt und Supersystem gehören nicht zum System und haben keine Kosten. Der **Funktionswert** einer Komponente wird nicht eingegeben, sondern aus dem Funktionsmodell berechnet: Jede nützliche Funktion, die sie trägt, zählt nach ihrem Rang — Basisfunktion 3, Zusatzfunktion 2, Hilfsfunktion 1. Schädliche Funktionen und unvollständige Entwürfe zählen 0."
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Normierung** — Wert und Kosten werden auf 0 bis 10 umgerechnet: Die Komponente mit dem höchsten Wert bzw. den höchsten Kosten erhält 10, die übrigen anteilig.",
+            "**Diagramm** — x = normierter Funktionswert, y = normierte Kosten. Komponenten ohne Kosten fehlen im Diagramm und zeigen in der Tabelle „–“.",
+            "**Quadranten** — die gestrichelten Linien bei 5 teilen das Diagramm. Oben links liegen Komponenten mit wenig Funktion und hohen Kosten: Sie sind die ersten Kandidaten für das **Trimmen**."
+          ]
+        }
+      ]
+    },
+    "example": {
+      "title": "Beispiel: Zahnbürste",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Die Hand drückt den Griff zu stark (**übermäßig**); dann **verletzen** die Borsten das Zahnfleisch, der Belag selbst **reizt** es (beides schädlich). Die Nachteilsliste nennt genau diese vier Punkte. In der Matrix ist jedes Paar entschieden: Haken für Paare, die zusammenwirken, „x“ für alle anderen. Unter **Wert & Kosten** hat jede Systemkomponente ihre Herstellkosten je Stück: Borsten 0,06 €, Bürstenkopf 0,04 €, Griff 0,15 €. Der Griff trägt nur eine Hilfsfunktion, ist aber am teuersten — er liegt oben links und ist der erste Kandidat für das Trimmen. Das Beispiel lässt sich über die Beispielprojekte laden."
+        }
+      ]
+    }
+  }
+}

@@ -81,6 +81,7 @@ export function autoLayout(components, pairs = []) {
   const supers = components.filter((c) => c.kind === 'supersystem');
   const cols = Math.min(MAX_COLS, Math.max(1, system.length));
   const rows = Math.max(1, Math.ceil(system.length / cols));
+  /** @type {Object<string, {x:number,y:number}>} */
   const out = {};
   system.forEach((c, i) => {
     out[c.id] = { x: (cols - 1 - (i % cols)) * STEP_X, y: STEP_Y + Math.floor(i / cols) * STEP_Y };
@@ -103,6 +104,7 @@ export function resolvePositions(state) {
     ...(state.functions ?? []).map((f) => ({ a: f.carrier, b: f.object })),
   ];
   const auto = autoLayout(state.components, pairs);
+  /** @type {Object<string, {x:number,y:number}>} */
   const out = {};
   for (const c of state.components) {
     const p = state.positions[c.id] ?? auto[c.id];
@@ -122,7 +124,7 @@ const shorten = (s) => (s.length > EXPORT_NAME_MAX ? `${s.slice(0, EXPORT_NAME_M
 
 /**
  * node-diagram config for the function model.
- * @param {{components: Array, functions: Array, positions: Object, labels?: Object}} state
+ * @param {{components: Array, functions: Array, positions: Object, labels?: Object, interactions?: Array}} state
  * @param {{selectedId?: string|null, rankLabels?: Map<string,string>}} [opts] - rankLabels:
  *   rank code per function id, appended to the verb
  * @returns {{nodes: Array<Object>, links: Array<Object>}}

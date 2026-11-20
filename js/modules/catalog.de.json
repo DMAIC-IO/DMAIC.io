@@ -90,6 +90,11 @@
     "description": "VoC-Fragebogen erstellen, als HTML verschicken, Antworten einlesen und auswerten",
     "whenToUse": "Wenn Kunden oder Stakeholder schriftlich befragt werden sollen: Fragebogen entwerfen, je Empfänger als HTML-Datei verschicken, die Antwortdateien einlesen und auswerten — ohne Server, die Daten bleiben im Projekt."
   },
+  "triz-function-analysis": {
+    "name": "Funktionsanalyse (TRIZ)",
+    "description": "Komponenten, Interaktionen und Funktionsmodell – Ausgangspunkt für die übrigen TRIZ-Werkzeuge",
+    "whenToUse": "Wenn ein technisches System Komponente für Komponente zerlegt werden soll, um schädliche, unzureichende und übermäßige Funktionen zu finden und Trimmkandidaten über Wert und Kosten zu erkennen — nicht für einen bereits benannten Widerspruch, dafür sind Widerspruchsmatrix und physikalischer Widerspruch da."
+  },
   "worksheet": {
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",

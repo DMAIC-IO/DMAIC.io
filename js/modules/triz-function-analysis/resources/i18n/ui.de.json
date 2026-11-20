@@ -19,5 +19,99 @@
   },
   "announce": {
     "move": "„{name}“ verschoben nach ({x}, {y})"
-  }
+  },
+  "tab": {
+    "components": "Komponenten",
+    "interactions": "Interaktionen",
+    "model": "Funktionsmodell",
+    "valueCost": "Wert & Kosten"
+  },
+  "group": {
+    "target": "Zielobjekt",
+    "system": "Systemkomponenten",
+    "supersystem": "Supersystem-Elemente"
+  },
+  "kind": {
+    "target": "Zielobjekt",
+    "system": "Systemkomponente",
+    "supersystem": "Supersystem"
+  },
+  "col": {
+    "name": "Name",
+    "note": "Notiz",
+    "cost": "Kosten",
+    "kind": "Art"
+  },
+  "namePlaceholder": "Name",
+  "notePlaceholder": "Notiz",
+  "costPlaceholder": "Kosten",
+  "costUnit": "€",
+  "vc": {
+    "component": "Komponente",
+    "value": "Wert",
+    "normValue": "Norm. Wert",
+    "cost": "Kosten",
+    "normCost": "Norm. Kosten",
+    "axisValue": "Funktionswert (normiert)",
+    "axisCost": "Kosten (normiert)",
+    "emptyComponents": "Lege im Reiter „Komponenten“ Systemkomponenten an.",
+    "emptyCosts": "Trage im Reiter „Komponenten“ Kosten für die Systemkomponenten ein."
+  },
+  "addComponent": "Hinzufügen",
+  "removeComponent": "Komponente löschen",
+  "unnamed": "(ohne Namen)",
+  "targetDemoted": "„{name}“ ist jetzt Systemkomponente – es gibt nur ein Zielobjekt.",
+  "matrixCorner": "Interagiert mit",
+  "matrixEmpty": "Lege im Reiter „Komponenten“ mindestens zwei Komponenten an.",
+  "matrixSummary": "{count} Interaktionen, davon {open} ohne Funktion",
+  "pairLocked": "Wird von {count} Funktion(en) genutzt – zuerst die Funktionen löschen.",
+  "pairExcluded": "Explizit ausgeschlossen – keine Interaktion",
+  "openPairs": "Offene Paare",
+  "noOpenPairs": "Keine offenen Paare.",
+  "functions": "Funktionen",
+  "noFunctions": "Noch keine Funktionen. Klicke ein offenes Paar an.",
+  "verb": "Funktion (Verb)",
+  "verbPlaceholder": "z. B. entfernt",
+  "verbMissing": "(ohne Verb)",
+  "parameter": "Parameter",
+  "parameterPlaceholder": "z. B. Belag",
+  "type": {
+    "useful": "nützlich",
+    "harmful": "schädlich"
+  },
+  "level": {
+    "adequate": "ausreichend",
+    "insufficient": "unzureichend",
+    "excessive": "übermäßig"
+  },
+  "rank": {
+    "basic": "Basisfunktion",
+    "additional": "Zusatzfunktion",
+    "auxiliary": "Hilfsfunktion"
+  },
+  "rankCode": {
+    "basic": "B",
+    "additional": "Ad",
+    "auxiliary": "A{level}"
+  },
+  "swapDirection": "Richtung umkehren",
+  "addOnPair": "Weiteren Pfeil auf diesem Paar anlegen",
+  "removeFunction": "Funktion löschen",
+  "resetLayout": "Anordnung zurücksetzen",
+  "showRanks": "Funktionsränge anzeigen",
+  "diagramEmpty": "Noch keine Komponenten.",
+  "legend": {
+    "solid": "nützlich, ausreichend",
+    "dashed": "unzureichend",
+    "bold": "übermäßig",
+    "wave": "schädlich"
+  },
+  "disadvantages": "Nachteile",
+  "noDisadvantages": "Keine Nachteile – alle Funktionen sind nützlich und ausreichend.",
+  "disadvantage": {
+    "harmful": "Schädliche Funktionen",
+    "insufficient": "Unzureichende Funktionen",
+    "excessive": "Übermäßige Funktionen"
+  },
+  "commandFailed": "Die Änderung wurde nicht übernommen."
 }

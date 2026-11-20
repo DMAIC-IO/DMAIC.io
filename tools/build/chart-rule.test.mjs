@@ -13,6 +13,9 @@ const MODULES_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../js/modu
 
 const CHART_RULE_MODULES = ['voc-ctx-tree', 'project-charter', 'triz-function-analysis', 'histogram'];
 
+/** Converted modules: charts only through chart widgets and `chartSVG`, never the chartManager itself. */
+const WIDGET_ONLY_MODULES = ['project-charter', 'triz-function-analysis', 'histogram'];
+
 const FORBIDDEN = [
   { name: 'createElementNS', re: /createElementNS\s*\(/ },
   { name: 'inline <svg>', re: /<svg[\s>]/ },
@@ -29,6 +32,15 @@ for (const mod of CHART_RULE_MODULES) {
       const src = readFileSync(join(dir, f), 'utf8');
       for (const { name, re } of FORBIDDEN) if (re.test(src)) hits.push(`${f}: ${name}`);
     }
+    assert.deepEqual(hits, []);
+  });
+}
+
+for (const mod of WIDGET_ONLY_MODULES) {
+  test(`${mod} never calls the chartManager directly`, () => {
+    const dir = join(MODULES_DIR, mod);
+    const files = readdirSync(dir, { recursive: true }).map(String).filter((f) => /\.(js|html)$/.test(f));
+    const hits = files.filter((f) => /chartManager|exportOffscreen/.test(readFileSync(join(dir, f), 'utf8')));
     assert.deepEqual(hits, []);
   });
 }

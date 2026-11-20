@@ -20720,6 +20720,7 @@ export const AGENT_REGISTRY = {
   "triz-function-analysis": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -20736,382 +20737,461 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addComponent": {
+        "target": "model",
         "params": [
           {
-            "name": "kind",
-            "type": "'target'|'system'|'supersystem'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the kind of component"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": true,
-            "help": "the name, empty by default"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Append a component."
-      },
-      "setComponentName": {
-        "params": [
-          {
-            "name": "componentId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the new name"
-          }
-        ],
-        "returns": "void",
-        "help": "Rename a component."
-      },
-      "setComponentNote": {
-        "params": [
-          {
-            "name": "componentId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component"
-          },
-          {
-            "name": "note",
-            "type": "string",
-            "optional": false,
-            "help": "the note; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the note of a component."
-      },
-      "setComponentCost": {
-        "params": [
-          {
-            "name": "componentId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component"
-          },
-          {
-            "name": "cost",
-            "type": "number|null",
-            "optional": false,
-            "help": "the cost in euro, at least 0; null clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the euro cost of a component for the value & cost analysis."
-      },
-      "setComponentKind": {
-        "params": [
-          {
-            "name": "componentId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component"
-          },
-          {
-            "name": "kind",
-            "type": "'target'|'system'|'supersystem'",
-            "optional": false,
-            "help": "the new kind"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Change the kind of a component. Making it the target turns the former target into a system component."
-      },
-      "removeComponent": {
-        "params": [
-          {
-            "name": "componentId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a component together with its interactions and functions."
-      },
-      "setPairState": {
-        "params": [
-          {
-            "name": "a",
-            "type": "string",
-            "optional": false,
-            "help": "id of the first component"
-          },
-          {
-            "name": "b",
-            "type": "string",
-            "optional": false,
-            "help": "id of the second component (order does not matter)"
-          },
-          {
-            "name": "state",
-            "type": "'none'|'ticked'|'excluded'",
-            "optional": false,
-            "help": "'ticked' = they interact, 'excluded' = explicitly no interaction, 'none' = not assessed yet"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Set whether two components interact."
-      },
-      "addFunction": {
-        "params": [
-          {
-            "name": "carrier",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component that performs the function"
-          },
-          {
-            "name": "object",
-            "type": "string",
-            "optional": false,
-            "help": "id of the component it acts on"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Add a function carrier → object. Ticks the pair in the matrix."
+        "help": "",
+        "keysOf": "addComponent",
+        "keysHelp": "actions.addComponent.params",
+        "keys": {
+          "kind": {
+            "type": "'target'|'system'|'supersystem'",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          }
+        }
       },
-      "setFunctionVerb": {
+      "setComponentKind": {
+        "target": "model",
         "params": [
           {
-            "name": "functionId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the function"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string|null",
+        "help": "",
+        "keysOf": "setComponentKind",
+        "keysHelp": "actions.setComponentKind.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
           },
+          "kind": {
+            "type": "'target'|'system'|'supersystem'",
+            "help": ""
+          }
+        }
+      },
+      "removeComponent": {
+        "target": "model",
+        "params": [
           {
-            "name": "verb",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the verb"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Set the verb of a function, e.g. \"entfernt\"."
-      },
-      "setFunctionParameter": {
-        "params": [
-          {
-            "name": "functionId",
+        "help": "",
+        "keysOf": "removeComponent",
+        "keysHelp": "actions.removeComponent.params",
+        "keys": {
+          "id": {
             "type": "string",
-            "optional": false,
-            "help": "id of the function"
-          },
-          {
-            "name": "parameter",
-            "type": "string",
-            "optional": false,
-            "help": "the parameter; \"\" clears it"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Set the parameter of the object the function changes, e.g. \"Belag\"."
+        }
       },
-      "setFunctionType": {
+      "discardComponentIfEmpty": {
+        "target": "model",
         "params": [
           {
-            "name": "functionId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the function"
-          },
-          {
-            "name": "type",
-            "type": "'useful'|'harmful'",
-            "optional": false,
-            "help": "the function type"
-          }
-        ],
-        "returns": "void",
-        "help": "Mark a function useful or harmful. Harmful clears the level, useful sets it back to 'adequate'."
-      },
-      "setFunctionLevel": {
-        "params": [
-          {
-            "name": "functionId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the function"
-          },
-          {
-            "name": "level",
-            "type": "'adequate'|'insufficient'|'excessive'",
-            "optional": false,
-            "help": "the level"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "boolean",
-        "help": "Set how well a useful function is performed."
+        "help": "",
+        "keysOf": "discardComponentIfEmpty",
+        "keysHelp": "actions.discardComponentIfEmpty.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setPairState": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setPairState",
+        "keysHelp": "actions.setPairState.params",
+        "keys": {
+          "a": {
+            "type": "string",
+            "help": ""
+          },
+          "b": {
+            "type": "string",
+            "help": ""
+          },
+          "state": {
+            "type": "'none'|'ticked'|'excluded'",
+            "help": ""
+          }
+        }
+      },
+      "addFunction": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addFunction",
+        "keysHelp": "actions.addFunction.params",
+        "keys": {
+          "carrier": {
+            "type": "string",
+            "help": ""
+          },
+          "object": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "swapDirection": {
+        "target": "model",
         "params": [
           {
-            "name": "functionId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the function"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Swap carrier and object of a function."
+        "help": "",
+        "keysOf": "swapDirection",
+        "keysHelp": "actions.swapDirection.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setFunctionType": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setFunctionType",
+        "keysHelp": "actions.setFunctionType.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "type": {
+            "type": "'useful'|'harmful'",
+            "help": ""
+          }
+        }
+      },
+      "setFunctionLevel": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setFunctionLevel",
+        "keysHelp": "actions.setFunctionLevel.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "level": {
+            "type": "'adequate'|'insufficient'|'excessive'",
+            "help": ""
+          }
+        }
       },
       "removeFunction": {
+        "target": "model",
         "params": [
           {
-            "name": "functionId",
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeFunction",
+        "keysHelp": "actions.removeFunction.params",
+        "keys": {
+          "id": {
             "type": "string",
-            "optional": false,
-            "help": "id of the function"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Remove a function."
-      },
-      "setShowRanks": {
-        "params": [
-          {
-            "name": "show",
-            "type": "boolean",
-            "optional": false,
-            "help": "true shows them"
-          }
-        ],
-        "returns": "void",
-        "help": "Show or hide the rank codes (B, Ad, A₁ …) next to the verbs in the diagram."
+        }
       },
       "moveComponent": {
+        "target": "model",
         "params": [
           {
-            "name": "componentId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the component"
-          },
-          {
-            "name": "x",
-            "type": "number",
-            "optional": false,
-            "help": "left edge in pixels, at least 0"
-          },
-          {
-            "name": "y",
-            "type": "number",
-            "optional": false,
-            "help": "top edge in pixels, at least 0"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Place the box of a component in the function model."
+        "help": "",
+        "keysOf": "moveComponent",
+        "keysHelp": "actions.moveComponent.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "x": {
+            "type": "number",
+            "help": ""
+          },
+          "y": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "moveLabel": {
+        "target": "model",
         "params": [
           {
-            "name": "functionId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the function"
-          },
-          {
-            "name": "x",
-            "type": "number",
-            "optional": false,
-            "help": "label centre in pixels, at least 0"
-          },
-          {
-            "name": "y",
-            "type": "number",
-            "optional": false,
-            "help": "label centre in pixels, at least 0"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Place the verb label of a function; the arrow bends there."
+        "help": "",
+        "keysOf": "moveLabel",
+        "keysHelp": "actions.moveLabel.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "x": {
+            "type": "number",
+            "help": ""
+          },
+          "y": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "resetLayout": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Put every box back to its automatic slot and straighten every arrow."
+        "help": "",
+        "keysOf": "resetLayout",
+        "keysHelp": "actions.resetLayout.params",
+        "keys": {}
+      },
+      "select": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "select",
+        "keysHelp": "actions.select.params",
+        "keys": {
+          "id": {
+            "type": "unknown",
+            "help": ""
+          },
+          "toggle": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "components": {
         "type": "Array<{ id: string, name: string, kind: 'target'|'system'|'supersystem', note: string, cost: number|null }>",
-        "help": "the components; exactly one may be the target",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "interactions": {
-        "type": "Array<{ a: string, b: string }>",
-        "help": "the ticked component pairs (unordered)",
-        "bulk": false,
-        "derived": true
+        "type": "{ a: string, b: string }[]",
+        "help": "",
+        "bulk": false
       },
       "exclusions": {
-        "type": "Array<{ a: string, b: string }>",
-        "help": "the pairs explicitly marked as not interacting",
-        "bulk": false,
-        "derived": true
+        "type": "{ a: string, b: string }[]",
+        "help": "",
+        "bulk": false
       },
       "functions": {
         "type": "Array<{ id: string, carrier: string, verb: string, object: string, parameter: string, type: 'useful'|'harmful', level: 'adequate'|'insufficient'|'excessive'|null, note: string }>",
-        "help": "the directed functions carrier → object",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "positions": {
-        "type": "Object<string, { x: number, y: number }>",
-        "help": "dragged box positions by component id",
-        "bulk": false,
-        "derived": true
+        "type": "Record<string, { x: number, y: number }>",
+        "help": "",
+        "bulk": false
       },
       "labels": {
-        "type": "Object<string, { x: number, y: number }>",
-        "help": "dragged verb-label positions by function id",
-        "bulk": false,
-        "derived": true
+        "type": "Record<string, { x: number, y: number }>",
+        "help": "",
+        "bulk": false
       },
       "showRanks": {
         "type": "boolean",
-        "help": "whether the diagram shows rank codes",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "openPairs": {
-        "type": "Array<{ a: string, b: string }>",
-        "help": "ticked pairs no function uses yet",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "OpenPair",
+        "keys": {
+          "a": {
+            "type": "string",
+            "help": "id of the first component (a < b)"
+          },
+          "b": {
+            "type": "string",
+            "help": "id of the second component"
+          }
+        }
       },
       "ranks": {
-        "type": "Array<{ functionId: string, rank: 'basic'|'additional'|'auxiliary', level: number|null }>",
-        "help": "derived rank of every useful complete function",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "FunctionRank",
+        "keys": {
+          "functionId": {
+            "type": "string",
+            "help": "id of the function"
+          },
+          "rank": {
+            "type": "'basic'|'additional'|'auxiliary'",
+            "help": "basic on the target, additional on a supersystem element, auxiliary on a system component"
+          },
+          "level": {
+            "type": "number|null",
+            "help": "for auxiliary functions the distance to a basic or additional function (1 = Ax1), else null"
+          }
+        }
       },
       "disadvantages": {
-        "type": "Array<{ functionId: string, carrier: string, verb: string, object: string, parameter: string, kind: 'harmful'|'insufficient'|'excessive' }>",
-        "help": "harmful, insufficient and excessive functions",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Disadvantage",
+        "keys": {
+          "functionId": {
+            "type": "string",
+            "help": "id of the function"
+          },
+          "carrier": {
+            "type": "string",
+            "help": "name of the carrier"
+          },
+          "verb": {
+            "type": "string",
+            "help": "verb of the function"
+          },
+          "object": {
+            "type": "string",
+            "help": "name of the object"
+          },
+          "parameter": {
+            "type": "string",
+            "help": "parameter of the object the function changes"
+          },
+          "kind": {
+            "type": "'harmful'|'insufficient'|'excessive'",
+            "help": "kind of disadvantage"
+          }
+        }
       },
       "valueCost": {
-        "type": "ValueCostRow[]",
-        "help": "function value and cost of each system component",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "ValueCostRow",
         "keys": {
           "id": {
             "type": "string",
-            "help": "id of the system component"
+            "help": "id of the component"
           },
           "name": {
             "type": "string",
@@ -21119,7 +21199,7 @@ export const AGENT_REGISTRY = {
           },
           "value": {
             "type": "number",
-            "help": "function value: 3 per basic, 2 per additional, 1 per auxiliary function it carries"
+            "help": "function value: 3/2/1 per basic/additional/auxiliary function it carries"
           },
           "normValue": {
             "type": "number",
@@ -21127,17 +21207,35 @@ export const AGENT_REGISTRY = {
           },
           "cost": {
             "type": "number|null",
-            "help": "entered cost in euro, null when none"
+            "help": "cost in euro, null without one"
           },
           "normCost": {
             "type": "number|null",
-            "help": "cost normalised to 0…10 against the largest cost, null when none"
+            "help": "cost normalised to 0…10 against the largest cost, null without one"
           }
         }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "activeTab"
+    ],
+    "settable": [
+      "components",
+      "interactions",
+      "exclusions",
+      "functions",
+      "positions",
+      "labels",
+      "showRanks"
+    ],
+    "invariants": [
+      "uniqueComponentIds",
+      "singleTarget",
+      "validPairs",
+      "uniqueFunctionIds",
+      "functionEnds",
+      "levelByType"
     ]
   },
   "triz-ifr": {

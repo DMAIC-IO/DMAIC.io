@@ -49,14 +49,13 @@ import h46 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js'
 import h47 from '../modules/triz-9-windows/triz-9-windows-help.js';
 import h48 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
 import h49 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h50 from '../modules/triz-function-analysis/triz-function-analysis-help.js';
-import h51 from '../modules/triz-ifr/triz-ifr-help.js';
-import h52 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h53 from '../modules/triz-resources/triz-resources-help.js';
-import h54 from '../modules/triz-sufield/triz-sufield-help.js';
-import h55 from '../modules/unit-converter/unit-converter-help.js';
-import h56 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
-import h57 from '../modules/xy-plot/xy-plot-help.js';
+import h50 from '../modules/triz-ifr/triz-ifr-help.js';
+import h51 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h52 from '../modules/triz-resources/triz-resources-help.js';
+import h53 from '../modules/triz-sufield/triz-sufield-help.js';
+import h54 from '../modules/unit-converter/unit-converter-help.js';
+import h55 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h56 from '../modules/xy-plot/xy-plot-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -109,12 +108,11 @@ export const HELP = {
   "triz-9-windows": h47,
   "triz-contradiction-matrix": h48,
   "triz-evolution-trends": h49,
-  "triz-function-analysis": h50,
-  "triz-ifr": h51,
-  "triz-physical-contradiction": h52,
-  "triz-resources": h53,
-  "triz-sufield": h54,
-  "unit-converter": h55,
-  "voc-ctx-tree": h56,
-  "xy-plot": h57,
+  "triz-ifr": h50,
+  "triz-physical-contradiction": h51,
+  "triz-resources": h52,
+  "triz-sufield": h53,
+  "unit-converter": h54,
+  "voc-ctx-tree": h55,
+  "xy-plot": h56,
 };

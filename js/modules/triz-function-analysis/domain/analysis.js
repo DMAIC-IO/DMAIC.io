@@ -66,7 +66,7 @@ const RANK_BY_KIND = { target: 'basic', supersystem: 'additional', system: 'auxi
 /**
  * Derived rank of a function: useful on the target → basic, on a supersystem
  * element → additional, on a system component → auxiliary; harmful or draft → null.
- * @param {Object} fn @param {Array<Object>} components
+ * @param {Object} fn @param {ReadonlyArray<Object>} components
  * @returns {'basic'|'additional'|'auxiliary'|null}
  */
 export function rankOf(fn, components) {
@@ -80,7 +80,7 @@ export function rankOf(fn, components) {
  * Ax1 acts on a component that carries a basic or additional function, Axk on
  * one that carries an Ax(k−1) function; the shortest way counts. Auxiliary
  * functions without a way to a basic or additional function get level null.
- * @param {{components: Object[], functions: Object[]}} state
+ * @param {{components: ReadonlyArray<Object>, functions: ReadonlyArray<Object>}} state
  * @returns {Map<string, {rank:'basic'|'additional'|'auxiliary', level:number|null}>}
  */
 export function functionRanks(state) {
@@ -109,7 +109,7 @@ export const SCORE_BY_RANK = { basic: 3, additional: 2, auxiliary: 1 };
 /**
  * Function value of a component: the rank scores of the functions it carries
  * (harmful and draft functions score 0).
- * @param {string} id @param {{components: Object[], functions: Object[]}} state
+ * @param {string} id @param {{components: ReadonlyArray<Object>, functions: ReadonlyArray<Object>}} state
  * @returns {number}
  */
 export function componentValue(id, state) {
@@ -121,7 +121,7 @@ export function componentValue(id, state) {
 /**
  * Value & cost rows of the system components, in entry order. Value and cost
  * are normalised to 0…10 against the largest value / entered cost.
- * @param {AnalysisData} state
+ * @param {{components: ReadonlyArray<Object>, functions: ReadonlyArray<Object>}} state
  * @returns {Array<{id:string,name:string,value:number,normValue:number,cost:number|null,normCost:number|null}>}
  */
 export function valueCostRows(state) {

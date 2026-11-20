@@ -10,7 +10,7 @@ import { confirmOf, setFields } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 
 const FIXTURES = new URL('../../fixtures/triz-function-analysis/', import.meta.url);
-const EXAMPLE = new URL('../../../examples/projects/triz-function-analysis-toothbrush.json', import.meta.url);
+const EXAMPLE = new URL('../../../js/modules/triz-function-analysis/resources/examples/projects/triz-function-analysis-toothbrush.json', import.meta.url);
 /** Leser ohne fremde Instanzen (die Ableitungen lesen nur das Model). */
 const NO_SOURCE = { read: () => null, list: () => [] };
 const SCHEMA = { _schema: { name: 'triz-function-analysis', version: '1.0' } };
