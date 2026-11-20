@@ -560,6 +560,20 @@ suite('Diagramm-Widgets: roles', () => {
     assertTrue(typeof chart.config.onCommand === 'function');
     assertTrue(warned.some((w) => /sel/.test(w)));
   });
+  test('ein Kommando nimmt einem Feld außerhalb den Fokus, bevor es läuft', async () => {
+    const field = document.createElement('input');
+    document.body.append(field);
+    try {
+      field.focus();
+      const events = [];
+      field.addEventListener('focusout', () => events.push('focusout'));
+      const command = async (name) => { events.push(name); return { ok: true }; };
+      const { chart } = await mountRoles({ commands: { moveLabel: 'moveFn' } }, { command });
+      await chart.config.onCommand('moveLabel', { id: 'f1', x: 1, y: 2 });
+      assertDeepEqual(events, ['focusout', 'moveFn']);
+      assertTrue(document.activeElement !== field);
+    } finally { field.remove(); }
+  });
   test('abgebrochenes Kommando: keine Meldung, aber Neuzeichnen', async () => {
     const seen = [];
     const command = async () => ({ ok: false, cancelled: true });

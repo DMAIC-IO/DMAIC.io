@@ -9,6 +9,21 @@
  */
 import { applyEdits, diffEdits, ownedKeys, pickShown } from './chart-edits.js';
 
+/** Bearbeitbare Elemente, deren Fokus einen Verlaufsschritt offen hält (wie in template-module.js). */
+const EDITABLE = 'input, textarea, select, [contenteditable]';
+
+/**
+ * Bedienung des Diagramms beendet die Eingabe in einem Feld außerhalb, wie ein
+ * Klick daneben: Typen, die beim Drücken den Standard unterdrücken (gegen
+ * Textauswahl beim Ziehen), lassen den Fokus sonst im Feld, und dessen offener
+ * Verlaufsschritt nähme das Kommando mit auf.
+ * @param {HTMLElement} root Wirtselement des Widgets
+ */
+function leaveField(root) {
+  const el = root.ownerDocument?.activeElement;
+  if (el instanceof HTMLElement && !root.contains(el) && el.matches(EDITABLE)) el.blur();
+}
+
 /**
  * @param {any} widget Beschreibung aus chartWidget
  * @param {(config: any) => any} [toChart] geprüfte Konfiguration → Form des Typs
@@ -72,6 +87,7 @@ export function chartMount(widget, toChart = (c) => c) {
       const c = props.config;
       const name = c?.commands?.[role];
       if (!name) return;
+      leaveField(root);
       const r = await command(name, { ...(c.commandArgs ?? {}), ...args });
       if (!alive || !r || r.ok !== false) return;
       if (!r.cancelled) {
