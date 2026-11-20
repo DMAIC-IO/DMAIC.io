@@ -10,7 +10,8 @@ import { applyEdits } from '../../../widgets/chart-edits.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import descriptor from '../module.js';
 import { State, BIN_MODES } from '../domain/model.js';
-import { buildSeries, sourceColumns } from '../domain/analyze.js';
+import { buildSeries } from '../domain/analyze.js';
+import { sourceColumns } from '../../../core/source-columns.js';
 import { fromExample } from '../io/example.js';
 
 /** @param {any} s @returns {boolean} */

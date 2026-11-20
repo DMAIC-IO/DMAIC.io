@@ -49,7 +49,7 @@ suite('xy-plot: Reihenbau', () => {
     assertDeepEqual(r, { error: 'errNoGroupLevels', params: { n: 1 } });
   });
   test('zu wenige Punkte', () => {
-    const r = buildSeries(model([ds({ x: ref('x'), y: ref('y') })].map((d) => ({ ...d, y: ref('e') }))), read);
+    const r = buildSeries(model([ds({ x: ref('x'), y: ref('e') })]), read);
     assertEqual(r.error, 'errTooFew');
   });
   test('Größe unter 0 entfernt die Zeile; Blase nur mit Marker', () => {

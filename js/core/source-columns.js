@@ -193,3 +193,16 @@ export function listColumns(src, filter) {
 export function columnOptions(src, filter) {
   return listColumns(src, filter ?? {}).map(columnOption);
 }
+
+/**
+ * Spaltenleser über den Leser `src`: Werte und Anzeigename einer Spalte;
+ * `null`, wenn sie nicht lesbar ist.
+ * @param {Source} src
+ * @returns {{ values: (ref: object) => any[]|null, name: (ref: object) => string|null }}
+ */
+export function sourceColumns(src) {
+  return {
+    values: (ref) => columnValues(src, /** @type {any} */ (ref)),
+    name: (ref) => columnName(src, /** @type {any} */ (ref)),
+  };
+}

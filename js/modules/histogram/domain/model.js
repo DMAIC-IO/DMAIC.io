@@ -11,7 +11,8 @@ import { CHART_COLORS_RGBA } from '../../../core/chart/chart-colors.js';
 import { computeSeriesStats } from '../../../core/stats-panel.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import { applyEdits } from '../../../core/chart-edits.js';
-import { buildSeries, sourceColumns } from './analyze.js';
+import { buildSeries } from './analyze.js';
+import { sourceColumns } from '../../../core/source-columns.js';
 import { from0 } from './migrations.js';
 
 /** @type {readonly ('auto'|'manual')[]} */

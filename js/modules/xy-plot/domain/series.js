@@ -2,7 +2,7 @@
  * D.Mike — XY-Plot: Reihen aus Datensätzen. Rein.
  */
 import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
-import { sourceColumns } from '../../histogram/domain/analyze.js';
+import { sourceColumns } from '../../../core/source-columns.js';
 import { buildBubble } from './bubble.js';
 
 export { sourceColumns };
