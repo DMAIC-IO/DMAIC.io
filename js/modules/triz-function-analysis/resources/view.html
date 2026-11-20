@@ -118,7 +118,7 @@
                 </button>
               </header>
               <template x-for="fn in g.functions" :key="fn.id">
-                <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" x-command="select" :data-arg-id="fn.id" data-arg-toggle="false" data-help-key="">
+                <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" x-command="select" :data-arg-id="fn.id" data-arg-toggle="false" data-confirm-delete="off" data-help-key="">
                   <div class="tfa__fn-row">
                     <button type="button" class="btn btn--sm tfa__dir" data-role="fn-swap" :title="t('swapDirection')" data-help-key=""
                       :aria-label="directionLabel(fn)" x-command="swapDirection" :data-arg-id="fn.id" @click.stop>
@@ -128,7 +128,7 @@
                     <input class="field" type="text" data-role="fn-verb" :aria-label="t('verb')"
                       :placeholder="t('verbPlaceholder')" x-model="fn.verb">
                     <button type="button" class="btn btn--sm" data-role="fn-remove" :title="t('removeFunction')" data-help-key=""
-                      :aria-label="t('removeFunction')" x-command="removeFunction" :data-arg-id="fn.id" data-confirm-delete="off" @click.stop>
+                      :aria-label="t('removeFunction')" x-command="removeFunction" :data-arg-id="fn.id" @click.stop>
                       <span class="icon icon--sm" data-icon="action.delete"></span>
                     </button>
                   </div>
