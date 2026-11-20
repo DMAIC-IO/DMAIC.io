@@ -206,6 +206,7 @@ function adoptLegacy(props, value, services, editable) {
   if (!old || Object.keys(old).length === 0) return;
   const picked = Object.fromEntries(Object.entries(old).filter(([k]) => editable.base.includes(k)));
   const current = value.get() ?? {};
-  if (!value.set({ ...picked, ...current })) return;
+  const adds = Object.keys(picked).some((k) => !(k in current));
+  if (adds && !value.set({ ...picked, ...current })) return;
   for (const k of Object.keys(old)) sm.setChartEdit(services.instanceId, key, k, null);
 }

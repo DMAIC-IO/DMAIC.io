@@ -45,6 +45,13 @@ function fakeState(old = null) {
 }
 
 const Doc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: histogramChart.edits() } });
+/** Doc, das jeden Schreibzugriff auf chartEdits mitzählt (der erste ist die Vorbelegung). */
+function countingDoc(writes) {
+  return class extends Doc {
+    get chartEdits() { return super.chartEdits; }
+    set chartEdits(v) { writes.push(v); super.chartEdits = v; }
+  };
+}
 const TrendDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: trendChart.edits() } });
 const SERIES = (rev) => {
   const s = [{ name: 'A', values: [1, 2, 3], fillColor: 'red' }, { name: 'B', values: [4, 5], fillColor: 'blue' }];
@@ -239,10 +246,19 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     assertTrue(sm.log.cleared.every((c) => c[3] === null));
     a.root.remove();
     const sm2 = fakeState({ title: 'X' });
-    const b = await host(tpl, { cm: fakeManager(), sm: sm2, model: { chartEdits: { title: 'Y' } } });
+    const w2 = [];
+    const b = await host(tpl, { cm: fakeManager(), sm: sm2, Model: countingDoc(w2), model: { chartEdits: { title: 'Y' } } });
     assertDeepEqual(JSON.parse(JSON.stringify(b.data.model.chartEdits)), { title: 'Y' });
+    assertEqual(w2.length, 1);
     assertEqual(sm2.log.cleared.length, 1);
+    assertEqual(sm2.log.cleared[0][3], null);
     b.root.remove();
+    const sm3 = fakeState({ notEditable: 1 });
+    const w3 = [];
+    const c = await host(tpl, { cm: fakeManager(), sm: sm3, Model: countingDoc(w3), model: { chartEdits: { title: 'Y' } } });
+    assertEqual(w3.length, 1);
+    assertEqual(sm3.log.cleared.length, 1);
+    c.root.remove();
   });
 
   test('Übernahme alter chartEdits: Feldwerte mit Reihen bleiben unverändert', async () => {
