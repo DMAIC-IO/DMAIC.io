@@ -1090,7 +1090,16 @@
       },
       "scatter": {
         "marker": "Marker",
-        "markerForSeries": "Marker — {name}"
+        "markerForSeries": "Marker — {name}",
+        "connectLine": "Verbindungslinie",
+        "showLine": "Anzeigen",
+        "dash": {
+          "solid": "Durchgezogen",
+          "dash": "Gestrichelt",
+          "dot": "Gepunktet",
+          "dashdot": "Strich-Punkt",
+          "longdash": "Lang gestrichelt"
+        }
       },
       "probability-plot": {
         "marker": "Datenpunkte"

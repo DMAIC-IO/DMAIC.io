@@ -10,6 +10,10 @@ import {
   svgEl, drawMarker, dashArray, resolveColor, resolveError,
   dataExtent, formatNum, createPattern, getChartColors
 } from '../chart-core.js';
+import { edCheckboxRow, edColorPair, edSelectRow, openColorPicker } from '../chart-editor.js';
+
+/** Line styles offered for a series' connecting line, in menu order. */
+const CONNECT_LINE_DASHES = ['solid', 'dash', 'dot', 'dashdot', 'longdash'];
 
 
 export default class ScatterChart extends ChartBase {
@@ -345,10 +349,94 @@ export default class ScatterChart extends ChartBase {
     });
   }
 
-  /* ── Type-Specific Editor: per-series marker styling ───── */
+  /* ── Type-Specific Editor: connecting line per series ───── */
+  // Marker editing is handled globally by the series descriptors in chart-base.
+
+  /**
+   * i18n for chart.editor.scatter.<key> (falls back to the key).
+   * @param {string} key
+   * @returns {string}
+   */
+  _ts(key) {
+    const full = `chart.editor.scatter.${key}`;
+    const val = this.context?.i18n?.t(full);
+    return val && val !== full ? val : key;
+  }
+
+  /** Close the connecting-line colour picker, if one is open. */
+  _closeConnectLinePicker() {
+    const picker = this._connectLinePicker;
+    this._connectLinePicker = null;
+    if (picker) picker.close();
+  }
+
+  /**
+   * With `config.editConnectLine`, append a "connecting line" section (show,
+   * colour, line style) to each series entry of the base editor. Every edit
+   * stores a new `series[i].connectLine` object; a colour is only stored once
+   * chosen in the picker, until then the line follows the series colour.
+   * @override
+   * @param {HTMLElement} inner
+   * @param {function(string): string} t - chart.editor.<key> lookup
+   * @param {function} onUpdate - re-render and rebuild the editor
+   * @param {function} onChange - re-render, keep the editor DOM, notify
+   */
+  _buildTypeEditor(inner, t, onUpdate, onChange) {
+    this._closeConnectLinePicker();
+    if (!this.config.editConnectLine) return;
+    const series = this.config.series || [];
+    const chartColors = getChartColors();
+    const dashes = CONNECT_LINE_DASHES.map((v) => ({ value: v, label: this._ts(`dash.${v}`) }));
+
+    (this._seriesItemEls || []).forEach((item, i) => {
+      const s = series[i];
+      if (!s) return;
+      const cur = () => s.connectLine || { show: false, dash: 'solid', width: 2 };
+      const lineColor = () => cur().color || s.color || chartColors[i % chartColors.length];
+      const write = (patch) => {
+        const next = { ...cur(), ...patch };
+        s.connectLine = {
+          show: Boolean(next.show),
+          dash: next.dash || 'solid',
+          width: next.width ?? 2,
+          ...(next.color ? { color: next.color } : {}),
+        };
+        onChange();
+      };
+
+      const detail = document.createElement('div');
+      detail.className = 'dmike-chart-ed-series-detail open';
+      detail.dataset.ed = 'connectLine';
+
+      const title = document.createElement('div');
+      title.className = 'dmike-chart-ed-subsection-title';
+      title.textContent = this._ts('connectLine');
+      detail.appendChild(title);
+
+      detail.appendChild(edCheckboxRow(this._ts('showLine'), Boolean(cur().show), (v) => write({ show: v })));
+
+      const { el: colorRow, swatch } = edColorPair(t('color'), lineColor(), (e) => {
+        this._closeConnectLinePicker();
+        const picker = openColorPicker(e, lineColor(), (c) => {
+          if (this._connectLinePicker !== picker || !this._svg) return;
+          swatch.style.background = c;
+          write({ color: c });
+        });
+        this._connectLinePicker = picker;
+      });
+      detail.appendChild(colorRow);
+
+      detail.appendChild(edSelectRow(t('lineStyle'), dashes, cur().dash || 'solid', (v) => write({ dash: v })));
+
+      item.appendChild(detail);
+    });
+  }
 
   /** @override */
-  // Marker editing is handled globally by the series descriptors in chart-base.
+  destroy() {
+    this._closeConnectLinePicker();
+    super.destroy();
+  }
 
   /* ── Series Descriptors (for base editor) ────────────────── */
 

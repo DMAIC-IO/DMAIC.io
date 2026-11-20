@@ -79,7 +79,17 @@ suite('Diagramm-Widgets: Schemas', () => {
   test('Streudiagramm und Wahrscheinlichkeitsnetz: Reihen', () => {
     checkValue(scatterChart.props.config, 'c', { series: [{ name: 'R', x: [1], y: [2], color: 'var(--color-chart-3)', markerSize: 4, strokeWidth: 0.75, symbol: 'circle' }], refLines: [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }] });
     checkValue(probabilityPlotChart.props.config, 'c', { series: [{ name: 'R', values: [0.1, -0.2], color: 'var(--color-chart-5)' }] });
-    assertDeepEqual(scatterChart.editable.series, ['color', 'visible', 'symbol', 'markerSize', 'stroke', 'strokeWidth']);
+    assertDeepEqual(scatterChart.editable.series, ['connectLine', 'color', 'visible', 'symbol', 'markerSize', 'stroke', 'strokeWidth']);
+  });
+
+  test('Streudiagramm: Verbindungslinie je Reihe bearbeitbar, Schalter editConnectLine nur in der Konfiguration', () => {
+    assertTrue(scatterChart.editable.series.includes('connectLine'));
+    assertTrue('editConnectLine' in scatterChart.props.config.shape);
+    assertTrue(!('editConnectLine' in scatterChart.edits().shape));
+    assertTrue(!scatterChart.editable.base.includes('editConnectLine'));
+    const cfg = { editConnectLine: true, series: [{ name: 'R', x: [1], y: [2], connectLine: { show: true, dash: 'dashdot', width: 2 } }] };
+    assertDeepEqual(checkValue(scatterChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(scatterChart.props.config, 'c', { editConnectLine: 'ja' }), /editConnectLine/);
   });
 
   test('Streudiagramm: Ticks, Verbindungslinie, Blasen, Lücken in y; Histogramm und Wahrscheinlichkeitsnetz: Ausrichtung und Farben', () => {

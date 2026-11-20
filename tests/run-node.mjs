@@ -97,6 +97,7 @@ const SKIP = new Set([
   'core/chart/pie.test.js',
   'core/chart/probability-plot-render.test.js',
   'core/chart/run-chart.test.js',
+  'core/chart/scatter-connect-line.test.js',
   'core/chart/scatter-labels.test.js',
   'core/chart/trend.test.js',
   'core/chunks.test.js',

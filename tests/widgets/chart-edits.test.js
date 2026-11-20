@@ -59,6 +59,16 @@ suite('Editor-Einstellungen', () => {
       { series: [{ name: 'B', fillColor: 'green' }, { name: 'A', visible: false }] });
   });
 
+  test('diffEdits: Objekt-Schlüssel einer Reihe (Verbindungslinie) nach Inhalt verglichen', () => {
+    const ed = { base: [], series: ['connectLine'] };
+    const before = { series: [{ name: 'A', connectLine: { show: false, dash: 'solid', width: 2 } }] };
+    const after = { series: [{ name: 'A', connectLine: { show: true, dash: 'dash', width: 2 } }] };
+    assertDeepEqual(diffEdits(null, before, after, ed, new Set()).next,
+      { series: [{ name: 'A', connectLine: { show: true, dash: 'dash', width: 2 } }] });
+    const same = { series: [{ name: 'A', connectLine: { show: false, dash: 'solid', width: 2 } }] };
+    assertDeepEqual(diffEdits(null, before, same, ed, new Set()).next, {});
+  });
+
   test('pickShown: nur bearbeitbare Schlüssel und die Reihen', () => {
     assertDeepEqual(pickShown({ title: 'T', values: [1], series: [{ name: 'A', fillColor: 'r', values: [1] }] }, editable),
       { title: 'T', series: [{ name: 'A', fillColor: 'r' }] });
