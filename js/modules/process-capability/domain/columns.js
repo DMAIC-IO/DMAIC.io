@@ -5,14 +5,14 @@
  * wählbaren Spalten nutzen ihn gemeinsam.
  */
 /**
- * @typedef {{ instanceId: string, sheetId: string, columnId: string }} ColumnRef
+ * @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef
  */
 
 /**
  * Darf `col` die ID-Spalte zur Messspalte `valueRef` sein? Ja, wenn sie auf
  * demselben Blatt liegt und eine andere Spalte ist.
  * @param {ColumnRef|null} valueRef
- * @param {{ instanceId: string, sheetId: string, columnId: string }} col
+ * @param {ColumnRef} col
  * @returns {boolean}
  */
 export function subgroupAllowed(valueRef, col) {

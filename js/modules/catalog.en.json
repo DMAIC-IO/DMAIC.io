@@ -70,6 +70,11 @@
     "description": "Two-column flow: value-added steps versus rework",
     "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet."
   },
+  "process-capability": {
+    "name": "Process Capability",
+    "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",
+    "whenToUse": "When it must be shown how well a process keeps a measured characteristic inside its specification limits: Cp and Cpk (short term, from the within-subgroup spread), Pp and Ppk (long term), PPM and sigma level, with confidence intervals. Works with one-sided or two-sided limits, individual values or subgroups. Needs at least one limit (lower or upper) and at least 2 numeric values from a data collection column or from loaded example data."
+  },
   "project-charter": {
     "name": "Project Charter",
     "description": "Project mandate: problem statement and measurable goals",

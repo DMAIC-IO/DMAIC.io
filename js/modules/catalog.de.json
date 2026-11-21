@@ -70,6 +70,11 @@
     "description": "Zwei-Spalten-Ablauf: wertschöpfende Schritte gegen Nacharbeit",
     "whenToUse": "Wenn eine bestehende Kette danach sortiert werden soll, was wertschöpfend ist und was Nacharbeit — nicht für eine neue Prozessaufnahme ohne diese Unterscheidung."
   },
+  "process-capability": {
+    "name": "Prozessfähigkeit",
+    "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",
+    "whenToUse": "Wenn gezeigt werden soll, wie gut ein Prozess ein Merkmal innerhalb seiner Spezifikationsgrenzen hält: Cp und Cpk (kurzfristig, aus der Streuung innerhalb der Untergruppen), Pp und Ppk (langfristig), PPM und Sigma-Level, jeweils mit Konfidenzintervallen. Geht mit einseitigen und zweiseitigen Grenzen, Einzelwerten und Untergruppen. Braucht mindestens eine Grenze (untere oder obere) und mindestens 2 numerische Werte aus einer Spalte einer Datensammlung oder aus geladenen Beispieldaten."
+  },
   "project-charter": {
     "name": "Projektauftrag",
     "description": "Projektauftrag: Problembeschreibung und messbare Ziele",

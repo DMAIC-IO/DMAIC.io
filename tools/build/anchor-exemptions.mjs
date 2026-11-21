@@ -111,7 +111,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('statistic')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
   'process-capability': [
-    { match: 'name="pc-subgroup-mode"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
+    { match: ':data-ref="mode.ref"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: "t('ppmColKind')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
   'response-optimization': [

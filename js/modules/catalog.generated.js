@@ -15,22 +15,23 @@ import m10 from './msa-typ2/module.js';
 import m11 from './msa-typ5/module.js';
 import m12 from './multi-vari/module.js';
 import m13 from './opportunity-flowchart/module.js';
-import m14 from './project-charter/module.js';
-import m15 from './resampling/module.js';
-import m16 from './sipoc/module.js';
-import m17 from './survey-builder/module.js';
-import m18 from './triz-function-analysis/module.js';
-import m19 from './worksheet/module.js';
-import m20 from './xy-plot/module.js';
+import m14 from './process-capability/module.js';
+import m15 from './project-charter/module.js';
+import m16 from './resampling/module.js';
+import m17 from './sipoc/module.js';
+import m18 from './survey-builder/module.js';
+import m19 from './triz-function-analysis/module.js';
+import m20 from './worksheet/module.js';
+import m21 from './xy-plot/module.js';
 
 /** Menüreihenfolge (tools/build/catalog.mjs MODULE_ORDER). */
 export const MODULE_ORDER = Object.freeze(["worksheet","xy-plot","pie-chart","bar","pareto","mosaic","heatmap","contour-plot","histogram","boxplot","individual-value-plot","run-chart","probability-plot","chart-suggestion","data-import","rest-api","random-generator","model-data-generator","calculator","unit-converter","data-transformation","project-charter","dmaic-calendar","todo","stakeholder-analysis","voc-ctx-tree","kano","survey-builder","raci-matrix","sipoc","five-why","process-map","gage-run-chart","msa-typ1","msa-typ2","msa-typ4","msa-typ5","msa-typ6","process-capability","ce-matrix","ishikawa","makigami","activity-flowchart","opportunity-flowchart","deployment-flowchart","correlation","distribution-fit","fmea","hypothesis-test","attribute-test","resampling","multi-vari","sample-size","pairwise-comparison","outlier-test","doe-advisor","doe-planner","regression","glm-regression","response-optimization","control-chart","attribute-control-chart","time-weighted-chart","rare-event-chart","multivariate-control-chart","short-run-chart","transformed-imr-chart","lessons-learned","triz-contradiction-matrix","triz-9-windows","morphological-box","triz-physical-contradiction","triz-ifr","triz-resources","triz-evolution-trends","triz-sufield","triz-function-analysis"]);
 
 /** Ids der Module in der neuen Form (module.js), sortiert. */
-export const CONVERTED = Object.freeze(["attribute-control-chart","chart-suggestion","contour-plot","data-import","dmaic-calendar","doe-planner","histogram","hypothesis-test","ishikawa","morphological-box","msa-typ2","msa-typ5","multi-vari","opportunity-flowchart","project-charter","resampling","sipoc","survey-builder","triz-function-analysis","worksheet","xy-plot"]);
+export const CONVERTED = Object.freeze(["attribute-control-chart","chart-suggestion","contour-plot","data-import","dmaic-calendar","doe-planner","histogram","hypothesis-test","ishikawa","morphological-box","msa-typ2","msa-typ5","multi-vari","opportunity-flowchart","process-capability","project-charter","resampling","sipoc","survey-builder","triz-function-analysis","worksheet","xy-plot"]);
 
 /** Alle Registry-Einträge: alte Form aus manifest.js, neue aus module.js; in Menüreihenfolge. */
-export const MODULES = Object.freeze([...legacy, ...[m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20].map(fromDescriptor)]
+export const MODULES = Object.freeze([...legacy, ...[m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21].map(fromDescriptor)]
   .sort((a, b) => MODULE_ORDER.indexOf(a.id) - MODULE_ORDER.indexOf(b.id)));
 
 /** Beispiel-Id → Besitzermodul (Module in neuer Form, resources/examples/examples.json). */

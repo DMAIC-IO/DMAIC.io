@@ -1,0 +1,106 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "{{term:prozessfaehigkeit|Process capability analysis}} measures how well a process meets the customer's requirements. It compares the natural variation of the process to specification limits and expresses the result in a handful of indices. It is a core Measure and Control tool to produce an objective before/after picture."
+        },
+        {
+          "type": "definition",
+          "term": "Cp",
+          "content": "{{term:cp|Cp}} — potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the {{term:mittelwert|mean}}'s location; it only says whether the process is theoretically narrow enough. σ here is the within variation. As in Minitab there are six estimators: for subgroups the pooled standard deviation (default), R̄/d2 and S̄/c4; for individuals the average moving range (default), its median and the square root of MSSD. The unbiasing constant (c4 or c4′) can be switched off for pooled s, S̄ and √MSSD. The confidence interval of Cp and Cpk uses the degrees of freedom ν of the chosen estimator. That is why the order of the values matters."
+        },
+        {
+          "type": "definition",
+          "term": "Cpk",
+          "content": "{{term:cpk|Cpk}} — actual capability — additionally accounts for how far the mean sits from the nearer spec limit. Cpk is always ≤ Cp. Low Cpk with high Cp signals off-centering."
+        },
+        {
+          "type": "definition",
+          "term": "Pp and Ppk",
+          "content": "{{term:pp|Pp}} and {{term:ppk|Ppk}} — long-term versions of Cp and Cpk using overall sample variation instead of within-subgroup variation. Pp/Ppk is usually worse because it includes drift and special causes."
+        },
+        {
+          "type": "definition",
+          "term": "Sigma level (Z.bench) and PPM",
+          "content": "The sigma level is Z.bench: the standard normal quantile of the total expected fraction outside both limits, computed with σ within. It equals 3 · Cpk only when the fraction beyond the far limit is negligible. Z.bench overall uses s; the Six Sigma convention adds 1.5σ to it — an agreement, not a measurement. The \"Nonconforming (PPM)\" table shows observed parts outside the limits and the expected fractions within and overall, per million."
+        },
+        {
+          "type": "definition",
+          "term": "Specification limits (USL, LSL)",
+          "content": "{{term:spezifikationsgrenzen|Specification limits (USL, LSL)}} — tolerance limits set by the customer or designer. Capability is a ratio between process behavior and these limits — no spec, no capability."
+        },
+        {
+          "type": "definition",
+          "term": "Normality assumption",
+          "content": "Classic indices assume normal data. For skewed or multi-modal data, Box-Cox transformations or percentile-based nonparametric variants are used."
+        },
+        {
+          "type": "paragraph",
+          "content": "Rules of thumb: Cpk < 1.00 = not capable, 1.00–1.33 = marginal, 1.33–1.67 = good, > 1.67 = very good. Automotive expects 1.33 as minimum and 1.67 as target."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Get specification limits from requirements, drawings, or customer contracts.",
+            "Collect data — stable, representative, at least 30 values, ideally 100+.",
+            "Check stability ({{term:regelkarte|control chart}}) — only a stable process gives meaningful indices.",
+            "Check normality (histogram, probability plot, Shapiro-Wilk). If off, transform or use nonparametric method.",
+            "Define the subgroups: a fixed size (1 = individuals) or a column of subgroup IDs — a new subgroup starts whenever the ID changes. Then choose the estimator for σ within. Values must be in production order.",
+            "Compute indices (Cp, Cpk, Pp, Ppk) and report with confidence intervals.",
+            "Visualize — histogram with spec limits and fitted normal curve.",
+            "Interpret: capable / not capable / shift vs. spread dominating."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Capability on an unstable process",
+          "content": "Indices from a drifting or disturbed process are worthless — they reflect the current snapshot, not the real behavior. Secure stability before any capability analysis."
+        },
+        {
+          "type": "definition",
+          "term": "Non-normal data ignored",
+          "content": "A skewed distribution plugged into classical formulas yields wrong Cpk values — often worse than reality. Check the distribution first and transform if needed."
+        },
+        {
+          "type": "definition",
+          "term": "Too few data",
+          "content": "At n = 15 the confidence interval for Cpk is so wide the result is meaningless. Use at least 30, preferably 100+ observations."
+        },
+        {
+          "type": "definition",
+          "term": "High Cp, low Cpk",
+          "content": "The classic off-centered case: the process is narrow enough but shifted. The fix is not to reduce variation but to recenter the mean."
+        },
+        {
+          "type": "definition",
+          "term": "Reporting only Cp",
+          "content": "Cp without Cpk hides off-centering. Always report both."
+        },
+        {
+          "type": "definition",
+          "term": "Self-set specifications",
+          "content": "When the same company sets the spec and measures its own capability, the threshold tends to be chosen so that the number \"fits\". Specs come from the customer or function — not from the analyst."
+        },
+        {
+          "type": "definition",
+          "term": "Confusing Cp/Cpk with Pp/Ppk",
+          "content": "Cp/Cpk uses short-term variation, Pp/Ppk long-term. Both are useful but not interchangeable — use the acronyms consistently and match them to the dataset."
+        }
+      ]
+    }
+  }
+}

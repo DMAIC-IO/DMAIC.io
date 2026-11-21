@@ -139,14 +139,17 @@
   "js/modules/pairwise-comparison/pairwise-comparison.js": {
     "count": 3
   },
-  "js/modules/process-capability/process-capability-format.js": {
-    "count": 1
+  "js/modules/process-capability/domain/format.js": {
+    "count": 1,
+    "reason": "Kennzahlen, Tabellen und Formeln zeigen feste Nachkommastellen mit Punkt (toFixed) wie bisher, auch in der Kachel; Umstellung auf formatNumber ist eine sichtbare Änderung"
   },
-  "js/modules/process-capability/process-capability-model.js": {
-    "count": 2
+  "js/modules/process-capability/domain/migrations.js": {
+    "count": 2,
+    "reason": "Migration alter Stände: Konfidenz auf zwei Stellen runden (Modellwert, keine Anzeige) und Ganzzahltext alter Stände lesen wie das alte Model (parseFloat), wie bisher"
   },
-  "js/modules/process-capability/process-capability.js": {
-    "count": 3
+  "js/modules/process-capability/viewmodel/viewmodel.js": {
+    "count": 1,
+    "reason": "n̄ und Freiheitsgrade ν in Kenngrößentabelle und Formelblock mit höchstens zwei Nachkommastellen und Punkt (toFixed) wie bisher; Umstellung ist eine sichtbare Änderung"
   },
   "js/modules/project-charter/resources/view.html": {
     "count": 4,

@@ -4,8 +4,7 @@ import r1 from '../modules/control-chart/control-chart-references.js';
 import r2 from '../modules/glm-regression/glm-regression-references.js';
 import r3 from '../modules/msa-typ1/msa-typ1-references.js';
 import r4 from '../modules/msa-typ6/msa-typ6-references.js';
-import r5 from '../modules/process-capability/process-capability-references.js';
-import r6 from '../modules/sample-size/sample-size-references.js';
+import r5 from '../modules/sample-size/sample-size-references.js';
 
 export const REFS = {
   "attribute-test": r0,
@@ -13,6 +12,5 @@ export const REFS = {
   "glm-regression": r2,
   "msa-typ1": r3,
   "msa-typ6": r4,
-  "process-capability": r5,
-  "sample-size": r6,
+  "sample-size": r5,
 };

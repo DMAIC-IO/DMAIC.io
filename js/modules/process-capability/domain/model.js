@@ -8,7 +8,6 @@
  * und Arbeitsblatt.
  */
 import { defineModel, command, object, text, number, boolean, oneOf, list, columnRef } from '../../../core/model.js';
-import { WITHIN_METHODS } from '../../../engines/sigma-within-engine.js';
 import { listColumns, columnOption, sourceColumns } from '../../../core/source-columns.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import { analyze } from './analyze.js';
@@ -111,7 +110,7 @@ import { from0 } from './migrations.js';
  * @property {{ key: string, name: string }[]} subgroup  ID-Spalten: Blatt der Messspalte ohne diese
  */
 
-/** Die elf Parameter in der Reihenfolge der Oberfläche. */
+/** Die elf Parameter in der Reihenfolge der Oberfläche. @type {(keyof Params)[]} */
 const PARAM_KEYS = ['name', 'lsl', 'target', 'usl', 'unit', 'confidence',
   'subgroupMode', 'subgroupSize', 'withinMethod', 'mrSpan', 'unbiased'];
 
@@ -134,7 +133,7 @@ export const State = defineModel({
       confidence: number({ exclusiveMin: 0, nullable: true, default: (c) => c.confidenceLevel }),
       subgroupMode: oneOf(SUBGROUP_MODES, { default: 'size' }),
       subgroupSize: number({ integer: true, min: 1, default: 1 }),
-      withinMethod: oneOf(['', ...WITHIN_METHODS], { default: '' }),
+      withinMethod: oneOf(['', 'pooled', 'rbar', 'sbar', 'averageMR', 'medianMR', 'sqrtMSSD'], { default: '' }),
       unbiased: boolean({ default: true }),
       mrSpan: number({ integer: true, min: 2, max: 100, default: 2 }),
     }),

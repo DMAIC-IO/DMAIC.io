@@ -4,14 +4,14 @@
  * "Is the process capable?" — Cpk traffic light, Ppk, PPM, n and a compact
  * histogram through the tile-bound chartManager (editor edits persist per
  * tile). One tile per instance; source/copies via the host. Imports only the
- * pure analysis, model and format files. The markup lives in
+ * pure domain files. The markup lives in
  * process-capability.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { getColumnValues } from '../../ui/column-picker.js';
-import { State } from './process-capability-model.js';
-import { analyzeState, formatHint, specRefLines } from './process-capability-analysis.js';
-import { fmt as formatNumber } from './process-capability-format.js';
+import { State } from './domain/model.js';
+import { analyze, inputValues, formatHint, specRefLines } from './domain/analyze.js';
+import { fmt as formatNumber } from './domain/format.js';
 import { showChart, chartSlot } from '../../ui/tile-kit.js';
 
 /** ppmBasis setting → engine result field. */
@@ -58,8 +58,9 @@ export default {
    */
   viewModel({ state, settings, i18n, stateManager }) {
     const t = (key, params) => i18n.t(`modules.process-capability.${key}`, params);
-    const a = analyzeState(State.fromJSON(state), (ref) => getColumnValues(stateManager, ref),
-      { defaultConfidence: stateManager?.get?.('settings.confidenceLevel') ?? 95 });
+    const model = State.fromJSON(state ?? null);
+    const read = { values: (ref) => getColumnValues(stateManager, ref), name: () => null };
+    const a = analyze(model, read);
     const hint = formatHint(a.hint, t) || null;
     const none = (key, hintText) => ({ empty: i18n.t(key), hint: hintText, metrics: [], stats: [], chart: null });
 
@@ -81,7 +82,7 @@ export default {
       ],
       chart: settings.showChart
         ? {
-          data: a.values,
+          data: inputValues(model, read),
           binMethod: 'sturges',
           showNormalCurve: true,
           barColor: 'var(--color-accent)',

@@ -1,0 +1,152 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "params": {
+      "help": "The inputs, each key described under keys; limits, target and confidence level as a number or null.",
+      "lsl": {
+        "help": "The lower specification limit, label “LSL”, as a number. Empty means no lower limit; CPL, PPL and all fractions below LSL are then missing. At least one of the two limits must be set, and USL must lie above LSL, otherwise there is no result."
+      },
+      "target": {
+        "help": "The target, label “Target”, as a number. It enters no index; the table shows it, and without it the table shows the tolerance midpoint (USL + LSL)/2 when both limits are set. Empty is allowed."
+      },
+      "usl": {
+        "help": "The upper specification limit, label “USL”, as a number. Empty means no upper limit; CPU, PPU and all fractions above USL are then missing. At least one of the two limits must be set, and USL must lie above LSL, otherwise there is no result."
+      },
+      "confidence": {
+        "help": "The confidence level of the intervals in percent, label “Confidence (CI) (%)”, preset to the confidence level of the settings, otherwise 95. A value outside 50 to 99.99 is clamped to that range when computing; an empty field computes with 95."
+      },
+      "subgroupMode": {
+        "help": "Where the subgroups come from, label “Subgroups”: “Fixed size” splits the values in order into groups of equal size, “Column with IDs” groups them by a second column of subgroup IDs. “Column with IDs” can only be chosen while no example data are loaded. The subgroups decide which estimators for σ within are offered."
+      },
+      "subgroupSize": {
+        "help": "The fixed subgroup size, label “Subgroup size”, whole number from 1, preset 1. At 1 the values are individuals and σ within comes by default from the average moving range (the median moving range and the square root of MSSD can be chosen too); from 2 the subgroup estimators apply. Only adjustable in the mode “Fixed size”."
+      },
+      "mrSpan": {
+        "help": "The span w of the moving ranges, label “Moving range span w”, whole number from 2 to 100, preset 2: each range covers w consecutive values. Applies only to the average moving range and the median moving range."
+      }
+    },
+    "columnRef": {
+      "help": "The worksheet column with the measurement values, numeric; changing it recomputes. While example data are loaded it stays empty: discard the example data first."
+    },
+    "subgroupColumnRef": {
+      "help": "The column with subgroup IDs from the same sheet as the measurement values, not the measurement column itself. It only counts in the \"Column with IDs\" mode; if it does not fit, the hint names the reason and there is no result. When the measurement column moves to another sheet while the module is open, it is cleared."
+    },
+    "embeddedValues": {
+      "help": "The values of loaded example data that replace the measurement column, or null. Bulk data: without options.fields = ['embeddedValues'] only the size is returned."
+    },
+    "embeddedLabel": {
+      "help": "The title of the loaded example data, '' when none are loaded."
+    },
+    "histogramChart": {
+      "help": "The settings of the histogram editor (title, axes, reference lines, appearance)."
+    },
+    "analysis": {
+      "help": "The capability analysis for the current inputs and data: result (the result or null), methods (the estimators that fit the data), method (the one used), hint (a note on the estimator or the subgroup column as { key, params } or null) and empty (neither a measurement column nor example data set). result is null while no data are chosen, no limit is entered, the upper limit does not exceed the lower one, fewer than 2 values are present, the estimator cannot be computed or, in column mode, no fitting subgroup column is chosen."
+    },
+    "activeParams": {
+      "help": "The keys of params that take effect in the current state."
+    },
+    "subgroupModeValues": {
+      "help": "The values of params.subgroupMode that take effect: 'size' always, 'column' only while no example data are loaded."
+    },
+    "withinMethodOptions": {
+      "help": "The values of params.withinMethod that fit the data: '' (the default of the data) and the fitting estimators. For individuals the moving-range estimators, for subgroups the pooled, range and standard-deviation estimators. Another value is accepted; the default is used instead and analysis.hint says so."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields that take effect in the current state: 'value' (columnRef) always, 'subgroup' (subgroupColumnRef) only in the \"Column with IDs\" mode without example data."
+    },
+    "pickableColumns": {
+      "help": "Per slot the fitting columns, each { key, name }; key is 'instanceId|sheetId|columnId'. value lists the numeric columns, subgroup the other columns of the measurement column's sheet (empty without a measurement column)."
+    },
+    "values": {
+      "help": "The values the analysis and the histogram use: the example data, otherwise the numbers of the measurement column."
+    }
+  },
+  "actions": {
+    "clearEmbedded": {
+      "help": "Discards loaded example data; afterwards the module computes from a column again. Without example data nothing changes.",
+      "params": {
+        "command": "The command as an object without parameters."
+      }
+    }
+  },
+  "types": {
+    "Params": {
+      "name": "The name of the feature, label “Feature / Characteristic”; free text. It appears in the status bar after the verdict and does not enter the computation.",
+      "lsl": "The lower specification limit, label “LSL”, as a number. Empty means no lower limit; CPL, PPL and all fractions below LSL are then missing. At least one of the two limits must be set, and USL must lie above LSL, otherwise there is no result.",
+      "target": "The target, label “Target”, as a number. It enters no index; the table shows it, and without it the table shows the tolerance midpoint (USL + LSL)/2 when both limits are set. Empty is allowed.",
+      "usl": "The upper specification limit, label “USL”, as a number. Empty means no upper limit; CPU, PPU and all fractions above USL are then missing. At least one of the two limits must be set, and USL must lie above LSL, otherwise there is no result.",
+      "unit": "The unit of the measurements, label “Unit”, preset mm. It follows the values of the summary table and does not enter the computation.",
+      "confidence": "The confidence level of the intervals in percent, label “Confidence (CI) (%)”, preset to the confidence level of the settings, otherwise 95. A value outside 50 to 99.99 is clamped to that range when computing; an empty field computes with 95.",
+      "subgroupMode": "Where the subgroups come from, label “Subgroups”: “Fixed size” splits the values in order into groups of equal size, “Column with IDs” groups them by a second column of subgroup IDs. “Column with IDs” can only be chosen while no example data are loaded. The subgroups decide which estimators for σ within are offered.",
+      "subgroupSize": "The fixed subgroup size, label “Subgroup size”, whole number from 1, preset 1. At 1 the values are individuals and σ within comes by default from the average moving range (the median moving range and the square root of MSSD can be chosen too); from 2 the subgroup estimators apply. Only adjustable in the mode “Fixed size”.",
+      "withinMethod": "The estimator for σ within, from which Cp, Cpk, CPL and CPU are computed. Empty means automatic choice: the average moving range for individuals, the pooled standard deviation for subgroups. For individuals the choices are average moving range, median moving range and square root of MSSD; for subgroups pooled standard deviation, R̄/d2 and S̄/c4. If a stored estimator does not fit the data, the automatic one applies and a note says so.",
+      "mrSpan": "The span w of the moving ranges, label “Moving range span w”, whole number from 2 to 100, preset 2: each range covers w consecutive values. Applies only to the average moving range and the median moving range.",
+      "unbiased": "Whether the unbiasing constant is applied, label “Use unbiasing constant (c4 or c4′)”, preset on: the estimate of σ within is divided by c4 or c4′ so that it is not too small on average. Applies only to pooled standard deviation, S̄/c4 and square root of MSSD."
+    },
+    "Result": {
+      "n": "The number of evaluated measurements n, label “Number of measurements n”; only numbers count, empty and non-numeric cells are dropped. At least 2 are needed.",
+      "xbar": "The mean x̄ of all measurements, label “Mean x̄”. It is the reference point for CPL, CPU, PPL and PPU.",
+      "s": "The overall standard deviation s of all measurements with divisor n − 1, label “Standard deviation overall s (n−1)”. Pp, Ppk and the expected overall fractions are computed from it.",
+      "sigmaWithin": "The within spread σ within, estimated by the chosen estimator from the subgroups or the moving ranges, label “Standard deviation within”. It measures only the short-term spread; Cp, Cpk, CPL, CPU and the expected within fractions are computed from it.",
+      "sigmaOverall": "The overall spread, equal to s: the standard deviation of all measurements with divisor n − 1. It appears here a second time as the counterpart of σ within.",
+      "withinMethod": "The estimator actually used for σ within: pooled standard deviation, R̄/d2, S̄/c4, average moving range, median moving range or square root of MSSD. With automatic choice or a stored estimator that does not fit, the automatic one is given here.",
+      "withinDf": "The degrees of freedom ν of the estimator for σ within, used by the confidence intervals of Cp and Cpk: pooled Σ(nᵢ − 1) over the subgroups with at least 2 values, R̄/d2 0.9 · k · (n̄ − 1), S̄/c4 f(n̄) · k · (n̄ − 1) with a table factor f, the moving-range estimators the number of ranges, square root of MSSD n − 1. For R̄/d2 and S̄/c4, ν can be fractional.",
+      "subgroupSize": "The fixed subgroup size used in the computation. In the mode “Column with IDs” this shows 1, although the subgroups come from the column; their number and average size are given by the subgroup count and the average subgroup size.",
+      "xmin": "The smallest measurement, label “Minimum”.",
+      "xmax": "The largest measurement, label “Maximum”.",
+      "subgroupCount": "The number k of subgroups with at least 2 values, for individuals the number of values. It enters the degrees of freedom of the estimator.",
+      "nBar": "The average size n̄ of the subgroups with at least 2 values, 1 for individuals.",
+      "unbiased": "Whether the unbiasing constant c4 or c4′ was switched on. The value appears even when the estimator used does not apply it.",
+      "mrSpan": "The span w of the moving ranges used in the computation. It appears even when the estimator used takes no moving ranges.",
+      "T": "The tolerance T = USL − LSL, label “Tolerance T (USL − LSL)”. Empty when only one limit is set; Cp and Pp are then missing as well.",
+      "mid": "The tolerance midpoint (USL + LSL)/2; empty when only one limit is set.",
+      "targetVal": "The target in the table, label “Target”: the entered target, otherwise the tolerance midpoint. Empty with only one limit and no target. It enters no index.",
+      "hasLsl": "Whether a lower specification limit LSL is set.",
+      "hasUsl": "Whether an upper specification limit USL is set.",
+      "twoSided": "Whether both limits are set; only then are there a tolerance, Cp, Pp and their intervals.",
+      "lsl": "The lower specification limit LSL as a number, label “LSL” in the summary table; empty without a lower limit.",
+      "usl": "The upper specification limit USL as a number, label “USL” in the summary table; empty without an upper limit.",
+      "Cp": "The potential capability Cp = T / (6 · σ within), tile “Cp (Potential)”: how often the process width fits into the tolerance, regardless of location. From 1.33 capable, from 1.0 conditionally capable, below that not capable. Empty when only one limit is set.",
+      "CPU": "The capability towards the upper limit CPU = (USL − x̄) / (3 · σ within), tile “CPU (Upper)”. Empty without an upper limit.",
+      "CPL": "The capability towards the lower limit CPL = (x̄ − LSL) / (3 · σ within), tile “CPL (Lower)”. Empty without a lower limit.",
+      "Cpk": "The actual capability Cpk, tile “Cpk (Actual)”: the smaller of CPU and CPL, with only one limit its value. It accounts for within spread and location. From 1.33 capable, from 1.0 conditionally capable, below that not capable; this verdict is the overall verdict of the status bar.",
+      "Pp": "The potential overall performance Pp = T / (6 · s), tile “Pp (Overall Potential)”: like Cp, but with the overall standard deviation s, that is with the long-term spread. Empty when only one limit is set.",
+      "PPU": "The overall performance towards the upper limit PPU = (USL − x̄) / (3 · s). Empty without an upper limit.",
+      "PPL": "The overall performance towards the lower limit PPL = (x̄ − LSL) / (3 · s). Empty without a lower limit.",
+      "Ppk": "The actual overall performance Ppk, tile “Ppk (Overall Actual)”: the smaller of PPU and PPL, with only one limit its value. Like Cpk, but with the overall standard deviation s.",
+      "CpCI": "The confidence interval of Cp as a pair of lower and upper bound, via the χ² distribution with the estimator's ν degrees of freedom: Cp · √(χ²(α/2; ν)/ν) to Cp · √(χ²(1 − α/2; ν)/ν). The tile shows it after “CI” with the level in percent. Empty when Cp is missing or the estimator has no degrees of freedom.",
+      "CpkCI": "The confidence interval of Cpk as a pair of lower and upper bound, after Bissell as a normal approximation: Cpk ± z · SE with SE = √(1/(9n) + Cpk²/(2ν)), ν the degrees of freedom of the estimator for σ within. Empty when the estimator has no degrees of freedom.",
+      "PpCI": "The confidence interval of Pp as a pair of lower and upper bound, via the χ² distribution with n − 1 degrees of freedom. Empty when Pp is missing.",
+      "PpkCI": "The confidence interval of Ppk as a pair of lower and upper bound, after Bissell as a normal approximation with n − 1 degrees of freedom: Ppk ± z · √(1/(9n) + Ppk²/(2(n − 1))).",
+      "confidence": "The confidence level of the four intervals as a fraction, for example 0.95; the input is in percent and is clamped to 50 to 99.99 %. The tiles show it rounded in percent.",
+      "ppmAboveUsl": "The expected fraction above USL under the overall model, a normal distribution with x̄ and s, in PPM (parts per million), column “> USL” of the row “Expected overall”. Empty without an upper limit.",
+      "ppmBelowLsl": "The expected fraction below LSL under the overall model, a normal distribution with x̄ and s, in PPM (parts per million), column “< LSL” of the row “Expected overall”. Empty without a lower limit.",
+      "ppmTotal": "The expected fraction outside both limits under the overall model, a normal distribution with x̄ and s, in PPM: the sum of below LSL and above USL. Tile “PPM (Defective)” and column “Total” of the row “Expected overall”; below it the tile names the observed and the expected within figures.",
+      "ppmWithinBelowLsl": "The expected fraction below LSL under the within model, a normal distribution with x̄ and σ within, in PPM; row “Expected within”. Empty without a lower limit.",
+      "ppmWithinAboveUsl": "The expected fraction above USL under the within model, a normal distribution with x̄ and σ within, in PPM; row “Expected within”. Empty without an upper limit.",
+      "ppmWithinTotal": "The expected fraction outside both limits under the within model, a normal distribution with x̄ and σ within, in PPM; row “Expected within” and, as “expected within”, tile “PPM (Defective)”.",
+      "ppmObservedBelowLsl": "The observed fraction of measurements strictly below LSL, in PPM; row “Observed”. Empty without a lower limit.",
+      "ppmObservedAboveUsl": "The observed fraction of measurements strictly above USL, in PPM; row “Observed”. Empty without an upper limit.",
+      "ppmObservedTotal": "The observed fraction of measurements outside both limits, in PPM; row “Observed” and, as “observed”, tile “PPM (Defective)”. A value exactly on a limit counts as inside.",
+      "zBenchWithin": "Z.bench within: the normal quantile of the expected fraction outside both limits under the within model, Z = −Φ⁻¹(p). Infinite when the fraction is 0; undefined for σ = 0 with the mean on a limit.",
+      "zBenchOverall": "Z.bench overall: the normal quantile of the expected fraction outside both limits under the overall model, Z = −Φ⁻¹(p). The sigma tile names it as “Z.bench overall”.",
+      "sigmaLevel": "The sigma level, tile “Sigma level (Z.bench within)”: equal to Z.bench within, the normal quantile of the expected fraction outside both limits with σ within. It counts both limits and is therefore at most 3 · Cpk; with only one limit the two are equal.",
+      "sigmaLevelShifted": "The sigma level by the Six Sigma convention: Z.bench overall + 1.5. The 1.5σ shift is a convention of Six Sigma training, not a measured result; the sigma tile names it as “Six Sigma convention (+1.5σ)”.",
+      "cpkStatus": "The verdict on Cpk: “Capable” from 1.33, “Conditional” from 1.0, otherwise “Not capable”. It colours the Cpk tile and is the overall verdict.",
+      "cpStatus": "The verdict on Cp: “Capable” from 1.33, “Conditional” from 1.0, otherwise “Not capable”. It colours the Cp tile; empty when Cp is missing.",
+      "overall": "The overall verdict of the status bar, equal to the verdict on Cpk: “PROCESS CAPABLE” from Cpk 1.33, “CONDITIONALLY CAPABLE” from 1.0, otherwise “PROCESS NOT CAPABLE”."
+    },
+    "Analysis": {
+      "result": "The capability result, each index described under keys; null while the inputs do not suffice.",
+      "methods": "The estimators for σ within that fit the data.",
+      "method": "The estimator used: the stored one if it fits, otherwise the default of the data.",
+      "hint": "A note on the estimator or the subgroup column as { key, params } or null: methodFallbackHint (the stored estimator does not fit; params names method, kind and fallback), subgroupColumnMissing (no fitting column with subgroup IDs) or an errWithin… key (the estimator cannot be computed for these data).",
+      "empty": "Whether neither a measurement column nor example data are set."
+    },
+    "PickableColumns": {
+      "value": "The numeric columns for the measurement values, each { key, name }.",
+      "subgroup": "The columns for the subgroup IDs, each { key, name }: the other columns of the measurement column's sheet, empty without a measurement column."
+    }
+  }
+}

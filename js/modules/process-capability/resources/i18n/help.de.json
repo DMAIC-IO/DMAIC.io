@@ -1,0 +1,106 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:prozessfaehigkeit|Prozessfähigkeitsanalyse}} misst, wie gut ein Prozess die Anforderungen des Kunden einhält. Sie vergleicht die {{term:zufallsursache|natürliche Streuung}} des Prozesses mit den Spezifikationsgrenzen und drückt das Ergebnis in einer Handvoll Kennzahlen aus. Sie ist ein Kernwerkzeug der Measure- und Control-Phase, um ein objektives Vorher/Nachher-Bild zu liefern."
+        },
+        {
+          "type": "definition",
+          "term": "Cp",
+          "content": "{{term:cp|Cp}} — potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des {{term:mittelwert|Mittelwerts}}; er sagt nur, ob der Prozess theoretisch schmal genug ist. σ ist hier die Streuung innerhalb. Wie Minitab stehen sechs Schätzer zur Wahl: bei Untergruppen die gepoolte Standardabweichung (Standard), R̄/d2 und S̄/c4, bei Einzelwerten die mittlere gleitende Spannweite (Standard), ihr Median und die Wurzel aus MSSD. Die Biaskorrektur (c4 bzw. c4′) lässt sich für gepoolte s, S̄ und √MSSD abschalten. Das Konfidenzintervall von Cp und Cpk nutzt die Freiheitsgrade ν des gewählten Schätzers. Deshalb kommt es auf die Reihenfolge der Werte an."
+        },
+        {
+          "type": "definition",
+          "term": "Cpk",
+          "content": "{{term:cpk|Cpk}} — tatsächliche Fähigkeit — berücksichtigt zusätzlich, wie weit der Mittelwert zur näheren Spezifikationsgrenze steht. Cpk ist immer ≤ Cp. Ein niedriger Cpk bei hohem Cp deutet auf eine Dezentrierung hin."
+        },
+        {
+          "type": "definition",
+          "term": "Pp und Ppk",
+          "content": "{{term:pp|Pp}} und {{term:ppk|Ppk}} — Long-term-Versionen von Cp und Cpk: Sie verwenden die gesamte Stichprobenstreuung statt der Within-Streuung. Pp/Ppk ist in der Regel schlechter als Cp/Cpk, weil auch Drift und Sonderursachen enthalten sind."
+        },
+        {
+          "type": "definition",
+          "term": "Sigma-Level (Z.bench) und PPM",
+          "content": "Der Sigma-Level ist der Z.bench: der Quantilwert der Standardnormalverteilung zum gesamten erwarteten Anteil außerhalb beider Grenzen, berechnet mit σ innerhalb. Er entspricht 3 · Cpk nur, wenn der Anteil jenseits der ferneren Grenze vernachlässigbar ist. Z.bench gesamt nutzt s; die Six-Sigma-Konvention addiert 1,5σ darauf — eine Vereinbarung, kein Messergebnis. Die Tabelle „Ausschuss (PPM)“ zeigt beobachtete Teile außerhalb der Grenzen sowie die erwarteten Anteile innerhalb und gesamt je Million."
+        },
+        {
+          "type": "definition",
+          "term": "Spezifikationsgrenzen (USL, LSL)",
+          "content": "{{term:spezifikationsgrenzen|Spezifikationsgrenzen (USL, LSL)}} — die vom Kunden oder Konstrukteur vorgegebenen Toleranzgrenzen. Die Prozessfähigkeit ist ein Verhältnis zwischen Prozessverhalten und diesen Grenzen — ohne Spezifikation keine Fähigkeit."
+        },
+        {
+          "type": "definition",
+          "term": "Normalverteilungsannahme",
+          "content": "Die klassischen Kennzahlen setzen normalverteilte Daten voraus. Bei schiefen oder mehrgipfligen Daten werden Box-Cox-Transformationen oder nicht-parametrische Varianten (basierend auf Quantilen) benutzt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Orientierungswerte: Cpk < 1,00 = nicht fähig, 1,00–1,33 = knapp, 1,33–1,67 = gut, > 1,67 = sehr gut. In der Automotive-Welt ist 1,33 das Minimum, 1,67 das Ziel."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Spezifikationsgrenzen aus Anforderungen, Zeichnung oder Kundenvertrag holen.",
+            "Daten sammeln — stabil, repräsentativ, mindestens 30 Werte, idealerweise 100+.",
+            "Stabilität prüfen (Regelkarte) — nur ein stabiler Prozess liefert sinnvolle Kennzahlen.",
+            "Normalität prüfen ({{term:histogramm|Histogramm}}, {{term:wahrscheinlichkeitsnetz|Probability Plot}}, Shapiro-Wilk). Bei Abweichung Transformation oder nicht-parametrische Methode.",
+            "Untergruppen festlegen: feste Größe (1 = Einzelwerte) oder eine Spalte mit Untergruppen-IDs — eine neue Untergruppe beginnt, sobald die ID wechselt. Dann den Schätzer für σ innerhalb wählen. Die Werte müssen in Produktionsreihenfolge vorliegen.",
+            "Kennzahlen berechnen (Cp, Cpk, Pp, Ppk) und mit Konfidenzintervall angeben.",
+            "Ergebnis grafisch darstellen — Histogramm mit Spezifikationsgrenzen und angepasster Normalkurve.",
+            "Interpretation: fähig / nicht fähig / Verschiebung vs. Streuung dominieren."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Fähigkeit auf instabilem Prozess berechnet",
+          "content": "Kennzahlen aus einem driftenden oder gestörten Prozess sind wertlos — sie spiegeln die aktuelle Momentaufnahme, nicht das tatsächliche Verhalten. Vor jeder Fähigkeitsanalyse zuerst Stabilität sichern."
+        },
+        {
+          "type": "definition",
+          "term": "Nicht-normalverteilte Daten ignoriert",
+          "content": "Eine schiefe Verteilung liefert mit klassischen Formeln falsche Cpk-Werte — oft schlechter als die Realität. Vor dem Rechnen Verteilung prüfen und bei Bedarf transformieren."
+        },
+        {
+          "type": "definition",
+          "term": "Zu wenige Daten",
+          "content": "Mit 15 Werten ist das Konfidenzintervall für Cpk so breit, dass das Ergebnis bedeutungslos ist. Mindestens 30, besser 100+ Beobachtungen."
+        },
+        {
+          "type": "definition",
+          "term": "Cp hoch, Cpk niedrig",
+          "content": "Ein klassischer Fall von Dezentrierung: der Prozess ist schmal genug, aber verschoben. Die Maßnahme ist nicht Streuung reduzieren, sondern den Mittelwert zentrieren."
+        },
+        {
+          "type": "definition",
+          "term": "Nur Cp angeben",
+          "content": "Cp ohne Cpk verschleiert die Dezentrierung. Immer beide berichten."
+        },
+        {
+          "type": "definition",
+          "term": "Spezifikation selbst gesetzt",
+          "content": "Wenn das eigene Unternehmen die Spezifikation festlegt und dann die eigene Fähigkeit misst, wird die Schwelle gerne so gewählt, dass das Ergebnis „passt\". Spezifikation kommt vom Kunden oder der Funktion — nicht vom Analysten."
+        },
+        {
+          "type": "definition",
+          "term": "Cp/Cpk mit Pp/Ppk verwechseln",
+          "content": "Cp/Cpk basiert auf Kurzzeitstreuung, Pp/Ppk auf Langzeitstreuung. Beide sind nützlich, aber nicht dasselbe — die Abkürzungen konsequent und passend zum Datensatz verwenden."
+        }
+      ]
+    }
+  }
+}

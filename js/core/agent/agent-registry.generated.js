@@ -14430,6 +14430,7 @@ export const AGENT_REGISTRY = {
   "process-capability": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -14445,445 +14446,348 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'name'|'lsl'|'target'|'usl'|'unit'|'confidence'|'subgroupMode'|'subgroupSize'|'withinMethod'|'mrSpan'|'unbiased'",
-            "optional": false,
-            "help": "welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams"
-          },
-          {
-            "name": "value",
-            "type": "string|number|boolean",
-            "optional": false,
-            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "Merkmal"
-          },
-          "lsl": {
-            "type": "string",
-            "help": "untere Spezifikationsgrenze"
-          },
-          "target": {
-            "type": "string",
-            "help": "Sollwert"
-          },
-          "usl": {
-            "type": "string",
-            "help": "obere Spezifikationsgrenze"
-          },
-          "unit": {
-            "type": "string",
-            "help": "Einheit"
-          },
-          "confidence": {
-            "type": "string",
-            "help": "Konfidenzniveau in Prozent"
-          },
-          "subgroupMode": {
-            "type": "'size'|'column'",
-            "help": "Untergruppen nach Größe oder Spalte"
-          },
-          "subgroupSize": {
-            "type": "number",
-            "help": "Untergruppengröße, nur Modus Größe",
-            "optional": true
-          },
-          "withinMethod": {
-            "type": "''|'pooled'|'rbar'|'sbar'|'averageMR'|'medianMR'|'sqrtMSSD'",
-            "help": "Schätzer der Streuung innerhalb"
-          },
-          "mrSpan": {
-            "type": "number",
-            "help": "Spannweite der gleitenden Spannweiten",
-            "optional": true
-          },
-          "unbiased": {
-            "type": "boolean",
-            "help": "Korrekturfaktor anwenden",
-            "optional": true
-          }
-        }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'|'subgroup'",
-            "optional": false,
-            "help": "der Slot; `subgroup` gilt nur bei Untergruppen aus einer Spalte"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen."
-      },
       "clearEmbedded": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Verwirft eingebettete Beispieldaten; danach rechnet das Modul wieder auf einer Spalte."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Computes with the current inputs. Incomplete or invalid inputs leave `result` at null without an error; a problem with the estimator (wrong method for the data, table limits) is named in `withinHint`. The computation lives in process-capability-analysis.js."
-      },
-      "scheduleAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Triggers the computation after a short pause; a second request before that replaces the first."
-      },
-      "clearResults": {
-        "params": [],
-        "returns": "void",
-        "help": "Discards the result and the histogram; the inputs stay."
+        "help": "",
+        "keysOf": "clearEmbedded",
+        "keysHelp": "actions.clearEmbedded.params",
+        "keys": {}
       }
     },
     "fields": {
       "params": {
-        "type": "Params",
-        "help": "the entered parameters; values as text as entered, unbiased as boolean",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "Params",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "Merkmal"
-          },
-          "lsl": {
-            "type": "string",
-            "help": "untere Spezifikationsgrenze"
-          },
-          "target": {
-            "type": "string",
-            "help": "Sollwert"
-          },
-          "usl": {
-            "type": "string",
-            "help": "obere Spezifikationsgrenze"
-          },
-          "unit": {
-            "type": "string",
-            "help": "Einheit"
-          },
-          "confidence": {
-            "type": "string",
-            "help": "Konfidenzniveau in Prozent"
-          },
-          "subgroupMode": {
-            "type": "'size'|'column'",
-            "help": "Untergruppen nach Größe oder Spalte"
-          },
-          "subgroupSize": {
-            "type": "number",
-            "help": "Untergruppengröße, nur Modus Größe",
-            "optional": true
-          },
-          "withinMethod": {
-            "type": "''|'pooled'|'rbar'|'sbar'|'averageMR'|'medianMR'|'sqrtMSSD'",
-            "help": "Schätzer der Streuung innerhalb"
-          },
-          "mrSpan": {
-            "type": "number",
-            "help": "Spannweite der gleitenden Spannweiten",
-            "optional": true
-          },
-          "unbiased": {
-            "type": "boolean",
-            "help": "Korrekturfaktor anwenden",
-            "optional": true
-          }
-        }
+        "type": "{ name: string, unit: string, lsl: number|null, target: number|null, usl: number|null, confidence: number|null, subgroupMode: 'size'|'column', subgroupSize: number, withinMethod: ''|'pooled'|'rbar'|'sbar'|'averageMR'|'medianMR'|'sqrtMSSD', unbiased: boolean, mrSpan: number }",
+        "help": "",
+        "bulk": false
       },
       "columnRef": {
-        "type": "object|null",
-        "help": "the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric"
+        ]
       },
       "subgroupColumnRef": {
-        "type": "object|null",
-        "help": "the chosen subgroup ID column, `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef"
+        ]
       },
       "embeddedValues": {
         "type": "number[]|null",
-        "help": "the values of loaded example data that replace the measurement column, or null",
-        "bulk": true,
-        "bulkKind": "table",
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "embeddedLabel": {
         "type": "string",
-        "help": "the title of the loaded example data, '' when none",
+        "help": "",
+        "bulk": false
+      },
+      "analysis": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Analysis",
+        "keys": {
+          "result": {
+            "type": "Result|null",
+            "help": "das Fähigkeitsergebnis, `null` solange die Eingaben nicht reichen",
+            "keysOf": "Result",
+            "keys": {
+              "n": {
+                "type": "number",
+                "help": "Zahl der Werte"
+              },
+              "xbar": {
+                "type": "number",
+                "help": "Mittelwert"
+              },
+              "s": {
+                "type": "number",
+                "help": "Gesamt-Standardabweichung (n − 1)"
+              },
+              "sigmaWithin": {
+                "type": "number|null",
+                "help": "Streuung innerhalb (Schätzer)"
+              },
+              "sigmaOverall": {
+                "type": "number|null",
+                "help": "Gesamtstreuung, gleich s"
+              },
+              "withinMethod": {
+                "type": "string",
+                "help": "verwendeter Schätzer"
+              },
+              "withinDf": {
+                "type": "number",
+                "help": "Freiheitsgrade des Schätzers"
+              },
+              "subgroupSize": {
+                "type": "number",
+                "help": "Untergruppengröße (Modus Spalte: 1)"
+              },
+              "xmin": {
+                "type": "number",
+                "help": "kleinster Wert"
+              },
+              "xmax": {
+                "type": "number",
+                "help": "größter Wert"
+              },
+              "subgroupCount": {
+                "type": "number",
+                "help": "Zahl der Untergruppen bzw. Werte"
+              },
+              "nBar": {
+                "type": "number",
+                "help": "mittlere Untergruppengröße"
+              },
+              "unbiased": {
+                "type": "boolean",
+                "help": "Korrekturfaktor angewandt"
+              },
+              "mrSpan": {
+                "type": "number",
+                "help": "Spannweite der gleitenden Spannweiten"
+              },
+              "T": {
+                "type": "number|null",
+                "help": "Toleranz OSG − USG"
+              },
+              "mid": {
+                "type": "number|null",
+                "help": "Toleranzmitte"
+              },
+              "targetVal": {
+                "type": "number|null",
+                "help": "Sollwert oder Toleranzmitte"
+              },
+              "hasLsl": {
+                "type": "boolean",
+                "help": "untere Grenze gesetzt"
+              },
+              "hasUsl": {
+                "type": "boolean",
+                "help": "obere Grenze gesetzt"
+              },
+              "twoSided": {
+                "type": "boolean",
+                "help": "beide Grenzen gesetzt"
+              },
+              "lsl": {
+                "type": "number|null",
+                "help": "untere Grenze"
+              },
+              "usl": {
+                "type": "number|null",
+                "help": "obere Grenze"
+              },
+              "Cp": {
+                "type": "number|null",
+                "help": "potenzielle Fähigkeit"
+              },
+              "CPU": {
+                "type": "number|null",
+                "help": "Fähigkeit zur oberen Grenze"
+              },
+              "CPL": {
+                "type": "number|null",
+                "help": "Fähigkeit zur unteren Grenze"
+              },
+              "Cpk": {
+                "type": "number|null",
+                "help": "tatsächliche Fähigkeit"
+              },
+              "Pp": {
+                "type": "number|null",
+                "help": "potenzielle Gesamtleistung"
+              },
+              "PPU": {
+                "type": "number|null",
+                "help": "Gesamtleistung zur oberen Grenze"
+              },
+              "PPL": {
+                "type": "number|null",
+                "help": "Gesamtleistung zur unteren Grenze"
+              },
+              "Ppk": {
+                "type": "number|null",
+                "help": "tatsächliche Gesamtleistung"
+              },
+              "CpCI": {
+                "type": "Array<number|null>|null",
+                "help": "Konfidenzintervall Cp"
+              },
+              "CpkCI": {
+                "type": "Array<number|null>|null",
+                "help": "Konfidenzintervall Cpk"
+              },
+              "PpCI": {
+                "type": "Array<number|null>|null",
+                "help": "Konfidenzintervall Pp"
+              },
+              "PpkCI": {
+                "type": "Array<number|null>|null",
+                "help": "Konfidenzintervall Ppk"
+              },
+              "confidence": {
+                "type": "number",
+                "help": "Konfidenzniveau als Anteil"
+              },
+              "ppmAboveUsl": {
+                "type": "number|null",
+                "help": "erwartete PPM über OSG, gesamt"
+              },
+              "ppmBelowLsl": {
+                "type": "number|null",
+                "help": "erwartete PPM unter USG, gesamt"
+              },
+              "ppmTotal": {
+                "type": "number|null",
+                "help": "erwartete PPM gesamt"
+              },
+              "ppmWithinBelowLsl": {
+                "type": "number|null",
+                "help": "erwartete PPM unter USG, innerhalb"
+              },
+              "ppmWithinAboveUsl": {
+                "type": "number|null",
+                "help": "erwartete PPM über OSG, innerhalb"
+              },
+              "ppmWithinTotal": {
+                "type": "number|null",
+                "help": "erwartete PPM innerhalb"
+              },
+              "ppmObservedBelowLsl": {
+                "type": "number|null",
+                "help": "beobachtete PPM unter USG"
+              },
+              "ppmObservedAboveUsl": {
+                "type": "number|null",
+                "help": "beobachtete PPM über OSG"
+              },
+              "ppmObservedTotal": {
+                "type": "number|null",
+                "help": "beobachtete PPM gesamt"
+              },
+              "zBenchWithin": {
+                "type": "number|null",
+                "help": "Z.bench innerhalb"
+              },
+              "zBenchOverall": {
+                "type": "number|null",
+                "help": "Z.bench gesamt"
+              },
+              "sigmaLevel": {
+                "type": "number|null",
+                "help": "Sigma-Niveau"
+              },
+              "sigmaLevelShifted": {
+                "type": "number|null",
+                "help": "Sigma-Niveau mit 1,5-Verschiebung"
+              },
+              "cpkStatus": {
+                "type": "'pass'|'warn'|'fail'",
+                "help": "Urteil zu Cpk"
+              },
+              "cpStatus": {
+                "type": "'pass'|'warn'|'fail'|null",
+                "help": "Urteil zu Cp"
+              },
+              "overall": {
+                "type": "'pass'|'warn'|'fail'",
+                "help": "Gesamturteil"
+              }
+            }
+          },
+          "methods": {
+            "type": "string[]",
+            "help": "die für die Daten wählbaren Schätzer"
+          },
+          "method": {
+            "type": "string",
+            "help": "der verwendete Schätzer"
+          },
+          "hint": {
+            "type": "{ key: string, params: Record<string, any> }|null",
+            "help": "Hinweis zu Schätzer oder ID-Spalte, `null` ohne"
+          },
+          "empty": {
+            "type": "boolean",
+            "help": "weder Messspalte noch Beispieldaten gesetzt"
+          }
+        }
       },
       "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "subgroupModeValues": {
-        "type": "string[]",
-        "help": "the values `setParam('subgroupMode', …)` accepts: 'size', and 'column' only while no example data are loaded",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "withinMethodOptions": {
-        "type": "string[]",
-        "help": "the values `setParam('withinMethod', …)` accepts: '' (the default of the data) and the estimators that fit the data",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
-      "result": {
-        "type": "Result|null",
-        "help": "the computed capability result, or null while the inputs are incomplete",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
-        "keysOf": "Result",
+        "keysOf": "PickableColumns",
         "keys": {
-          "n": {
-            "type": "number",
-            "help": "Zahl der Werte"
+          "value": {
+            "type": "{ key: string, name: string }[]",
+            "help": "Messspalten (numerisch)"
           },
-          "xbar": {
-            "type": "number",
-            "help": "Mittelwert"
-          },
-          "s": {
-            "type": "number",
-            "help": "Gesamt-Standardabweichung (n − 1)"
-          },
-          "sigmaWithin": {
-            "type": "number|null",
-            "help": "Streuung innerhalb (Schätzer)"
-          },
-          "sigmaOverall": {
-            "type": "number|null",
-            "help": "Gesamtstreuung, gleich s"
-          },
-          "withinMethod": {
-            "type": "string",
-            "help": "verwendeter Schätzer"
-          },
-          "withinDf": {
-            "type": "number",
-            "help": "Freiheitsgrade des Schätzers"
-          },
-          "subgroupSize": {
-            "type": "number",
-            "help": "Untergruppengröße (Modus Spalte: 1)"
-          },
-          "xmin": {
-            "type": "number",
-            "help": "kleinster Wert"
-          },
-          "xmax": {
-            "type": "number",
-            "help": "größter Wert"
-          },
-          "subgroupCount": {
-            "type": "number",
-            "help": "Zahl der Untergruppen bzw. Werte"
-          },
-          "nBar": {
-            "type": "number",
-            "help": "mittlere Untergruppengröße"
-          },
-          "unbiased": {
-            "type": "boolean",
-            "help": "Korrekturfaktor angewandt"
-          },
-          "mrSpan": {
-            "type": "number",
-            "help": "Spannweite der gleitenden Spannweiten"
-          },
-          "T": {
-            "type": "number|null",
-            "help": "Toleranz OSG − USG"
-          },
-          "mid": {
-            "type": "number|null",
-            "help": "Toleranzmitte"
-          },
-          "targetVal": {
-            "type": "number|null",
-            "help": "Sollwert oder Toleranzmitte"
-          },
-          "hasLsl": {
-            "type": "boolean",
-            "help": "untere Grenze gesetzt"
-          },
-          "hasUsl": {
-            "type": "boolean",
-            "help": "obere Grenze gesetzt"
-          },
-          "twoSided": {
-            "type": "boolean",
-            "help": "beide Grenzen gesetzt"
-          },
-          "lsl": {
-            "type": "number|null",
-            "help": "untere Grenze"
-          },
-          "usl": {
-            "type": "number|null",
-            "help": "obere Grenze"
-          },
-          "Cp": {
-            "type": "number|null",
-            "help": "potenzielle Fähigkeit"
-          },
-          "CPU": {
-            "type": "number|null",
-            "help": "Fähigkeit zur oberen Grenze"
-          },
-          "CPL": {
-            "type": "number|null",
-            "help": "Fähigkeit zur unteren Grenze"
-          },
-          "Cpk": {
-            "type": "number|null",
-            "help": "tatsächliche Fähigkeit"
-          },
-          "Pp": {
-            "type": "number|null",
-            "help": "potenzielle Gesamtleistung"
-          },
-          "PPU": {
-            "type": "number|null",
-            "help": "Gesamtleistung zur oberen Grenze"
-          },
-          "PPL": {
-            "type": "number|null",
-            "help": "Gesamtleistung zur unteren Grenze"
-          },
-          "Ppk": {
-            "type": "number|null",
-            "help": "tatsächliche Gesamtleistung"
-          },
-          "CpCI": {
-            "type": "Array<number|null>|null",
-            "help": "Konfidenzintervall Cp"
-          },
-          "CpkCI": {
-            "type": "Array<number|null>|null",
-            "help": "Konfidenzintervall Cpk"
-          },
-          "PpCI": {
-            "type": "Array<number|null>|null",
-            "help": "Konfidenzintervall Pp"
-          },
-          "PpkCI": {
-            "type": "Array<number|null>|null",
-            "help": "Konfidenzintervall Ppk"
-          },
-          "confidence": {
-            "type": "number",
-            "help": "Konfidenzniveau als Anteil"
-          },
-          "ppmAboveUsl": {
-            "type": "number|null",
-            "help": "erwartete PPM über OSG, gesamt"
-          },
-          "ppmBelowLsl": {
-            "type": "number|null",
-            "help": "erwartete PPM unter USG, gesamt"
-          },
-          "ppmTotal": {
-            "type": "number|null",
-            "help": "erwartete PPM gesamt"
-          },
-          "ppmWithinBelowLsl": {
-            "type": "number|null",
-            "help": "erwartete PPM unter USG, innerhalb"
-          },
-          "ppmWithinAboveUsl": {
-            "type": "number|null",
-            "help": "erwartete PPM über OSG, innerhalb"
-          },
-          "ppmWithinTotal": {
-            "type": "number|null",
-            "help": "erwartete PPM innerhalb"
-          },
-          "ppmObservedBelowLsl": {
-            "type": "number|null",
-            "help": "beobachtete PPM unter USG"
-          },
-          "ppmObservedAboveUsl": {
-            "type": "number|null",
-            "help": "beobachtete PPM über OSG"
-          },
-          "ppmObservedTotal": {
-            "type": "number|null",
-            "help": "beobachtete PPM gesamt"
-          },
-          "zBenchWithin": {
-            "type": "number|null",
-            "help": "Z.bench innerhalb"
-          },
-          "zBenchOverall": {
-            "type": "number|null",
-            "help": "Z.bench gesamt"
-          },
-          "sigmaLevel": {
-            "type": "number|null",
-            "help": "Sigma-Niveau"
-          },
-          "sigmaLevelShifted": {
-            "type": "number|null",
-            "help": "Sigma-Niveau mit 1,5-Verschiebung"
-          },
-          "cpkStatus": {
-            "type": "'pass'|'warn'|'fail'",
-            "help": "Urteil zu Cpk"
-          },
-          "cpStatus": {
-            "type": "'pass'|'warn'|'fail'|null",
-            "help": "Urteil zu Cp"
-          },
-          "overall": {
-            "type": "'pass'|'warn'|'fail'",
-            "help": "Gesamturteil"
+          "subgroup": {
+            "type": "{ key: string, name: string }[]",
+            "help": "ID-Spalten: Blatt der Messspalte ohne diese"
           }
         }
-      },
-      "withinHint": {
-        "type": "string",
-        "help": "the note on the estimator or the subgroup column, '' when there is none",
-        "bulk": false,
-        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "histogramChart"
+    ],
+    "settable": [
+      "params",
+      "columnRef",
+      "subgroupColumnRef",
+      "embeddedValues",
+      "embeddedLabel"
+    ],
+    "invariants": [
+      "embeddedOrColumn"
+    ]
   },
   "process-map": {
     "tagged": true,
