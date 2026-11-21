@@ -356,6 +356,13 @@ suite('createModule: fromExample', () => {
     assertEqual(st.src.columnId, 'c-0');
   });
 
+  test('helpers.lang ist die aktive Sprache', async () => {
+    const seen = [];
+    const { mod } = fromExampleModule((data, meta, helpers) => { seen.push(helpers.lang); return { title: 'x' }; });
+    await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
+    assertDeepEqual(seen, ['de']);
+  });
+
   test('ohne sourceWorksheetData im Ergebnis: setState-Zweig', async () => {
     const { mod, store } = fromExampleModule((data) => ({ title: `x${data.n}` }));
     await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
