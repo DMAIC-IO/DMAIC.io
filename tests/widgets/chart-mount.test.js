@@ -291,6 +291,18 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     a.root.remove();
   });
 
+  test('Übernahme alter chartEdits: ohne Alteintrag kein amend', async () => {
+    const withKey = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
+    const noKey = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits"></div>';
+    for (const [tpl, old] of [[withKey, null], [withKey, {}], [noKey, { title: 'Alt' }]]) {
+      let amends = 0;
+      const history = { amend(fn) { amends++; fn(); } };
+      const a = await host(tpl, { cm: fakeManager(), sm: fakeState(old), history });
+      assertEqual(amends, 0, `kein amend (${JSON.stringify(old)})`);
+      a.root.remove();
+    }
+  });
+
   test('Übernahme alter chartEdits: ohne Alteintrag kein Schreiben', async () => {
     const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
     for (const old of [null, {}]) {

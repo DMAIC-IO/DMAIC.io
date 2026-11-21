@@ -68,9 +68,11 @@ export function chartMount(widget, toChart = (c) => c) {
 
     // Die Übernahme ist keine Bedienung: mit Verlauf läuft sie über `amend` und wird
     // nie ein eigener Schritt, auch wenn das Widget erst nach einer Bedienung einhängt.
+    // Ohne Alteintrag kein `amend`: es zeichnete sonst eine offene Änderung vorzeitig auf.
+    const old = legacyEntry(props, value, services);
     const amend = services.history?.amend;
-    if (amend) amend(() => adoptLegacy(props, value, services, editable));
-    else adoptLegacy(props, value, services, editable);
+    if (old && amend) amend(() => adoptLegacy(props, value, services, editable, old));
+    else if (old) adoptLegacy(props, value, services, editable, old);
 
     /** Konfiguration ohne die Rollenzuordnung (sie gehört nicht zum Diagrammtyp). @returns {any} */
     const plainConfig = () => {
@@ -214,18 +216,30 @@ function resetToDefaults(chart, patch, keys, cfg) {
 }
 
 /**
+ * Der nicht leere Eintrag aus `chartEdits` der Projektebene, den das Widget
+ * übernehmen soll; sonst null.
+ * @param {any} props @param {any} value @param {any} services
+ * @returns {Record<string, any>|null}
+ */
+function legacyEntry(props, value, services) {
+  const key = props.legacyEditKey;
+  const sm = services.stateManager;
+  if (!value || !key || !sm?.getChartEdits) return null;
+  const old = sm.getChartEdits(services.instanceId, key);
+  return old && Object.keys(old).length > 0 ? old : null;
+}
+
+/**
  * Einen Eintrag aus `chartEdits` der Projektebene feldweise übernehmen — Werte
  * im Feld gewinnen, nur fehlende Schlüssel kommen aus dem Alteintrag — und ihn
  * danach dort entfernen.
  * @param {any} props @param {any} value @param {any} services @param {{ base: readonly string[] }} editable
+ * @param {Record<string, any>} old Alteintrag aus `legacyEntry`
  * @returns {void}
  */
-function adoptLegacy(props, value, services, editable) {
+function adoptLegacy(props, value, services, editable, old) {
   const key = props.legacyEditKey;
   const sm = services.stateManager;
-  if (!value || !key || !sm?.getChartEdits) return;
-  const old = sm.getChartEdits(services.instanceId, key);
-  if (!old || Object.keys(old).length === 0) return;
   const picked = Object.fromEntries(Object.entries(old).filter(([k]) => editable.base.includes(k)));
   const current = value.get() ?? {};
   const adds = Object.keys(picked).some((k) => !(k in current));
