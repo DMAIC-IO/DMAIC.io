@@ -70,6 +70,16 @@
       }
     }
   },
+  "tile": {
+    "settings": {
+      "ppmBasis": {
+        "help": "Welche PPM die Kachel zeigt: Gesamt (Langzeit, aus der Gesamtstreuung), Innerhalb (Kurzzeit, aus der Streuung innerhalb) oder Beobachtet (gezählte Werte außerhalb der Grenzen)."
+      },
+      "showChart": {
+        "help": "Zeigt oder verbirgt das Histogramm der Kachel; die Kennzahlen bleiben."
+      }
+    }
+  },
   "types": {
     "Params": {
       "name": "Die Bezeichnung des Merkmals, Beschriftung „Bezeichnung / Merkmal“; freier Text. Er erscheint in der Statuszeile hinter dem Urteil und rechnet nicht mit.",

@@ -92,6 +92,17 @@
   "interpGood": "Cpk ≥ {limit}",
   "interpOk": "{low} ≤ Cpk < {limit}",
   "interpPoor": "Cpk < {low}",
+  "tile": {
+    "settings": {
+      "ppmBasis": {
+        "options": {
+          "overall": "Gesamt (Langzeit)",
+          "within": "Innerhalb (Kurzzeit)",
+          "observed": "Beobachtet"
+        }
+      }
+    }
+  },
   "invariants": {
     "embeddedOrColumn": "Messwertspalte und Beispieldaten schließen sich aus; zuerst die Beispieldaten verwerfen."
   }

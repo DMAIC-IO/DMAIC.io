@@ -92,6 +92,17 @@
   "interpGood": "Cpk ≥ {limit}",
   "interpOk": "{low} ≤ Cpk < {limit}",
   "interpPoor": "Cpk < {low}",
+  "tile": {
+    "settings": {
+      "ppmBasis": {
+        "options": {
+          "overall": "Overall (long-term)",
+          "within": "Within (short-term)",
+          "observed": "Observed"
+        }
+      }
+    }
+  },
   "invariants": {
     "embeddedOrColumn": "The measurement column and example data exclude each other; discard the example data first."
   }

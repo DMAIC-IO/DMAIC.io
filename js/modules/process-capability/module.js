@@ -10,6 +10,7 @@ export default {
     dmadv: { phase: 'measure', allowedPhases: ['measure', 'verify'] },
     eightd: { phase: 'problem', allowedPhases: ['problem', 'implementation'] },
   },
+  uses: ['worksheet'],
   load: () => import('./viewmodel/viewmodel.js'),
-  tile: () => import('./process-capability.tile.js'),
+  tile: () => import('./tile/tile.js'),
 };

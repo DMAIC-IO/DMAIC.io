@@ -70,6 +70,16 @@
       }
     }
   },
+  "tile": {
+    "settings": {
+      "ppmBasis": {
+        "help": "Which PPM the tile shows: Overall (long-term, from the overall standard deviation), Within (short-term, from the within-subgroup spread) or Observed (counted values outside the limits)."
+      },
+      "showChart": {
+        "help": "Shows or hides the histogram of the tile; the figures stay."
+      }
+    }
+  },
   "types": {
     "Params": {
       "name": "The name of the feature, label “Feature / Characteristic”; free text. It appears in the status bar after the verdict and does not enter the computation.",

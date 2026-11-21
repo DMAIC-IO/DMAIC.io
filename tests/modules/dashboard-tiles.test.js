@@ -15,7 +15,7 @@ import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 import { I18n } from '../../js/core/i18n.js';
-import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
+import capabilityTile from '../../js/modules/process-capability/tile/tile.js';
 import attrSpcTile from '../../js/modules/attribute-control-chart/tile/tile.js';
 import { customRefreshEvents, refreshTargets } from '../../js/pages/dashboard/enumerate-tiles.js';
 import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
@@ -30,6 +30,7 @@ import { registerRichTextDirective } from '../../js/core/rich-text-directive.js'
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { checkValue } from '../../js/core/model.js';
 import controlChartWidget from '../../js/widgets/control-chart/schema.js';
+import histogramWidget from '../../js/widgets/histogram-chart/schema.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 import sipocTile from '../../js/modules/sipoc/tile/tile.js';
 import kanoTile from '../../js/modules/kano/kano.tile.js';
@@ -1107,32 +1108,71 @@ async function renderChartTile(tile, state, overrides = {}, cm = recordingChartM
 
 const CAP_VALUES = [9.8, 10.1, 10.0, 9.9, 10.2, 10.05, 9.95, 10.1, 9.85, 10.0];
 const CAP_STATE = { embeddedValues: CAP_VALUES, params: { lsl: '9.5', usl: '10.5', target: '10' } };
+const CAP_COL = { instanceId: 'w', sheetId: 's', columnId: 'm' };
 
 suite('dashboard tiles: process-capability', () => {
-  test('declares the Cpk prefix and refreshes on resize', async () => {
+  if (!Alpine.version) Alpine.start();
+  registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
+
+  /** Render args: the worksheet reaches the derived `analysis` through the reader (`source`). */
+  function capArgs(state, settings, cm, cols = {}) {
+    const sm = columnStateManager(cols);
+    return { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light',
+      chartManager: cm, stateManager: sm, source: createSource(sm) };
+  }
+  async function renderCap(state, overrides = {}, cm = recordingChartManager(), cols = {}) {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const settings = resolveSettings(validateSchema(capabilityTile.settings), overrides);
+    await mountTile(capabilityTile, capArgs(state, settings, cm, cols), host);
+    await flush();
+    return { host, cm };
+  }
+  const capVm = (state, overrides = {}, cols = {}) => vmOf(capabilityTile, state, overrides, { stateManager: columnStateManager(cols) });
+
+  test('declares the Cpk prefix and refreshes on resize and worksheet changes', async () => {
     assertEqual(capabilityTile.titlePrefix, 'Cpk');
-    assertDeepEqual(capabilityTile.refreshOn, ['state:saved', 'resize']);
+    assertDeepEqual(capabilityTile.refreshOn, ['state:saved', 'resize', 'worksheet:dataChanged']);
   });
 
   test('empty without data source, no-data without a spec limit', async () => {
-    let { host, cm } = await renderChartTile(capabilityTile, {});
+    let { host, cm } = await renderCap({});
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.capabilityEmpty');
     assertEqual(cm.made.length, 0);
     host.remove();
-    ({ host, cm } = await renderChartTile(capabilityTile, { embeddedValues: CAP_VALUES }));
+    ({ host, cm } = await renderCap({ embeddedValues: CAP_VALUES }));
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.capabilityNoData');
     assertEqual(cm.made.length, 0);
     host.remove();
   });
 
   test('state undefined renders the empty state', async () => {
-    const { host } = await renderChartTile(capabilityTile, undefined);
+    const { host } = await renderCap(undefined);
     assertTrue(host.querySelector('.dashboard-area__empty') !== null);
     host.remove();
   });
 
+  test('a deleted measurement column shows no-data, not a result', async () => {
+    const state = { columnRef: CAP_COL, params: { lsl: 9.5, usl: 10.5 } };
+    const vm = capVm(state, {}, { other: CAP_VALUES });
+    assertEqual(vm.empty, 'dashboard.capabilityNoData');
+    assertEqual(vm.chart, null);
+    assertDeepEqual(vm.metrics, []);
+    const { host, cm } = await renderCap(state, {}, recordingChartManager(), { other: CAP_VALUES });
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.capabilityNoData');
+    assertEqual(cm.made.length, 0);
+    host.remove();
+  });
+
+  test('a worksheet column drives the figures', async () => {
+    const vm = capVm({ columnRef: CAP_COL, params: { lsl: 9.5, usl: 10.5 } }, {}, { m: CAP_VALUES });
+    assertEqual(vm.empty, null);
+    assertEqual(vm.stats[1].value, '10');
+    assertEqual(vm.chart.data.length, CAP_VALUES.length);
+  });
+
   test('figures: Cpk traffic light, Ppk, Cp for two-sided limits, PPM and n', async () => {
-    const { host } = await renderChartTile(capabilityTile, CAP_STATE);
+    const { host } = await renderCap(CAP_STATE);
     const labels = [...host.querySelectorAll('.dashboard-spc__metric-label')].map(e => e.textContent);
     assertDeepEqual(labels, ['Cpk', 'Ppk']);
     const cpk = host.querySelector('.dashboard-spc__metric');
@@ -1145,24 +1185,24 @@ suite('dashboard tiles: process-capability', () => {
   });
 
   test('one-sided limit: no Cp line', async () => {
-    const { host } = await renderChartTile(capabilityTile, { embeddedValues: CAP_VALUES, params: { usl: '10.5' } });
+    const { host } = await renderCap({ embeddedValues: CAP_VALUES, params: { usl: '10.5' } });
     assertEqual(host.querySelector('.dashboard-spc__metric .dashboard-spc__metric-sub'), null);
     host.remove();
   });
 
   test('ppmBasis picks the PPM field', async () => {
-    const values = async (basis) => {
-      const { host } = await renderChartTile(capabilityTile, CAP_STATE, { ppmBasis: basis });
-      const v = host.querySelectorAll('.dashboard-spc__stat-value')[0].textContent;
-      host.remove();
-      return v;
-    };
-    assertEqual(await values('observed'), '0');
-    assertTrue((await values('overall')) !== '0', 'overall PPM is model-based, not 0');
+    const value = (basis) => capVm(CAP_STATE, { ppmBasis: basis }).stats[0].value;
+    assertEqual(value('observed'), '0');
+    assertTrue(value('overall') !== '0', 'overall PPM is model-based, not 0');
+    assertTrue(value('within') !== '0', 'within PPM is model-based, not 0');
+    const { host } = await renderCap(CAP_STATE, { ppmBasis: 'observed' });
+    assertEqual(host.querySelectorAll('.dashboard-spc__stat-value')[0].textContent, '0');
+    host.remove();
   });
 
   test('histogram: compact flags, normal curve, spec ref lines', async () => {
-    const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE);
+    const { host, cm } = await renderCap(CAP_STATE);
+    await waitFor(() => cm.made.length > 0);
     assertEqual(cm.made.length, 1);
     const { type, cfg } = cm.made[0];
     assertEqual(type, 'histogram');
@@ -1170,6 +1210,7 @@ suite('dashboard tiles: process-capability', () => {
       assertEqual(cfg[k], false, k);
     }
     assertEqual(cfg.showNormalCurve, true);
+    assertEqual(cfg.normalCurveColor, 'var(--color-info)');
     assertDeepEqual(cfg.refLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
     assertEqual(cfg.data.length, CAP_VALUES.length);
     host.remove();
@@ -1177,7 +1218,7 @@ suite('dashboard tiles: process-capability', () => {
 
   test('non-finite capability indices show an em dash, not "Infinity"', async () => {
     const flat = { embeddedValues: [5, 5, 5, 5, 5, 5], params: { lsl: '4', usl: '6' } };
-    const { host } = await renderChartTile(capabilityTile, flat);
+    const { host } = await renderCap(flat);
     const values = [...host.querySelectorAll('.dashboard-spc__metric-value')].map(e => e.textContent);
     for (const v of values) assertTrue(!/Infinity|NaN|–/.test(v), `no raw non-finite or en dash: ${v}`);
     assertTrue(values.includes('—'), 'em dash for the infinite index');
@@ -1186,7 +1227,8 @@ suite('dashboard tiles: process-capability', () => {
   });
 
   test('histogram passes the capability axis titles (hidden by default)', async () => {
-    const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE);
+    const { host, cm } = await renderCap(CAP_STATE);
+    await waitFor(() => cm.made.length > 0);
     const { cfg } = cm.made[0];
     assertEqual(cfg.xLabel, 'modules.process-capability.histogramXLabel');
     assertEqual(cfg.yLabel, 'modules.process-capability.histogramYLabel');
@@ -1196,7 +1238,7 @@ suite('dashboard tiles: process-capability', () => {
   });
 
   test('showChart off: figures only, no chart', async () => {
-    const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE, { showChart: false });
+    const { host, cm } = await renderCap(CAP_STATE, { showChart: false });
     assertEqual(cm.made.length, 0);
     assertEqual(host.querySelector('.dashboard-capability__plot'), null);
     assertTrue(host.querySelector('.dashboard-spc__metric') !== null);
@@ -1204,7 +1246,7 @@ suite('dashboard tiles: process-capability', () => {
   });
 
   test('an analysis hint is shown under the figures', async () => {
-    const { host } = await renderChartTile(capabilityTile, { ...CAP_STATE, params: { ...CAP_STATE.params, withinMethod: 'pooled' } });
+    const { host } = await renderCap({ ...CAP_STATE, params: { ...CAP_STATE.params, withinMethod: 'pooled' } });
     assertEqual(host.querySelector('.dashboard-capability__hint').textContent,
       'modules.process-capability.methodFallbackHint');
     host.remove();
@@ -1212,11 +1254,12 @@ suite('dashboard tiles: process-capability', () => {
 
   test('a second render and dispose destroy the previous chart', async () => {
     const cm = recordingChartManager();
-    const { host } = await renderChartTile(capabilityTile, CAP_STATE, {}, cm);
-    await mountTile(capabilityTile, { tileId: 't', instanceId: 'i', state: CAP_STATE,
-      settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null }, host);
+    const { host } = await renderCap(CAP_STATE, {}, cm);
+    await waitFor(() => cm.made.length === 1);
+    await mountTile(capabilityTile, capArgs(CAP_STATE, resolveSettings(validateSchema(capabilityTile.settings), {}), cm), host);
+    await waitFor(() => cm.made.length === 2);
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
-    capabilityTile.dispose(host, { tileId: 't' });
+    disposeTile(capabilityTile, host, { tileId: 't' });
     assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
     host.remove();
   });
@@ -1225,31 +1268,31 @@ suite('dashboard tiles: process-capability', () => {
     const made = []; const destroyed = []; const pending = [];
     const cm = {
       create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
+      update: () => {},
       destroy: (c) => destroyed.push(c),
     };
     const host = document.createElement('div');
-    const args = { tileId: 't', instanceId: 'i', state: CAP_STATE,
-      settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null };
-    const first = mountTile(capabilityTile, args, host);
+    const args = capArgs(CAP_STATE, resolveSettings(validateSchema(capabilityTile.settings), {}), cm);
+    await mountTile(capabilityTile, args, host);
     await waitFor(() => pending.length === 1);
-    const second = mountTile(capabilityTile, args, host);
+    await mountTile(capabilityTile, args, host);
     await waitFor(() => pending.length === 2);
-    pending[1](); await second;
-    pending[0](); await first;
+    pending[1](); await flush();
+    pending[0](); await flush();
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
     assertTrue(!destroyed.includes(made[1]), 'current chart kept');
   });
 
   test('a failed chart create (null) keeps the figures', async () => {
-    const cm = { create: async () => null, destroy: () => {} };
-    const { host } = await renderChartTile(capabilityTile, CAP_STATE, {}, cm);
+    const cm = { create: async () => null, update: () => {}, destroy: () => {} };
+    const { host } = await renderCap(CAP_STATE, {}, cm);
     assertTrue(host.querySelector('.dashboard-spc__metric') !== null);
     host.remove();
   });
 
   test('viewModel: metrics, stats and histogram config as display data', () => {
-    const vm = vmOf(capabilityTile, CAP_STATE);
-    assertPlain({ ...vm, chart: null });
+    const vm = capVm(CAP_STATE);
+    assertPlain({ empty: vm.empty, hint: vm.hint, metrics: vm.metrics, stats: vm.stats });
     assertEqual(vm.empty, null);
     assertEqual(vm.hint, null);
     assertTrue(/^dashboard-spc__metric--(ok|warn|bad)$/.test(vm.metrics[0].modifier), vm.metrics[0].modifier);
@@ -1259,16 +1302,27 @@ suite('dashboard tiles: process-capability', () => {
     assertDeepEqual(vm.stats.map(s => s.label), ['dashboard.capabilityPpm', 'n']);
     assertEqual(vm.stats[1].value, '10');
     assertEqual(vm.chart.data.length, CAP_VALUES.length);
-    assertEqual(vm.chart.binMethod, 'sturges');
+    assertEqual(vm.chart.binMethod, undefined);
     assertDeepEqual(vm.chart.refLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
+    checkValue(histogramWidget.props.config, 'chart', vm.chart);
   });
 
   test('viewModel: empty and no-data states, showChart off', () => {
-    const empty = vmOf(capabilityTile, {});
+    const empty = capVm({});
     assertEqual(empty.empty, 'dashboard.capabilityEmpty');
     assertEqual(empty.hint, null);
-    assertEqual(vmOf(capabilityTile, { embeddedValues: CAP_VALUES }).empty, 'dashboard.capabilityNoData');
-    assertEqual(vmOf(capabilityTile, CAP_STATE, { showChart: false }).chart, null);
+    assertEqual(capVm({ embeddedValues: CAP_VALUES }).empty, 'dashboard.capabilityNoData');
+    assertEqual(capVm(CAP_STATE, { showChart: false }).chart, null);
+  });
+
+  test('viewModel: derived threw ({ error }) counts as no analysis', () => {
+    const boom = { columns: [{ id: 'm', get values() { throw new TypeError('boom'); } }] };
+    const src = Object.freeze({ read: () => boom, list: () => [] });
+    const vm = vmOf(capabilityTile, { columnRef: CAP_COL, params: { lsl: 9.5 } }, {}, { source: src });
+    assertEqual(vm.empty, 'dashboard.capabilityNoData');
+    assertEqual(vm.chart, null);
+    assertDeepEqual(vm.stats, []);
+    assertEqual(vm.hint, null);
   });
 });
 
