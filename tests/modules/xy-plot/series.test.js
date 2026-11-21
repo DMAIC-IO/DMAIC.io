@@ -82,6 +82,26 @@ suite('xy-plot: Reihenbau', () => {
     assertDeepEqual(r.series[1].connectLine, { show: true, dash: 'dot', width: 2 });
     assertEqual('color' in r.series[0].connectLine, false);
   });
+  test('gleiche Y-Spalte gegen mehrere X: Name mit X-Spalte', () => {
+    const r = buildSeries(model([ds({ x: ref('x4'), y: ref('y4') }), ds({ x: ref('gx'), y: ref('y4') })]), read);
+    assertDeepEqual(r.series.map((s) => s.name), ['Y4 (X4)', 'Y4 (GX)']);
+  });
+  test('verschiedene Y-Spalten: Namen unverändert', () => {
+    const r = buildSeries(model([ds({ x: ref('x4'), y: ref('y4') }), ds({ x: ref('x4'), y: ref('gy') })]), read);
+    assertDeepEqual(r.series.map((s) => s.name), ['Y4', 'GY']);
+  });
+  test('gleiche Gruppenreihen gegen mehrere X: Name mit X-Spalte', () => {
+    const r = buildSeries(model([
+      ds({ x: ref('gx'), y: ref('gy'), group: ref('g') }),
+      ds({ x: ref('gy'), y: ref('gy'), group: ref('g') }),
+    ]), read);
+    assertDeepEqual(r.series.map((s) => s.name), ['GY — B (GX)', 'GY — A (GX)', 'GY — B (GY)', 'GY — A (GY)']);
+  });
+  test('gleiche X- und Y-Spalte mehrfach: Nummer ab der zweiten Reihe', () => {
+    const d = ds({ x: ref('x4'), y: ref('y4') });
+    const r = buildSeries(model([d, d, d]), read);
+    assertDeepEqual(r.series.map((s) => s.name), ['Y4', 'Y4 (2)', 'Y4 (3)']);
+  });
   test('statsInput: nur sichtbare Reihen', () => {
     const out = statsInput([
       { name: 'a', y: [1], color: 'c', visible: true },

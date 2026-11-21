@@ -44,21 +44,45 @@ function makeSeries(idx, name, x, y, bubble, model) {
 }
 
 /**
- * Reihen je Datensatz (mit Gruppenspalte eine je Stufe, mindestens zwei Punkte),
- * dann die Einstellungen alter Stände je Index. Unvollständige Datensätze entfallen.
+ * Eindeutige Reihennamen: die Editor-Einstellungen hängen am Namen. Teilen sich
+ * mehrere Reihen einen Namen, bekommen alle die X-Spalte angehängt; hilft das
+ * nicht (gleiche X-Spalte), zählen die späteren ab „(2)“. Eindeutige bleiben.
+ * @param {{ name: string, xName: string }[]} items
+ * @returns {string[]}
+ */
+function uniqueNames(items) {
+  /** @type {Map<string, number[]>} */
+  const byName = new Map();
+  items.forEach((it, i) => byName.set(it.name, [...(byName.get(it.name) ?? []), i]));
+  const names = items.map((it) => it.name);
+  for (const [name, idx] of byName) {
+    if (idx.length < 2) continue;
+    const xs = idx.map((i) => items[i].xName);
+    if (new Set(xs).size === xs.length) idx.forEach((i) => { names[i] = `${name} (${items[i].xName})`; });
+    else idx.forEach((i, k) => { if (k > 0) names[i] = `${name} (${k + 1})`; });
+  }
+  // Ein Zusatz kann auf einen vorhandenen Namen treffen: dann weiterzählen.
+  const taken = new Set();
+  return names.map((n) => {
+    let out = n;
+    for (let k = 2; taken.has(out); k++) out = `${n} (${k})`;
+    taken.add(out);
+    return out;
+  });
+}
+
+/**
+ * Reihen je Datensatz (mit Gruppenspalte eine je Stufe, mindestens zwei Punkte)
+ * mit eindeutigen Namen, dann die Einstellungen alter Stände je Index.
+ * Unvollständige Datensätze entfallen.
  * @param {{ datasets: { x: object|null, y: object|null, group: object|null, size: object|null }[], showMarkers: boolean, showLines: boolean, legacySeries: readonly (object|undefined)[] }} model
  * @param {Read} read
  * @returns {{ series: Record<string, any>[], xRef: object|null } | { error: 'errTooFew'|'errNoGroupLevels', params: Record<string, any> }}
  */
 export function buildSeries(model, read) {
-  /** @type {Record<string, any>[]} */
-  const series = [];
+  /** @type {{ name: string, xName: string, x: number[], y: number[], bubble: { sizes: number[], rawSizes: number[], label: string }|null }[]} */
+  const items = [];
   let xRef = null;
-  const push = (ds, name, x, y, bubble) => {
-    const s = makeSeries(series.length, name, x, y, bubble, model);
-    series.push({ ...s, ...(model.legacySeries[series.length] ?? {}) });
-    if (!xRef) xRef = ds.x;
-  };
 
   for (let i = 0; i < model.datasets.length; i++) {
     const ds = model.datasets[i];
@@ -66,6 +90,7 @@ export function buildSeries(model, read) {
     const xVals = read.values(ds.x) ?? [];
     const yVals = read.values(ds.y) ?? [];
     const yName = read.name(ds.y) ?? '';
+    const xName = read.name(ds.x) ?? '';
     const gVals = ds.group ? (read.values(ds.group) ?? []) : null;
     const sVals = ds.size ? (read.values(ds.size) ?? []) : null;
     const sName = ds.size ? (read.name(ds.size) ?? '') : '';
@@ -108,11 +133,17 @@ export function buildSeries(model, read) {
     for (const b of buckets.values()) {
       if (b.x.length < 2) continue;
       const name = gVals ? `${yName} — ${String(b.level)}` : yName;
-      push(ds, name, b.x, b.y, b.sizes ? buildBubble(b.sizes, sName) : null);
+      items.push({ name, xName, x: b.x, y: b.y, bubble: b.sizes ? buildBubble(b.sizes, sName) : null });
+      if (!xRef) xRef = ds.x;
       any = true;
     }
     if (!any) return { error: 'errTooFew', params: { col: yName } };
   }
+  const names = uniqueNames(items);
+  const series = items.map((it, idx) => ({
+    ...makeSeries(idx, names[idx], it.x, it.y, it.bubble, model),
+    ...(model.legacySeries[idx] ?? {}),
+  }));
   return { series, xRef };
 }
 

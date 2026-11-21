@@ -6,6 +6,8 @@ import { CHART_COLORS } from '../../../js/core/chart/chart-colors.js';
 import scatterChart from '../../../js/widgets/scatter-chart/schema.js';
 import { storedSource } from '../../helpers/stored-source.js';
 import { spySource } from '../../helpers/sheet-source.js';
+import { buildSeries, sourceColumns } from '../../../js/modules/xy-plot/domain/series.js';
+import { pickShown, diffEdits } from '../../../js/widgets/chart-edits.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
 
@@ -84,6 +86,15 @@ suite('xy-plot: Model — derived stats', () => {
     const m = model([ds({ x: ref('x'), y: ref('y'), group: ref('g') })]);
     m.legacySeries = [{ visible: false }, { name: 'Neu' }];
     assertDeepEqual(evaluateDerived(m, data).stats.map((r) => r.name), ['Neu']);
+  });
+  test('gleiche Y-Spalte gegen zwei X: Ausblenden der zweiten Reihe lässt die erste stehen', () => {
+    const m = model([ds({ x: ref('x'), y: ref('y') }), ds({ x: ref('y'), y: ref('y') })]);
+    const built = buildSeries(m, sourceColumns(data));
+    const before = pickShown({ series: built.series }, scatterChart.editable);
+    const after = JSON.parse(JSON.stringify(before));
+    after.series[1].visible = false;
+    m.chart = diffEdits({}, before, after, scatterChart.editable, new Set()).next;
+    assertDeepEqual(evaluateDerived(m, data).stats.map((r) => r.name), ['Y (X)']);
   });
   test('ohne fertige Reihe, bei Fehler oder alles ausgeblendet: null', () => {
     assertEqual(evaluateDerived(new State(), data).stats, null);
