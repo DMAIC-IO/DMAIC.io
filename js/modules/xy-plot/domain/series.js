@@ -45,8 +45,10 @@ function makeSeries(idx, name, x, y, bubble, model) {
 
 /**
  * Eindeutige Reihennamen: die Editor-Einstellungen hängen am Namen. Teilen sich
- * mehrere Reihen einen Namen, bekommen alle die X-Spalte angehängt; hilft das
- * nicht (gleiche X-Spalte), zählen die späteren ab „(2)“. Eindeutige bleiben.
+ * mehrere Reihen einen Namen und unterscheiden sich ihre X-Spalten, bekommt
+ * jede die X-Spalte angehängt (eine X-Spalte ohne Namen hängt nichts an). Wer
+ * danach noch gleich heißt, zählt ab der zweiten Reihe „(2)“, „(3)“ weiter.
+ * Eindeutige bleiben.
  * @param {{ name: string, xName: string }[]} items
  * @returns {string[]}
  */
@@ -57,9 +59,9 @@ function uniqueNames(items) {
   const names = items.map((it) => it.name);
   for (const [name, idx] of byName) {
     if (idx.length < 2) continue;
-    const xs = idx.map((i) => items[i].xName);
-    if (new Set(xs).size === xs.length) idx.forEach((i) => { names[i] = `${name} (${items[i].xName})`; });
-    else idx.forEach((i, k) => { if (k > 0) names[i] = `${name} (${k + 1})`; });
+    const xs = idx.map((i) => String(items[i].xName ?? '').trim());
+    if (new Set(xs).size < 2) continue;
+    idx.forEach((i, k) => { if (xs[k]) names[i] = `${name} (${xs[k]})`; });
   }
   // Ein Zusatz kann auf einen vorhandenen Namen treffen: dann weiterzählen.
   const taken = new Set();

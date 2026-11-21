@@ -102,6 +102,18 @@ suite('xy-plot: Reihenbau', () => {
     const r = buildSeries(model([d, d, d]), read);
     assertDeepEqual(r.series.map((s) => s.name), ['Y4', 'Y4 (2)', 'Y4 (3)']);
   });
+  test('gemischte Kollision: erst X-Spalte, dann Nummer', () => {
+    const a = ds({ x: ref('x4'), y: ref('y4') });
+    const r = buildSeries(model([a, a, ds({ x: ref('gx'), y: ref('y4') })]), read);
+    assertDeepEqual(r.series.map((s) => s.name), ['Y4 (X4)', 'Y4 (X4) (2)', 'Y4 (GX)']);
+  });
+  test('X-Spalte ohne Namen: kein leerer Zusatz, sondern Nummer', () => {
+    const blank = { ...read, name: (c) => (c.columnId === 'gx' ? '  ' : read.name(c)) };
+    const r = buildSeries(model([
+      ds({ x: ref('gx'), y: ref('y4') }), ds({ x: ref('gx'), y: ref('y4') }), ds({ x: ref('x4'), y: ref('y4') }),
+    ]), blank);
+    assertDeepEqual(r.series.map((s) => s.name), ['Y4', 'Y4 (2)', 'Y4 (X4)']);
+  });
   test('statsInput: nur sichtbare Reihen', () => {
     const out = statsInput([
       { name: 'a', y: [1], color: 'c', visible: true },
