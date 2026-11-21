@@ -408,6 +408,39 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('Achsentitel und Titel der Modulkonfiguration sind die automatischen Werte des Editors (Platzhalter)', async () => {
+    const cm = fakeManager({ real: true });
+    const tpl = '<div x-widget="histogram-chart" x-widget-config="labelled" x-widget-value="model.chartEdits"></div>';
+    const labelled = (xLabel) => ({ title: 'auto', xLabel, series: SERIES(false), data: [1] });
+    const extra = { labelled: labelled('X-Spalte') };
+    const { root, data } = await host(tpl, { cm, extra });
+    const chart = cm.log.created[0];
+    assertDeepEqual({ ...chart._autoLabels }, { title: 'auto', xLabel: 'X-Spalte' });
+    data.labelled = labelled('Neu');
+    await flush();
+    await flush();
+    assertEqual(chart._autoLabels.xLabel, 'Neu');
+    assertEqual(chart._autoLabels.title, 'auto');
+    root.remove();
+  });
+
+  test('Rückgängig einer Editor-Einstellung ohne Modulwert setzt das Diagramm auf die Vorgabe zurück', async () => {
+    const cm = fakeManager({ real: true });
+    const { root, data } = await host(HIST, { cm });
+    const chart = cm.log.created[0];
+    const before = chart.config.titleSize;
+    chart.config.titleSize = 31;
+    chart.config.onEditorChange(chart);
+    await flush();
+    await flush();
+    assertEqual(data.model.chartEdits.titleSize, 31);
+    data.model.chartEdits = {};
+    await flush();
+    await flush();
+    assertEqual(chart.config.titleSize, before);
+    root.remove();
+  });
+
   test('eigener Editor-Write löst kein update am Diagramm aus', async () => {
     const cm = fakeManager();
     const { root } = await host(HIST, { cm });

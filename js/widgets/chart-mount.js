@@ -8,6 +8,19 @@
  * Hosts (Modul: nichts speichern, Kachel: Kachelbindung).
  */
 import { applyEdits, diffEdits, ownedKeys, pickShown } from './chart-edits.js';
+import { LABEL_EDIT_KEYS } from '../core/chart/instance-chart-manager.js';
+
+/**
+ * Titel und Achsentitel der Modulkonfiguration: die automatischen Werte, die der
+ * Editor als Platzhalter zeigt und bei einem geleerten Feld wieder einsetzt.
+ * @param {any} chart @param {any} cfg Konfiguration des Moduls ohne Einstellungen
+ */
+function setAutoLabels(chart, cfg) {
+  /** @type {Record<string, any>} */
+  const auto = {};
+  for (const k of LABEL_EDIT_KEYS) if (cfg && k in cfg) auto[k] = cfg[k];
+  chart._autoLabels = auto;
+}
 
 /** Bearbeitbare Elemente, deren Fokus einen Verlaufsschritt offen hält (wie in template-module.js). */
 const EDITABLE = 'input, textarea, select, [contenteditable]';
@@ -120,6 +133,8 @@ export function chartMount(widget, toChart = (c) => c) {
       if (!value.set(next)) { written = null; restore(chart, cfg, after); return; }
       // Das Feld bringt den Wert in seine Form (Schlüsselreihenfolge des Schemas): verglichen wird mit dem gespeicherten.
       written = JSON.stringify(value.get() ?? {});
+      // Das Diagramm zeigt die Schreibung schon; ein späteres Entfallen (Rückgängig) muss sie zurücksetzen.
+      appliedEdits = JSON.parse(written);
       if (cleared.length) cm.update(chart, Object.fromEntries(cleared.map((k) => [k, cfg[k] ?? ''])));
       shown = pickShown(chart.config, editable);
     };
@@ -152,7 +167,7 @@ export function chartMount(widget, toChart = (c) => c) {
       const vanished = editable.base.filter((/** @type {string} */ k) => appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config));
       appliedEdits = edits;
       if (slot.token) {
-        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
+        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); setAutoLabels(slot.chart, cfg); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
         return;
       }
       const token = {};
@@ -163,6 +178,7 @@ export function chartMount(widget, toChart = (c) => c) {
         if (!chart) { slot = { chart: null, token: null, pending: null }; return; }
         slot.chart = chart;
         if (slot.pending) { cm.update(chart, slot.pending); slot.pending = null; }
+        setAutoLabels(chart, plainConfig());
         shown = pickShown(chart.config, editable);
       }, (err) => {
         if (slot.token === token) slot = { chart: null, token: null, pending: null };
