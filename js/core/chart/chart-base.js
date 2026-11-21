@@ -404,7 +404,6 @@ export default class ChartBase {
             d.setColor(c);
             swatch.style.background = c;
             onChange();
-            if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'color', c);
           });
         });
 
@@ -413,12 +412,10 @@ export default class ChartBase {
         nameInp.addEventListener('change', () => {
           d.setName(nameInp.value);
           onChange();
-          if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'name', nameInp.value);
         });
 
         const eyeBtn = edVisToggle(d.isVisible(), () => {
           d.setVisible(!d.isVisible());
-          if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'visible', d.isVisible());
           onUpdate();
         });
 
@@ -452,7 +449,6 @@ export default class ChartBase {
               fillSw.style.background = c;
               swatch.style.background = c;
               onChange();
-              if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'color', c);
             });
           });
           details.appendChild(fillRow);
@@ -485,11 +481,6 @@ export default class ChartBase {
     // Let chart types add their own editor sections
     if (typeof this._buildTypeEditor === 'function') {
       this._buildTypeEditor(inner, t, onUpdate, onChange);
-    }
-
-    // Let consumers add custom editor sections (receives seriesItemEls for appending details)
-    if (typeof this.config.onEditorBuild === 'function') {
-      this.config.onEditorBuild(inner, t, onUpdate, this._seriesItemEls);
     }
   }
 
