@@ -1,0 +1,19 @@
+<div class="xyplot dmike-split dmike-split--input-sm" x-data="xyPlot">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="xyplot__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="xyplot__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="field-error" data-ref="error-box" x-show="errorText" x-text="errorText"></div>
+  </div>
+
+  <div class="xyplot__output dmike-split__output">
+    <div class="xyplot__placeholder" data-ref="placeholder" x-show="!hasSeries" x-text="t('placeholderText')"></div>
+    <template x-if="hasSeries">
+      <div class="xyplot__chart-area" data-ref="chart-area">
+        <div class="xyplot__plot-wrap" data-ref="plot" x-widget="scatter-chart" x-widget-config="scatter" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        <div data-ref="stats-panel" x-show="model.showStats" x-widget="stats-table" x-widget-rows="statsRows" x-widget-conf-level="model.confLevel"></div>
+      </div>
+    </template>
+  </div>
+</div>

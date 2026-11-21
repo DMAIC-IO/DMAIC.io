@@ -1,0 +1,21 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    {
+      "x":     { "instanceId": "__source__", "sheetId": "sheet-collinear", "columnId": "c-rpm" },
+      "y":     { "instanceId": "__source__", "sheetId": "sheet-collinear", "columnId": "c-power" },
+      "group": null,
+      "size":  null
+    },
+    {
+      "x":     { "instanceId": "__source__", "sheetId": "sheet-collinear", "columnId": "c-torque" },
+      "y":     { "instanceId": "__source__", "sheetId": "sheet-collinear", "columnId": "c-power" },
+      "group": null,
+      "size":  null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "shared/worksheets/regression-collinear.json"
+}

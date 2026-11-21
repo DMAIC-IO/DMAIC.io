@@ -55,7 +55,6 @@ import h52 from '../modules/triz-resources/triz-resources-help.js';
 import h53 from '../modules/triz-sufield/triz-sufield-help.js';
 import h54 from '../modules/unit-converter/unit-converter-help.js';
 import h55 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
-import h56 from '../modules/xy-plot/xy-plot-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -114,5 +113,4 @@ export const HELP = {
   "triz-sufield": h53,
   "unit-converter": h54,
   "voc-ctx-tree": h55,
-  "xy-plot": h56,
 };

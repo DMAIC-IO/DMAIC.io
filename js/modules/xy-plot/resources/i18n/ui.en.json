@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "XY Plot",
+  "description": "Create scatter plots from worksheet columns",
+  "whenToUse": "Show the relationship between two numeric columns as a scatter plot, optionally grouped or as bubbles sized by a third column.",
+  "sectionData": "Data Source",
+  "placeholderText": "Add datasets with X and Y columns to create a plot.",
+  "errTooFew": "Too few data pairs for column \"{col}\".",
+  "errNoGroupLevels": "Dataset {n}: The grouping column has no valid values."
+}

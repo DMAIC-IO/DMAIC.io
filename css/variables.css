@@ -302,6 +302,8 @@
   --chart-cost-money: #16a34a;
   --chart-cost-hours: #2563eb;
   --chart-bar-default: #94a3b8;
+  /* Randfarbe der Punkte im Streudiagramm: folgt dem Seitenhintergrund (hell weiß). */
+  --chart-marker-stroke: var(--color-bg-primary);
 }
 
 /* ===== Dark Theme ===== */

@@ -1,0 +1,15 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    {
+      "x":     { "instanceId": "__source__", "sheetId": "sheet-hubschrauber-doe", "columnId": "c-klammern" },
+      "y":     { "instanceId": "__source__", "sheetId": "sheet-hubschrauber-doe", "columnId": "c-flugzeit" },
+      "group": null,
+      "size":  null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "shared/worksheets/hubschrauber-flyer.json"
+}

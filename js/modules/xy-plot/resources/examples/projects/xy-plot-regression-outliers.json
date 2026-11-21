@@ -1,0 +1,15 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    {
+      "x":     { "instanceId": "__source__", "sheetId": "sheet-outliers", "columnId": "c-speed" },
+      "y":     { "instanceId": "__source__", "sheetId": "sheet-outliers", "columnId": "c-consum" },
+      "group": null,
+      "size":  null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "shared/worksheets/regression-outliers.json"
+}

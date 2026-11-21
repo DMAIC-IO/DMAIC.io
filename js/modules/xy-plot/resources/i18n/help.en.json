@@ -1,0 +1,133 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:streudiagramm|XY plot}} maps two numeric columns against each other — one as the X value, one as the Y value. It is the standard tool for making relationships, trends, and patterns between two variables visible."
+        },
+        {
+          "type": "definition",
+          "term": "Dataset",
+          "content": "A dataset is one X/Y combination drawn as a series of points. Each dataset has its own X and Y column — datasets are not required to share the same X axis."
+        },
+        {
+          "type": "definition",
+          "term": "Markers and lines",
+          "content": "Markers show individual measurements. Lines connect the points in data order — useful for time series or ordered traces, misleading for unordered samples."
+        },
+        {
+          "type": "definition",
+          "term": "Reference lines and bands",
+          "content": "Optional horizontal or vertical reference lines (e.g. target value, specification limit) and colored bands (tolerance band, acceptable range) help compare measurements against an expected corridor."
+        },
+        {
+          "type": "paragraph",
+          "content": "Unlike the scatter plot in the correlation module, the XY plot is purely descriptive — it does not run any {{term:hypothesentest|statistical test}} and is used for visual exploration."
+        }
+      ]
+    },
+    "bubble": {
+      "title": "Bubble plot (third column as size)",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "When the S-slot (Size) of a dataset is also filled, the result is a bubble plot: marker size encodes a third numeric column, allowing three variables to be shown at once."
+        },
+        {
+          "type": "definition",
+          "term": "Area-proportional scaling",
+          "content": "Raw values are mapped through a square-root normalisation to a 6–28 px diameter range. As a result the bubble AREA (not the radius) is proportional to the value — visually correct according to perceptual research."
+        },
+        {
+          "type": "definition",
+          "term": "Negative or missing values",
+          "content": "Rows with missing, non-numeric, or negative size values are silently skipped — a negative area has no sensible visual representation."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Typical uses: project prioritisation (effort × benefit × risk), marketing (CPC × conversion × reach), machines (cycle time × scrap × output).",
+            "The tooltip shows the raw value of the size column in addition to X and Y.",
+            "Combined with the grouping slot (G): each group receives its own bubble normalisation within the group."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Pitfalls: when all size values are nearly equal, differences disappear visually (sqrt scaling damps them further). When the range is very wide, mid-range values become too small. In both cases transform the column up front or filter it."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Operation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Add a dataset: pick an X column and a Y column — the plot updates immediately.",
+            "Multiple datasets: use \"Add dataset\" to lay down more X/Y pairs for group comparisons.",
+            "Markers or lines: global toggles \"Show lines\" and \"Show markers\" control the appearance of all datasets.",
+            "Per dataset, color, symbol, line width, and name can be customized in the editor.",
+            "Reference lines and bands can be added in the editor panel — ideal for specification limits, target values, or trend lines."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "The chart can be exported as PNG or SVG and follows the active theme (light/dark)."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "What to look for",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Points line up along a rising line → positive relationship between X and Y.",
+            "Points line up along a falling line → negative relationship.",
+            "Points scatter with no direction → no relationship or pure random noise.",
+            "Arc or U-shape → nonlinear relationship (linearize for correlation or use Spearman).",
+            "Funnel-shaped scatter → heteroscedasticity (spread grows with X) — important for regression.",
+            "Several separate clouds → mixed populations, stratify the data."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "For a quantitative statement on the strength and significance of the relationship, follow up with the correlation or regression module."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Lines on unordered data",
+          "content": "Lines connect points in row order — for unordered samples this produces a meaningless zig-zag. Only enable lines when the X axis carries a real order (time, index, position)."
+        },
+        {
+          "type": "definition",
+          "term": "Visual relationship ≠ correlation",
+          "content": "Even a clearly visible pattern does not automatically {{term:mittelwert|mean}} a statistically significant relationship. When in doubt, follow up with the correlation module and check Pearson or Spearman coefficients with p-values."
+        },
+        {
+          "type": "definition",
+          "term": "Axis scaling distorts the picture",
+          "content": "Too narrow or too wide a scale can make strong trends look harmless or harmless scatter look dramatic. Choose axes deliberately — the default scaling is usually, but not always, sensible."
+        },
+        {
+          "type": "definition",
+          "term": "Outliers dominate the picture",
+          "content": "A single extreme value shifts the axis scaling and squeezes the remaining points together. Mark outliers, investigate them, and consider excluding them in a separate view."
+        },
+        {
+          "type": "definition",
+          "term": "Overplotting",
+          "content": "With many data points, markers overlap and the true density becomes invisible. Shrink markers, draw them more transparently, or look at a histogram or boxplot in addition."
+        }
+      ]
+    }
+  }
+}

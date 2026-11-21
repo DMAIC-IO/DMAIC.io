@@ -1,15 +1,9 @@
 /* ============================================================
-   XY-Plot Module Styles (xy-plot.css)
+   XY-Plot Module Styles
    BEM: .xyplot__ prefix
    ============================================================ */
 
 /* Layout provided by .dmike-split (css/modules.css) */
-
-/* Section labels: use global .dmike-split__output-section (css/modules.css) */
-
-/* Fields use global .field / .field-group (components.css) */
-
-/* Column selects: use global .ds-picker (dataset-picker.css) */
 
 /* Placeholder */
 .xyplot__placeholder {
@@ -23,10 +17,10 @@
   gap: var(--spacing-md);
 }
 
-.xyplot__placeholder p {
-  max-width: 300px;
-  text-align: center;
-  font-size: var(--font-size-sm);
+/* Chart area */
+.xyplot__chart-area {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Plot container — fixed height so the chart framework gets a definite size */
@@ -34,3 +28,5 @@
   width: 100%;
   height: 450px;
 }
+
+/* Statistics table — uses shared dmike-stats-panel (js/core/stats-panel.css) */

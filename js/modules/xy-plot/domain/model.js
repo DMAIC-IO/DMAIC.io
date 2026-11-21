@@ -71,7 +71,7 @@ export const State = defineModel({
     // Einstellungen alter Stände je Index der Reihe, auch der Name.
     legacySeries: list(object({
       name: text(opt), color: text(opt), visible: boolean(opt), symbol: text(opt),
-      markerSize: number({ ...opt, min: 0 }), stroke: text(opt), strokeWidth: number({ ...opt, min: 0 }),
+      markerSize: number({ optional: true, min: 0 }), stroke: text(opt), strokeWidth: number({ optional: true, min: 0 }),
       connectLine: object({ show: boolean(), dash: text(opt), width: number(opt), color: text(opt) }, opt),
     }), { default: [] }),
     chart: scatterChart.edits(),

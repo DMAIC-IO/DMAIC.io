@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Per data row its columns, each column of a row described individually under keys.",
+      "x": {
+        "label": "X",
+        "title": "The X column of the row (slot X), numeric and required",
+        "help": "The X column of the row (slot X), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen."
+      },
+      "y": {
+        "label": "Y",
+        "title": "The Y column of the row (slot Y), numeric and required",
+        "help": "The Y column of the row (slot Y), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen."
+      },
+      "group": {
+        "label": "G",
+        "title": "The group column of the row (slot G), optional",
+        "help": "The group column of the row (slot G), optional; it colours the points by group value. Empty until one is chosen."
+      },
+      "size": {
+        "label": "S",
+        "title": "The bubble size column (slot S), numeric and optional",
+        "help": "The bubble size column (slot S), numeric and optional; it turns the points into bubbles whose diameter shows the value. Empty until one is chosen."
+      }
+    },
+    "stats": {
+      "help": "Per plotted series the statistics of its Y values and confidence intervals, structured like modules.shared.types.SeriesStats; null while nothing can be computed."
+    },
+    "legacySeries": {
+      "help": "Display settings from older saved states, one entry per series by position (name, colour, symbol, size, border, visibility, connecting line). They apply before the settings of the chart editor and are cleared as soon as the data rows change. Not meant to be set by hand."
+    },
+    "series": {
+      "help": "The series built from the data rows with their display (name, X and Y values, colour, symbol, connecting line, bubble sizes), or an object with \"error\" and \"params\" when no series can be formed."
+    },
+    "visibleSeries": {
+      "help": "The visible series after the settings of the chart editor, in the order of the statistics table; empty while there are no series."
+    }
+  },
+  "actions": {
+    "clearLegacySeries": {
+      "help": "Discards the display settings from older saved states. Runs by itself when the data rows change.",
+      "params": {
+        "command": "The command as an object without parameters."
+      }
+    }
+  }
+}

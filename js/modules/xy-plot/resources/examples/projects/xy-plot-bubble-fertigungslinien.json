@@ -1,0 +1,15 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    {
+      "x":     { "instanceId": "__source__", "sheetId": "sheet-fertigungslinien", "columnId": "c-defektrate" },
+      "y":     { "instanceId": "__source__", "sheetId": "sheet-fertigungslinien", "columnId": "c-kosten-pro-defekt" },
+      "group": null,
+      "size":  { "instanceId": "__source__", "sheetId": "sheet-fertigungslinien", "columnId": "c-defektanzahl" }
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "worksheets/xy-plot-bubble-fertigungslinien.json"
+}

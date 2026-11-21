@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "XY-Diagramm",
+  "description": "Streudiagramm aus Worksheet-Spalten erstellen",
+  "whenToUse": "Den Zusammenhang zweier numerischer Spalten als Streudiagramm zeigen, optional gruppiert oder als Blasen, deren Größe eine dritte Spalte bestimmt.",
+  "sectionData": "Datenquelle",
+  "placeholderText": "Fügen Sie Datensätze mit X- und Y-Spalten hinzu, um ein Diagramm zu erstellen.",
+  "errTooFew": "Zu wenig Wertepaare für Spalte \"{col}\".",
+  "errNoGroupLevels": "Datensatz {n}: Die Gruppierungsspalte enthält keine gültigen Werte."
+}

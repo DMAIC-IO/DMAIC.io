@@ -23,12 +23,6 @@
 export default [
   // ─── Daten-Bereich (cycle-independent) ────────────────────────
   {
-    id: 'xy-plot',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./xy-plot/xy-plot.js'),
-  },
-  {
     id: 'pie-chart',
     phase: 'data',
     group: 'visualize',

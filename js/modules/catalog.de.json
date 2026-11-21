@@ -99,5 +99,10 @@
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",
     "whenToUse": "Das gemeinsame Datensubstrat: hierhin kommen Messwerte, bevor ein auswertendes Werkzeug sie über einen Spaltenbezug liest. Fast jede Analyse beginnt mit einer Datensammlung."
+  },
+  "xy-plot": {
+    "name": "XY-Diagramm",
+    "description": "Streudiagramm aus Worksheet-Spalten erstellen",
+    "whenToUse": "Den Zusammenhang zweier numerischer Spalten als Streudiagramm zeigen, optional gruppiert oder als Blasen, deren Größe eine dritte Spalte bestimmt."
   }
 }

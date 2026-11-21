@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { RELEASED_MODULES } from './agent-release.mjs';
 
 /** @type {readonly string[]} sortiert */
-export const CONVERTED_MODULES = Object.freeze(['attribute-control-chart', 'chart-suggestion', 'contour-plot', 'data-import', 'dmaic-calendar', 'doe-planner', 'histogram', 'hypothesis-test', 'ishikawa', 'morphological-box', 'msa-typ2', 'msa-typ5', 'multi-vari', 'opportunity-flowchart', 'project-charter', 'resampling', 'sipoc', 'survey-builder', 'triz-function-analysis', 'worksheet']);
+export const CONVERTED_MODULES = Object.freeze(['attribute-control-chart', 'chart-suggestion', 'contour-plot', 'data-import', 'dmaic-calendar', 'doe-planner', 'histogram', 'hypothesis-test', 'ishikawa', 'morphological-box', 'msa-typ2', 'msa-typ5', 'multi-vari', 'opportunity-flowchart', 'project-charter', 'resampling', 'sipoc', 'survey-builder', 'triz-function-analysis', 'worksheet', 'xy-plot']);
 
 const NEW_FORM_MARKERS = ['module.js', 'domain/model.js'];
 

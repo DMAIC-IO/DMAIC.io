@@ -3,6 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { buildPrefill, MODULE_PREFILL } from '../../js/modules/chart-suggestion/domain/prefill.js';
+import { State as XyState } from '../../js/modules/xy-plot/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -32,6 +33,17 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertDeepEqual(p.state.datasets[0].xRef, { instanceId: 'ws', sheetId: 's', columnId: 'a' });
     assertEqual(p.state.datasets[0].yRef.columnId, 'b');
     assertEqual(p.state.datasets[0].groupRef, null);
+  });
+
+  test('scatter → xy-plot: die Vorbelegung lädt über die Migration als Zeile x/y', () => {
+    const p = buildPrefill('scatter', [cont(10, 'a'), cont(10, 'b')], 'ws', 's');
+    const m = XyState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [{
+      x: { instanceId: 'ws', sheetId: 's', columnId: 'a' },
+      y: { instanceId: 'ws', sheetId: 's', columnId: 'b' },
+      group: null,
+      size: null,
+    }]);
   });
 
   test('scatter mit einer stetigen Spalte → null', () => {

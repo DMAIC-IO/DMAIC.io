@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben.",
+      "x": {
+        "label": "X",
+        "title": "Die X-Spalte der Reihe (Slot X), numerisch und Pflicht",
+        "help": "Die X-Spalte der Reihe (Slot X), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist."
+      },
+      "y": {
+        "label": "Y",
+        "title": "Die Y-Spalte der Reihe (Slot Y), numerisch und Pflicht",
+        "help": "Die Y-Spalte der Reihe (Slot Y), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist."
+      },
+      "group": {
+        "label": "G",
+        "title": "Die Gruppenspalte der Reihe (Slot G), optional",
+        "help": "Die Gruppenspalte der Reihe (Slot G), optional; sie färbt die Punkte nach Gruppenwert ein. Leer, solange keine gewählt ist."
+      },
+      "size": {
+        "label": "S",
+        "title": "Die Spalte der Blasengröße (Slot S), numerisch und optional",
+        "help": "Die Spalte der Blasengröße (Slot S), numerisch und optional; sie macht aus den Punkten Blasen, deren Durchmesser den Wert zeigt. Leer, solange keine gewählt ist."
+      }
+    },
+    "stats": {
+      "help": "Je gezeichneter Reihe die Kennzahlen ihrer Y-Werte und Konfidenzintervalle, aufgebaut wie modules.shared.types.SeriesStats; null, solange nichts gerechnet werden kann."
+    },
+    "legacySeries": {
+      "help": "Darstellungseinstellungen aus älteren gespeicherten Ständen, ein Eintrag je Reihe nach Position (Name, Farbe, Symbol, Größe, Rand, Sichtbarkeit, Verbindungslinie). Gelten vor den Einstellungen des Diagramm-Editors; werden geleert, sobald sich die Datenzeilen ändern. Nicht zum Setzen von Hand gedacht."
+    },
+    "series": {
+      "help": "Die Reihen aus den Datenzeilen mit Darstellung (Name, X- und Y-Werte, Farbe, Symbol, Verbindungslinie, Blasengrößen), oder ein Objekt mit „error“ und „params“, wenn sich keine Reihen bilden lassen."
+    },
+    "visibleSeries": {
+      "help": "Die sichtbaren Reihen nach den Einstellungen des Diagramm-Editors, in der Reihenfolge der Kennzahlentabelle; leer, solange es keine Reihen gibt."
+    }
+  },
+  "actions": {
+    "clearLegacySeries": {
+      "help": "Verwirft die Darstellungseinstellungen aus älteren gespeicherten Ständen. Läuft von selbst, wenn sich die Datenzeilen ändern.",
+      "params": {
+        "command": "Das Kommando als ein Objekt ohne Parameter."
+      }
+    }
+  }
+}

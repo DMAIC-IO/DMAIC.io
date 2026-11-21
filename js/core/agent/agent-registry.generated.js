@@ -23496,6 +23496,7 @@ export const AGENT_REGISTRY = {
   "xy-plot": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -23511,60 +23512,59 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setDatasets": {
+      "clearLegacySeries": {
+        "target": "model",
         "params": [
           {
-            "name": "rows",
-            "type": "object[]",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Die ganze Liste der Datenreihen setzen."
+        "help": "",
+        "keysOf": "clearLegacySeries",
+        "keysHelp": "actions.clearLegacySeries.params",
+        "keys": {}
       }
     },
     "fields": {
       "datasets": {
-        "type": "Dataset[]",
-        "help": "per data row its columns, each described under keys",
+        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, size: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true,
-        "keysOf": "Dataset",
-        "keys": {
-          "xRef": {
-            "type": "object|null",
-            "help": "X-Spalte (Slot x)"
-          },
-          "yRef": {
-            "type": "object|null",
-            "help": "Y-Spalte (Slot y)"
-          },
-          "groupRef": {
-            "type": "object|null",
-            "help": "Gruppenspalte (Slot group)"
-          },
-          "sizeRef": {
-            "type": "object|null",
-            "help": "Spalte der Blasengröße (Slot size)"
-          }
+        "rules": [
+          "datasets",
+          "multi"
+        ],
+        "slots": {
+          "x": [
+            "columnRef",
+            "types:numeric",
+            "minCount:1",
+            "required"
+          ],
+          "y": [
+            "columnRef",
+            "types:numeric",
+            "minCount:1",
+            "required"
+          ],
+          "group": [
+            "columnRef",
+            "group"
+          ],
+          "size": [
+            "columnRef",
+            "types:numeric",
+            "minCount:1"
+          ]
         }
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slot keys a row of `setDatasets` may carry",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
       "stats": {
-        "type": "SeriesStats[]|null",
-        "help": "per plotted series its statistics, each figure described under keys; null while nothing can be computed",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "SeriesStats",
@@ -23656,7 +23656,21 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "showLines",
+      "showMarkers",
+      "showStats",
+      "confLevel",
+      "exampleWorksheetId",
+      "legacySeries",
+      "chart"
+    ],
+    "settable": [
+      "datasets"
+    ],
+    "invariants": []
   }
 };
 

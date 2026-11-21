@@ -99,5 +99,10 @@
     "name": "Data Collection",
     "description": "Spreadsheet for data entry and management",
     "whenToUse": "The shared data substrate: measurements land here before an analysing tool reads them through a column reference. Almost every analysis starts with a data collection."
+  },
+  "xy-plot": {
+    "name": "XY Plot",
+    "description": "Create scatter plots from worksheet columns",
+    "whenToUse": "Show the relationship between two numeric columns as a scatter plot, optionally grouped or as bubbles sized by a third column."
   }
 }

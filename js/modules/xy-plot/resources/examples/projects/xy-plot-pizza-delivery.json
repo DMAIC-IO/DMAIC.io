@@ -1,0 +1,15 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    {
+      "x":     { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-entfernung" },
+      "y":     { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-lieferzeit" },
+      "group": null,
+      "size":  null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "shared/worksheets/pizza-delivery.json"
+}
