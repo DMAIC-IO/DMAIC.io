@@ -60,10 +60,10 @@ const SERIES = (rev) => {
   return rev ? s.reverse() : s;
 };
 
-async function host(inner, { cm, sm = null, extra = {}, model = {}, Model = null } = {}) {
+async function host(inner, { cm, sm = null, extra = {}, model = {}, Model = null, history = null } = {}) {
   if (!Alpine.version) Alpine.start();
   if (!directiveRegistered) { registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS }); directiveRegistered = true; }
-  const services = { eventBus: null, stateManager: sm, i18n, chartManager: cm, instanceId: 'i1', moduleId: 'demo' };
+  const services = { eventBus: null, stateManager: sm, i18n, chartManager: cm, instanceId: 'i1', moduleId: 'demo', history };
   const name = `wd${Math.random().toString(36).slice(2)}`;
   Alpine.data(name, () => {
     const comp = {
@@ -269,6 +269,25 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     const series = [{ name: 'A', fillColor: 'red' }];
     const a = await host(tpl, { cm: fakeManager(), sm, model: { chartEdits: { series } } });
     assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { series, title: 'X' });
+    a.root.remove();
+  });
+
+  test('Übernahme alter chartEdits: mit Verlauf über amend', async () => {
+    const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
+    let amends = 0;
+    let inAmend = false;
+    const history = { amend(fn) { amends++; inAmend = true; try { fn(); } finally { inAmend = false; } } };
+    const writes = [];
+    const Model = class extends Doc {
+      get chartEdits() { return super.chartEdits; }
+      set chartEdits(v) { writes.push(inAmend); super.chartEdits = v; }
+    };
+    const sm = fakeState({ title: 'Alt' });
+    const a = await host(tpl, { cm: fakeManager(), sm, Model, history });
+    assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { title: 'Alt' });
+    assertEqual(amends, 1);
+    assertEqual(writes.at(-1), true, 'Übernahme im amend');
+    assertEqual(sm.log.cleared.length, 1);
     a.root.remove();
   });
 

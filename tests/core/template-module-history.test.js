@@ -438,6 +438,29 @@ suite('createModule onCommand und ctx.history', () => {
     assertEqual(data().model.n, 5);
   });
 
+  test('Widget-Dienste: history.amend faltet in den vorigen Schritt, ohne history null', async () => {
+    const { mod, data } = await mount(true);
+    const svc = data()._ui.services;
+    data().model.name = 'neu';
+    await flush();
+    svc.history.amend(() => { data().model.n = 5; });
+    await flush();
+    assertTrue(mod.historyStep('undo'));
+    await flush();
+    assertEqual(data().model.n, 0);
+    assertEqual(mod.historyCan('undo'), false);
+    // Eine noch nicht aufgezeichnete Änderung wird zuerst ihr eigener Schritt.
+    data().model.name = 'zwei';
+    svc.history.amend(() => { data().model.n = 7; });
+    await flush();
+    assertTrue(mod.historyStep('undo'));
+    await flush();
+    assertEqual(data().model.name, 'start');
+    assertEqual(data().model.n, 0, 'Rückgängig nimmt die Änderung samt Folgeänderung zurück');
+    const plain = await mount(undefined);
+    assertEqual(plain.data()._ui.services.history, null);
+  });
+
   test('ctx.history ist null ohne history', async () => {
     let hist;
     await mount(undefined, { ...opts, base: { view(ctx) { return { init() { hist = ctx.history; } }; } } });

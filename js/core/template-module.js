@@ -806,6 +806,12 @@ export function createModule(base) {
                     chartManager: storedEditsOff, instances: context.instances,
                     instanceId: context.instanceId, moduleId: id,
                     dialog: context.dialog, notify: (...args) => context.notify?.(...args),
+                    // Folgeänderung eines Widgets (keine Bedienung): eine noch nicht aufgezeichnete
+                    // Änderung (die das Widget etwa erst eingehängt hat) wird zuerst ihr eigener
+                    // Schritt, dann läuft die Folgeänderung in diesen hinein.
+                    history: history ? {
+                      amend: (/** @type {() => void} */ fn) => { module._recordHistory(this.model); module.historyAmend(fn); },
+                    } : null,
                   },
                   moduleId: id,
                   instanceId: context.instanceId,

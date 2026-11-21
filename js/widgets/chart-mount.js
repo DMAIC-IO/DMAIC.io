@@ -66,7 +66,11 @@ export function chartMount(widget, toChart = (c) => c) {
       if (chart) cm?.destroy(chart);
     };
 
-    adoptLegacy(props, value, services, editable);
+    // Die Übernahme ist keine Bedienung: mit Verlauf läuft sie über `amend` und wird
+    // nie ein eigener Schritt, auch wenn das Widget erst nach einer Bedienung einhängt.
+    const amend = services.history?.amend;
+    if (amend) amend(() => adoptLegacy(props, value, services, editable));
+    else adoptLegacy(props, value, services, editable);
 
     /** Konfiguration ohne die Rollenzuordnung (sie gehört nicht zum Diagrammtyp). @returns {any} */
     const plainConfig = () => {
