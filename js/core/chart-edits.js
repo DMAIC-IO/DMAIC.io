@@ -3,7 +3,8 @@
  *
  * Rein. Überlagert gespeicherte Einstellungen über die Konfiguration des
  * Moduls und leitet aus einer Editor-Änderung die neuen Einstellungen ab.
- * Reihen-Einstellungen hängen am Reihennamen.
+ * Reihen-Einstellungen hängen am Reihennamen der Modulkonfiguration; ein im
+ * Editor geänderter Name steht als `label` in der Zeile.
  */
 
 /** @param {any} v @returns {any} */
@@ -38,6 +39,7 @@ export function applyEdits(config, edits, editable, owned) {
       const merged = { ...s };
       if (!e) return merged;
       for (const k of editable.series) if (e[k] !== undefined) merged[k] = clone(e[k]);
+      if (typeof e.label === 'string' && e.label !== '') merged.name = e.label;
       return merged;
     });
   }
@@ -46,17 +48,23 @@ export function applyEdits(config, edits, editable, owned) {
 
 /**
  * Was das Diagramm zeigt, beschränkt auf die bearbeitbaren Schlüssel (Reihen mit Namen).
+ * Mit der Modulkonfiguration ist der Name einer Reihe der dort gleichen Index; ein
+ * davon abweichender, nicht leerer Name im Diagramm steht als `label` daneben.
  * @param {Record<string, any>} chartConfig @param {{ base: readonly string[], series: readonly string[] }} editable
+ * @param {Record<string, any>|null} [config] Konfiguration des Moduls ohne Einstellungen
  * @returns {Record<string, any>}
  */
-export function pickShown(chartConfig, editable) {
+export function pickShown(chartConfig, editable, config = null) {
   /** @type {Record<string, any>} */
   const out = {};
   for (const k of editable.base) if (chartConfig[k] !== undefined) out[k] = clone(chartConfig[k]);
   if (Array.isArray(chartConfig.series)) {
-    out.series = chartConfig.series.map((/** @type {any} */ s) => {
+    const keys = Array.isArray(config?.series) ? config.series : null;
+    out.series = chartConfig.series.map((/** @type {any} */ s, /** @type {number} */ i) => {
+      const key = keys?.[i]?.name ?? s.name;
       /** @type {Record<string, any>} */
-      const r = { name: s.name };
+      const r = { name: key };
+      if (typeof s.name === 'string' && s.name !== '' && s.name !== key) r.label = s.name;
       for (const k of editable.series) if (s[k] !== undefined) r[k] = clone(s[k]);
       return r;
     });
@@ -66,7 +74,9 @@ export function pickShown(chartConfig, editable) {
 
 /**
  * Neue Einstellungen aus einer Editor-Änderung. Ein geleertes Textfeld heißt
- * „automatisch“: der Schlüssel entfällt und steht in `cleared`.
+ * „automatisch“: der Schlüssel entfällt und steht in `cleared`. Reihen werden nach
+ * Index verglichen, die Zeile hängt am Namen aus `before`; `label` (angezeigter
+ * Name, siehe `pickShown`) zählt wie ein bearbeitbarer Reihenschlüssel.
  * @param {Record<string, any>|null} prev bisher gespeicherte Einstellungen
  * @param {Record<string, any>} before `pickShown` vor der Änderung
  * @param {Record<string, any>} after `pickShown` danach
@@ -87,7 +97,7 @@ export function diffEdits(prev, before, after, editable, owned) {
     after.series.forEach((/** @type {any} */ s, /** @type {number} */ i) => {
       const name = before.series[i]?.name;
       if (name == null) return;
-      for (const k of editable.series) {
+      for (const k of [...editable.series, 'label']) {
         if (same(before.series[i][k], s[k])) continue;
         let row = rows.find((/** @type {any} */ r) => r.name === name);
         if (!row) { row = { name }; rows.push(row); }

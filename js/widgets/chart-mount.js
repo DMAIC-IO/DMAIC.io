@@ -95,7 +95,7 @@ export function chartMount(widget, toChart = (c) => c) {
       const cfg = plainConfig();
       if (!cfg || !cm) return;
       const config = build(cfg, value ? (value.get() ?? {}) : {});
-      if (slot.chart) { cm.update(slot.chart, config); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable); } else if (slot.token) slot.pending = config;
+      if (slot.chart) { cm.update(slot.chart, config); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable, cfg); } else if (slot.token) slot.pending = config;
     };
 
     /**
@@ -133,7 +133,7 @@ export function chartMount(widget, toChart = (c) => c) {
     const onEditorChange = (chart) => {
       const cfg = plainConfig();
       if (!cfg || !shown || !value) return;
-      const after = pickShown(chart.config, editable);
+      const after = pickShown(chart.config, editable, cfg);
       const { next, cleared } = diffEdits(value.get(), shown, after, editable, ownedKeys(cfg));
       written = JSON.stringify(next);
       if (!value.set(next)) { written = null; restore(chart, cfg, after); return; }
@@ -142,7 +142,12 @@ export function chartMount(widget, toChart = (c) => c) {
       // Das Diagramm zeigt die Schreibung schon; ein späteres Entfallen (Rückgängig) muss sie zurücksetzen.
       appliedEdits = JSON.parse(written);
       if (cleared.length) cm.update(chart, Object.fromEntries(cleared.map((k) => [k, cfg[k] ?? ''])));
-      shown = pickShown(chart.config, editable);
+      // Ein geleerter Reihenname heißt wieder der Name der Modulkonfiguration.
+      if (Array.isArray(chart.config.series) && chart.config.series.some((/** @type {any} */ s, /** @type {number} */ i) => s?.name === '' && !!cfg.series?.[i]?.name)) {
+        cm.update(chart, { series: build(cfg, value.get() ?? {}).series });
+        chart.refreshEditor?.();
+      }
+      shown = pickShown(chart.config, editable, cfg);
     };
 
     /**
@@ -155,7 +160,7 @@ export function chartMount(widget, toChart = (c) => c) {
       resetToDefaults(chart, patch, stale, cfg);
       cm.update(chart, patch);
       chart.refreshEditor?.();
-      shown = pickShown(chart.config, editable);
+      shown = pickShown(chart.config, editable, cfg);
     };
 
     effect(() => {
@@ -173,7 +178,7 @@ export function chartMount(widget, toChart = (c) => c) {
       const vanished = editable.base.filter((/** @type {string} */ k) => appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config));
       appliedEdits = edits;
       if (slot.token) {
-        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); setAutoLabels(slot.chart, cfg); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
+        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); setAutoLabels(slot.chart, cfg); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable, cfg); } else slot.pending = config;
         return;
       }
       const token = {};
@@ -185,7 +190,7 @@ export function chartMount(widget, toChart = (c) => c) {
         slot.chart = chart;
         if (slot.pending) { cm.update(chart, slot.pending); slot.pending = null; }
         setAutoLabels(chart, plainConfig());
-        shown = pickShown(chart.config, editable);
+        shown = pickShown(chart.config, editable, plainConfig());
       }, (err) => {
         if (slot.token === token) slot = { chart: null, token: null, pending: null };
         console.warn('chart create failed', err);

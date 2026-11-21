@@ -57,6 +57,14 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(Object.keys(histogramChart.edits().fields || {}).filter((k) => k === 'bins'), []);
   });
 
+  test('edits(): Reihen nehmen label an (angezeigter Name), editable.series kennt es nicht', () => {
+    for (const w of [histogramChart, scatterChart, probabilityPlotChart]) {
+      const v = { series: [{ name: 'A', label: 'Mein A' }] };
+      assertDeepEqual(checkValue(w.edits(), 'e', v), v);
+      assertTrue(!w.editable.series.includes('label'));
+    }
+  });
+
   test('edits(): bearbeitbare Teilmenge, alles optional, Reihen mit Namen', () => {
     const e = histogramChart.edits();
     assertDeepEqual(defaultOf(e), {});

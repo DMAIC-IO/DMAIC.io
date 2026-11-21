@@ -4,7 +4,8 @@
  * Ein Basisstück mit den Schlüsseln aller Diagrammtypen, dazu je Typ seine
  * Schlüssel und Reihen. `editable: true` markiert, was der Diagramm-Editor
  * ändern darf; daraus entsteht `edits()`, die Feldart der gespeicherten
- * Editor-Einstellungen (alles optional, Reihen mit Namen als Schlüssel).
+ * Editor-Einstellungen (alles optional, Reihen mit Namen als Schlüssel und
+ * `label` als im Editor geändertem Namen).
  * Rein: importiert nur core/model.js.
  */
 import { defineWidget, text, number, boolean, oneOf, list, object, map } from '../core/model.js';
@@ -64,7 +65,7 @@ export function chartWidget({ name, type, keys = {}, series = null, editable = u
   const seriesKeys = series ? editableOf(series) : [];
   const edits = object({
     ...pick(baseShape, baseKeys),
-    ...(series ? { series: list(object({ name: text(), ...pick(series, seriesKeys) }), opt) } : {}),
+    ...(series ? { series: list(object({ name: text(), label: text(opt), ...pick(series, seriesKeys) }), opt) } : {}),
   });
   return defineWidget({
     name,

@@ -529,6 +529,28 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     return { ...h, chart, all: () => [...chart._editorInner.querySelectorAll(FOC)] };
   }
 
+  test('Umbenennen im Editor speichert label unter dem ursprünglichen Namen; weitere Änderungen treffen dieselbe Zeile', async () => {
+    const { root, data, chart } = await openEditor();
+    const nameInput = () => chart._editorInner.querySelector('.dmike-chart-ed-series-header input');
+    const rename = async (v) => { const inp = nameInput(); inp.value = v; inp.dispatchEvent(new Event('change')); await flush(); };
+    const stored = () => JSON.parse(JSON.stringify(data.model.chartEdits));
+    await rename('Mein A');
+    assertDeepEqual(stored().series, [{ name: 'A', label: 'Mein A' }]);
+    assertEqual(chart.config.series[0].name, 'Mein A');
+    chart.config.series[0].fillColor = 'green';
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(stored().series, [{ name: 'A', label: 'Mein A', fillColor: 'green' }]);
+    data.n = 2;
+    await flush();
+    assertEqual(chart.config.series[0].name, 'Mein A');
+    await rename('');
+    assertDeepEqual(stored().series, [{ name: 'A', fillColor: 'green' }]);
+    assertEqual(chart.config.series[0].name, 'A');
+    assertEqual(nameInput().value, 'A');
+    root.remove();
+  });
+
   test('fremder Wert bei offenem Editor: Fokus und Cursor bleiben am selben Feld', async () => {
     const { root, data, chart, all } = await openEditor();
     const input = chart._editorInner.querySelector('input[type="text"]');

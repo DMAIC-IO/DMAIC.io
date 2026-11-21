@@ -69,6 +69,46 @@ suite('Editor-Einstellungen', () => {
     assertDeepEqual(diffEdits(null, before, same, ed, new Set()).next, {});
   });
 
+  test('pickShown mit Konfiguration: Name der Konfiguration als Schlüssel, abweichender Name als label', () => {
+    const cfg = { series: [{ name: 'A' }, { name: 'B' }, { name: 'C' }] };
+    const chart = { series: [{ name: 'Neu', fillColor: 'r' }, { name: 'B' }, { name: '' }] };
+    assertDeepEqual(pickShown(chart, editable, cfg).series,
+      [{ name: 'A', label: 'Neu', fillColor: 'r' }, { name: 'B' }, { name: 'C' }]);
+  });
+
+  test('diffEdits: Umbenennen speichert label unter dem ursprünglichen Namen', () => {
+    const before = { series: [{ name: 'A' }, { name: 'B' }] };
+    const after = { series: [{ name: 'A', label: 'Mein A' }, { name: 'B' }] };
+    assertDeepEqual(diffEdits(null, before, after, editable, new Set()).next, { series: [{ name: 'A', label: 'Mein A' }] });
+  });
+
+  test('diffEdits: Zurückbenennen oder leerer Name entfernt label, übrige Einstellungen bleiben', () => {
+    const prev = { series: [{ name: 'A', label: 'Mein A', fillColor: 'red' }] };
+    const before = { series: [{ name: 'A', label: 'Mein A', fillColor: 'red' }] };
+    const back = { series: [{ name: 'A', fillColor: 'red' }] };
+    assertDeepEqual(diffEdits(prev, before, back, editable, new Set()).next, { series: [{ name: 'A', fillColor: 'red' }] });
+    assertDeepEqual(diffEdits({ series: [{ name: 'A', label: 'Mein A' }] }, { series: [{ name: 'A', label: 'Mein A' }] },
+      pickShown({ series: [{ name: '' }] }, editable, { series: [{ name: 'A' }] }), editable, new Set()).next, {});
+  });
+
+  test('diffEdits: zweite Änderung einer umbenannten Reihe landet in derselben Zeile', () => {
+    const cfg = { series: [{ name: 'A', fillColor: 'red' }] };
+    const prev = { series: [{ name: 'A', label: 'Mein A' }] };
+    const chart = applyEdits(cfg, prev, editable, new Set());
+    assertDeepEqual(chart.series[0].name, 'Mein A');
+    const before = pickShown(chart, editable, cfg);
+    chart.series[0].fillColor = 'green';
+    const { next } = diffEdits(prev, before, pickShown(chart, editable, cfg), editable, new Set());
+    assertDeepEqual(next, { series: [{ name: 'A', label: 'Mein A', fillColor: 'green' }] });
+  });
+
+  test('applyEdits: label wird der gezeigte Name, leeres label nicht', () => {
+    const cfg = { series: [{ name: 'A' }, { name: 'B' }] };
+    const out = applyEdits(cfg, { series: [{ name: 'A', label: 'Mein A' }, { name: 'B', label: '' }] }, editable, new Set());
+    assertDeepEqual(out.series.map((s) => s.name), ['Mein A', 'B']);
+    assertDeepEqual(cfg.series[0].name, 'A');
+  });
+
   test('pickShown: nur bearbeitbare Schlüssel und die Reihen', () => {
     assertDeepEqual(pickShown({ title: 'T', values: [1], series: [{ name: 'A', fillColor: 'r', values: [1] }] }, editable),
       { title: 'T', series: [{ name: 'A', fillColor: 'r' }] });
