@@ -54,7 +54,8 @@ suite('process-capability: Migration — Bezüge und Beispieldaten', () => {
     assertDeepEqual(load({}, { columnRef: ref('c') }).columnRef, ref('c'));
   });
   test('embeddedValues: nur Zahlen, sonst null', () => {
-    assertEqual(load({}, { embeddedValues: [1, 'a'] }).embeddedValues, null);
+    assertDeepEqual(load({}, { embeddedValues: [1, 'a'] }).embeddedValues, [1]);
+    assertEqual(load({}, { embeddedValues: 'x' }).embeddedValues, null);
     assertDeepEqual(load({}, { embeddedValues: [1, 2] }).embeddedValues, [1, 2]);
     assertEqual(load({}, { embeddedLabel: 5 }).embeddedLabel, '');
   });

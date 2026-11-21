@@ -70,8 +70,7 @@ export function from0(json) {
   const d = json && typeof json === 'object' ? json : {};
   const p = d.params && typeof d.params === 'object' ? d.params : {};
   const embedded = Array.isArray(d.embeddedValues)
-    && d.embeddedValues.every((v) => typeof v === 'number' && !Number.isNaN(v))
-    ? [...d.embeddedValues] : null;
+    ? d.embeddedValues.filter((v) => typeof v === 'number' && !Number.isNaN(v)) : null;
   const { lastResult: _dropped, ...rest } = d;
   return {
     ...rest,
