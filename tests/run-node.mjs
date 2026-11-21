@@ -252,6 +252,7 @@ const SKIP = new Set([
   'ui/workspace-reset.test.js',
   'widgets/algo-lab-link.test.js',
   'widgets/chart-mount.test.js',
+  'widgets/column-picker-mount.test.js',
   'widgets/datagrid-widget.test.js',
   'widgets/dataset-picker.test.js',
   'widgets/rich-text.test.js',

@@ -311,6 +311,17 @@ export class ColumnPicker {
     if (changed && this._onChange) this._onChange(this.value);
   }
 
+  /**
+   * Filter austauschen und neu zeichnen. Schreibt nichts zurück: eine Auswahl,
+   * die der neue Filter nicht mehr anbietet, bleibt im Wert, `onChange` bleibt aus.
+   * @param {((col: ColumnInfo) => boolean)|null} fn
+   * @returns {void}
+   */
+  setFilter(fn) {
+    this._filter = typeof fn === 'function' ? fn : null;
+    this._render();
+  }
+
   /** Clean up. */
   destroy() {
     for (const fn of this._unsubs) fn();
