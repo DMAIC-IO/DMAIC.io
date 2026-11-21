@@ -243,6 +243,27 @@ suite('process-capability: Viewmodel im Browser', () => {
     assertDeepEqual(plain(vm.model.subgroupColumnRef), A2);
   });
 
+  test('Modus Größe → Messspalte wechselt aufs andere Blatt → zurück auf Spalte: veraltete ID-Spalte leert sich im selben Schritt', async () => {
+    const h = await mount(stored({ subgroupColumnRef: A2 }));
+    const vm = h.vm();
+    vm.model.columnRef = B1;
+    await settle();
+    assertDeepEqual(plain(vm.model.subgroupColumnRef), A2);
+    vm.model.params.subgroupMode = 'column';
+    await settle();
+    assertEqual(vm.model.subgroupColumnRef, null);
+    assertTrue(mod.historyStep('undo'), 'Rückgängig fehlgeschlagen');
+    await settle();
+    await vm.$nextTick();
+    await settle();
+    assertEqual(vm.model.params.subgroupMode, 'size');
+    assertDeepEqual(plain(vm.model.subgroupColumnRef), A2);
+    assertTrue(mod.historyStep('undo'), 'zweites Rückgängig fehlgeschlagen');
+    await settle();
+    assertDeepEqual(plain(vm.model.columnRef), A1);
+    assertEqual(mod.historyCan('undo'), false, 'zusätzlicher Schritt für das Leeren');
+  });
+
   test('ID-Spalte ausschließen: excludeForSubgroup nennt die Messspalte', async () => {
     let h = await mount(stored());
     assertDeepEqual(plain(h.vm().excludeForSubgroup), [A1]);

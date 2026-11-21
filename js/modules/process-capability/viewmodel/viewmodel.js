@@ -21,12 +21,6 @@ import { fromExample } from '../io/example.js';
 /** Präfix der Kontexthilfe-Sätze an Kennzahlen und Tabellenspalten. */
 const HELP = 'modules.process-capability.types.';
 
-/** Die Untergruppen-Arten in der Reihenfolge der Oberfläche. */
-const SUBGROUP_MODES = /** @type {const} */ (['size', 'column']);
-
-/** Schätzer, deren Korrekturfaktor schaltbar ist. */
-const UNBIASED_METHODS = ['pooled', 'sbar', 'sqrtMSSD'];
-
 /** Urteil → Textschlüssel der Statuszeile. */
 const STATUS_KEY = { pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn' };
 /** Urteil → Textschlüssel der Kachel. */
@@ -58,14 +52,14 @@ export default createModule({
     return {
       /** @noagent Lebenszyklus: eine andere Messspalte verwirft eine ID-Spalte, die nicht mehr passt. */
       init() {
-        // Geleert wird nur, wenn sich die Messspalte allein ändert. Ändern sich beide
-        // zugleich (Rückgängig, Wiederholen, Laden eines Stands), bleibt alles.
+        // Geleert wird nur, wenn sich Messspalte oder Modus ändern, die ID-Spalte aber nicht.
+        // Ändert sich auch sie (Rückgängig, Wiederholen, Laden eines Stands), bleibt alles.
         // Das Leeren gehört zum Schritt der Änderung an der Messspalte: es läuft eine
         // Mikroaufgabe später, `amend` faltet es in den Schritt.
         this.$watch(
-          () => [keyOf(this.model.columnRef), keyOf(this.model.subgroupColumnRef)],
+          () => [keyOf(this.model.columnRef), keyOf(this.model.subgroupColumnRef), this.model.params.subgroupMode],
           (now, before) => {
-            if (now[0] === before[0] || now[1] !== before[1]) return;
+            if ((now[0] === before[0] && now[2] === before[2]) || now[1] !== before[1]) return;
             const stale = () => this.model.params.subgroupMode === 'column' && this.model.subgroupColumnRef
               && !subgroupAllowed(this.model.columnRef, this.model.subgroupColumnRef);
             if (!stale()) return;
@@ -121,7 +115,7 @@ export default createModule({
       /** Die Untergruppen-Arten; „aus Spalte“ ist bei Beispieldaten gesperrt. */
       get subgroupModeOptions() {
         const allowed = this.subgroupModeValues ?? [];
-        return SUBGROUP_MODES.map((value) => ({
+        return ['size', 'column'].map((value) => ({
           value,
           ref: `inp-subgroup-mode-${value}`,
           label: this.t(value === 'size' ? 'subgroupModeSize' : 'subgroupModeColumn'),
@@ -129,15 +123,15 @@ export default createModule({
         }));
       },
       /** Gilt die feste Untergruppengröße? */
-      get showSubgroupSize() { return !!this.model.embeddedValues || this.model.params.subgroupMode === 'size'; },
+      get showSubgroupSize() { return !!this.activeParams?.includes('subgroupSize'); },
       /** Gilt die ID-Spalte? */
       get showSubgroupColumn() { return !this.model.embeddedValues && this.model.params.subgroupMode === 'column'; },
       /** Hinweis unter der Untergruppengröße. */
       get subgroupSizeHint() { return this.t(this.model.embeddedValues ? 'subgroupEmbeddedHint' : 'subgroupHint'); },
       /** Gilt die Spannweite der gleitenden Spannweiten? */
-      get showMrSpan() { return this.activeMethod === 'averageMR' || this.activeMethod === 'medianMR'; },
+      get showMrSpan() { return !!this.activeParams?.includes('mrSpan'); },
       /** Gilt der Korrekturfaktor? */
-      get showUnbiased() { return UNBIASED_METHODS.includes(this.activeMethod); },
+      get showUnbiased() { return !!this.activeParams?.includes('unbiased'); },
 
       /** Klasse der Statuszeile nach dem Gesamturteil. */
       get statusBarClass() { return this.result ? `pc__status-bar--${this.result.overall}` : ''; },

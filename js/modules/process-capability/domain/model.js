@@ -15,7 +15,7 @@ import { subgroupAllowed } from './columns.js';
 import { from0 } from './migrations.js';
 
 /**
- * Die Schlüsselfläche von `setParam`, zugleich die Form von `read().params`
+ * Die Schlüsselfläche von `instance.set` auf `params`, zugleich die Form von `read().params`
  * (Grenzen und Konfidenz als Zahl oder leer). Sätze je Schlüssel unter
  * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
  *
@@ -163,7 +163,7 @@ export const State = defineModel({
       return analyze(this, sourceColumns(src));
     },
     /**
-     * Die Schlüssel, die `setParam` im aktuellen Stand annimmt.
+     * Die Schlüssel, die `instance.set` auf `params` im aktuellen Stand annimmt.
      *
      * @param {import('../../../core/source-reader.js').Source} _src
      * @param {{ analysis: Analysis, subgroupModeValues: string[] }} d
@@ -200,7 +200,7 @@ export const State = defineModel({
       return ['', ...d.analysis.methods];
     },
     /**
-     * Die Spalten-Slots, die `setColumn` im aktuellen Stand annimmt.
+     * Die Spalten-Slots (`columnRef`, `subgroupColumnRef`), die `instance.set` im aktuellen Stand annimmt.
      *
      * @this {import('./model.types.js').StateModel}
      * @returns {('value'|'subgroup')[]}
