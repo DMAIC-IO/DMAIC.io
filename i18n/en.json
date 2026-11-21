@@ -1176,7 +1176,16 @@
         "size": "Size",
         "color": "Fill color",
         "stroke": "Border color",
-        "strokeWidth": "Border width"
+        "strokeWidth": "Border width",
+        "symbols": {
+          "circle": "Circle",
+          "square": "Square",
+          "diamond": "Diamond",
+          "triangle": "Triangle",
+          "triangle-down": "Triangle down",
+          "cross": "Cross",
+          "star": "Star"
+        }
       }
     }
   },

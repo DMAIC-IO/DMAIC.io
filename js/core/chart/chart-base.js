@@ -16,7 +16,7 @@ import {
   edAxisTickSection, edRefLinesSection, edRefAreasSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
-  MARKER_SYMBOLS,
+  markerSymbolOptions,
 } from './chart-editor.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 import { icon } from '../icon.js';
@@ -429,7 +429,7 @@ export default class ChartBase {
         details.className = 'dmike-chart-ed-series-details';
 
         if (typeof d.getSymbol === 'function') {
-          details.appendChild(edSelectRow(tm('symbol'), MARKER_SYMBOLS, d.getSymbol() || 'circle', (v) => {
+          details.appendChild(edSelectRow(tm('symbol'), markerSymbolOptions(tm), d.getSymbol() || 'circle', (v) => {
             d.setSymbol(v);
             onChange();
           }));

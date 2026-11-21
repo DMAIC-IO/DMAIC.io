@@ -1176,7 +1176,16 @@
         "size": "Größe",
         "color": "Füllfarbe",
         "stroke": "Rahmenfarbe",
-        "strokeWidth": "Rahmendicke"
+        "strokeWidth": "Rahmendicke",
+        "symbols": {
+          "circle": "Kreis",
+          "square": "Quadrat",
+          "diamond": "Raute",
+          "triangle": "Dreieck",
+          "triangle-down": "Dreieck abwärts",
+          "cross": "Kreuz",
+          "star": "Stern"
+        }
       }
     }
   },

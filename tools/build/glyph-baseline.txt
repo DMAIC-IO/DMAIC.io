@@ -35,11 +35,11 @@
 # Bestand bei Erzeugung: 141 Funde. Nach den Migrationen und dem Wechsel auf
 # den Inhaltsanker (2026-11-02) stehen hier noch 19 Funde.
 
-js/core/chart/chart-editor.js:▲:{ value: 'triangle',      label: '▲ Triangle' },
-js/core/chart/chart-editor.js:▼:{ value: 'triangle-down', label: '▼ Tri-down' },
-js/core/chart/chart-editor.js:◆:{ value: 'diamond',       label: '◆ Diamond' },
-js/core/chart/chart-editor.js:●:{ value: 'circle',        label: '● Circle' },
-js/core/chart/chart-editor.js:★:{ value: 'star',          label: '★ Star' },
+js/core/chart/chart-editor.js:▲:{ value: 'triangle',      glyph: '▲', label: 'Triangle' },
+js/core/chart/chart-editor.js:▼:{ value: 'triangle-down', glyph: '▼', label: 'Triangle down' },
+js/core/chart/chart-editor.js:◆:{ value: 'diamond',       glyph: '◆', label: 'Diamond' },
+js/core/chart/chart-editor.js:●:{ value: 'circle',        glyph: '●', label: 'Circle' },
+js/core/chart/chart-editor.js:★:{ value: 'star',          glyph: '★', label: 'Star' },
 js/core/cycles/cycles.js:⊞:data:   { id: 'data',   letter: '⊞', i18nKey: 'phases.data',   virtual: true, position: 'l
 js/core/migrations.js:→:const [from, to] = step.split('→');
 js/modules/control-chart/control-chart-help.js:✕:content: 'Click a violation row to open a dialog: record the cause as free text and option

@@ -495,16 +495,33 @@ export function edRefLinesSection(refLines, callbacks, t) {
 
 /**
  * Symbol options for marker editors. Mirrors `drawMarker` in chart-core.js.
+ * `label` is the English fallback; the shown text comes from
+ * `markerSymbolOptions(t)` via `chart.editor.marker.symbols.<value>`.
  */
 export const MARKER_SYMBOLS = [
-  { value: 'circle',        label: '● Circle' },
-  { value: 'square',        label: '■ Square' },
-  { value: 'diamond',       label: '◆ Diamond' },
-  { value: 'triangle',      label: '▲ Triangle' },
-  { value: 'triangle-down', label: '▼ Tri-down' },
-  { value: 'cross',         label: '✚ Cross' },
-  { value: 'star',          label: '★ Star' },
+  { value: 'circle',        glyph: '●', label: 'Circle' },
+  { value: 'square',        glyph: '■', label: 'Square' },
+  { value: 'diamond',       glyph: '◆', label: 'Diamond' },
+  { value: 'triangle',      glyph: '▲', label: 'Triangle' },
+  { value: 'triangle-down', glyph: '▼', label: 'Triangle down' },
+  { value: 'cross',         glyph: '✚', label: 'Cross' },
+  { value: 'star',          glyph: '★', label: 'Star' },
 ];
+
+/**
+ * Translated select options for the marker symbol dropdown.
+ *
+ * @param {function(string): string} t - Lookup under `chart.editor.marker.*`;
+ *   returns the key itself when no translation exists.
+ * @returns {{ value: string, label: string }[]}
+ */
+export function markerSymbolOptions(t) {
+  return MARKER_SYMBOLS.map(({ value, glyph, label }) => {
+    const key = `symbols.${value}`;
+    const text = typeof t === 'function' ? t(key) : key;
+    return { value, label: `${glyph} ${text && text !== key ? text : label}` };
+  });
+}
 
 /**
  * Build a generic marker styling section: symbol, size, fill, border color, border width.
@@ -539,7 +556,7 @@ export function edMarkerSection(title, a, t, opts = {}) {
 
   const sec = edSection(title);
 
-  sec.appendChild(edSelectRow(t('symbol'), MARKER_SYMBOLS, a.getSymbol() || 'circle', (v) => {
+  sec.appendChild(edSelectRow(t('symbol'), markerSymbolOptions(t), a.getSymbol() || 'circle', (v) => {
     a.setSymbol(v);
     a.onChange();
   }));
