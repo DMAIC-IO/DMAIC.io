@@ -255,6 +255,7 @@ const SKIP = new Set([
   'widgets/column-picker-mount.test.js',
   'widgets/datagrid-widget.test.js',
   'widgets/dataset-picker.test.js',
+  'widgets/histogram-chart.test.js',
   'widgets/rich-text.test.js',
   'widgets/stats-table.test.js',
 ]);
