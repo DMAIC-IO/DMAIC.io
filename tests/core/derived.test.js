@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { defineModel, number } from '../../js/core/model.js';
 import { storedSource } from '../helpers/stored-source.js';
-import { derivedNames, derivedAccessor, evaluateDerived } from '../../js/core/derived.js';
+import { derivedNames, derivedAccessor, derivedReader, evaluateDerived } from '../../js/core/derived.js';
 
 const stub = Object.freeze({ read: () => ({}), list: () => [] });
 
@@ -73,6 +73,23 @@ suite('derived', () => {
   test('names mit Verkettung auf einen nicht genannten Eintrag wertet ihn mit', () => {
     const M = defineModel({ derived: { a() { return 1; }, b(src, d) { return d.a + 1; } } });
     assertDeepEqual(evaluateDerived(new M(), stub, ['b']), { b: 2 });
+  });
+
+  const labelModel = () => defineModel({ fields: { n: number({ default: 4 }) }, derived: { label(_src, _d, t) { return t('x', { n: this.n }); } } });
+
+  test('t geht als dritter Parameter an jede Ableitung', () => {
+    const M = labelModel();
+    assertDeepEqual(evaluateDerived(new M(), stub, undefined, (k, p) => `${k}:${p.n}`), { label: 'x:4' });
+  });
+
+  test('ohne t wird eine übersetzende Ableitung zum Fehler', () => {
+    const M = labelModel();
+    assertDeepEqual(evaluateDerived(new M(), stub), { label: { error: 'derived: t not available' } });
+  });
+
+  test('derivedReader reicht t durch', () => {
+    const M = labelModel();
+    assertEqual(derivedReader(new M(), stub, (k) => k.toUpperCase())('label'), 'X');
   });
 
   test('derivedAccessor: eingefroren, ein Getter je Name', () => {

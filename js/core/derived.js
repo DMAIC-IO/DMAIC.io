@@ -26,15 +26,19 @@ export function derivedAccessor(names, get) {
   return Object.freeze(d);
 }
 
+/** Ersatz-Übersetzer, wenn der Aufrufer keinen `t` liefert. */
+const noT = () => { throw new Error('derived: t not available'); };
+
 /**
  * Lesefunktion über die Ableitungen eines Models mit gemeinsamem Memo: jeder
  * Eintrag läuft höchstens einmal je Leser, auch wenn mehrere andere ihn lesen.
  * Ein Fehler (auch ein Zyklus) wirft bei jedem Lesen dieses Eintrags erneut.
  * @param {any} model Instanz aus `defineModel`
  * @param {import('./source-reader.js').Source} src Leser fremder Instanzen; geht unverändert als erstes Argument an jeden Eintrag
+ * @param {(key: string, params?: object) => string} [t] Übersetzer; geht als drittes Argument an jeden Eintrag, ohne `t` wirft der Ersatz
  * @returns {(name: string) => any}
  */
-export function derivedReader(model, src) {
+export function derivedReader(model, src, t = noT) {
   const defs = schemaOf(model)?.derived ?? {};
   /** @type {Map<string, { value?: any, error?: string }>} */
   const memo = new Map();
@@ -51,7 +55,7 @@ export function derivedReader(model, src) {
     if (at !== -1) throw new Error(`derived cycle: ${[...stack.slice(at), name].join(' → ')}`);
     stack.push(name);
     try {
-      const value = defs[name].call(model, src, d);
+      const value = defs[name].call(model, src, d, t);
       memo.set(name, { value });
       return value;
     } catch (err) {
@@ -72,13 +76,14 @@ export function derivedReader(model, src) {
  * @param {any} model Instanz aus `defineModel`
  * @param {import('./source-reader.js').Source} src Leser fremder Instanzen; geht unverändert als erstes Argument an jeden Eintrag
  * @param {string[]} [names] nur diese Einträge (Verkettungen werden bei Bedarf mit ausgewertet)
+ * @param {(key: string, params?: object) => string} [t] Übersetzer; geht als drittes Argument an jeden Eintrag
  * @returns {Record<string, any>}
  * @throws {Error} `unknown derived: <name>`, wenn `names` einen Namen ohne Eintrag nennt
  */
-export function evaluateDerived(model, src, names = derivedNames(model.constructor)) {
+export function evaluateDerived(model, src, names = derivedNames(model.constructor), t) {
   const defs = schemaOf(model)?.derived ?? {};
   for (const name of names) if (!Object.hasOwn(defs, name)) throw new Error(`unknown derived: ${name}`);
-  const read = derivedReader(model, src);
+  const read = derivedReader(model, src, t);
   const out = {};
   for (const name of names) {
     try { out[name] = read(name); } catch (err) { out[name] = { error: /** @type {Error} */ (err).message }; }
