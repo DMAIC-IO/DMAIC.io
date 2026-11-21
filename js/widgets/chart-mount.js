@@ -118,6 +118,8 @@ export function chartMount(widget, toChart = (c) => c) {
       const { next, cleared } = diffEdits(value.get(), shown, after, editable, ownedKeys(cfg));
       written = JSON.stringify(next);
       if (!value.set(next)) { written = null; restore(chart, cfg, after); return; }
+      // Das Feld bringt den Wert in seine Form (Schlüsselreihenfolge des Schemas): verglichen wird mit dem gespeicherten.
+      written = JSON.stringify(value.get() ?? {});
       if (cleared.length) cm.update(chart, Object.fromEntries(cleared.map((k) => [k, cfg[k] ?? ''])));
       shown = pickShown(chart.config, editable);
     };

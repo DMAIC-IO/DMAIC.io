@@ -11,6 +11,7 @@ import HistogramChart from '../../js/core/chart/types/histogram.js';
 import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
+import scatterChart from '../../js/widgets/scatter-chart/schema.js';
 import { chartWidget } from '../../js/widgets/chart-parts.js';
 import { chartMount } from '../../js/widgets/chart-mount.js';
 
@@ -52,6 +53,7 @@ function countingDoc(writes) {
     set chartEdits(v) { writes.push(v); super.chartEdits = v; }
   };
 }
+const ScatterDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: scatterChart.edits() } });
 const TrendDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: trendChart.edits() } });
 const SERIES = (rev) => {
   const s = [{ name: 'A', values: [1, 2, 3], fillColor: 'red' }, { name: 'B', values: [4, 5], fillColor: 'blue' }];
@@ -415,6 +417,27 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     chart.config.onEditorChange(chart);
     await flush();
     await flush();
+    assertEqual(cm.log.updated.length, before);
+    assertEqual(chart.refreshes, 0);
+    root.remove();
+  });
+
+  test('eigener Editor-Write, den das Feld in seine Schlüsselreihenfolge bringt: kein update, Editor bleibt', async () => {
+    const cm = fakeManager();
+    const scatter = { series: [{ name: 'A', x: [1, 2], y: [3, 4], color: '#111111' }] };
+    const tpl = '<div x-widget="scatter-chart" x-widget-config="scatter" x-widget-value="model.chartEdits"></div>';
+    const { root, data } = await host(tpl, {
+      cm, Model: ScatterDoc, model: { chartEdits: { series: [{ name: 'A', color: '#ff0000' }] } }, extra: { scatter },
+    });
+    const chart = cm.log.created[0];
+    const before = cm.log.updated.length;
+    // Die Verbindungslinie kommt in der Reihe nach der Farbe dazu; das Feld ordnet nach dem Schema.
+    chart.config.series[0].connectLine = { show: true, dash: 'dot', width: 2 };
+    chart.config.onEditorChange(chart);
+    await flush();
+    await flush();
+    assertEqual(data.model.chartEdits.series[0].connectLine.dash, 'dot');
+    assertTrue(JSON.stringify(data.model.chartEdits.series[0]) !== JSON.stringify({ name: 'A', color: '#ff0000', connectLine: { show: true, dash: 'dot', width: 2 } }), 'Feld ordnet nicht um: Test prüft nichts');
     assertEqual(cm.log.updated.length, before);
     assertEqual(chart.refreshes, 0);
     root.remove();
