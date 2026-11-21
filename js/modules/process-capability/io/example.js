@@ -11,10 +11,12 @@ import { State } from '../domain/model.js';
  * Beispiel in die Form des Models übersetzen.
  * @param {Record<string, any>} data Beispielinhalt (CSV- oder Generatorform)
  * @param {Record<string, any>} meta Katalogeintrag (`title`, `spec`, `columns`, `id`)
- * @param {{ lang?: string }} [helpers] `lang`: aktive Sprache für den Titel
+ * @param {{ lang?: string, context?: import('../../../core/model.js').ModelContext }} [helpers]
+ *   `lang`: aktive Sprache für den Titel; `context`: Modellkontext, aus dem die Vorgaben
+ *   (etwa das Konfidenzniveau) kommen
  * @returns {Record<string, any>}
  */
-export function fromExample(data, meta, { lang = 'en' } = {}) {
+export function fromExample(data, meta, { lang = 'en', context } = {}) {
   const col = data?.columns?.[0];
   const values = Array.isArray(col?.values)
     ? col.values.filter((v) => typeof v === 'number' && Number.isFinite(v)) : [];
@@ -30,7 +32,7 @@ export function fromExample(data, meta, { lang = 'en' } = {}) {
   if (title) params.name = label;
   const unit = col.unit || meta?.columns?.[0]?.unit;
   if (unit) params.unit = unit;
-  const base = new State().toJSON();
+  const base = new State(context).toJSON();
   return {
     ...base,
     params: { ...base.params, ...params },

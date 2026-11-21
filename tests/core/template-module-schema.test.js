@@ -363,6 +363,14 @@ suite('createModule: fromExample', () => {
     assertDeepEqual(seen, ['de']);
   });
 
+  test('helpers.context ist der Kontext mit dem eingestellten Konfidenzniveau', async () => {
+    const seen = [];
+    const { mod, store } = fromExampleModule((data, meta, helpers) => { seen.push(helpers.context); return { title: 'x' }; });
+    store.settings = { confidenceLevel: 90 };
+    await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
+    assertEqual(seen[0].confidenceLevel, 90);
+  });
+
   test('ohne sourceWorksheetData im Ergebnis: setState-Zweig', async () => {
     const { mod, store } = fromExampleModule((data) => ({ title: `x${data.n}` }));
     await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });

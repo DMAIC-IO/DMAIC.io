@@ -1332,7 +1332,7 @@ export function createModule(base) {
         ? await import('./examples-registry.js') : null;
       if (hasFromExample) {
         try {
-          exampleData = fromExample(payload.data, payload.meta ?? {}, { csvToWorksheet: registry.csvPayloadToWorksheetState, lang: this._context.i18n.getLanguage() });
+          exampleData = fromExample(payload.data, payload.meta ?? {}, { csvToWorksheet: registry.csvPayloadToWorksheetState, lang: this._context.i18n.getLanguage(), context: activeContext(this._context?.stateManager) });
         } catch (err) {
           console.warn(`[createModule] ${id}: fromExample failed`, err);
           this._context?.notify?.(this._context.i18n.t('moduleHelp.exampleLoadError'), 'error');

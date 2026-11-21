@@ -25,6 +25,11 @@ suite('process-capability: fromExample', () => {
     assertEqual(out.params.unit, 'mm');
     assertEqual(out.columnRef, null);
   });
+  test('Kontext: das Beispiel übernimmt dessen Konfidenzniveau, ohne Kontext 95', () => {
+    const ctx = { cycle: 'dmaic', confidenceLevel: 90, power: 80 };
+    assertEqual(fromExample(csvData, csvMeta, { lang: 'de', context: ctx }).params.confidence, 90);
+    assertEqual(fromExample(csvData, csvMeta, { lang: 'de' }).params.confidence, 95);
+  });
   test('unbekannte Sprache: englischer Titel, ohne Titel die id', () => {
     assertEqual(fromExample(csvData, csvMeta, { lang: 'fr' }).embeddedLabel, 'Bolt Diameter (capable)');
     assertEqual(fromExample(csvData, { id: 'x' }, { lang: 'de' }).embeddedLabel, 'x');
