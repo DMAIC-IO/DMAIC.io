@@ -11,6 +11,7 @@ import {
   splitSubgroups, alignValuesAndIds, validMethods, defaultMethod, SigmaWithinError,
   SUBGROUP_METHODS,
 } from '../../../engines/sigma-within-engine.js';
+import { subgroupAllowed } from './columns.js';
 import { parseNumeric } from '../../../core/datagrid/datagrid-utils.js';
 
 /** @typedef {{ values: (ref: object) => any[]|null, name: (ref: object) => string|null }} Read */
@@ -83,8 +84,7 @@ function analysisInput(model, read) {
   if (!model.columnRef) return { values: [], ids: null, missingIds: false };
   const a = model.columnRef;
   const b = model.subgroupColumnRef;
-  const matches = Boolean(b) && a.instanceId === b.instanceId && a.sheetId === b.sheetId && a.columnId !== b.columnId;
-  if (!matches) return { values: [], ids: null, missingIds: true };
+  if (!b || !subgroupAllowed(a, b)) return { values: [], ids: null, missingIds: true };
   const aligned = alignValuesAndIds(column(a).map(toNumber), column(b));
   return { values: aligned.values, ids: aligned.ids, missingIds: false };
 }

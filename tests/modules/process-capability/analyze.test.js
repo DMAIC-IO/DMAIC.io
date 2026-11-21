@@ -57,6 +57,14 @@ suite('process-capability domain — analyze', () => {
     assertTrue(JSON.stringify(a90.result) !== JSON.stringify(a95.result));
   });
 
+  test('confidence is clamped to 50 … 99.99 percent', () => {
+    const conf = (c) => analyze(modelOf({ embeddedValues: VALS, params: { lsl: 9.5, usl: 10.5, confidence: c } }), noColumn).result.confidence;
+    assertTrue(Math.abs(conf(99.999) - 0.9999) < 1e-12);
+    assertEqual(conf(10), 0.5);
+    assertEqual(conf(90), 0.9);
+    assertEqual(conf(null), 0.95);
+  });
+
   test('one-sided limit: Cp is null, Cpk is computed', () => {
     const a = analyze(modelOf({ embeddedValues: VALS, params: { usl: 10.5 } }), noColumn);
     assertEqual(a.result.Cp, null);
