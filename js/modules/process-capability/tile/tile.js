@@ -67,9 +67,10 @@ export default createTile({
         const r = analysisOf(this)?.result;
         if (!r) return [];
         const ppm = r[PPM_FIELD[this.settings.ppmBasis]];
+        const lang = ctx.i18n.getLanguage();
         return [
-          { label: ctx.i18n.t('dashboard.capabilityPpm'), value: Number.isFinite(ppm) ? String(Math.round(ppm)) : '—' },
-          { label: 'n', value: String(r.n) },
+          { label: ctx.i18n.t('dashboard.capabilityPpm'), value: fmt(ppm, 0, lang) },
+          { label: 'n', value: fmt(r.n, 0, lang) },
         ];
       },
       /** Die Histogramm-Konfiguration; null ohne Ergebnis oder ausgeblendet. */

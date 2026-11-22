@@ -1203,6 +1203,18 @@ suite('dashboard tiles: process-capability', () => {
     assertEqual(de[1].value, en[1].value.replace('.', ','));
   });
 
+  test('PPM and n grouped in the app language like the module', async () => {
+    const many = Array.from({ length: 1200 }, (_, i) => 10 + ((i * 7) % 11 - 5) / 10);
+    const state = { embeddedValues: many, params: { lsl: 9.6, usl: 10.4 } };
+    const en = vmOf(capabilityTile, state, { ppmBasis: 'observed' }, { stateManager: columnStateManager({}) }).stats;
+    const de = vmOf(capabilityTile, state, { ppmBasis: 'observed' }, {
+      stateManager: columnStateManager({}), i18n: { t: (k) => k, getLanguage: () => 'de' } }).stats;
+    assertEqual(en[1].value, '1,200');
+    assertEqual(de[1].value, '1.200');
+    assertTrue(/^\d{1,3}(,\d{3})+$/.test(en[0].value), `en PPM grouped: ${en[0].value}`);
+    assertEqual(de[0].value, en[0].value.replace(/,/g, '.'));
+  });
+
   test('one-sided limit: no Cp line', async () => {
     const { host } = await renderCap({ embeddedValues: CAP_VALUES, params: { usl: '10.5' } });
     assertEqual(host.querySelector('.dashboard-spc__metric .dashboard-spc__metric-sub'), null);
