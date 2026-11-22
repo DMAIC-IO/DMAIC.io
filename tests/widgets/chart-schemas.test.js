@@ -173,6 +173,13 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(checkValue(heatmapChart.props.config, 'c', heat), heat);
   });
 
+  test('Einzelwertdiagramm: Symbol, Größe und Farben je Reihe sind bearbeitbar, Lücken in den Farben gültig', () => {
+    for (const k of ['pointSymbol', 'pointSize', 'pointColors']) assertTrue(individualValuePlotChart.editable.base.includes(k), k);
+    const e = { pointSymbol: 'square', pointSize: 9, pointColors: [null, '#123456'] };
+    assertDeepEqual(checkValue(individualValuePlotChart.edits(), 'e', e), e);
+    assertThrows(() => checkValue(individualValuePlotChart.edits(), 'e', { pointSize: -1 }), /pointSize/);
+  });
+
   test('Streudiagramm: errorBars nimmt die Form an und ist nicht bearbeitbar', () => {
     const eb = { show: true, yMode: 'relative', yPlus: [0.1, null], yMinus: [0.2, null] };
     const cfg = { series: [{ name: 'R', x: [1, 2], y: [1, 2], errorBars: eb }] };
@@ -196,7 +203,7 @@ suite('Diagramm-Widgets: Schemas', () => {
 
   test('Boxplot, Einzelwertdiagramm, Heatmap: bearbeitbar sind Basis plus editorKeys', () => {
     assertDeepEqual(boxplotChart.editable.base, Boxplot.editorKeys);
-    assertDeepEqual(individualValuePlotChart.editable.base, IndividualValuePlot.editorKeys);
+    assertDeepEqual(individualValuePlotChart.editable.base, [...IndividualValuePlot.editorKeys, 'pointSymbol', 'pointSize', 'pointColors']);
     assertDeepEqual(heatmapChart.editable.base, Heatmap.editorKeys);
     for (const w of [boxplotChart, individualValuePlotChart, heatmapChart]) assertDeepEqual(w.editable.series, []);
   });

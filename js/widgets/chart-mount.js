@@ -235,9 +235,11 @@ function legacyEntry(props, value, services) {
 }
 
 /**
- * Einen Eintrag aus `chartEdits` der Projektebene feldweise übernehmen — Werte
- * im Feld gewinnen, nur fehlende Schlüssel kommen aus dem Alteintrag — und ihn
- * danach dort entfernen.
+ * Einen Eintrag aus `chartEdits` der Projektebene feldweise übernehmen — bei
+ * gleichem Schlüssel gewinnt der Alteintrag, wie in der Altform gespeicherte
+ * Einstellungen die Konfiguration überschrieben — und ihn danach dort
+ * entfernen. Geschrieben wird nur, wenn ein übernommener Schlüssel fehlt oder
+ * einen anderen Wert hat.
  * @param {any} props @param {any} value @param {any} services @param {{ base: readonly string[] }} editable
  * @param {Record<string, any>} old Alteintrag aus `legacyEntry`
  * @returns {void}
@@ -247,7 +249,7 @@ function adoptLegacy(props, value, services, editable, old) {
   const sm = services.stateManager;
   const picked = Object.fromEntries(Object.entries(old).filter(([k]) => editable.base.includes(k)));
   const current = value.get() ?? {};
-  const adds = Object.keys(picked).some((k) => !(k in current));
-  if (adds && !value.set({ ...picked, ...current })) return;
+  const changes = Object.keys(picked).some((k) => !(k in current) || JSON.stringify(current[k]) !== JSON.stringify(picked[k]));
+  if (changes && !value.set({ ...current, ...picked })) return;
   for (const k of Object.keys(old)) sm.setChartEdit(services.instanceId, key, k, null);
 }

@@ -8,6 +8,8 @@ import { defineModel, number } from '../../js/core/model.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import HistogramChart from '../../js/core/chart/types/histogram.js';
+import IndividualValuePlot from '../../js/core/chart/types/individual-value-plot.js';
+import individualValuePlotChart from '../../js/widgets/individual-value-plot-chart/schema.js';
 import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
@@ -54,6 +56,7 @@ function countingDoc(writes) {
   };
 }
 const ScatterDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: scatterChart.edits() } });
+const IvpDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chart: individualValuePlotChart.edits() } });
 const TrendDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: trendChart.edits() } });
 const SERIES = (rev) => {
   const s = [{ name: 'A', values: [1, 2, 3], fillColor: 'red' }, { name: 'B', values: [4, 5], fillColor: 'blue' }];
@@ -239,28 +242,41 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     b.root.remove();
   });
 
-  test('Übernahme alter chartEdits: Feld gewinnt, Alteintrag wird gelöscht', async () => {
+  test('Übernahme alter chartEdits: Alteintrag gewinnt und wird gelöscht', async () => {
     const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
     const sm = fakeState({ title: 'X', showYTicks: true });
     const a = await host(tpl, { cm: fakeManager(), sm, model: { chartEdits: { title: 'Y' } } });
-    assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { title: 'Y', showYTicks: true });
+    assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { title: 'X', showYTicks: true });
     assertEqual(sm.log.cleared.length, 2);
     assertTrue(sm.log.cleared.every((c) => c[3] === null));
     a.root.remove();
     const sm2 = fakeState({ title: 'X' });
     const w2 = [];
-    const b = await host(tpl, { cm: fakeManager(), sm: sm2, Model: countingDoc(w2), model: { chartEdits: { title: 'Y' } } });
-    assertDeepEqual(JSON.parse(JSON.stringify(b.data.model.chartEdits)), { title: 'Y' });
-    assertEqual(w2.length, 1);
+    const b = await host(tpl, { cm: fakeManager(), sm: sm2, Model: countingDoc(w2), model: { chartEdits: { title: 'Y', showLegend: false } } });
+    assertDeepEqual(JSON.parse(JSON.stringify(b.data.model.chartEdits)), { title: 'X', showLegend: false });
+    assertEqual(w2.length, 2, 'abweichender Wert wird geschrieben');
     assertEqual(sm2.log.cleared.length, 1);
     assertEqual(sm2.log.cleared[0][3], null);
     b.root.remove();
     const sm3 = fakeState({ notEditable: 1 });
     const w3 = [];
     const c = await host(tpl, { cm: fakeManager(), sm: sm3, Model: countingDoc(w3), model: { chartEdits: { title: 'Y' } } });
+    assertDeepEqual(JSON.parse(JSON.stringify(c.data.model.chartEdits)), { title: 'Y' });
     assertEqual(w3.length, 1);
     assertEqual(sm3.log.cleared.length, 1);
     c.root.remove();
+  });
+
+  test('Übernahme alter chartEdits: gleicher Wert schreibt nicht, Alteintrag wird gelöscht', async () => {
+    const tpl = '<div x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.chartEdits" x-widget-legacy-edit-key="legacy"></div>';
+    const sm = fakeState({ title: 'X', showYTicks: true });
+    const w = [];
+    const a = await host(tpl, { cm: fakeManager(), sm, Model: countingDoc(w), model: { chartEdits: { title: 'X', showYTicks: true, showLegend: false } } });
+    assertDeepEqual(JSON.parse(JSON.stringify(a.data.model.chartEdits)), { title: 'X', showYTicks: true, showLegend: false });
+    assertEqual(w.length, 1, 'nur die Vorbelegung');
+    assertEqual(sm.log.cleared.length, 2);
+    assertTrue(sm.log.cleared.every((c) => c[3] === null));
+    a.root.remove();
   });
 
   test('Übernahme alter chartEdits: Feldwerte mit Reihen bleiben unverändert', async () => {
@@ -382,6 +398,39 @@ suite('Diagramm-Widgets (chart-mount)', () => {
       assertDeepEqual(cm.log.created[0].config[key], ['var(--color-chart-1)', 'var(--color-chart-2)']);
       root.remove();
     }
+  });
+
+  test('Einzelwertdiagramm: Symbol und Farbe der Reihe aus dem Editor gehen in value', async () => {
+    const charts = [];
+    const cm = {
+      create(el, type, config) { const c = new IndividualValuePlot(el, config, { i18n, language: 'de', theme: 'light' }); charts.push(c); return Promise.resolve(c); },
+      update(chart, patch) { Object.assign(chart.config, patch); },
+      destroy(chart) { chart.destroy?.(); },
+    };
+    const cfg = { groups: [{ name: 'A', values: [1, 2, 3] }, { name: 'B', values: [2, 4] }] };
+    const { root, data } = await host('<div x-widget="individual-value-plot-chart" x-widget-config="cfg" x-widget-value="model.chart"></div>', { cm, Model: IvpDoc, extra: { cfg } });
+    const chart = charts[0];
+    const [s0] = chart._getSeriesDescriptors();
+    s0.setSymbol('square');
+    s0.setSize(9);
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(data.model.chart)), { pointSymbol: 'square', pointSize: 9 });
+    chart._getSeriesDescriptors()[1].setColor('#123456');
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(data.model.chart)), { pointSymbol: 'square', pointSize: 9, pointColors: [null, '#123456'] });
+    root.remove();
+  });
+
+  test('Einzelwertdiagramm: gespeicherte Farben bleiben, solange die Gruppen keine Farbe tragen', async () => {
+    const cm = fakeManager();
+    const cfg = { groups: [{ name: 'A', values: [1, 2] }, { name: 'B', values: [3, 4] }] };
+    const { root } = await host('<div x-widget="individual-value-plot-chart" x-widget-config="cfg" x-widget-value="model.chart"></div>', {
+      cm, Model: IvpDoc, model: { chart: { pointColors: ['#abcdef', null] } }, extra: { cfg },
+    });
+    assertDeepEqual(cm.log.created[0].config.pointColors, ['#abcdef', null]);
+    root.remove();
   });
 
   test('Boxplot ohne Gruppenfarben: keine Farbliste', async () => {
