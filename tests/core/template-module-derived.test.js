@@ -25,6 +25,7 @@ const Doc = defineModel({
     rows() { return [{ i: this.n }]; },
     fails() { throw new Error('kaputt'); },
     reader(_data, d) { return d.fails; },
+    greeting(_s, _d, t) { return t('greet'); },
   },
   derivedBulk: ['rows'],
 });
@@ -50,7 +51,7 @@ function fakeContext(saved, emitted = []) {
   return {
     instanceId: 'dt-1',
     stateManager: fakeStateManager(saved),
-    i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
+    i18n: { t: (k) => k, tf: () => (k) => (k === 'greet' ? 'Hallo' : k), getLanguage: () => 'de' },
     eventBus: { on: () => {}, off: () => {}, emit: (...args) => emitted.push(args) },
     notify: () => {},
     dialog: { confirm: async () => true },
@@ -91,6 +92,12 @@ suite('createModule mit derived', () => {
     await mod.destroy(); container.remove();
   });
 
+  test('eingehängt liest eine Ableitung t der aktiven Sprache', async () => {
+    const { mod, container, vm } = await mount();
+    assertEqual(vm().greeting, 'Hallo');
+    await mod.destroy(); container.remove();
+  });
+
   test('ein Fehler wird { error } und pflanzt sich in lesende Einträge fort', async () => {
     const { mod, container, vm } = await mount();
     assertDeepEqual(vm().fails, { error: 'kaputt' });
@@ -115,9 +122,9 @@ suite('createModule mit derived', () => {
     const model = mod.loadDetached({ n: 3, zoom: 4 }, { instanceId: 'dt-2', eventBus: null, stateManager: sm });
     const data = {};
     const mounted = stripPaths(vm().read(), Object.keys(Doc.schema.view));
-    assertDeepEqual(mod.readDetached(model, data), mounted);
-    assertEqual('zoom' in mod.readDetached(model, data), false, 'Ansichtsfelder fehlen');
-    assertDeepEqual(mod.readDetached(model, data, { fields: ['rows'] }).rows, [{ i: 3 }]);
+    assertDeepEqual(mod.readDetached(model, data, undefined, fakeContext().i18n), mounted);
+    assertEqual('zoom' in mod.readDetached(model, data, undefined, fakeContext().i18n), false, 'Ansichtsfelder fehlen');
+    assertDeepEqual(mod.readDetached(model, data, { fields: ['rows'] }, fakeContext().i18n).rows, [{ i: 3 }]);
     await mod.destroy(); container.remove();
   });
 

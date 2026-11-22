@@ -10,6 +10,7 @@ import { initialModel, loadModel } from '../../js/core/initial-model.js';
 import { readAgentState } from '../../js/core/agent/agent-read-mixin.js';
 import { StateManager } from '../../js/core/state-manager.js';
 import { Workspace } from '../../js/ui/workspace.js';
+import { createModule } from '../../js/core/template-module.js';
 
 const Doc = defineModel({
   version: '1.0',
@@ -98,7 +99,7 @@ const PHASES = () => ({
   ],
 });
 
-function setup({ states = {}, completed = false, modules = {}, live, workspace } = {}) {
+function setup({ states = {}, completed = false, modules = {}, live, workspace, i18n } = {}) {
   const bus = makeBus();
   const sm = makeState({ phases: PHASES(), states, completed, bus });
   const mods = { sipoc: targetModule(), 'five-why': { id: 'five-why' }, kano: { id: 'kano' }, ...modules };
@@ -106,7 +107,7 @@ function setup({ states = {}, completed = false, modules = {}, live, workspace }
   const moduleRegistry = { loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null) };
   const ws = workspace ?? makeWorkspace(live);
   const source = Object.freeze({ read: () => ({}), list: () => [] });
-  const svc = createInstances({ stateManager: sm, moduleRegistry, workspace: ws, eventBus: bus, createSource: () => source });
+  const svc = createInstances({ stateManager: sm, moduleRegistry, workspace: ws, eventBus: bus, createSource: () => source, i18n });
   return { svc, sm, bus, ws, mods, source, loaded };
 }
 
@@ -219,6 +220,27 @@ function caught(fn) {
   try { fn(); } catch (e) { return e; }
   return null;
 }
+
+suite('instances.read: derived übersetzt', () => {
+  const Lbl = defineModel({
+    fields: { n: number({ default: 1 }) },
+    derived: { label(_s, _d, t) { return t('greet'); } },
+  });
+  const mod = createModule({
+    config: { id: 'sipoc', engine: 'alpine', phase: 'define', templateUrl: 'about:blank' },
+    Model: Lbl,
+  });
+  const texts = { de: 'Hallo', en: 'Hello' };
+  const makeI18n = (lang) => ({ getLanguage: () => lang, t: (k) => k, tf: () => (k) => texts[lang] + (k === 'greet' ? '' : '?') });
+
+  test('read ohne Mount übersetzt in der aktiven Sprache', async () => {
+    const saved = { n: 2 };
+    const en = setup({ states: { d1: saved }, modules: { sipoc: mod }, i18n: makeI18n('en') });
+    assertEqual((await en.svc.read('d1')).label, 'Hello');
+    const de = setup({ states: { d1: saved }, modules: { sipoc: mod }, i18n: makeI18n('de') });
+    assertEqual((await de.svc.read('d1')).label, 'Hallo');
+  });
+});
 
 suite('instances.readSync', () => {
   test('nicht geladen → not_loaded', () => {

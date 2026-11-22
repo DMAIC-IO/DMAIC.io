@@ -93,10 +93,11 @@ function viewFieldsOf(moduleId, m) {
  *     whenInstanceReady: (id: string) => Promise<any> },
  *   eventBus: any,
  *   createSource: () => import('./source-reader.js').Source,
- * }} deps `createSource` liefert den Leser fremder Instanzen für `derived` (wie eingehängt)
+ *   i18n?: { tf: (prefix: string) => Function },
+ * }} deps `i18n` (optional) liefert den Ableitungen ohne Mount ihr `t`; `createSource` liefert den Leser fremder Instanzen für `derived` (wie eingehängt)
  * @returns {InstancesService}
  */
-export function createInstances({ stateManager, moduleRegistry, workspace, eventBus, createSource }) {
+export function createInstances({ stateManager, moduleRegistry, workspace, eventBus, createSource, i18n }) {
   /**
    * Instanzen in Projektreihenfolge: Phasen in der Reihenfolge des Projekts,
    * darin nach `order`.
@@ -239,7 +240,7 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
       if (!stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {
         stateManager.setModuleState(instanceId, json);
       }
-      return stripPaths(m.readDetached(model, createSource(), options), viewFields);
+      return stripPaths(m.readDetached(model, createSource(), options, i18n), viewFields);
     }
     if (MIXIN_READ_MODULES.includes(moduleId)) {
       return stripPaths(readAgentState(moduleId, saved ?? {}, options), viewFields);

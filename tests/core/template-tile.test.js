@@ -195,6 +195,14 @@ suite('createTile: derived', () => {
     assertEqual(calls, 1, 'neues Rendern rechnet neu');
   });
 
+  test('Kachel: Ableitung bekommt t des Moduls', () => {
+    const Lbl = defineModel({ fields: { items: list(text()) }, derived: { label(_s, _d, t) { return t('greet'); } } });
+    const tile = createTile({ descriptor, Model: Lbl });
+    const tf = { t: (k) => k, tf: (prefix) => (k) => (prefix === 'modules.demo-tile' && k === 'greet' ? 'Hallo' : `?${prefix}.${k}`) };
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n: tf, stateManager: sm });
+    assertEqual(vm.label, 'Hallo');
+  });
+
   test('ein werfendes derived ergibt { error }', () => {
     const tile = createTile({ descriptor, Model: Sheet });
     const vm = tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });

@@ -90,7 +90,7 @@ async function init() {
   // Vor render(): schon die ersten Mounts bekommen ctx.instances.
   const instances = createInstances({
     stateManager, moduleRegistry, workspace, eventBus,
-    createSource: () => createSource(stateManager),
+    createSource: () => createSource(stateManager), i18n,
   });
   // Der Leser `Source` (derived, ctx.source, Kacheln, Altleser über worksheet-columns) liest über readSync.
   registerReader(stateManager, instances.readSync);

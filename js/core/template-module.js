@@ -203,9 +203,10 @@ function keepsAlive(container) {
  * @param {any} vm reaktive Komponente
  * @param {Record<string, Function>} defs `Model.schema.derived`
  * @param {import('./source-reader.js').Source} src Leser fremder Instanzen
+ * @param {(key: string, params?: object) => string} t Übersetzung des Moduls (aktive Sprache)
  * @returns {Record<string, () => any>}
  */
-function derivedCells(vm, defs, src) {
+function derivedCells(vm, defs, src, t) {
   const names = Object.keys(defs);
   /** @type {string[]} */
   const evaluating = [];
@@ -220,7 +221,7 @@ function derivedCells(vm, defs, src) {
   return Object.fromEntries(names.map((name) => [name, () => {
     evaluating.push(name);
     try {
-      const value = defs[name].call(vm.model, src, d);
+      const value = defs[name].call(vm.model, src, d, t);
       failed.delete(name);
       return value;
     } catch (err) {
@@ -605,13 +606,14 @@ export function createModule(base) {
      * @param {object} model aus `loadDetached`
      * @param {import('./source-reader.js').Source} src Leser fremder Instanzen (wie eingehängt)
      * @param {object} [options] `{ fields?, rows? }`
+     * @param {{ tf: (prefix: string) => Function }} [i18n] Übersetzer; ohne ihn bekommen Ableitungen kein `t`
      * @returns {object}
      * @throws {Error} ohne Schema-Model oder wenn `options.rows` kaputt ist
      */
-    readDetached(model, src, options) {
+    readDetached(model, src, options, i18n) {
       if (!agentEntry) throw new Error(`createModule(${id}): readDetached needs a defineModel Model`);
       if (ownRead) return ownRead(model, options);
-      return assembleRead(agentEntry, model, options, evaluateDerived(model, src), derivedBulk,
+      return assembleRead(agentEntry, model, options, evaluateDerived(model, src, undefined, i18n ? i18n.tf(i18nKey) : undefined), derivedBulk,
         taskNames.length > 0 ? idleTaskStatus(taskDefs) : undefined);
     },
     // Methode, nicht Pfeil: die neue Form braucht die aktive Sprache der Instanz.
@@ -853,7 +855,7 @@ export function createModule(base) {
               }
               if (cellNames.length > 0) {
                 releaseComputed = bindComputed(Alpine, this, {
-                  ...derivedCells(this, derivedDefs, /** @type {any} */ (source)), ...(computedDefs ?? {}),
+                  ...derivedCells(this, derivedDefs, /** @type {any} */ (source), (key, params) => context.i18n.tf(i18nKey)(key, params)), ...(computedDefs ?? {}),
                 });
               }
               // Der Task-Host steht vor view().init() — init darf Tasks starten und lesen.

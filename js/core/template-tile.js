@@ -149,7 +149,7 @@ export function createTile(base) {
         Object.defineProperty(scope, name, {
           enumerable: true,
           get() {
-            read ??= derivedReader(model, source);
+            read ??= derivedReader(model, source, scope.t);
             try { return read(name); } catch (err) { return { error: /** @type {Error} */ (err).message }; }
           },
         });
