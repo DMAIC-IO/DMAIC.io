@@ -55,6 +55,11 @@
     "description": "Combine solution concepts from parameters and options, check incompatibilities",
     "whenToUse": "When a solution consists of several sub-functions and alternative whole concepts should be combined systematically — not for scoring or choosing the concepts, that belongs to solution selection."
   },
+  "mosaic": {
+    "name": "Mosaic Plot",
+    "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
+    "whenToUse": "Compare how two categorical variables combine: column widths show the share of each x category, segment heights the share of each group within it."
+  },
   "msa-typ2": {
     "name": "MSA Type 2/3 (Gage R&R)",
     "description": "Measurement System Analysis Type 2 (with operator, Gage R&R) and Type 3 (no operator, automated measurement systems)",

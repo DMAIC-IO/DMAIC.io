@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Mosaic Plot",
+  "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
+  "whenToUse": "Compare how two categorical variables combine: column widths show the share of each x category, segment heights the share of each group within it.",
+  "sectionData": "Data Source",
+  "placeholderPickBoth": "Pick two categorical columns (X and G). Both are required — without them the mosaic plot is undefined.",
+  "statsTitle": "Cross-tabulation",
+  "statX": "X category",
+  "statG": "G category",
+  "statTotal": "Total"
+}

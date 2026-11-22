@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "The row with the two category columns, each column described individually under keys. Both are required for a chart. To clear, set one empty row ([{ x: null, g: null }]); [] is rejected.",
+      "x": {
+        "label": "X",
+        "title": "1st category (X — sets column widths)",
+        "help": "The category column (slot x); its values become the columns along the x axis. Required, empty until one is chosen."
+      },
+      "g": {
+        "label": "G",
+        "title": "2nd category (G — sets segment heights)",
+        "help": "The group column (slot g); its values split each column into segments. Required, empty until one is chosen."
+      }
+    },
+    "stats": {
+      "help": "The cross table, each figure described individually under keys; null while a required slot is empty."
+    },
+    "activeColumnSlots": {
+      "help": "The slot keys a row of the datasets carries: x, g."
+    },
+    "crossTab": {
+      "help": "Categories and groups (name, count per category, segment colour) from the chosen columns, as the chart draws them; empty while a slot is empty."
+    }
+  },
+  "types": {
+    "MosaicStats": {
+      "categories": "The categories of the X column, one column per category; the table shows them as rows. The corner of the table shows “X column \\ G column”, that is the name of the X column, then that of the G column.",
+      "groups": "Per group the counts over all categories; the table shows each group as a column with the colour of its segment.",
+      "rowTotals": "The total per category over all groups, in category order; the table shows it in the last column.",
+      "colTotals": "The total per group over all categories, in group order; the table shows it in the last row.",
+      "total": "The grand total of all counts, that is the number of rows; the table shows it at the bottom right under the “Total” header."
+    },
+    "MosaicGroup": {
+      "name": "The name of the group, a value of the G column; the table shows it as column header next to the colour swatch of the segment.",
+      "counts": "The number of rows with this group and this X category, in category order."
+    }
+  }
+}

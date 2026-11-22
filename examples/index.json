@@ -2054,31 +2054,6 @@
       ]
     },
     {
-      "id": "mosaic-lieferantenfreigabe",
-      "type": "project",
-      "title": {
-        "de": "Lieferantenfreigabe nach Werk (Mosaik)",
-        "en": "Supplier Approval per Plant (mosaic)"
-      },
-      "description": {
-        "de": "60 Freigabe-Entscheidungen über drei Werke und drei Status-Stufen (OK/Bedingt/Abgelehnt). Das Mosaikdiagramm macht zwei Effekte gleichzeitig sichtbar: die unterschiedlichen Volumen (Spaltenbreiten — Werk-A doppelt so viele Entscheidungen wie Werk-B, dreimal so viele wie Werk-C) und die unterschiedliche Qualität (Segmenthöhen — Werk-C deutlich mehr Ablehnungen pro Werk).",
-        "en": "60 approval decisions across three plants and three status levels (OK/conditional/rejected). The mosaic plot reveals two effects at once: the volume differences (column widths — plant A has twice as many decisions as plant B, three times more than plant C) and the quality differences (segment heights — plant C has clearly more rejections per plant)."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/mosaic-lieferantenfreigabe.json",
-      "format": "json",
-      "modules": [
-        "mosaic"
-      ],
-      "tags": [
-        "mosaic",
-        "categorical",
-        "cross-tab",
-        "supplier"
-      ]
-    },
-    {
       "id": "heatmap-zykluszeit-schicht-linie",
       "type": "project",
       "title": {

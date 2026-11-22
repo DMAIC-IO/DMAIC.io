@@ -4385,49 +4385,6 @@
       "statCumPct": "Cumulative %",
       "statTotal": "Total"
     },
-    "mosaic": {
-      "name": "Mosaic Plot",
-      "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
-      "whenToUse": "Compare how two categorical variables combine: column widths show the share of each x category, segment heights the share of each group within it.",
-      "actions": {
-        "read": { "help": "Read the two chosen category columns and the columns each slot accepts, and the figures shown next to the chart." },
-        "setColumn": {
-          "help": "Assign a column to a slot. The other slot keeps its column.",
-          "params": {
-            "slot": "'x' — categories along the x axis; 'g' — categories that split each column. Both are required for a chart.",
-            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
-          }
-        }
-      },
-      "fields": {
-        "xRef": { "help": "The category column (slot x); its values become the columns along the x axis. Required, empty until one is chosen." },
-        "gRef": { "help": "The group column (slot g); its values split each column into segments. Required, empty until one is chosen." },
-        "activeColumnSlots": { "help": "The slots setColumn accepts: x, g." },
-        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "The cross table, each figure described individually under keys; null while a required slot is empty." }
-      },
-      "types": {
-        "MosaicStats": {
-          "categories": "The categories of the X column, one column per category; the table shows them as rows. The corner of the table shows “X column \\ G column”, that is the name of the X column, then that of the G column.",
-          "groups": "Per group the counts over all categories; the table shows each group as a column with the colour of its segment.",
-          "rowTotals": "The total per category over all groups, in category order; the table shows it in the last column.",
-          "colTotals": "The total per group over all categories, in group order; the table shows it in the last row.",
-          "total": "The grand total of all counts, that is the number of rows; the table shows it at the bottom right under the “Total” header."
-        },
-        "MosaicGroup": {
-          "name": "The name of the group, a value of the G column; the table shows it as column header next to the colour swatch of the segment.",
-          "counts": "The number of rows with this group and this X category, in category order."
-        }
-      },
-      "sectionData": "Data Source",
-      "slotX": "1st category (X — sets column widths)",
-      "slotG": "2nd category (G — sets segment heights)",
-      "placeholderPickBoth": "Pick two categorical columns (X and G). Both are required — without them the mosaic plot is undefined.",
-      "statsTitle": "Cross-tabulation",
-      "statX": "X category",
-      "statG": "G category",
-      "statTotal": "Total"
-    },
     "heatmap": {
       "name": "Heatmap",
       "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",

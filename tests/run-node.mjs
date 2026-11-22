@@ -190,6 +190,7 @@ const SKIP = new Set([
   'modules/msa-typ5-view.test.js',
   'modules/xy-plot-view.test.js',
   'modules/individual-value-plot-view.test.js',
+  'modules/mosaic-view.test.js',
   'modules/process-capability-view.test.js',
   'modules/data-import/viewmodel.test.js',
   'modules/doe-planner/tasks-view.test.js',

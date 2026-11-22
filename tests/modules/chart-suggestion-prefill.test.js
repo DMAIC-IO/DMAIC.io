@@ -5,6 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { buildPrefill, MODULE_PREFILL } from '../../js/modules/chart-suggestion/domain/prefill.js';
 import { State as XyState } from '../../js/modules/xy-plot/domain/model.js';
 import { State as IvpState } from '../../js/modules/individual-value-plot/domain/model.js';
+import { State as MosaicState } from '../../js/modules/mosaic/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -72,11 +73,14 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(p.state.chartConfig.stacked, true);
   });
 
-  test('mosaic braucht 2 kategoriale', () => {
+  test('mosaic braucht 2 kategoriale; die Vorbelegung lädt über die Migration als Zeile x/g', () => {
     assertEqual(buildPrefill('mosaic', [cat(['X'], 'a')], 'ws', 's'), null);
     const p = buildPrefill('mosaic', [cat(['X'], 'a'), cat(['P'], 'b')], 'ws', 's');
     assertEqual(p.target, 'mosaic');
-    assertEqual(p.state.gRef.columnId, 'b');
+    const m = MosaicState.fromJSON(p.state);
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [{ x: r('a'), g: r('b') }]);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.chart)), {});
   });
 
   test('heatmap mit 1 stetig + 2 kategorial → Mittelwert', () => {

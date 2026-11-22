@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Die Zeile mit den zwei Kategorienspalten, jede Spalte unter keys einzeln beschrieben. Beide sind für ein Diagramm Pflicht. Leeren geht über eine leere Zeile ([{ x: null, g: null }]), [] wird abgelehnt.",
+      "x": {
+        "label": "X",
+        "title": "1. Kategorie (X — bestimmt Spaltenbreiten)",
+        "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Spalten entlang der x-Achse. Pflicht, leer, solange keine gewählt ist."
+      },
+      "g": {
+        "label": "G",
+        "title": "2. Kategorie (G — bestimmt Segmenthöhen)",
+        "help": "Die Gruppenspalte (Slot g); ihre Werte teilen jede Spalte in Segmente. Pflicht, leer, solange keine gewählt ist."
+      }
+    },
+    "stats": {
+      "help": "Die Kreuztabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange ein Pflicht-Slot leer ist."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: x, g."
+    },
+    "crossTab": {
+      "help": "Kategorien und Gruppen (Name, Häufigkeit je Kategorie, Segmentfarbe) aus den gewählten Spalten, wie das Diagramm sie zeichnet; leer, solange ein Slot leer ist."
+    }
+  },
+  "types": {
+    "MosaicStats": {
+      "categories": "Die Kategorien der X-Spalte, eine Spalte je Kategorie; die Tabelle zeigt sie als Zeilen. Die Ecke der Tabelle zeigt „X-Spalte \\ G-Spalte“, also den Namen der X-Spalte, dann den der G-Spalte.",
+      "groups": "Je Gruppe die Häufigkeiten über alle Kategorien; die Tabelle zeigt jede Gruppe als Spalte mit der Farbe ihres Segments.",
+      "rowTotals": "Die Summe je Kategorie über alle Gruppen, in der Reihenfolge der Kategorien; die Tabelle zeigt sie in der letzten Spalte.",
+      "colTotals": "Die Summe je Gruppe über alle Kategorien, in der Reihenfolge der Gruppen; die Tabelle zeigt sie in der letzten Zeile.",
+      "total": "Die Gesamtsumme aller Häufigkeiten, also die Zahl der Zeilen; die Tabelle zeigt sie unten rechts unter dem Kopf „Gesamt“."
+    },
+    "MosaicGroup": {
+      "name": "Der Name der Gruppe, ein Wert der G-Spalte; die Tabelle zeigt ihn als Spaltenkopf neben dem Farbfeld des Segments.",
+      "counts": "Die Zahl der Zeilen mit dieser Gruppe und dieser X-Kategorie, in der Reihenfolge der Kategorien."
+    }
+  }
+}

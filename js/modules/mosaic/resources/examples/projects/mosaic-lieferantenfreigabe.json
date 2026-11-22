@@ -1,0 +1,11 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    {
+      "x": { "instanceId": "__source__", "sheetId": "sheet-lieferanten", "columnId": "c-werk" },
+      "g": { "instanceId": "__source__", "sheetId": "sheet-lieferanten", "columnId": "c-status" }
+    }
+  ],
+  "chart": { "title": "Lieferantenfreigabe nach Werk", "showTitle": true },
+  "sourceWorksheetFile": "worksheets/mosaic-lieferantenfreigabe.json"
+}

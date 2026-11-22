@@ -41,12 +41,6 @@ export default [
     load: () => import('./pareto/pareto.js'),
   },
   {
-    id: 'mosaic',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./mosaic/mosaic.js'),
-  },
-  {
     id: 'heatmap',
     phase: 'data',
     group: 'visualize',

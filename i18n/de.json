@@ -4389,49 +4389,6 @@
       "statCumPct": "Kumuliert %",
       "statTotal": "Gesamt"
     },
-    "mosaic": {
-      "name": "Mosaikdiagramm",
-      "description": "Visualisiert die gemeinsame Verteilung zweier kategorialer Variablen — Spaltenbreiten zeigen die Randhäufigkeit, Segmenthöhen die bedingten Anteile.",
-      "whenToUse": "Zeigen, wie zwei kategoriale Merkmale zusammenspielen: die Spaltenbreite zeigt den Anteil jeder x-Kategorie, die Segmenthöhe den Anteil jeder Gruppe darin.",
-      "actions": {
-        "read": { "help": "Die zwei gewählten Kategorienspalten lesen, die Spalten, die jeder Slot annimmt, und die Kennzahlen neben dem Diagramm." },
-        "setColumn": {
-          "help": "Eine Spalte einem Slot zuweisen. Der andere Slot behält seine Spalte.",
-          "params": {
-            "slot": "'x' — Kategorien entlang der x-Achse; 'g' — Kategorien, die jede Spalte teilen. Beide sind für ein Diagramm Pflicht.",
-            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
-          }
-        }
-      },
-      "fields": {
-        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Spalten entlang der x-Achse. Pflicht, leer, solange keine gewählt ist." },
-        "gRef": { "help": "Die Gruppenspalte (Slot g); ihre Werte teilen jede Spalte in Segmente. Pflicht, leer, solange keine gewählt ist." },
-        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g." },
-        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Die Kreuztabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange ein Pflicht-Slot leer ist." }
-      },
-      "types": {
-        "MosaicStats": {
-          "categories": "Die Kategorien der X-Spalte, eine Spalte je Kategorie; die Tabelle zeigt sie als Zeilen. Die Ecke der Tabelle zeigt „X-Spalte \\ G-Spalte“, also den Namen der X-Spalte, dann den der G-Spalte.",
-          "groups": "Je Gruppe die Häufigkeiten über alle Kategorien; die Tabelle zeigt jede Gruppe als Spalte mit der Farbe ihres Segments.",
-          "rowTotals": "Die Summe je Kategorie über alle Gruppen, in der Reihenfolge der Kategorien; die Tabelle zeigt sie in der letzten Spalte.",
-          "colTotals": "Die Summe je Gruppe über alle Kategorien, in der Reihenfolge der Gruppen; die Tabelle zeigt sie in der letzten Zeile.",
-          "total": "Die Gesamtsumme aller Häufigkeiten, also die Zahl der Zeilen; die Tabelle zeigt sie unten rechts unter dem Kopf „Gesamt“."
-        },
-        "MosaicGroup": {
-          "name": "Der Name der Gruppe, ein Wert der G-Spalte; die Tabelle zeigt ihn als Spaltenkopf neben dem Farbfeld des Segments.",
-          "counts": "Die Zahl der Zeilen mit dieser Gruppe und dieser X-Kategorie, in der Reihenfolge der Kategorien."
-        }
-      },
-      "sectionData": "Datenquelle",
-      "slotX": "1. Kategorie (X — bestimmt Spaltenbreiten)",
-      "slotG": "2. Kategorie (G — bestimmt Segmenthöhen)",
-      "placeholderPickBoth": "Wähle zwei kategoriale Spalten (X und G). Beide werden benötigt, sonst ist das Mosaikdiagramm nicht definiert.",
-      "statsTitle": "Kreuztabelle",
-      "statX": "X-Kategorie",
-      "statG": "G-Kategorie",
-      "statTotal": "Gesamt"
-    },
     "heatmap": {
       "name": "Heatmap",
       "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",

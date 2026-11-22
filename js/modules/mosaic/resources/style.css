@@ -1,7 +1,9 @@
 /* ============================================================
-   Mosaic Chart Module Styles (mosaic.css)
+   Mosaic Chart Module Styles
    BEM: .mosaic-module__ prefix
    ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
 
 .mosaic-module__placeholder {
   color: var(--color-text-secondary);
@@ -14,6 +16,7 @@
   flex-direction: column;
 }
 
+/* Plot container — fixed height so the chart framework gets a definite size */
 .mosaic-module__chart-wrap {
   height: 480px;
   overflow: hidden;
@@ -41,4 +44,10 @@ table.mosaic-module__stats-table td:not(:first-child) {
   border-radius: 2px;
   flex-shrink: 0;
   margin-right: var(--spacing-xs);
+}
+
+/* Summenzeile der Kreuztabelle */
+.mosaic-module__stats-total {
+  font-weight: 600;
+  border-top: 2px solid var(--color-border-primary);
 }

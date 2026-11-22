@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Mosaikdiagramm",
+  "description": "Visualisiert die gemeinsame Verteilung zweier kategorialer Variablen — Spaltenbreiten zeigen die Randhäufigkeit, Segmenthöhen die bedingten Anteile.",
+  "whenToUse": "Zeigen, wie zwei kategoriale Merkmale zusammenspielen: die Spaltenbreite zeigt den Anteil jeder x-Kategorie, die Segmenthöhe den Anteil jeder Gruppe darin.",
+  "sectionData": "Datenquelle",
+  "placeholderPickBoth": "Wähle zwei kategoriale Spalten (X und G). Beide werden benötigt, sonst ist das Mosaikdiagramm nicht definiert.",
+  "statsTitle": "Kreuztabelle",
+  "statX": "X-Kategorie",
+  "statG": "G-Kategorie",
+  "statTotal": "Gesamt"
+}

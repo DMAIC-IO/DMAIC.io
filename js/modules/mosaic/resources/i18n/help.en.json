@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of a Mosaic Plot",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:mosaikdiagramm|mosaic plot}} shows the joint distribution of two {{term:skalenniveau|categorical}} variables. Unlike a {{term:balkendiagramm|stacked bar chart}} — where every column has the same width — the mosaic plot encodes the marginal distribution of both variables geometrically: column widths and segment heights are each proportional to frequency."
+        },
+        {
+          "type": "definition",
+          "term": "Column width",
+          "content": "Each column corresponds to one level of the first variable (X). Width is proportional to the {{term:randverteilung|marginal frequency}} of that level: a wide column = frequent X-category, a narrow column = rare X-category. At a glance you see how the sample splits across X."
+        },
+        {
+          "type": "definition",
+          "term": "Segment height",
+          "content": "Inside a column, each color is one level of the second variable (G). Height is proportional to the conditional probability P(G | X) — the share of that G-level within the X-level. When all columns share the same pattern (equal segment heights), X and G are independent."
+        },
+        {
+          "type": "definition",
+          "term": "Spotting independence",
+          "content": "The mosaic plot is a visual test for statistical independence — the numerical counterpart is the {{term:chi-quadrat-test|chi-square test}}, available in the \"Attribute Tests\" module. If the segment shares (heights) stay constant across all X-columns, then P(G | X) = P(G) for every X — the two variables are independent. A segment that deviates strongly in one column reveals a relationship."
+        },
+        {
+          "type": "paragraph",
+          "content": "Typical Six-Sigma uses: complaint reason × sales region, defect type × shift, scrap class × machine. Where a stacked bar chart says \"all columns look the same\", the mosaic plot additionally reveals which X-categories are common in the first place."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Too many categories",
+          "content": "Beyond 5–6 X-categories the columns become so narrow that labels are hard to read. Group categories or filter to the most important ones. For too many G-categories the vertical color scale gets cluttered — keep it to ≈6 levels."
+        },
+        {
+          "type": "definition",
+          "term": "Small cells disappear",
+          "content": "Very rare combinations (X_i, G_j) produce tiny rectangles that are easy to overlook. Cell labels (editor → \"Show cell labels\") place the count inside the rectangle when it is large enough. Still, check the stats table to read off exact counts."
+        },
+        {
+          "type": "definition",
+          "term": "Confusion with stacked bar",
+          "content": "In a stacked bar chart every column has the same width; category differences only show in the segment heights. The mosaic plot, by contrast, encodes the marginal frequency in the width — a wide column is NOT \"the same bar, just thicker\" but a more frequent X."
+        },
+        {
+          "type": "definition",
+          "term": "Column order",
+          "content": "Columns are laid out in the order of first observation in the worksheet. If a meaningful order is desired (e.g. by frequency or alphabetic), sort the column upfront or adjust the category order."
+        },
+        {
+          "type": "definition",
+          "term": "Causality",
+          "content": "A visible relationship in the mosaic plot does NOT mean that X causes G (or vice versa) — it only shows dependence. For causal claims you need a {{term:doe|designed experiment}} (DoE) or at least solid domain theory."
+        }
+      ]
+    }
+  }
+}

@@ -10026,6 +10026,7 @@ export const AGENT_REGISTRY = {
   "mosaic": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -10040,54 +10041,32 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'x'|'g'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen; der andere Slot bleibt."
       }
     },
     "fields": {
-      "xRef": {
-        "type": "object|null",
-        "help": "the category column on the x axis (slot `x`), or null",
+      "datasets": {
+        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, g: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "gRef": {
-        "type": "object|null",
-        "help": "the column whose categories split each bar (slot `g`), or null",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "datasets"
+        ],
+        "slots": {
+          "x": [
+            "columnRef",
+            "minCount:1",
+            "required"
+          ],
+          "g": [
+            "columnRef",
+            "minCount:1",
+            "required"
+          ]
+        }
       },
       "stats": {
-        "type": "MosaicStats|null",
-        "help": "the cross table, each figure described under keys; null while a required slot is empty",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "MosaicStats",
@@ -10124,8 +10103,23 @@ export const AGENT_REGISTRY = {
             "help": "Gesamtsumme aller Häufigkeiten"
           }
         }
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "datasets"
+    ],
+    "invariants": []
   },
   "msa-typ1": {
     "tagged": true,
