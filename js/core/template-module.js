@@ -855,7 +855,7 @@ export function createModule(base) {
               }
               if (cellNames.length > 0) {
                 releaseComputed = bindComputed(Alpine, this, {
-                  ...derivedCells(this, derivedDefs, /** @type {any} */ (source), (key, params) => context.i18n.tf(i18nKey)(key, params)), ...(computedDefs ?? {}),
+                  ...derivedCells(this, derivedDefs, /** @type {any} */ (source), _t), ...(computedDefs ?? {}),
                 });
               }
               // Der Task-Host steht vor view().init() — init darf Tasks starten und lesen.

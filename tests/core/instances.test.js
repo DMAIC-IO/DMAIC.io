@@ -231,7 +231,7 @@ suite('instances.read: derived übersetzt', () => {
     Model: Lbl,
   });
   const texts = { de: 'Hallo', en: 'Hello' };
-  const makeI18n = (lang) => ({ getLanguage: () => lang, t: (k) => k, tf: () => (k) => texts[lang] + (k === 'greet' ? '' : '?') });
+  const makeI18n = (lang) => ({ getLanguage: () => lang, t: (k) => k, tf: (prefix) => (k) => (prefix === 'modules.sipoc' && k === 'greet' ? texts[lang] : `?${prefix}`) });
 
   test('read ohne Mount übersetzt in der aktiven Sprache', async () => {
     const saved = { n: 2 };
