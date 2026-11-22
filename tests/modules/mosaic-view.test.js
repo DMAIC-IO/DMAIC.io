@@ -173,7 +173,7 @@ suite('mosaic: Viewmodel im Browser', () => {
     assertEqual(table.querySelectorAll('tbody tr').length, 4);
     const swatch = table.querySelector('.mosaic-module__stats-color');
     assertTrue(swatch.getAttribute('style').replace(/\s/g, '').startsWith('background:'), 'Farbfeld ohne Farbe');
-    assertEqual(table.querySelectorAll('thead th')[1].textContent, ' OK');
+    assertEqual(table.querySelectorAll('thead th')[1].textContent, 'OK');
     assertDeepEqual(JSON.parse(JSON.stringify(vm.stats)), {
       categories: ['A', 'B', 'C'],
       groups: [{ name: 'OK', counts: [2, 1, 0] }, { name: 'NIO', counts: [1, 1, 1] }],

@@ -72,12 +72,6 @@ export default createModule({
        * @returns {string}
        */
       swatchStyle(h) { return `background:${h.color}`; },
-      /**
-       * Gruppenname im Kopf, mit Abstand zum Farbfeld.
-       * @param {{ name: string }} h
-       * @returns {string}
-       */
-      headerLabel(h) { return ` ${h.name}`; },
     };
   },
 });

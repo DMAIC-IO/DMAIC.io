@@ -42,8 +42,7 @@ table.mosaic-module__stats-table td:not(:first-child) {
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  flex-shrink: 0;
-  margin-right: var(--spacing-xs);
+  margin-right: calc(var(--spacing-xs) + 1ch);
 }
 
 /* Summenzeile der Kreuztabelle */

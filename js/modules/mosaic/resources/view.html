@@ -17,7 +17,7 @@
               <thead><tr>
                 <th><span data-help-key="modules.mosaic.types.MosaicStats.categories" x-text="statsCorner"></span></th>
                 <template x-for="(h, hi) in statsHeaders" :key="hi">
-                  <th><span class="mosaic-module__stats-color" :style="swatchStyle(h)"></span><span x-text="headerLabel(h)"></span></th>
+                  <th><span class="mosaic-module__stats-color" :style="swatchStyle(h)"></span><span x-text="h.name"></span></th>
                 </template>
                 <th><span data-help-key="modules.mosaic.types.MosaicStats.total" x-text="t('statTotal')"></span></th>
               </tr></thead>
