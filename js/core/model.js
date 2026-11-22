@@ -1563,7 +1563,7 @@ export function readModel(Model, json, context) {
  *           commands?: Record<string, object>, version?: string,
  *           migrations?: Record<string, Function>,
  *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void, onLoad?: boolean }>,
- *           derived?: Record<string, (src: import('./source-reader.js').Source, d: Record<string, any>) => any>, derivedBulk?: string[] }} schema
+ *           derived?: Record<string, (src: import('./source-reader.js').Source, d: Record<string, any>, t: (key: string, params?: any) => string) => any>, derivedBulk?: string[] }} schema
  *   `derived.<name>(src, d)`: fachliche Ableitung; `this` ist das Model, `src` der Leser fremder Instanzen
  *   (`src.read(instanceId, options)`, `src.list()`, `core/source.js`), `d` liest andere
  *   Ableitungen. `derivedBulk`: Namen, die als Ganzes (nicht einzeln) abgefragt werden.
