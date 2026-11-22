@@ -133,6 +133,8 @@ const SKIP = new Set([
   'core/i18n-module-texts.test.js',
   'core/module-resources.test.js',
   'core/icon.test.js',
+  // createModule zieht Alpine CSP herein, das beim Import MutationObserver anfasst.
+  'core/instances-derived-t.test.js',
   'core/markdown-parser.test.js',
   'core/notify.test.js',
   'core/readonly-lock.test.js',
