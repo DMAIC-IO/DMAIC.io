@@ -13,7 +13,7 @@ import { formatNumber } from '../../../core/number-format.js';
 import { SUBGROUP_METHODS } from '../../../engines/sigma-within-engine.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
-import { inputValues, formatHint, specRefLines } from '../domain/analyze.js';
+import { inputValues, specRefLines } from '../domain/analyze.js';
 import { subgroupAllowed } from '../domain/columns.js';
 import { fmt, fmtZ, fmtFraction } from '../domain/format.js';
 import { fromExample } from '../io/example.js';
@@ -92,7 +92,7 @@ export default createModule({
         return this.methodKeys.map((key) => ({ value: key, label: this.methodName(key), selected: key === active }));
       },
       /** Hinweis zu Schätzer oder ID-Spalte, übersetzt; leer ohne. */
-      get withinHint() { return formatHint(this.analysis?.hint ?? null, this.t); },
+      get withinHint() { return this.analysis?.hint ?? ''; },
 
       /** Gibt es ein Arbeitsblatt im Projekt? */
       get hasWorksheet() { return ctx.source.list().some((i) => i.moduleId === 'worksheet'); },

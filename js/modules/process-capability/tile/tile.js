@@ -11,7 +11,7 @@ import { createTile } from '../../../core/template-tile.js';
 import { sourceColumns } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
-import { inputValues, formatHint, specRefLines } from '../domain/analyze.js';
+import { inputValues, specRefLines } from '../domain/analyze.js';
 import { fmt as formatNumber } from '../domain/format.js';
 import { Settings } from './settings.js';
 
@@ -48,7 +48,7 @@ export default createTile({
       /** Hinweis zu Schätzer oder ID-Spalte, sonst null. */
       get hint() {
         const a = analysisOf(this);
-        return a && !a.empty ? formatHint(a.hint, this.t) || null : null;
+        return a && !a.empty ? a.hint : null;
       },
       get metrics() {
         const r = analysisOf(this)?.result;

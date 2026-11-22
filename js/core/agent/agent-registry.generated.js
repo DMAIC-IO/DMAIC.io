@@ -14723,8 +14723,8 @@ export const AGENT_REGISTRY = {
             "help": "der verwendete Schätzer"
           },
           "hint": {
-            "type": "{ key: string, params: Record<string, any> }|null",
-            "help": "Hinweis zu Schätzer oder ID-Spalte, `null` ohne"
+            "type": "string|null",
+            "help": "Hinweis zu Schätzer oder ID-Spalte als Text in der aktiven Sprache, `null` ohne"
           },
           "empty": {
             "type": "boolean",

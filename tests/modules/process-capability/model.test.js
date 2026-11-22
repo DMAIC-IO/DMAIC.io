@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/process-capability/domain/model.js';
-import { analyze } from '../../../js/modules/process-capability/domain/analyze.js';
+import { analyze, formatHint } from '../../../js/modules/process-capability/domain/analyze.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { setFields, setModelContext } from '../../../js/core/model.js';
 import { sourceColumns } from '../../../js/core/source-columns.js';
@@ -88,20 +88,22 @@ suite('process-capability: Model — Invariante und Kommando', () => {
 });
 
 suite('process-capability: Model — derived', () => {
-  const d = (m) => evaluateDerived(m, data);
+  const T = (k, p) => (p ? `${k}(${Object.values(p).join(',')})` : k);
+  const d = (m) => evaluateDerived(m, data, undefined, T);
 
   test('analysis gleich analyze am Leser', () => {
     const m = withParams({ lsl: 9.5, usl: 10.5 }, { columnRef: ref('c') });
-    assertDeepEqual(d(m).analysis, analyze(m, sourceColumns(data)));
+    const a = analyze(m, sourceColumns(data));
+    assertDeepEqual(d(m).analysis, { ...a, hint: formatHint(a.hint, T) || null });
   });
   test('sbar bei Modus Größe 1: Rückfall mit Hinweis', () => {
     const a = d(withParams({ withinMethod: 'sbar', lsl: 9.5, usl: 10.5 }, { columnRef: ref('c') })).analysis;
-    assertEqual(a.hint.key, 'methodFallbackHint');
+    assertEqual(a.hint, 'methodFallbackHint(withinMethodNames.sbar,kindSubgroups,withinMethodNames.averageMR)');
     assertTrue(a.result !== null);
   });
   test('ID-Spalte auf fremdem Blatt: Hinweis, kein Ergebnis', () => {
     const a = d(withParams({ subgroupMode: 'column' }, { columnRef: ref('c'), subgroupColumnRef: ref('x', 't') })).analysis;
-    assertEqual(a.hint.key, 'subgroupColumnMissing');
+    assertEqual(a.hint, 'subgroupColumnMissing()');
     assertEqual(a.result, null);
   });
   test('Modus Spalte mit Beispieldaten rechnet nach Größe', () => {

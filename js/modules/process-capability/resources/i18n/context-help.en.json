@@ -41,7 +41,7 @@
       "help": "The settings of the histogram editor (title, axes, reference lines, appearance)."
     },
     "analysis": {
-      "help": "The capability analysis for the current inputs and data: result (the result or null), methods (the estimators that fit the data), method (the one used), hint (a note on the estimator or the subgroup column as { key, params } or null) and empty (neither a measurement column nor example data set). result is null while no data are chosen, no limit is entered, the upper limit does not exceed the lower one, fewer than 2 values are present, the estimator cannot be computed or, in column mode, no fitting subgroup column is chosen."
+      "help": "The capability analysis for the current inputs and data: result (the result or null), methods (the estimators that fit the data), method (the one used), hint (a note on the estimator or the subgroup column as text in the active language, or null) and empty (neither a measurement column nor example data set). result is null while no data are chosen, no limit is entered, the upper limit does not exceed the lower one, fewer than 2 values are present, the estimator cannot be computed or, in column mode, no fitting subgroup column is chosen."
     },
     "activeParams": {
       "help": "The keys of params that take effect in the current state."
@@ -151,7 +151,7 @@
       "result": "The capability result, each index described under keys; null while the inputs do not suffice.",
       "methods": "The estimators for σ within that fit the data.",
       "method": "The estimator used: the stored one if it fits, otherwise the default of the data.",
-      "hint": "A note on the estimator or the subgroup column as { key, params } or null: methodFallbackHint (the stored estimator does not fit; params names method, kind and fallback), subgroupColumnMissing (no fitting column with subgroup IDs) or an errWithin… key (the estimator cannot be computed for these data).",
+      "hint": "A note on the estimator or the subgroup column as text in the active language, null if none: the stored estimator does not fit the data and another one is used, there is no fitting column with subgroup IDs, or the estimator cannot be computed for these data.",
       "empty": "Whether neither a measurement column nor example data are set."
     },
     "PickableColumns": {

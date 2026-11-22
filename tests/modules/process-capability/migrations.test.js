@@ -148,7 +148,7 @@ suite('process-capability: Migration — Altprojekt (Baseline)', () => {
       { id: 'col_pc_value', name: '', type: 'numeric', values: VALUE },
       { id: 'col_pc_id', name: '', type: 'numeric', values: IDS },
     ] } }] } });
-    const { result } = evaluateDerived(m, src).analysis;
+    const { result } = evaluateDerived(m, src, undefined, (k) => k).analysis;
     assertEqual(result.Cpk.toFixed(4), '1.2270');
     assertEqual(result.Ppk.toFixed(4), '1.3762');
   });

@@ -717,6 +717,15 @@ suite('dashboard tiles: spc', () => {
     assertEqual(spcVm(SPC_STATE, SPC_VALUES, { showChart: false }).chart, null);
   });
 
+  test('Kachel zeigt den Hinweis aus analysis.hint als de-Text', async () => {
+    const UI = await (await fetch(new URL('../../js/modules/process-capability/resources/i18n/ui.de.json', import.meta.url))).json();
+    const deI18n = { t: (k) => k, getLanguage: () => 'de', tf: () => (k) => UI[k] ?? k };
+    const state = { columnRef: CAP_COL, params: { lsl: 9.5, usl: 10.5, subgroupMode: 'column' } };
+    const vm = vmOf(capabilityTile, state, {}, { i18n: deI18n, stateManager: columnStateManager({ m: CAP_VALUES }) });
+    assertEqual(vm.hint, UI.subgroupColumnMissing);
+    assertTrue(typeof vm.hint === 'string' && !vm.hint.includes('subgroupColumnMissing'));
+  });
+
   test('a second render and dispose destroy the previous chart', async () => {
     const cm = recordingChartManager();
     const host = document.createElement('div');

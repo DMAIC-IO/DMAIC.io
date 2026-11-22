@@ -10,7 +10,7 @@
 import { defineModel, command, object, text, number, boolean, oneOf, list, columnRef } from '../../../core/model.js';
 import { listColumns, columnOption, sourceColumns } from '../../../core/source-columns.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
-import { analyze } from './analyze.js';
+import { analyze, formatHint } from './analyze.js';
 import { subgroupAllowed } from './columns.js';
 import { from0 } from './migrations.js';
 
@@ -98,7 +98,7 @@ import { from0 } from './migrations.js';
  * @property {Result|null} result  das Fähigkeitsergebnis, `null` solange die Eingaben nicht reichen
  * @property {string[]} methods  die für die Daten wählbaren Schätzer
  * @property {string} method  der verwendete Schätzer
- * @property {{ key: string, params: Record<string, any> }|null} hint  Hinweis zu Schätzer oder ID-Spalte, `null` ohne
+ * @property {string|null} hint  Hinweis zu Schätzer oder ID-Spalte als Text in der aktiven Sprache, `null` ohne
  * @property {boolean} empty  weder Messspalte noch Beispieldaten gesetzt
  */
 
@@ -156,11 +156,14 @@ export const State = defineModel({
      * Die Fähigkeitsanalyse: Ergebnis, wählbare Schätzer, Hinweis.
      *
      * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
+     * @param {any} _d
+     * @param {(key: string, params?: object) => string} t Übersetzer des Moduls
      * @this {import('./model.types.js').StateModel}
      * @returns {Analysis}
      */
-    analysis(src) {
-      return analyze(this, sourceColumns(src));
+    analysis(src, _d, t) {
+      const a = analyze(this, sourceColumns(src));
+      return { ...a, hint: formatHint(a.hint, t) || null };
     },
     /**
      * Die Schlüssel, die `instance.set` auf `params` im aktuellen Stand annimmt.

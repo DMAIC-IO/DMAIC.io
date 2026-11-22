@@ -41,7 +41,7 @@
       "help": "Die Einstellungen des Histogramm-Editors (Titel, Achsen, Bezugslinien, Darstellung)."
     },
     "analysis": {
-      "help": "Die Fähigkeitsanalyse zum Stand von Eingaben und Daten: result (das Ergebnis oder null), methods (die für die Daten wählbaren Schätzer), method (der verwendete), hint (ein Hinweis zu Schätzer oder Untergruppenspalte als { key, params } oder null) und empty (weder Messwertspalte noch Beispieldaten gesetzt). result ist null, solange keine Daten gewählt sind, keine Grenze eingetragen ist, die obere Grenze die untere nicht übersteigt, weniger als 2 Werte vorliegen, der Schätzer sich nicht berechnen lässt oder im Spaltenmodus keine passende Untergruppenspalte gewählt ist."
+      "help": "Die Fähigkeitsanalyse zum Stand von Eingaben und Daten: result (das Ergebnis oder null), methods (die für die Daten wählbaren Schätzer), method (der verwendete), hint (ein Hinweis zu Schätzer oder Untergruppenspalte als Text in der aktiven Sprache oder null) und empty (weder Messwertspalte noch Beispieldaten gesetzt). result ist null, solange keine Daten gewählt sind, keine Grenze eingetragen ist, die obere Grenze die untere nicht übersteigt, weniger als 2 Werte vorliegen, der Schätzer sich nicht berechnen lässt oder im Spaltenmodus keine passende Untergruppenspalte gewählt ist."
     },
     "activeParams": {
       "help": "Die Schlüssel von params, die im aktuellen Stand wirken."
@@ -151,7 +151,7 @@
       "result": "Das Fähigkeitsergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben nicht reichen.",
       "methods": "Die Schätzer für σ innerhalb, die zu den Daten passen.",
       "method": "Der Schätzer, mit dem gerechnet wird: der gespeicherte, wenn er passt, sonst der Standard der Daten.",
-      "hint": "Ein Hinweis zu Schätzer oder Untergruppenspalte als { key, params } oder null: methodFallbackHint (der gespeicherte Schätzer passt nicht, params nennt method, kind und fallback), subgroupColumnMissing (keine passende Spalte mit Untergruppen-IDs) oder ein Schlüssel errWithin… (der Schätzer lässt sich für diese Daten nicht berechnen).",
+      "hint": "Ein Hinweis zu Schätzer oder Untergruppenspalte als Text in der aktiven Sprache, null ohne: der gespeicherte Schätzer passt nicht zu den Daten und es wird mit einem anderen gerechnet, es gibt keine passende Spalte mit Untergruppen-IDs, oder der Schätzer lässt sich für diese Daten nicht berechnen.",
       "empty": "Ob weder eine Messwertspalte noch Beispieldaten gesetzt sind."
     },
     "PickableColumns": {
