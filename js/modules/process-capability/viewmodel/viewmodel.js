@@ -15,7 +15,7 @@ import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { inputValues, specRefLines } from '../domain/analyze.js';
 import { subgroupAllowed } from '../domain/columns.js';
-import { fmt, fmtZ, fmtFraction } from '../domain/format.js';
+import { fmt as fmtIn, fmtZ as fmtZIn, fmtFraction as fmtFractionIn, fmtDec as fmtDecIn } from '../domain/format.js';
 import { fromExample } from '../io/example.js';
 
 /** Präfix der Kontexthilfe-Sätze an Kennzahlen und Tabellenspalten. */
@@ -30,9 +30,6 @@ const KPI_CLASS = { pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmi
 
 /** @param {{ instanceId: string, sheetId?: string, columnId: string }|null} ref @returns {string} */
 const keyOf = (ref) => (ref ? `${ref.instanceId}|${ref.sheetId ?? ''}|${ref.columnId}` : '');
-
-/** @param {number} v @returns {string} n̄ und ν mit höchstens zwei Nachkommastellen */
-const fmtDec = (v) => (Number.isInteger(v) ? String(v) : v.toFixed(2));
 
 /**
  * @typedef {{ key: string, help: string, mod?: string, label: string, value: string, sub: string }} Kpi
@@ -49,6 +46,14 @@ export default createModule({
   view(ctx) {
     /** @param {number} v @returns {string} Grenzwert der Bewertung in der Sprache der App */
     const limitText = (v) => formatNumber(v, ctx.i18n.getLanguage(), { decimals: 2 });
+    /** @param {number} v @param {number} [d] @returns {string} feste Stellen in der Sprache der App */
+    const fmt = (v, d) => fmtIn(v, d, ctx.i18n.getLanguage());
+    /** @param {number} v @param {number} [d] @returns {string} Z-Wert in der Sprache der App */
+    const fmtZ = (v, d) => fmtZIn(v, d, ctx.i18n.getLanguage());
+    /** @param {number} p @returns {string} Anteil für die Z.bench-Zeile in der Sprache der App */
+    const fmtFraction = (p) => fmtFractionIn(p, ctx.i18n.getLanguage());
+    /** @param {number} v @returns {string} n̄ und ν mit höchstens zwei Nachkommastellen */
+    const fmtDec = (v) => fmtDecIn(v, ctx.i18n.getLanguage());
     return {
       /** @noagent Lebenszyklus: eine andere Messspalte verwirft eine ID-Spalte, die nicht mehr passt. */
       init() {

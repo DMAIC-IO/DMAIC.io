@@ -84,10 +84,6 @@
     "count": 1,
     "reason": "Bewertungsfeld je Ursache und Experte bleibt ein Zahlenfeld mit Pfeiltasten (Ganzzahl 0 bis 9, Trennzeichen gesperrt), wie bisher; der Handler begrenzt und schreibt über setRating"
   },
-  "js/modules/ishikawa/tile/tile.js": {
-    "count": 1,
-    "reason": "Score der Top-Ursachen in der Kachel (toFixed(1)): bleibt mit Punkt als Dezimalzeichen wie bisher, damit das Kachelbild gleich bleibt; Umstellung auf formatNumber ist eine sichtbare Änderung"
-  },
   "js/modules/kano/kano.js": {
     "count": 3
   },
@@ -139,17 +135,9 @@
   "js/modules/pairwise-comparison/pairwise-comparison.js": {
     "count": 3
   },
-  "js/modules/process-capability/domain/format.js": {
-    "count": 1,
-    "reason": "Kennzahlen, Tabellen und Formeln zeigen feste Nachkommastellen mit Punkt (toFixed) wie bisher, auch in der Kachel; Umstellung auf formatNumber ist eine sichtbare Änderung"
-  },
   "js/modules/process-capability/domain/migrations.js": {
-    "count": 2,
-    "reason": "Migration alter Stände: Konfidenz auf zwei Stellen runden (Modellwert, keine Anzeige) und Ganzzahltext alter Stände lesen wie das alte Model (parseFloat), wie bisher"
-  },
-  "js/modules/process-capability/viewmodel/viewmodel.js": {
     "count": 1,
-    "reason": "n̄ und Freiheitsgrade ν in Kenngrößentabelle und Formelblock mit höchstens zwei Nachkommastellen und Punkt (toFixed) wie bisher; Umstellung ist eine sichtbare Änderung"
+    "reason": "Migration alter Stände: Ganzzahltext der Untergruppengröße lesen wie das alte Model (parseFloat), wie bisher"
   },
   "js/modules/project-charter/resources/view.html": {
     "count": 4,

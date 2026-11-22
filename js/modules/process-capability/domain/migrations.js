@@ -2,6 +2,7 @@
  * D.Mike — Process Capability: Migrationen. Rein.
  */
 import { parseDecimalInput, decimalOr } from '../../../core/parse-decimal.js';
+import { roundTo } from '../../../core/number-format.js';
 import { columnRefFromJSON } from '../../../core/chart/chart-data-prep.js';
 import { WITHIN_METHODS } from '../../../engines/sigma-within-engine.js';
 
@@ -27,7 +28,7 @@ function confidenceFrom(v) {
   const n = decimalOr(/** @type {any} */ (v), NaN);
   if (!Number.isFinite(n) || n <= 0) return 95;
   const pct = n <= 1 ? n * 100 : n;
-  return Number(pct.toFixed(2));
+  return roundTo(pct, 2);
 }
 
 /**

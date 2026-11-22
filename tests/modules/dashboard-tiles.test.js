@@ -1193,6 +1193,16 @@ suite('dashboard tiles: process-capability', () => {
     host.remove();
   });
 
+  test('Cpk, Ppk and Cp in the app language (de: decimal comma)', async () => {
+    const en = capVm(CAP_STATE).metrics;
+    const de = vmOf(capabilityTile, CAP_STATE, {}, {
+      stateManager: columnStateManager({}), i18n: { t: (k) => k, getLanguage: () => 'de' } }).metrics;
+    assertTrue(/^\d+\.\d{2}$/.test(en[0].value), `en Cpk: ${en[0].value}`);
+    assertEqual(de[0].value, en[0].value.replace('.', ','));
+    assertEqual(de[0].sub, en[0].sub.replace('.', ','));
+    assertEqual(de[1].value, en[1].value.replace('.', ','));
+  });
+
   test('one-sided limit: no Cp line', async () => {
     const { host } = await renderCap({ embeddedValues: CAP_VALUES, params: { usl: '10.5' } });
     assertEqual(host.querySelector('.dashboard-spc__metric .dashboard-spc__metric-sub'), null);

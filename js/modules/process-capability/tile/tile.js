@@ -12,7 +12,7 @@ import { sourceColumns } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { inputValues, specRefLines } from '../domain/analyze.js';
-import { fmt as formatNumber } from '../domain/format.js';
+import { fmt as fixed } from '../domain/format.js';
 import { Settings } from './settings.js';
 
 /** ppmBasis-Einstellung → Feld des Ergebnisses. */
@@ -21,8 +21,11 @@ const PPM_FIELD = { overall: 'ppmTotal', within: 'ppmWithinTotal', observed: 'pp
 /** Cpk-Urteil → Zusatzklasse der SPC-Kennzahl. */
 const CPK_MODIFIER = { pass: 'ok', warn: 'warn', fail: 'bad' };
 
-/** Feste Nachkommastellen, `—` ohne endlichen Wert (etwa Cp bei Streuung 0). @param {any} v @param {number} d @returns {string} */
-const fmt = (v, d) => (Number.isFinite(v) ? formatNumber(v, d) : '—');
+/**
+ * Feste Nachkommastellen in der App-Sprache, `—` ohne endlichen Wert (etwa Cp bei Streuung 0).
+ * @param {any} v @param {number} d @param {string} lang @returns {string}
+ */
+const fmt = (v, d, lang) => (Number.isFinite(v) ? fixed(v, d, lang) : '—');
 
 export default createTile({
   descriptor,
@@ -53,10 +56,11 @@ export default createTile({
       get metrics() {
         const r = analysisOf(this)?.result;
         if (!r) return [];
+        const lang = ctx.i18n.getLanguage();
         return [
-          { modifier: `dashboard-spc__metric--${CPK_MODIFIER[r.cpkStatus] || 'warn'}`, value: fmt(r.Cpk, 2), label: 'Cpk',
-            sub: r.Cp != null ? `Cp = ${fmt(r.Cp, 2)}` : null },
-          { modifier: '', value: fmt(r.Ppk, 2), label: 'Ppk', sub: null },
+          { modifier: `dashboard-spc__metric--${CPK_MODIFIER[r.cpkStatus] || 'warn'}`, value: fmt(r.Cpk, 2, lang), label: 'Cpk',
+            sub: r.Cp != null ? `Cp = ${fmt(r.Cp, 2, lang)}` : null },
+          { modifier: '', value: fmt(r.Ppk, 2, lang), label: 'Ppk', sub: null },
         ];
       },
       get stats() {

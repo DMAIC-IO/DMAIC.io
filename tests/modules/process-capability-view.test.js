@@ -166,9 +166,13 @@ suite('process-capability: Viewmodel im Browser', () => {
     const h = await mount(stored());
     const vm = h.vm();
     const cpk = vm.mainKpis.find((k) => k.key === 'cpk');
-    assertEqual(cpk.value, '0.7269');
+    assertEqual(cpk.value, '0,7269');
     assertEqual(cpk.label, 'Cpk (Tatsächlich)');
-    assertEqual(cpk.sub, 'Grenzwert: ≥ 1,33 · Nicht fähig · KI 95%: [0.5051; 0.9488]');
+    assertEqual(cpk.sub, 'Grenzwert: ≥ 1,33 · Nicht fähig · KI 95%: [0,5051; 0,9488]');
+    const sigmaRow = vm.statCols.find((c) => c.help.endsWith('Result.sigmaWithin'));
+    assertTrue(/^\d+,\d{4} mm$/.test(sigmaRow.value), `σ innerhalb: ${sigmaRow.value}`);
+    assertTrue(!/\d\.\d/.test(vm.zBenchLine), `Z.bench-Zeile ohne Dezimalpunkt: ${vm.zBenchLine}`);
+    assertTrue(!/\d\.\d/.test(vm.withinLabel), `Beschriftung ohne Dezimalpunkt: ${vm.withinLabel}`);
     assertEqual(vm.chart.data.length, 30);
     assertEqual(vm.chart.normalCurveColor, 'var(--color-info)');
     assertEqual(vm.chart.barColor, 'var(--color-accent)');
@@ -280,6 +284,6 @@ suite('process-capability: Viewmodel im Browser', () => {
     const vm = h.vm();
     assertEqual(vm.model.histogramChart.title, 'T');
     assertEqual(mod.historyCan('undo'), false);
-    assertEqual(vm.mainKpis.find((k) => k.key === 'cpk').value, '0.7269');
+    assertEqual(vm.mainKpis.find((k) => k.key === 'cpk').value, '0,7269');
   });
 });
