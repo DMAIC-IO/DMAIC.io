@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "datasets": {
-      "help": "Per data row its columns, each column of a row described individually under keys.",
+      "help": "Per data row its columns, each column of a row described individually under keys. To clear, set one empty row ([{ value: null, group: null, group2: null, group3: null }]); [] is rejected.",
       "value": {
         "label": "V",
         "title": "Value column (numeric)",

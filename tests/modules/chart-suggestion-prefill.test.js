@@ -130,6 +130,15 @@ suite('chart-suggestion domain — buildPrefill', () => {
     ]);
   });
 
+  test('individual-value-plot: die Vorbelegung folgt dem Konfidenzniveau der Einstellung', () => {
+    const p = buildPrefill('individual-value-plot', [cont(5, 'a')], 'ws', 's');
+    const m = IvpState.fromJSON(p.state, { context: { cycle: 'dmaic', confidenceLevel: 90 } });
+    assertEqual(m.confLevel, 90);
+    const blank = IvpState.fromJSON({ ...p.state, seriesRefs: [] }, { context: { cycle: 'dmaic', confidenceLevel: 90 } });
+    assertEqual(blank.confLevel, 90);
+    assertEqual(blank.hasContent(), false);
+  });
+
   test('pareto', () => {
     const p = buildPrefill('pareto', [cat(['a'], 'x'), cat(['b'], 'y')], 'ws', 's');
     assertEqual(p.target, 'pareto');

@@ -76,7 +76,8 @@ function chartFrom(json) {
 /**
  * '0→1.0': Altstände ohne `_schema` (`seriesRefs` mit `groupRefs` je Reihe,
  * auch die Vorbelegung aus der Diagrammempfehlung mit einem Gruppenbezug
- * oder `null` je Reihe). Die Darstellungsfelder wandern in `chart`.
+ * oder `null` je Reihe). Die Darstellungsfelder wandern in `chart`. Ein
+ * fehlendes `confLevel` entfällt, damit die Kontextvorgabe greift.
  * @param {Record<string, any>} json
  * @returns {Record<string, any>}
  */
@@ -92,7 +93,10 @@ export function from0(json) {
       .filter((row) => row.value !== null);
     if (rows.length > 0) out.datasets = rows;
   }
-  out.confLevel = finite(json.confLevel) && json.confLevel > 0 && json.confLevel < 100 ? json.confLevel : 95;
+  // Fehlt das Feld, greift die Vorgabe aus dem Kontext; `null` und Bereichsfremdes werden 95.
+  if (Object.hasOwn(json, 'confLevel')) {
+    out.confLevel = finite(json.confLevel) && json.confLevel > 0 && json.confLevel < 100 ? json.confLevel : 95;
+  }
   if (typeof json.showStats === 'boolean') out.showStats = json.showStats;
   if (typeof json.exampleWorksheetId === 'string') out.exampleWorksheetId = json.exampleWorksheetId;
   out.chart = chartFrom(json);

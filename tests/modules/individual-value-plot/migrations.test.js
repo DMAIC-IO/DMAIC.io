@@ -61,11 +61,18 @@ suite('individual-value-plot: Migration', () => {
 
   test('confLevel: null, außerhalb und 90', () => {
     assertEqual(from0({ confLevel: null }).confLevel, 95);
-    assertEqual(from0({}).confLevel, 95);
     assertEqual(from0({ confLevel: 150 }).confLevel, 95);
     assertEqual(from0({ confLevel: 0 }).confLevel, 95);
     assertEqual(from0({ confLevel: 90 }).confLevel, 90);
     assertEqual(State.fromJSON({ confLevel: null }, { context: { cycle: 'dmaic', confidenceLevel: 80 } }).confLevel, 95);
+  });
+
+  test('confLevel fehlt: entfällt, die Einstellung gilt, kein Inhalt', () => {
+    assertEqual(Object.hasOwn(from0({}), 'confLevel'), false);
+    assertEqual(Object.hasOwn(from0({ seriesRefs: [ref('a')] }), 'confLevel'), false);
+    const m = State.fromJSON({}, { context: { cycle: 'dmaic', confidenceLevel: 80 } });
+    assertEqual(m.confLevel, 80);
+    assertEqual(m.hasContent(), false);
   });
 
   test('Darstellungsfelder: Vorgaben entfallen', () => {

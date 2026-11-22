@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "datasets": {
-      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben.",
+      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben. Leeren geht über eine leere Zeile ([{ value: null, group: null, group2: null, group3: null }]), [] wird abgelehnt.",
       "value": {
         "label": "V",
         "title": "Werte-Spalte (numerisch)",
