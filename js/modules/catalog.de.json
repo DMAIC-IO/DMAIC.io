@@ -40,6 +40,11 @@
     "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
     "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus."
   },
+  "individual-value-plot": {
+    "name": "Einzelwertdiagramm",
+    "description": "Punktdiagramm jeder einzelnen Beobachtung pro Gruppe",
+    "whenToUse": "Jeden Einzelwert einer oder mehrerer numerischer Spalten zeigen, nach bis zu drei Kategorien gruppiert, mit Mittelwert und Konfidenzintervall je Gruppe."
+  },
   "ishikawa": {
     "name": "Ishikawa 6M",
     "description": "Ursachenanalyse mit 6M-Kategorien und Expertenbewertung",

@@ -7,7 +7,7 @@
  */
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import xyPlot from '../../js/modules/xy-plot/viewmodel/viewmodel.js';
-import ivPlot from '../../js/modules/individual-value-plot/individual-value-plot.js';
+import ivPlot from '../../js/modules/individual-value-plot/viewmodel/viewmodel.js';
 
 /** Wartet (höchstens 2 s), bis `cond` gilt. */
 async function until(cond) {
@@ -69,8 +69,8 @@ suite('Diagramm-Beispiele warten auf das lesbare Arbeitsblatt', () => {
   test('individual-value-plot: setState erst nach instances.read, Bezüge umgehängt', async () => {
     const { mod, log, store } = stubbed(ivPlot);
     const done = mod.loadExample({ meta: { id: 'ex' }, data: {
-      seriesRefs: [SRC('v')],
-      groupRefs: [[SRC('g'), null, null]],
+      _schema: { version: '1.0' },
+      datasets: [{ value: SRC('v'), group: SRC('g'), group2: null, group3: null }],
       sourceWorksheetData: WS,
     } });
     await until(() => log.release !== undefined);
@@ -80,8 +80,8 @@ suite('Diagramm-Beispiele warten auf das lesbare Arbeitsblatt', () => {
     assertTrue(log.applied !== null, 'setState wurde nicht aufgerufen');
     const wsId = store.phases.data[0].instanceId;
     assertEqual(log.applied.exampleWorksheetId, wsId);
-    assertEqual(log.applied.seriesRefs[0].instanceId, wsId);
-    assertEqual(log.applied.groupRefs[0][0].instanceId, wsId);
-    assertEqual(log.applied.groupRefs[0][1], null);
+    assertEqual(log.applied.datasets[0].value.instanceId, wsId);
+    assertEqual(log.applied.datasets[0].group.instanceId, wsId);
+    assertEqual(log.applied.datasets[0].group2, null);
   });
 });

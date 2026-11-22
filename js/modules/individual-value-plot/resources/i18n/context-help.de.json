@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben.",
+      "value": {
+        "label": "V",
+        "title": "Werte-Spalte (numerisch)",
+        "help": "Die Wertespalte der Reihe (Slot V), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist."
+      },
+      "group": {
+        "label": "G1",
+        "title": "1. Gruppierung (kategorisch)",
+        "help": "Die erste Gruppierung der Reihe (Slot G1), optional; sie teilt die Reihe in Gruppen, eine je Gruppenwert. Leer, solange keine gewählt ist."
+      },
+      "group2": {
+        "label": "G2",
+        "title": "2. Gruppierung — Untergruppen innerhalb von G1",
+        "help": "Die zweite Gruppierung der Reihe (Slot G2), optional; sie teilt innerhalb der ersten Gruppierung weiter. Leer, solange keine gewählt ist."
+      },
+      "group3": {
+        "label": "G3",
+        "title": "3. Gruppierung — Untergruppen innerhalb von G2",
+        "help": "Die dritte Gruppierung der Reihe (Slot G3), optional; sie teilt innerhalb der zweiten Gruppierung weiter. Leer, solange keine gewählt ist."
+      }
+    },
+    "confLevel": {
+      "help": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
+    },
+    "showStats": {
+      "help": "Kennzahlen je Gruppe unter dem Diagramm ein- oder ausblenden."
+    },
+    "stats": {
+      "help": "Je gezeichneter Gruppe ihre Kennzahlen und Konfidenzintervalle, aufgebaut wie modules.shared.types.SeriesStats; null, solange nichts gerechnet werden kann."
+    },
+    "activeParams": {
+      "help": "Die schreibbaren Optionen: confLevel."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: value, group, group2, group3."
+    },
+    "groups": {
+      "help": "Die Punktgruppen aus den Datenzeilen (Name und Werte), oder ein Objekt mit „error“ und „params“, wenn sich keine Gruppen bilden lassen."
+    }
+  }
+}

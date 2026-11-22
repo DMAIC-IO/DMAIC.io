@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Individual Value Plot",
+  "description": "Plot every individual observation per group as a point",
+  "whenToUse": "Show every single value of one or more numeric columns, grouped by up to three categories, with mean and confidence interval per group.",
+  "sectionData": "Data Source",
+  "sectionOptions": "Options",
+  "confLevel": "Confidence level (%)",
+  "placeholderText": "Select data sources to create the individual value plot.",
+  "chartTitle": "Individual Value Plot",
+  "yLabel": "Value",
+  "errNoData": "No valid data found.",
+  "errTooFew": "Too few values for \"{col}\" (at least 1 required)."
+}

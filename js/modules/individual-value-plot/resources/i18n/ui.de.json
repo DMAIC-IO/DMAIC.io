@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Einzelwertdiagramm",
+  "description": "Punktdiagramm jeder einzelnen Beobachtung pro Gruppe",
+  "whenToUse": "Jeden Einzelwert einer oder mehrerer numerischer Spalten zeigen, nach bis zu drei Kategorien gruppiert, mit Mittelwert und Konfidenzintervall je Gruppe.",
+  "sectionData": "Datenquelle",
+  "sectionOptions": "Optionen",
+  "confLevel": "Konfidenzniveau (%)",
+  "placeholderText": "Wählen Sie Datenquellen, um das Einzelwertdiagramm zu erstellen.",
+  "chartTitle": "Einzelwertdiagramm",
+  "yLabel": "Messwert",
+  "errNoData": "Keine gültigen Daten gefunden.",
+  "errTooFew": "Zu wenig Werte für \"{col}\" (mindestens 1 erforderlich)."
+}

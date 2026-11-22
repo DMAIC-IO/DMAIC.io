@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Per data row its columns, each column of a row described individually under keys.",
+      "value": {
+        "label": "V",
+        "title": "Value column (numeric)",
+        "help": "The value column of the row (slot V), numeric and required. Without it the row stays but is not plotted. Empty until one is chosen."
+      },
+      "group": {
+        "label": "G1",
+        "title": "1st grouping (categorical)",
+        "help": "The first grouping of the row (slot G1), optional; it splits the row into groups, one per group value. Empty until one is chosen."
+      },
+      "group2": {
+        "label": "G2",
+        "title": "2nd grouping — sub-groups within G1",
+        "help": "The second grouping of the row (slot G2), optional; it splits further within the first grouping. Empty until one is chosen."
+      },
+      "group3": {
+        "label": "G3",
+        "title": "3rd grouping — sub-groups within G2",
+        "help": "The third grouping of the row (slot G3), optional; it splits further within the second grouping. Empty until one is chosen."
+      }
+    },
+    "confLevel": {
+      "help": "The confidence level in percent, greater than 0 and less than 100 (for example 95). It determines the confidence intervals in the statistics table."
+    },
+    "showStats": {
+      "help": "Show or hide the statistics per group below the chart."
+    },
+    "stats": {
+      "help": "Per plotted group its statistics and confidence intervals, structured like modules.shared.types.SeriesStats; null while nothing can be computed."
+    },
+    "activeParams": {
+      "help": "The writable options: confLevel."
+    },
+    "activeColumnSlots": {
+      "help": "The slot keys a row of the datasets carries: value, group, group2, group3."
+    },
+    "groups": {
+      "help": "The point groups built from the data rows (name and values), or an object with \"error\" and \"params\" when no groups can be built."
+    }
+  }
+}

@@ -7458,6 +7458,7 @@ export const AGENT_REGISTRY = {
   "individual-value-plot": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -7472,85 +7473,46 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setDatasets": {
-        "params": [
-          {
-            "name": "rows",
-            "type": "object[]",
-            "optional": false,
-            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
-          }
-        ],
-        "returns": "void",
-        "help": "Die ganze Liste der Datenreihen setzen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'confLevel'",
-            "optional": false,
-            "help": "welche Option"
-          },
-          {
-            "name": "value",
-            "type": "number",
-            "optional": false,
-            "help": "das Konfidenzniveau in Prozent, größer 0 und kleiner 100"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Analyseoption setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "confLevel": {
-            "type": "number",
-            "help": "Konfidenzniveau in Prozent"
-          }
-        }
       }
     },
     "fields": {
-      "seriesRefs": {
-        "type": "object[]",
-        "help": "per data row its value column (slot `value`)",
+      "datasets": {
+        "type": "Array<{ value: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, group2: { instanceId: string, sheetId?: string, columnId: string }|null, group3: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "groupRefs": {
-        "type": "(object|null)[][]",
-        "help": "per data row its three group columns `[group, group2, group3]`, each a column reference or null",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "datasets",
+          "multi"
+        ],
+        "slots": {
+          "value": [
+            "columnRef",
+            "types:numeric",
+            "minCount:1",
+            "required"
+          ],
+          "group": [
+            "columnRef",
+            "group"
+          ],
+          "group2": [
+            "columnRef",
+            "group"
+          ],
+          "group3": [
+            "columnRef",
+            "group"
+          ]
+        }
       },
       "confLevel": {
         "type": "number",
-        "help": "the confidence level of the interval in percent, between 0 and 100 (exclusive)",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the options `setParam` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slot keys a row of `setDatasets` may carry",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "stats": {
-        "type": "SeriesStats[]|null",
-        "help": "per plotted series its statistics, each figure described under keys; null while nothing can be computed",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "SeriesStats",
@@ -7641,8 +7603,31 @@ export const AGENT_REGISTRY = {
             }
           }
         }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "showStats",
+      "chart"
+    ],
+    "settable": [
+      "datasets",
+      "confLevel"
+    ],
+    "invariants": []
   },
   "ishikawa": {
     "tagged": true,

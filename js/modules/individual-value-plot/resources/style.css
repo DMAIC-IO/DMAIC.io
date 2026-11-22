@@ -1,5 +1,5 @@
 /* ============================================================
-   Individual Value Plot Module Styles (individual-value-plot.css)
+   Individual Value Plot Module Styles
    BEM: .ivplot__ prefix
    ============================================================ */
 
@@ -24,17 +24,22 @@
 }
 
 /* Chart area */
+.ivplot__chart-area {
+  display: flex;
+  flex-direction: column;
+}
+
 .ivplot__chart-card {
   display: flex;
   overflow: hidden;
   flex-shrink: 0;
 }
 
-.ivplot__chart-main {
+/* Plot container — fixed height so the chart framework gets a definite size */
+.ivplot__plot-wrap {
   flex: 1;
   min-width: 0;
-}
-
-.ivplot__plot-wrap {
   height: 420px;
 }
+
+/* Statistics table — uses shared dmike-stats-panel (js/core/stats-panel.css) */

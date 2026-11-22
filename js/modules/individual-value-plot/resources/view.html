@@ -1,0 +1,29 @@
+<div class="ivplot dmike-split dmike-split--input-sm" x-data="individualValuePlot">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="ivplot__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="ivplot__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.individual-value-plot.fields.confLevel.help" x-text="t('confLevel')"></label>
+      <input class="field field--num" data-ref="conf-level" x-field="model.confLevel">
+    </div>
+
+    <div class="field-error" data-ref="error-box" x-show="errorText" x-text="errorText"></div>
+  </div>
+
+  <div class="ivplot__output dmike-split__output">
+    <div class="ivplot__placeholder" data-ref="placeholder" x-show="!hasSeries">
+      <p x-text="t('placeholderText')"></p>
+    </div>
+    <template x-if="hasSeries">
+      <div class="ivplot__chart-area" data-ref="chart-area">
+        <div class="ivplot__chart-card" data-ref="chart-card">
+          <div class="ivplot__plot-wrap" data-ref="plot" x-widget="individual-value-plot-chart" x-widget-config="ivp" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        </div>
+        <div data-ref="stats-panel" x-show="model.showStats" x-widget="stats-table" x-widget-rows="statsRows" x-widget-conf-level="model.confLevel"></div>
+      </div>
+    </template>
+  </div>
+</div>

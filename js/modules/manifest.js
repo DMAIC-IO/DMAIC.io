@@ -59,12 +59,6 @@ export default [
     load: () => import('./boxplot/boxplot.js'),
   },
   {
-    id: 'individual-value-plot',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./individual-value-plot/individual-value-plot.js'),
-  },
-  {
     id: 'run-chart',
     phase: 'data',
     group: 'visualize',

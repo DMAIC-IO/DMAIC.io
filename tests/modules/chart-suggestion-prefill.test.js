@@ -4,6 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { buildPrefill, MODULE_PREFILL } from '../../js/modules/chart-suggestion/domain/prefill.js';
 import { State as XyState } from '../../js/modules/xy-plot/domain/model.js';
+import { State as IvpState } from '../../js/modules/individual-value-plot/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -113,6 +114,20 @@ suite('chart-suggestion domain — buildPrefill', () => {
     const q = buildPrefill('individual-value-plot', [cont(5, 'a')], 'ws', 's');
     assertEqual(q.target, 'individual-value-plot');
     assertEqual(q.state.groupRefs[0], null);
+  });
+
+  test('individual-value-plot: die Vorbelegung lädt über die Migration als Zeilen value/group', () => {
+    const p = buildPrefill('individual-value-plot', [cont(5, 'a'), cont(5, 'b'), cat(['x'], 'g')], 'ws', 's');
+    const m = IvpState.fromJSON(p.state);
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [
+      { value: r('a'), group: r('g'), group2: null, group3: null },
+      { value: r('b'), group: r('g'), group2: null, group3: null },
+    ]);
+    const q = buildPrefill('individual-value-plot', [cont(5, 'a')], 'ws', 's');
+    assertDeepEqual(JSON.parse(JSON.stringify(IvpState.fromJSON(q.state).datasets)), [
+      { value: r('a'), group: null, group2: null, group3: null },
+    ]);
   });
 
   test('pareto', () => {

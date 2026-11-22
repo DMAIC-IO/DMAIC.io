@@ -1064,30 +1064,6 @@
       ]
     },
     {
-      "id": "ivplot-pizza-fahrer",
-      "type": "project",
-      "title": {
-        "de": "Lieferzeit pro Fahrer (Einzelwertdiagramm)",
-        "en": "Delivery time by driver (individual value plot)"
-      },
-      "description": {
-        "de": "Drei Punktwolken Lieferzeit für Fahrer A/B/C mit verbundenen Mittelwerten — derselbe Datensatz wie ANOVA und Boxplot.",
-        "en": "Three point clouds of delivery time for drivers A/B/C with connected means — same data as the ANOVA and boxplot examples."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
-      "license": "public-domain",
-      "file": "projects/ivplot-pizza-fahrer.json",
-      "format": "json",
-      "modules": [
-        "individual-value-plot"
-      ],
-      "tags": [
-        "individual-value-plot",
-        "groups",
-        "pizza"
-      ]
-    },
-    {
       "id": "attribute-scrap-before-after",
       "type": "project",
       "title": {
@@ -2469,30 +2445,6 @@
       "format": "json",
       "modules": [
         "msa-typ1"
-      ],
-      "tags": [
-        "helicopter",
-        "doe-training",
-        "sequential-blocks"
-      ]
-    },
-    {
-      "id": "individual-value-plot-hubschrauber-flyer",
-      "type": "project",
-      "title": {
-        "de": "Papier-Hubschrauber — Baseline (Individual-Value-Plot)",
-        "en": "Paper Helicopter — Baseline (Individual Value Plot)"
-      },
-      "description": {
-        "de": "10 Baseline-Läufe bei (L = 8 cm, C = 0 Klammern) als Einzelwert-Diagramm — zeigt Mittelwert und Streuung der Flugzeit vor dem DoE.",
-        "en": "10 baseline runs at (L = 8 cm, C = 0 clips) as an individual value plot — shows the mean and spread of flight time before the DoE."
-      },
-      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
-      "license": "public-domain",
-      "file": "projects/individual-value-plot-hubschrauber-flyer.json",
-      "format": "json",
-      "modules": [
-        "individual-value-plot"
       ],
       "tags": [
         "helicopter",

@@ -1,0 +1,173 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of an Individual Value Plot",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "An individual value plot shows every single observation as its own point. Unlike a boxplot — which collapses the distribution into five summary numbers — each measurement remains visible. This makes the plot especially useful for small to medium samples where a boxplot has too few points to summarize meaningfully."
+        },
+        {
+          "type": "definition",
+          "term": "Point",
+          "content": "Each point represents one measurement. Its vertical position is the value on the Y axis; its horizontal position assigns it to a group (category)."
+        },
+        {
+          "type": "definition",
+          "term": "Jitter (horizontal scatter)",
+          "content": "When several observations share the same Y value, they would otherwise overlap. A small random horizontal offset (\"jitter\") separates the points visually without changing their Y value. Jitter is purely a readability device and carries no information."
+        },
+        {
+          "type": "definition",
+          "term": "Mean diamond",
+          "content": "One diamond per group marks the arithmetic {{term:mittelwert|mean}}. It enables quick comparison of location across groups."
+        },
+        {
+          "type": "definition",
+          "term": "Median tick (optional)",
+          "content": "A short horizontal tick per group marks the {{term:median|median}}. Combined with the mean diamond it makes {{term:schiefe|skewness}} visible at a glance: a clear gap between mean and median indicates an asymmetric distribution."
+        },
+        {
+          "type": "definition",
+          "term": "Connecting line through means (optional)",
+          "content": "A dashed line connects the group means, surfacing trends across ordered groups (e.g. shift, day, dose level)."
+        },
+        {
+          "type": "definition",
+          "term": "Overall mean (optional)",
+          "content": "A horizontal reference line marks the overall mean across all groups. It is useful for telling at a glance which groups sit above and which sit below the overall level."
+        },
+        {
+          "type": "paragraph",
+          "content": "In short: points = raw data, diamond = mean, optional tick = median, optional lines = comparison aids. The individual value plot retains more detail than a boxplot and is the right choice when you want to see every single data point."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Methodology",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The individual value plot is a descriptive tool. It takes one numeric column (Y) and assigns each observation to a category (X) — either via up to three grouping columns or by comparing several numeric columns side by side."
+        },
+        {
+          "type": "heading",
+          "content": "When should I use it?"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Sample size below 50 per group: boxplots become unreliable with few points; the individual value plot shows every value.",
+            "Discrete or rounded data: clusters on a handful of values are invisible in a boxplot but obvious here.",
+            "Comparing several groups while focusing on individual outliers.",
+            "As a sanity check before formal tests (t-test, ANOVA) to visually inspect the assumptions."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Input Modes"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Multiple columns: Each selected numeric column produces its own scatter of points. Ideal for direct comparison of different measurements.",
+            "Grouped: A single value column is split by a grouping column (e.g. machine, shift, supplier).",
+            "Nested (up to 3 levels): G1, G2 and G3 act combinatorially — every unique combination of group values produces its own column of points (e.g. G1 = shift, G2 = machine → one column per shift/machine combination). The column label lists the group values separated by \" | \"."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Mean",
+          "content": "Arithmetic mean of all values in a group. Sensitive to outliers."
+        },
+        {
+          "type": "definition",
+          "term": "Median",
+          "content": "50 % point of the sorted values. Robust against outliers."
+        },
+        {
+          "type": "definition",
+          "term": "Standard deviation",
+          "content": "Shown in the tooltip (n − 1 denominator). A measure of within-group spread."
+        }
+      ]
+    },
+    "example": {
+      "title": "Practical Example",
+      "blocks": [
+        {
+          "type": "scenario",
+          "content": "A quality team monitors the response time of an online ordering system across four weeks. Each week has 15–20 observations — too few for meaningful boxplots. The worksheet has columns \"ResponseTime_ms\" (numeric) and \"Week\" (text: W14, W15, W16, W17)."
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Open the Individual Value Plot module.",
+            "Select value column = \"ResponseTime_ms\" and grouping column = \"Week\".",
+            "Options: enable the mean diamond and the connecting line through means.",
+            "Each week appears as a vertical cloud of points; the dashed line traces the trend of the means.",
+            "W16 shows a visible upward shift with two distinctly higher individual values."
+          ]
+        },
+        {
+          "type": "result",
+          "content": "The two outliers in W16 jump out immediately — they correlate with a Wednesday backend deployment. In a boxplot the same points would have been abstracted to \"two outliers\"; here the gap between the high values and the rest of the week is directly visible."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "What to look for"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Cloud location: where does the bulk of a group sit relative to the others?",
+            "Within-group spread: a wide vertical cloud means high variability, a tight cloud means low variability.",
+            "Clusters: multiple points at the same Y value (visible through jitter) suggest rounded or discrete measurements.",
+            "Gaps: an empty band inside a group's range can indicate bimodal data or a missing measurement level.",
+            "Isolated points: potential outliers — investigate the {{term:ursachenanalyse|root cause}}, do not delete automatically.",
+            "Mean vs. median: a large gap between the two indicates a skewed distribution."
+          ]
+        },
+        {
+          "type": "decision",
+          "content": "When the clouds of two groups barely overlap, a significant difference is likely — confirm it with a t-test or ANOVA."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "pitfall",
+          "content": "Misreading jitter as a measurement: the horizontal scatter is purely random and carries no information. Only the vertical position is meaningful."
+        },
+        {
+          "type": "pitfall",
+          "content": "Very large samples (n > 200 per group): the {{term:streudiagramm|point cloud}} becomes so dense that individual values can no longer be distinguished. Use a boxplot or histogram instead."
+        },
+        {
+          "type": "pitfall",
+          "content": "Removing outliers without investigation: an outlier is not automatically an error. Investigate the root cause first, then decide."
+        },
+        {
+          "type": "pitfall",
+          "content": "Ignoring group size: a group of 5 points and a group of 50 points look visually different even when the {{term:standardabweichung|standard deviations}} are identical. Always check n in the tooltip."
+        },
+        {
+          "type": "pitfall",
+          "content": "Individual value plot ≠ {{term:hypothesentest|hypothesis test}}: this is an exploratory plot. For statistical significance, run a formal test."
+        },
+        {
+          "type": "pitfall",
+          "content": "Over-nesting groupings: with three group columns the number of columns grows multiplicatively (e.g. 3 × 4 × 2 = 24 columns). When per-cell counts get too small the plot turns unreadable and loses signal — drop a level or merge categories instead."
+        }
+      ]
+    }
+  }
+}

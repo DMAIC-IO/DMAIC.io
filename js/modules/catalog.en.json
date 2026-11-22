@@ -40,6 +40,11 @@
     "description": "Variance and mean tests with automatic normality assessment and power analysis",
     "whenToUse": "When you need to decide whether an observed difference in location or spread goes beyond the noise — one mean against a target value, two samples against each other, or k groups together. Requires metric data in a data collection."
   },
+  "individual-value-plot": {
+    "name": "Individual Value Plot",
+    "description": "Plot every individual observation per group as a point",
+    "whenToUse": "Show every single value of one or more numeric columns, grouped by up to three categories, with mean and confidence interval per group."
+  },
   "ishikawa": {
     "name": "Ishikawa 6M",
     "description": "Root cause analysis with 6M categories and expert scoring",

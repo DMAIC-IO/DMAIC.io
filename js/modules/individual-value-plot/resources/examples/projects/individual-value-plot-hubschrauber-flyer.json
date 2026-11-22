@@ -1,0 +1,10 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    { "value": { "instanceId": "__source__", "sheetId": "sheet-hubschrauber-baseline", "columnId": "c-flugzeit" }, "group": null, "group2": null, "group3": null }
+  ],
+  "confLevel": 95,
+  "showStats": true,
+  "chart": { "showOverallMean": true },
+  "sourceWorksheetFile": "shared/worksheets/hubschrauber-flyer.json"
+}

@@ -1,0 +1,173 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau eines Einzelwertdiagramms",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein Einzelwertdiagramm (engl. „Individual Value Plot\") zeigt jede einzelne Beobachtung als eigenen Punkt. Anders als ein {{term:boxplot|Boxplot}}, der die Verteilung zu fünf Kennzahlen zusammenfasst, bleibt jeder Messwert sichtbar. Das macht das Diagramm besonders nützlich bei kleinen bis mittleren Stichproben, bei denen ein Boxplot zu wenige Punkte zum Verdichten hat."
+        },
+        {
+          "type": "definition",
+          "term": "Punkt",
+          "content": "Jeder Punkt entspricht genau einem Messwert. Die senkrechte Position zeigt den Wert auf der Y-Achse, die waagerechte Position ordnet den Punkt einer Gruppe (Kategorie) zu."
+        },
+        {
+          "type": "definition",
+          "term": "Jitter (waagerechte Streuung)",
+          "content": "Liegen mehrere Beobachtungen auf demselben Y-Wert, würden sie sich überdecken. Eine kleine zufällige Verschiebung in X-Richtung (\"Jitter\") trennt die Punkte optisch voneinander, ohne den Y-Wert zu verändern. Der Jitter dient nur der Lesbarkeit und hat keine inhaltliche Bedeutung."
+        },
+        {
+          "type": "definition",
+          "term": "Mittelwert-Raute",
+          "content": "Eine Raute pro Gruppe markiert den arithmetischen {{term:mittelwert|Mittelwert}}. Sie hilft beim schnellen Vergleich der Lage über mehrere Gruppen hinweg."
+        },
+        {
+          "type": "definition",
+          "term": "Median-Strich (optional)",
+          "content": "Ein kurzer waagerechter Strich pro Gruppe kennzeichnet den {{term:median|Median}}. In Kombination mit der Mittelwert-Raute lässt sich {{term:schiefe|Schiefe}} sofort erkennen: Liegen Mittelwert und Median weit auseinander, ist die Verteilung asymmetrisch."
+        },
+        {
+          "type": "definition",
+          "term": "Verbindungslinie der Mittelwerte (optional)",
+          "content": "Eine gestrichelte Linie verbindet die Gruppenmittelwerte und macht Trends über die Gruppen hinweg sichtbar — etwa wenn die Gruppen einer geordneten Größe (Schicht, Tag, Stufe) entsprechen."
+        },
+        {
+          "type": "definition",
+          "term": "Gesamtmittelwert (optional)",
+          "content": "Eine durchgehende waagerechte Linie zeigt den Gesamtmittelwert aller Gruppen. Sie ist als Referenz nützlich, wenn man auf einen Blick sehen möchte, welche Gruppen über und welche unter dem Gesamtniveau liegen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Kurz: Punkte = Rohdaten, Raute = Mittelwert, optionaler Strich = Median, optionale Linien = Vergleichshilfen. Das Einzelwertdiagramm zeigt mehr Detail als ein Boxplot und ist die richtige Wahl, wenn du jeden Datenpunkt sehen willst."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Einzelwertdiagramm ist ein deskriptives Werkzeug. Es nimmt eine numerische Spalte (Y) und ordnet jede Beobachtung einer Kategorie (X) zu — entweder über bis zu drei Gruppierungs-Spalten oder durch Vergleich mehrerer numerischer Spalten nebeneinander."
+        },
+        {
+          "type": "heading",
+          "content": "Wann sollte ich es verwenden?"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Stichprobengröße unter 50 pro Gruppe: Boxplots werden bei wenigen Punkten unzuverlässig, das Einzelwertdiagramm zeigt jeden Wert.",
+            "Diskrete oder gerundete Daten: Häufungen auf wenigen Werten werden im Boxplot unsichtbar, im Einzelwertdiagramm direkt erkennbar.",
+            "Vergleich mehrerer Gruppen mit Fokus auf einzelne Ausreißer.",
+            "Vor dem Einsatz formaler Tests ({{term:t-test|t-Test}}, ANOVA), um die Plausibilität der Annahmen visuell zu prüfen."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Eingabemodi"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mehrere Spalten: Jede ausgewählte numerische Spalte ergibt eine eigene Punktwolke. Ideal für den direkten Vergleich verschiedener Messgrößen.",
+            "Gruppiert: Eine Werte-Spalte wird anhand einer Gruppierungs-Spalte (z. B. Maschine, Schicht, Lieferant) in Teilgruppen aufgeteilt.",
+            "Verschachtelt (bis zu 3 Ebenen): G1, G2 und G3 wirken kombinatorisch — jede einzigartige Kombination der Gruppenwerte ergibt eine eigene Punktsäule (z. B. G1 = Schicht, G2 = Maschine → eine Säule pro Schicht-/Maschinen-Kombination). Die Säulenbeschriftung listet die Gruppenwerte durch „ | \" getrennt."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Mittelwert",
+          "content": "Arithmetisches Mittel aller Werte einer Gruppe. Empfindlich gegenüber Ausreißern."
+        },
+        {
+          "type": "definition",
+          "term": "Median",
+          "content": "50 %-Punkt der sortierten Werte. Robust gegenüber Ausreißern."
+        },
+        {
+          "type": "definition",
+          "term": "Standardabweichung",
+          "content": "Wird im Tooltip angezeigt (n − 1 Nenner). Maß für die Streuung innerhalb einer Gruppe."
+        }
+      ]
+    },
+    "example": {
+      "title": "Praxisbeispiel",
+      "blocks": [
+        {
+          "type": "scenario",
+          "content": "Ein Qualitätsteam misst die Reaktionszeit eines Online-Bestellsystems über vier Wochen. Pro Woche liegen 15–20 Messwerte vor — zu wenig für aussagekräftige Boxplots. Im Arbeitsblatt: Spalte „Reaktionszeit_ms\" (numerisch) und Spalte „Woche\" (Text: KW 14, KW 15, KW 16, KW 17)."
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Modul „Einzelwertdiagramm\" öffnen.",
+            "Werte-Spalte = „Reaktionszeit_ms\", Gruppierungs-Spalte = „Woche\" wählen.",
+            "Optionen: Mittelwert-Raute aktiviert, Verbindungslinie der Mittelwerte aktiviert.",
+            "Jede Woche erscheint als senkrechte Punktwolke; die gestrichelte Linie zeigt den Trend der Mittelwerte.",
+            "KW 16 zeigt einen sichtbaren Sprung nach oben mit zwei einzelnen, deutlich höheren Werten."
+          ]
+        },
+        {
+          "type": "result",
+          "content": "Die zwei Ausreißer in KW 16 fallen sofort auf — sie korrelieren mit einem Backend-Deployment am Mittwoch. Im Boxplot wären die Punkte als „nur zwei Ausreißer\" abstrakter geblieben; im Einzelwertdiagramm ist die Lücke zwischen den beiden hohen Werten und dem Rest der Woche unmittelbar sichtbar."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Worauf achten?"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Lage der Punktwolke: Wo liegt der Schwerpunkt einer Gruppe relativ zu den anderen?",
+            "Streuung innerhalb einer Gruppe: Eine breite vertikale Wolke bedeutet hohe Variabilität, eine eng zusammengedrängte Wolke geringe Variabilität.",
+            "Häufungen: Mehrere Punkte auf demselben Y-Wert (sichtbar durch Jitter) deuten auf gerundete oder diskrete Messwerte hin.",
+            "Lücken: Ein Bereich ohne Punkte innerhalb der {{term:spannweite|Spannweite}} kann auf bimodale Daten oder eine fehlende Messstufe hindeuten.",
+            "Einzelne Punkte abseits der Wolke: Mögliche Ausreißer — Ursache prüfen, nicht automatisch entfernen.",
+            "Mittelwert vs. Median: Liegen die beiden weit auseinander, ist die Verteilung schief."
+          ]
+        },
+        {
+          "type": "decision",
+          "content": "Wenn sich die Punktwolken zweier Gruppen kaum überlappen, deutet das auf einen statistisch bedeutsamen Unterschied hin — bestätigen lässt sich das mit einem t-Test oder einer ANOVA."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "pitfall",
+          "content": "Jitter als Messwert missverstehen: Die waagerechte Streuung ist rein zufällig und zeigt keine Information. Nur die senkrechte Position trägt Bedeutung."
+        },
+        {
+          "type": "pitfall",
+          "content": "Sehr große Stichproben (n > 200 pro Gruppe): Die Punktwolke wird so dicht, dass einzelne Werte nicht mehr unterscheidbar sind. In diesem Fall ist ein Boxplot oder ein {{term:histogramm|Histogramm}} die bessere Wahl."
+        },
+        {
+          "type": "pitfall",
+          "content": "Ausreißer ohne Ursachenprüfung entfernen: Ein Ausreißer ist nicht automatisch ein Fehler. Erst die Ursache untersuchen, dann entscheiden."
+        },
+        {
+          "type": "pitfall",
+          "content": "Gruppengröße ignorieren: Eine Gruppe mit 5 Punkten und eine mit 50 Punkten sehen optisch unterschiedlich „streuend\" aus, obwohl die {{term:standardabweichung|Standardabweichung}} gleich sein kann. Im Tooltip immer auf n achten."
+        },
+        {
+          "type": "pitfall",
+          "content": "Einzelwertdiagramm ≠ Hypothesentest: Das Diagramm ist explorativ. Für statistische Signifikanz einen formalen Test durchführen."
+        },
+        {
+          "type": "pitfall",
+          "content": "Zu tief verschachtelte Gruppierung: Mit drei Gruppen-Spalten wächst die Säulenzahl multiplikativ (z. B. 3 × 4 × 2 = 24 Säulen). Bei zu wenigen Punkten pro Zelle wird das Diagramm unleserlich und die Aussagekraft sinkt — lieber eine Ebene weniger oder Kategorien zusammenfassen."
+        }
+      ]
+    }
+  }
+}
