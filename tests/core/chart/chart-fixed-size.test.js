@@ -27,6 +27,37 @@ function openEditor(chart) {
   return chart._editorInner;
 }
 
+/**
+ * Capture what an export serializes and the canvases it creates; stop the
+ * download click. Call `restore()` in a `finally`.
+ */
+function captureExport() {
+  const svgs = [];
+  const canvases = [];
+  const origSer = XMLSerializer.prototype.serializeToString;
+  const origClick = HTMLAnchorElement.prototype.click;
+  const origCreate = document.createElement;
+  XMLSerializer.prototype.serializeToString = function (node) {
+    const s = origSer.call(this, node);
+    svgs.push(s);
+    return s;
+  };
+  HTMLAnchorElement.prototype.click = function () {};
+  document.createElement = function (tag, ...rest) {
+    const el = origCreate.call(document, tag, ...rest);
+    if (String(tag).toLowerCase() === 'canvas') canvases.push(el);
+    return el;
+  };
+  return {
+    svgs, canvases,
+    restore() {
+      XMLSerializer.prototype.serializeToString = origSer;
+      HTMLAnchorElement.prototype.click = origClick;
+      document.createElement = origCreate;
+    },
+  };
+}
+
 /** Type a value into a size input and commit it like the user does. */
 function setSize(inner, key, value) {
   const inp = inner.querySelector(`input[data-chart-size="${key}"]`);
@@ -186,6 +217,51 @@ suite('ChartBase fixed size', () => {
     assertEqual(chart.config.chartWidth, 800);
     assertEqual(chart._svg.getAttribute('width'), '800');
     chart.destroy(); host.remove();
+  });
+
+  test('export-only SVG export has the fixed viewBox, screen unchanged', async () => {
+    const m = mount({ series: SERIES, chartWidth: 1000, chartHeight: 500, sizeExportOnly: true });
+    const cap = captureExport();
+    try { await m.chart.exportSVG(); } finally { cap.restore(); }
+    assertTrue(cap.svgs[0].includes('viewBox="0 0 1000 500"'), 'fixed viewBox');
+    assertEqual(m.chart._svg.getAttribute('width'), '600');
+    assertEqual(m.chart._sizeOverride, null);
+    assertEqual(m.chart._svgWrap.style.width, '');
+    done(m);
+  });
+
+  test('export-only with only width keeps the screen height', async () => {
+    const m = mount({ series: SERIES, chartWidth: 1000, sizeExportOnly: true });
+    const autoH = m.chart._getSize().h;
+    const cap = captureExport();
+    try { await m.chart.exportSVG(); } finally { cap.restore(); }
+    assertTrue(cap.svgs[0].includes(`viewBox="0 0 1000 ${autoH}"`), 'width fixed, height measured');
+    assertEqual(m.chart._svg.getAttribute('width'), '600');
+    done(m);
+  });
+
+  test('fixed screen size exports at that size', async () => {
+    const m = mount({ series: SERIES, chartWidth: 800, chartHeight: 300 });
+    const cap = captureExport();
+    try { await m.chart.exportSVG(); } finally { cap.restore(); }
+    assertTrue(cap.svgs[0].includes('viewBox="0 0 800 300"'), 'fixed viewBox');
+    done(m);
+  });
+
+  test('PNG export canvas uses the export-only size ×2', async () => {
+    const m = mount({ series: SERIES, chartWidth: 1000, chartHeight: 500, sizeExportOnly: true });
+    const cap = captureExport();
+    try { await m.chart.exportPNG(); } finally { cap.restore(); }
+    // Rendering creates text-measuring canvases too; they keep the default
+    // 300×150. The export canvas is the only one that gets a size.
+    const sized = cap.canvases.filter((c) => c.width !== 300 || c.height !== 150);
+    assertEqual(sized.length, 1);
+    const out = sized[0];
+    assertEqual(out.width, 2000);
+    assertEqual(out.height, 1000);
+    assertTrue(cap.svgs[0].includes('viewBox="0 0 1000 500"'), 'fixed viewBox');
+    assertEqual(m.chart._svg.getAttribute('width'), '600');
+    done(m);
   });
 
   test('normalizeChartSize clamps, rounds and nulls', () => {

@@ -1487,9 +1487,49 @@ export default class ChartBase {
   /**
    * Export chart as PNG (2× resolution).
    */
+  /**
+   * The export size: the editor's fixed sides (also when they apply to the
+   * export only), auto sides from the measured screen size.
+   * @protected
+   * @returns {{ w: number, h: number }}
+   */
+  _exportSize() {
+    const cfg = this.config || {};
+    const rect = this._svgWrap ? this._svgWrap.getBoundingClientRect() : { width: 0, height: 0 };
+    return {
+      w: normalizeChartSize(cfg.chartWidth) ?? Math.round(rect.width),
+      h: normalizeChartSize(cfg.chartHeight) ?? Math.round(rect.height),
+    };
+  }
+
+  /**
+   * Run `fn` (size read + serialization) at the export size. With an
+   * export-only size the chart renders at that size for the duration of `fn`
+   * and back at its screen size afterwards; the screen layout stays as is.
+   * @protected
+   * @template T
+   * @param {function(): T} fn - must be synchronous
+   * @returns {T}
+   */
+  _withExportSize(fn) {
+    const cfg = this.config || {};
+    const hasSide = normalizeChartSize(cfg.chartWidth) !== null || normalizeChartSize(cfg.chartHeight) !== null;
+    if (!cfg.sizeExportOnly || !hasSide) return fn();
+    this._sizeOverride = this._exportSize();
+    try {
+      this.render();
+      return fn();
+    } finally {
+      this._sizeOverride = null;
+      this.render();
+    }
+  }
+
   async exportPNG() {
-    const size = this._getSize();
-    const svgData = new XMLSerializer().serializeToString(this._svg);
+    const { size, svgData } = this._withExportSize(() => ({
+      size: this._getSize(),
+      svgData: new XMLSerializer().serializeToString(this._svg),
+    }));
     const canvas = document.createElement('canvas');
     const scale = 2;
     canvas.width = size.w * scale;
@@ -1521,7 +1561,7 @@ export default class ChartBase {
    * Export chart as SVG file.
    */
   async exportSVG() {
-    const clone = this._svg.cloneNode(true);
+    const clone = this._withExportSize(() => this._svg.cloneNode(true));
     // Add background rect
     const bgColor = this.config.bgColor
       ? resolveColor(this.config.bgColor)
