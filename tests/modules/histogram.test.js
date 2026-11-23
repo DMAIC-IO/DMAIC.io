@@ -128,6 +128,23 @@ suite('Histogram — Model State', () => {
     assertEqual(r.chartConfig.axisRange.xMax, 40);
   });
 
+  test('fixed chart size defaults, round-trips and loads old data', () => {
+    const d = new State().chartConfig;
+    assertEqual(d.chartWidth, null);
+    assertEqual(d.chartHeight, null);
+    assertEqual(d.sizeExportOnly, false);
+    const s = new State();
+    Object.assign(s.chartConfig, { chartWidth: 800, chartHeight: null, sizeExportOnly: true });
+    const r = State.fromJSON(structuredClone(s.toJSON()));
+    assertEqual(r.chartConfig.chartWidth, 800);
+    assertEqual(r.chartConfig.chartHeight, null);
+    assertEqual(r.chartConfig.sizeExportOnly, true);
+    const old = State.fromJSON({}).chartConfig;
+    assertEqual(old.chartWidth, null);
+    assertEqual(old.chartHeight, null);
+    assertEqual(old.sizeExportOnly, false);
+  });
+
   test('fromJSON v1 backward-compat: seriesRefs → datasets', () => {
     const s = State.fromJSON({ seriesRefs: [{ columnId: 'c-0' }, { columnId: 'c-1' }] });
     assertEqual(s.datasets.length, 2);

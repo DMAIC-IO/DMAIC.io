@@ -50,6 +50,7 @@ export class State {
     showXTicks: true, showYTicks: true,
     bgColor: null,
     axisRange: null,
+    chartWidth: null, chartHeight: null, sizeExportOnly: false,
   };
   barGap = 1;
   refLines = [];
@@ -85,6 +86,9 @@ export class State {
       barGap: this.barGap,
       bgColor: cc.bgColor ?? null,
       axisRange: deepCopy(cc.axisRange ?? null),
+      chartWidth: cc.chartWidth ?? null,
+      chartHeight: cc.chartHeight ?? null,
+      sizeExportOnly: !!cc.sizeExportOnly,
       refLines: deepCopy(this.refLines) || [],
       refAreas: deepCopy(this.refAreas) || [],
       seriesOverrides: deepCopy(this.seriesOverrides) || [],
@@ -118,6 +122,9 @@ export class State {
       showYTicks: d.showYTicks ?? true,
       bgColor: d.bgColor ?? null,
       axisRange: d.axisRange && typeof d.axisRange === 'object' ? deepCopy(d.axisRange) : null,
+      chartWidth: d.chartWidth ?? null,
+      chartHeight: d.chartHeight ?? null,
+      sizeExportOnly: !!d.sizeExportOnly,
     };
     s.barGap = (typeof d.barGap === 'number' && isFinite(d.barGap)) ? d.barGap : 1;
     s.refLines = Array.isArray(d.refLines) ? deepCopy(d.refLines) : [];

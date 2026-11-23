@@ -8,7 +8,7 @@
  */
 
 /** chartConfig keys that map 1:1 onto ChartBase config keys. */
-export const CHART_CONFIG_KEYS = ['showTitle', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'bgColor', 'axisRange'];
+export const CHART_CONFIG_KEYS = ['showTitle', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'bgColor', 'axisRange', 'chartWidth', 'chartHeight', 'sizeExportOnly'];
 
 const LABEL_KEYS = ['title', 'xLabel', 'yLabel'];
 const OVERRIDE_KEYS = ['name', 'visible', 'fillColor', 'borderColor', 'borderWidth', 'borderStyle', 'pattern', 'patternColor', 'patternSolidity', 'showNormalCurve'];
