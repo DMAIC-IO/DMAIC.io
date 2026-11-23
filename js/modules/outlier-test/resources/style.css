@@ -93,6 +93,13 @@
   margin-bottom: var(--spacing-sm);
 }
 
+/* Der Lab-Knopf steht im Kartenkopf neben dem Titel; ohne senkrechten
+   Innenabstand ist er so hoch wie der Knopf der Altform und hebt die
+   Kopfzeile nicht an. */
+.outliertest__card-header .dmike-algo-link {
+  padding-block: 0;
+}
+
 .outliertest__card-title {
   font-weight: 600;
   font-size: var(--font-size-md);
