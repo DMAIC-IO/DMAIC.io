@@ -2,7 +2,7 @@
  * Ausreißertest: die Rechnung (domain/analyze.js) gegen die Altrechnung.
  * Die Literale stammen aus dem Altmodul (runAnalysis/_buildResult).
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import {
   ALL_METHODS, inputValues, analyze, buildResult, chartMethodOptions, effectiveChartMethod,
 } from '../../../js/modules/outlier-test/domain/analyze.js';
@@ -139,5 +139,35 @@ suite('outlier-test: Diagrammwahl', () => {
     assertEqual(model.chartMethod, 'grubbs');
     assertEqual(effectiveChartMethod({ ...model, chartMethod: 'hampel' }, analyze(LEGACY_VALUES, model)), 'all');
     assertEqual(effectiveChartMethod(model, null), 'all');
+  });
+});
+
+suite('outlier-test: analyze rechnet je Eingabe nur einmal', () => {
+  test('gleiche Eingabe (neue Listen mit gleichem Inhalt) → dasselbe Ergebnisobjekt', () => {
+    const a = analyze([...BOLZEN], { ...BOLZEN_PARAMS, enabled: [...BOLZEN_PARAMS.enabled] });
+    const b = analyze([...BOLZEN], { ...BOLZEN_PARAMS, enabled: [...BOLZEN_PARAMS.enabled] });
+    assertTrue(a === b, 'neu gerechnet trotz gleicher Eingabe');
+  });
+
+  test('andere Zahl, anderer Parameter oder andere Verfahren → neu gerechnet', () => {
+    const a = analyze(BOLZEN, BOLZEN_PARAMS);
+    const values = [...BOLZEN];
+    values[3] = 9.9;
+    const b = analyze(values, BOLZEN_PARAMS);
+    assertTrue(a !== b, 'Zahl geändert, nicht neu gerechnet');
+    const c = analyze(values, { ...BOLZEN_PARAMS, tukeyFactor: 2 });
+    assertTrue(b !== c, 'Parameter geändert, nicht neu gerechnet');
+    assertTrue(c.results['tukey-iqr'].fenceUpper > b.results['tukey-iqr'].fenceUpper, 'Tukey nicht mit neuem Faktor');
+    const d = analyze(values, { ...BOLZEN_PARAMS, tukeyFactor: 2, enabled: ['grubbs'] });
+    assertDeepEqual(Object.keys(d.results), ['grubbs']);
+    const e = analyze(values, { ...BOLZEN_PARAMS, tukeyFactor: 2, esdMaxOutliers: 3 });
+    assertEqual(e.results['generalized-esd'].parameters.maxOutliers, 3);
+  });
+
+  test('wechselnde Eingaben liefern jeweils ihr eigenes, richtiges Ergebnis', () => {
+    const x = plain(buildResult(LEGACY_VALUES, analyze(LEGACY_VALUES, LEGACY_PARAMS)));
+    const y = plain(buildResult(BOLZEN, analyze(BOLZEN, BOLZEN_PARAMS)));
+    assertDeepEqual(plain(buildResult(LEGACY_VALUES, analyze(LEGACY_VALUES, LEGACY_PARAMS))), x);
+    assertDeepEqual(y, BOLZEN_RESULT);
   });
 });

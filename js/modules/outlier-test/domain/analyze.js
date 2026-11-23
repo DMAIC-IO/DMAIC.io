@@ -128,13 +128,45 @@ export function inputValues(model, read) {
   return raw.filter((v) => typeof v === 'number' && !Number.isNaN(v));
 }
 
+/** Die Felder, von denen die Rechnung abhängt (ohne `enabled`, das als Liste verglichen wird). */
+const INPUT_KEYS = Object.freeze(['alpha', 'side', 'tukeyFactor', 'hampelK', 'zThreshold', 'modZThreshold', 'esdMaxOutliers']);
+
+/** @param {readonly any[]} a @param {readonly any[]} b @returns {boolean} */
+const sameList = (a, b) => a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
+
 /**
- * Rechnet alle aktiven Verfahren. Unter drei Zahlen `null`.
+ * Die letzte Eingabe und ihr Ergebnis. Ergebnis, Diagrammwahl und Ansicht
+ * rechnen je Änderung mit denselben Eingaben; so läuft die Rechnung nur einmal.
+ * @type {{ values: number[], params: any[], enabled: string[], analysis: Analysis|null }|null}
+ */
+let last = null;
+
+/**
+ * Rechnet alle aktiven Verfahren. Unter drei Zahlen `null`. Bei gleicher
+ * Eingabe wie beim letzten Aufruf (Zahlen und Parameter, flach verglichen)
+ * kommt dasselbe Ergebnisobjekt zurück; es wird nicht verändert.
  * @param {number[]} values
  * @param {AnalysisParams} model
  * @returns {Analysis|null}
  */
 export function analyze(values, model) {
+  const params = INPUT_KEYS.map((k) => /** @type {any} */ (model)[k]);
+  const enabled = [...model.enabled];
+  if (last && sameList(last.values, values) && sameList(last.params, params) && sameList(last.enabled, enabled)) {
+    return last.analysis;
+  }
+  const analysis = compute(values, model);
+  last = { values: [...values], params, enabled, analysis };
+  return analysis;
+}
+
+/**
+ * Die Rechnung selbst, ohne Zwischenspeicher.
+ * @param {number[]} values
+ * @param {AnalysisParams} model
+ * @returns {Analysis|null}
+ */
+function compute(values, model) {
   if (values.length < MIN_VALUES) return null;
   const { alpha, side } = model;
   const enabled = new Set(model.enabled);
