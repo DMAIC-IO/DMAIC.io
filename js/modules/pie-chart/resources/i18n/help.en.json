@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of a Pie Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A {{term:kreisdiagramm|pie chart}} shows how a whole is split into a few categories. Each category is drawn as a circle slice with an area proportional to its share. Together all slices add up to exactly 100 %."
+        },
+        {
+          "type": "definition",
+          "term": "Slice",
+          "content": "A pie slice whose angle (and therefore area) is proportional to the category share of the total. Slices are typically sorted from largest to smallest, starting at \"12 o'clock\"."
+        },
+        {
+          "type": "definition",
+          "term": "Labels",
+          "content": "Each slice can be labeled with the category name, absolute value, percentage, or a combination. Very small slices are often labeled outside the circle."
+        },
+        {
+          "type": "definition",
+          "term": "\"Other\" slice",
+          "content": "When there are many small categories, it is sensible to group them into \"Other\", otherwise the chart becomes cluttered. A healthy pie chart typically has no more than 5–7 slices."
+        },
+        {
+          "type": "paragraph",
+          "content": "Pie charts are appropriate for communicating the share of a few clearly distinguishable categories of a whole — e.g. \"How does our scrap split across the five defect types?\"."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Too many slices",
+          "content": "More than 7 slices become visually indigestible and small shares are hard to distinguish. Prefer a Pareto chart — it additionally orders categories by size."
+        },
+        {
+          "type": "definition",
+          "term": "Poor size comparison",
+          "content": "The human eye estimates angles and areas poorly. Differences of a few percentage points are barely visible in pie charts. For precise comparisons, use a bar chart."
+        },
+        {
+          "type": "definition",
+          "term": "3D effects distort",
+          "content": "3D pie charts distort slice areas — front slices look larger than they are. For honest visualization, prefer 2D."
+        },
+        {
+          "type": "definition",
+          "term": "Shares do not add up to 100 %",
+          "content": "When categories allow multiple assignments (e.g. \"defects with cause A or B\"), pie charts are misleading. They assume that categories are mutually exclusive."
+        },
+        {
+          "type": "definition",
+          "term": "Comparing several pie charts",
+          "content": "Comparing two pie charts side by side is hard — slices move and change order. For comparisons across time or groups, use stacked bars instead."
+        }
+      ]
+    }
+  }
+}

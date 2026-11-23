@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "The row with the value column and the optional label column, each column described individually under keys. The value column is required for a chart. To clear, set one empty row ([{ value: null, label: null }]); [] is rejected.",
+      "value": {
+        "label": "V",
+        "title": "Value column (numeric)",
+        "help": "The value column (slot value); the slices are made from it. Required, empty until one is chosen."
+      },
+      "label": {
+        "label": "G",
+        "title": "Grouping (categorical)",
+        "help": "The label column (slot label), optional. With it the values are summed per label; without it each distinct value becomes a slice, counted by frequency. Empty until one is chosen."
+      }
+    },
+    "stats": {
+      "help": "The slice table, each figure described individually under keys; null while there is no slice (no value column, no values, or a column cannot be read)."
+    },
+    "activeColumnSlots": {
+      "help": "The slot keys a row of the datasets carries: value, label."
+    },
+    "slices": {
+      "help": "The slices (name, value, colour) from the chosen columns, as the chart draws them; empty while there are no values."
+    }
+  },
+  "types": {
+    "PieStats": {
+      "slices": "The slices in table order (order of first appearance).",
+      "total": "The sum of all slice values, negative ones count as 0; the basis of the shares."
+    },
+    "Slice": {
+      "name": "The category, that is the name of the slice: with a label column the label, without one the value itself.",
+      "value": "The value of the slice: with a label column the sum of the values of that label (non-numeric or negative values are dropped), without one the frequency of the value.",
+      "share": "The share of the slice in the sum of all slices, as a fraction from 0 to 1; the table shows it as a percentage."
+    }
+  }
+}

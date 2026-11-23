@@ -1,0 +1,27 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "datasets": [
+    {
+      "value": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-pie-reklamationen",
+        "columnId": "c-anzahl"
+      },
+      "label": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-pie-reklamationen",
+        "columnId": "c-grund"
+      }
+    }
+  ],
+  "chart": {
+    "title": "Reklamationsgründe Q1",
+    "innerRadius": 0.5,
+    "centerLabel": "248",
+    "centerSub": "Reklamationen",
+    "sortSlices": "desc"
+  },
+  "sourceWorksheetFile": "worksheets/pie-reklamationen-q1.json"
+}

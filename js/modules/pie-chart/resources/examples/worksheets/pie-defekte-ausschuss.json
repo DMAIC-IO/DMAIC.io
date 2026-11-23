@@ -1,0 +1,43 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-pie-defekte",
+      "name": "Ausschuss nach Defektart",
+      "state": {
+        "columns": [
+          {
+            "id": "c-defektart",
+            "name": "Defektart",
+            "shortName": "D",
+            "type": "text",
+            "values": [
+              "Kratzer",
+              "Maßabweichung",
+              "Risse",
+              "Verfärbung",
+              "Verschmutzung",
+              "Sonstige"
+            ]
+          },
+          {
+            "id": "c-anzahl",
+            "name": "Anzahl",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [
+              145,
+              98,
+              67,
+              42,
+              28,
+              15
+            ]
+          }
+        ],
+        "rowCount": 6
+      }
+    }
+  ],
+  "activeSheetId": "sheet-pie-defekte",
+  "sheetCounter": 1
+}

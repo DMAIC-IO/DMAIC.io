@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Kuchendiagramm",
+  "description": "Kreisdiagramm (Pie/Donut) aus Worksheet-Spalten",
+  "whenToUse": "Zeigen, wie sich eine Summe auf Anteile verteilt: ein Segment je unterschiedlichem Wert oder je Beschriftung mit summierten Werten.",
+  "sectionData": "Datenquelle",
+  "statsTitle": "Statistik",
+  "statName": "Kategorie",
+  "statValue": "Wert",
+  "statPercent": "Anteil",
+  "statTotal": "Gesamt"
+}

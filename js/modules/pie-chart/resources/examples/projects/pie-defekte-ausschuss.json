@@ -1,0 +1,24 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "datasets": [
+    {
+      "value": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-pie-defekte",
+        "columnId": "c-anzahl"
+      },
+      "label": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-pie-defekte",
+        "columnId": "c-defektart"
+      }
+    }
+  ],
+  "chart": {
+    "title": "Ausschuss nach Defektart",
+    "sortSlices": "desc"
+  },
+  "sourceWorksheetFile": "worksheets/pie-defekte-ausschuss.json"
+}

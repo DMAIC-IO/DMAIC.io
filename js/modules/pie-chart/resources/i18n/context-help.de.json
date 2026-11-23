@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Die Zeile mit der Wertespalte und der optionalen Beschriftungsspalte, jede Spalte unter keys einzeln beschrieben. Die Wertespalte ist für ein Diagramm Pflicht. Leeren geht über eine leere Zeile ([{ value: null, label: null }]), [] wird abgelehnt.",
+      "value": {
+        "label": "V",
+        "title": "Werte-Spalte (numerisch)",
+        "help": "Die Wertespalte (Slot value); aus ihr werden die Segmente. Pflicht, leer, solange keine gewählt ist."
+      },
+      "label": {
+        "label": "G",
+        "title": "Gruppierung (kategorisch)",
+        "help": "Die Beschriftungsspalte (Slot label), optional. Mit ihr werden die Werte je Beschriftung summiert, ohne sie wird jeder verschiedene Wert ein Segment, gezählt nach Häufigkeit. Leer, solange keine gewählt ist."
+      }
+    },
+    "stats": {
+      "help": "Die Segmenttabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange es kein Segment gibt (keine Wertespalte, keine Werte oder eine Spalte nicht lesbar)."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: value, label."
+    },
+    "slices": {
+      "help": "Die Segmente (Name, Wert, Farbe) aus den gewählten Spalten, wie das Diagramm sie zeichnet; leer, solange es keine Werte gibt."
+    }
+  },
+  "types": {
+    "PieStats": {
+      "slices": "Die Segmente in der Reihenfolge der Tabelle (Reihenfolge des ersten Auftretens).",
+      "total": "Die Summe aller Segmentwerte, negative zählen als 0; Grundlage der Anteile."
+    },
+    "Slice": {
+      "name": "Die Kategorie, also der Name des Segments: mit Beschriftungsspalte die Beschriftung, ohne sie der Wert selbst.",
+      "value": "Der Wert des Segments: mit Beschriftungsspalte die Summe der Werte dieser Beschriftung (nicht numerische oder negative Werte entfallen), ohne sie die Häufigkeit des Werts.",
+      "share": "Der Anteil des Segments an der Summe aller Segmente, als Bruchzahl von 0 bis 1; die Tabelle zeigt ihn in Prozent."
+    }
+  }
+}

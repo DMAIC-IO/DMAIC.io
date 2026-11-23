@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Pie Chart",
+  "description": "Pie/donut chart from worksheet columns",
+  "whenToUse": "Show how a total splits into parts: one slice per distinct value, or per label with the values summed.",
+  "sectionData": "Data Source",
+  "statsTitle": "Statistics",
+  "statName": "Category",
+  "statValue": "Value",
+  "statPercent": "Share",
+  "statTotal": "Total"
+}

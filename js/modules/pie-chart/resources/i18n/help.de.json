@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau eines Tortendiagramms",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein {{term:kreisdiagramm|Tortendiagramm}} (Kreisdiagramm) zeigt, wie sich ein Ganzes auf wenige Kategorien aufteilt. Jede Kategorie wird als Kreissektor mit einer Fläche proportional zu ihrem Anteil dargestellt. Zusammen ergeben alle Sektoren genau 100 %."
+        },
+        {
+          "type": "definition",
+          "term": "Sektor",
+          "content": "Ein Tortenstück, dessen Winkel (und damit Fläche) proportional zum Anteil der Kategorie am Gesamtwert ist. Die Reihenfolge wird typischerweise vom größten zum kleinsten Sektor sortiert, beginnend bei „12 Uhr\"."
+        },
+        {
+          "type": "definition",
+          "term": "Beschriftung",
+          "content": "Jeder Sektor kann mit Kategoriename, Absolutwert, Prozentanteil oder einer Kombination beschriftet werden. Sehr kleine Sektoren werden oft außerhalb des Kreises beschriftet."
+        },
+        {
+          "type": "definition",
+          "term": "„Sonstige\"-Sektor",
+          "content": "Bei vielen kleinen Kategorien werden diese sinnvollerweise unter „Sonstige\" zusammengefasst, sonst wird das Diagramm unübersichtlich. Ein gesundes Tortendiagramm hat meist nicht mehr als 5–7 Sektoren."
+        },
+        {
+          "type": "paragraph",
+          "content": "Tortendiagramme eignen sich, um den Anteil weniger, klar voneinander unterscheidbarer Kategorien an einem Ganzen zu kommunizieren — z. B. „Wie verteilt sich der Ausschuss auf die fünf Defektarten?\"."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu viele Sektoren",
+          "content": "Mehr als 7 Sektoren werden visuell unverdaulich, kleine Anteile lassen sich kaum unterscheiden. Lieber ein {{term:pareto|Pareto-Diagramm}} verwenden — es ordnet die Kategorien zusätzlich nach Größe."
+        },
+        {
+          "type": "definition",
+          "term": "Schlechter Größenvergleich",
+          "content": "Das menschliche Auge schätzt Winkel und Flächen schlecht. Unterschiede von wenigen Prozentpunkten sind im Tortendiagramm kaum erkennbar. Für präzise Vergleiche ein {{term:balkendiagramm|Balkendiagramm}} wählen."
+        },
+        {
+          "type": "definition",
+          "term": "3D-Effekte verzerren",
+          "content": "3D-Tortendiagramme verzerren die Sektorenflächen — vordere Sektoren wirken größer als sie sind. Für ehrliche Darstellung 2D bevorzugen."
+        },
+        {
+          "type": "definition",
+          "term": "Anteile addieren sich nicht zu 100 %",
+          "content": "Wenn Kategorien Mehrfachzuordnungen erlauben (z. B. „Defekte mit Ursache A oder B\"), sind Tortendiagramme irreführend. Sie setzen voraus, dass die Kategorien sich gegenseitig ausschließen."
+        },
+        {
+          "type": "definition",
+          "term": "Vergleich mehrerer Tortendiagramme",
+          "content": "Zwei Tortendiagramme nebeneinander vergleichen ist schwierig — Sektoren wechseln Position und Reihenfolge. Bei Vergleichen über Zeit oder Gruppen lieber gestapelte Balken nutzen."
+        }
+      ]
+    }
+  }
+}

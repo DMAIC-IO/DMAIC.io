@@ -1,0 +1,43 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-pie-reklamationen",
+      "name": "Reklamationen Q1",
+      "state": {
+        "columns": [
+          {
+            "id": "c-grund",
+            "name": "Reklamationsgrund",
+            "shortName": "G",
+            "type": "text",
+            "values": [
+              "Verspätete Lieferung",
+              "Transportschaden",
+              "Falschlieferung",
+              "Beschädigte Verpackung",
+              "Fehlende Bedienungsanleitung",
+              "Sonstige"
+            ]
+          },
+          {
+            "id": "c-anzahl",
+            "name": "Anzahl",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [
+              87,
+              64,
+              41,
+              28,
+              18,
+              10
+            ]
+          }
+        ],
+        "rowCount": 6
+      }
+    }
+  ],
+  "activeSheetId": "sheet-pie-reklamationen",
+  "sheetCounter": 1
+}
