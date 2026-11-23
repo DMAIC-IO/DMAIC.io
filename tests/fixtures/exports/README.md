@@ -39,6 +39,7 @@ Aktueller Stand:
 | v1.6.0_single_project.json      | 1        | 11              |
 | v1.7.0_single_project.json      | 1        | 11              |
 | v1.8.0_single_project.json      | 1        | 11              |
+| v1.9.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -110,6 +111,13 @@ aber die Legenden-Schriftgröße (`legendSize`) und die feste Diagrammgröße
 und im Histogramm; die neuen Felder sind additiv und fehlen in älteren
 Exporten einfach. Deshalb gibt es keinen Migrationsschritt `1.7→1.8`, und die
 Fixture ist inhaltsgleich mit der v1.7-Fixture.
+
+Die v1.9-Fixture zieht die 1.9-Linie nach. 1.9 bringt kein neues Modul,
+aber Fehlerbalken je Datenreihe im XY-Plot (`errorBars` in
+`datasets[]`); das neue Feld ist additiv und fehlt in älteren Exporten
+einfach (das Modell ergänzt `mode: 'none'`). Deshalb gibt es keinen
+Migrationsschritt `1.8→1.9`, und die Fixture ist inhaltsgleich mit der
+v1.8-Fixture.
 
 ## Pflicht beim Release
 

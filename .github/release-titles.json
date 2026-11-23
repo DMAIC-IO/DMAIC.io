@@ -114,5 +114,9 @@
   "1.8.2": {
     "de": "Einklappbare Abschnitte im Grafik-Editor, frei sortierbare Legende, besser platzierte Titel",
     "en": "Collapsible chart editor sections, freely ordered legend, better placed titles"
+  },
+  "1.9.0": {
+    "de": "Fehlerbalken im XY-Plot: konstant oder aus Spalten, je Richtung einzeln",
+    "en": "Error bars in the XY plot: constant or from columns, per direction"
   }
 }
