@@ -98,5 +98,9 @@
   "1.6.4": {
     "de": "DoE-Planer: Vorschau-Tabelle immer sichtbar, Abschnitte klappen einzeln",
     "en": "DoE planner: run preview always visible, sections collapse one at a time"
+  },
+  "1.7.0": {
+    "de": "Achsenbereich (x/y min/max) im Grafik-Editor, echte Zahlenachse für Balkendiagramme mit Zahlenkategorien, Rückfrage vor jedem Löschen",
+    "en": "Axis range (x/y min/max) in the chart editor, a real numeric axis for bar charts with numeric categories, confirmation before every delete"
   }
 }
