@@ -875,6 +875,13 @@ mod.loadExample = async function loadExample(payload) {
       const rewrite = (r) =>
         r && r.instanceId === '__source__' ? { ...r, instanceId: ref.instanceId } : r;
 
+      // Error bars in columns mode point at the worksheet too.
+      const rewriteBars = (eb) => {
+        if (!eb || typeof eb !== 'object') return eb;
+        const out = { ...eb };
+        for (const key of ERROR_BAR_KEYS) out[key] = rewrite(eb[key]);
+        return out;
+      };
       if (Array.isArray(data.datasets)) {
         data.datasets = data.datasets.map(d => ({
           ...d,
@@ -882,6 +889,7 @@ mod.loadExample = async function loadExample(payload) {
           yRef: rewrite(d.yRef),
           groupRef: rewrite(d.groupRef),
           sizeRef: rewrite(d.sizeRef),
+          errorBars: rewriteBars(d.errorBars),
         }));
       }
     }

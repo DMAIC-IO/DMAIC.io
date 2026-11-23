@@ -1,0 +1,40 @@
+{
+  "datasets": [
+    {
+      "xRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-hubschrauber-mittelwerte",
+        "columnId": "c-klammern"
+      },
+      "yRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-hubschrauber-mittelwerte",
+        "columnId": "c-mittelwert"
+      },
+      "groupRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-hubschrauber-mittelwerte",
+        "columnId": "c-rotorlaenge"
+      },
+      "errorBars": {
+        "mode": "columns",
+        "xPlus": null,
+        "xMinus": null,
+        "yPlus": {
+          "instanceId": "__source__",
+          "sheetId": "sheet-hubschrauber-mittelwerte",
+          "columnId": "c-stdabw"
+        },
+        "yMinus": {
+          "instanceId": "__source__",
+          "sheetId": "sheet-hubschrauber-mittelwerte",
+          "columnId": "c-stdabw"
+        }
+      }
+    }
+  ],
+  "showLines": true,
+  "showMarkers": true,
+  "showStats": false,
+  "sourceWorksheetFile": "worksheets/hubschrauber-mittelwerte.json"
+}
