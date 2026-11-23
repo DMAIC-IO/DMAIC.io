@@ -6985,6 +6985,13 @@
           "params": {
             "rows": "Eine Liste von Reihen, jeweils { x, y, group, size }: 'x' und 'y' — numerische Spalten (beide Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Punkte einfärbt; 'size' — eine optionale numerische Spalte, die Punkte zu Blasen macht. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
           }
+        },
+        "setErrorBars": {
+          "help": "Die Fehlerbalken einer Datenreihe festlegen: keine, konstante Beträge in +x, −x, +y und −y oder je Richtung eine Spalte mit dem Fehler jedes Punkts. Ein Wechsel des Modus leert alle vier Werte; nicht angegebene Richtungen bleiben ohne Balken.",
+          "params": {
+            "index": "Die Nummer der Datenreihe, 0-basiert, wie in read().datasets.",
+            "spec": "Ein Objekt { mode, xPlus, xMinus, yPlus, yMinus }: 'mode' ist 'none', 'constant' oder 'columns'. Bei 'constant' ist jede Richtung eine Zahl, bei 'columns' ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.y; fehlende Richtungen sind null."
+          }
         }
       },
       "fields": {
@@ -7006,7 +7013,15 @@
           "xRef": "Die X-Spalte der Reihe (Slot X), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
           "yRef": "Die Y-Spalte der Reihe (Slot Y), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
           "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie färbt die Punkte nach Gruppenwert ein. Leer, solange keine gewählt ist.",
-          "sizeRef": "Die Spalte der Blasengröße (Slot S), numerisch und optional; sie macht aus den Punkten Blasen, deren Durchmesser den Wert zeigt. Leer, solange keine gewählt ist."
+          "sizeRef": "Die Spalte der Blasengröße (Slot S), numerisch und optional; sie macht aus den Punkten Blasen, deren Durchmesser den Wert zeigt. Leer, solange keine gewählt ist.",
+          "errorBars": "Die Fehlerbalken der Reihe: Modus und je Richtung ein Betrag oder eine Spalte. Ohne Angabe zeigt die Reihe keine Fehlerbalken."
+        },
+        "ErrorBars": {
+          "mode": "Wie die Fehler angegeben sind: 'none' (keine Balken), 'constant' (ein fester Betrag je Richtung) oder 'columns' (je Richtung eine Spalte mit einem Wert pro Punkt).",
+          "xPlus": "Der Fehler nach rechts (+x): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung.",
+          "xMinus": "Der Fehler nach links (−x): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung.",
+          "yPlus": "Der Fehler nach oben (+y): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung.",
+          "yMinus": "Der Fehler nach unten (−y): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung."
         }
       },
       "sectionData": "Datenquelle",

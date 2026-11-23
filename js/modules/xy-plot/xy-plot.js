@@ -20,7 +20,7 @@
  *     serialising (refLines/refAreas/bgColor/seriesOverrides).
  *
  * @agent  Steuerbar über das Viewmodel: die Datenreihen, je Reihe X-, Y-,
- *   Gruppen- und Größenspalte (setDatasets). Gelesen wird über read() mit
+ *   Gruppen- und Größenspalte (setDatasets) und Fehlerbalken (setErrorBars). Gelesen wird über read() mit
  *   erklärter Lesefläche (AgentRead), samt den Kennzahlen der Y-Werte je
  *   Reihe (stats).
  */
@@ -28,8 +28,13 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
+import { requireEnum, requireIndex, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { keyToRef, refToKey } from '../../ui/column-picker.js';
 import Alpine from '@alpinejs/csp';
-import { State } from './xy-plot-model.js';
+import {
+  State, ERROR_BAR_MODES, ERROR_BAR_KEYS,
+  emptyErrorBars, errorBarsFromJSON, buildErrorBars,
+} from './xy-plot-model.js';
 import {
   edCheckboxRow, edSelectRow,
   edColorPair,
@@ -63,6 +68,18 @@ const COLUMN_SLOTS = ['x', 'y', 'group', 'size'];
  * @property {object|null} yRef  Y-Spalte (Slot y)
  * @property {object|null} groupRef  Gruppenspalte (Slot group)
  * @property {object|null} sizeRef  Spalte der Blasengröße (Slot size)
+ * @property {ErrorBars} errorBars  Fehlerbalken der Reihe (setErrorBars)
+ */
+
+/**
+ * Die Fehlerbalken einer Datenreihe. Sätze unter `types.ErrorBars.<key>`.
+ *
+ * @typedef {object} ErrorBars
+ * @property {string} mode  'none', 'constant' oder 'columns'
+ * @property {number|object|null} xPlus  Fehler nach +x: Zahl (constant) oder Spaltenbezug (columns)
+ * @property {number|object|null} xMinus  Fehler nach −x
+ * @property {number|object|null} yPlus  Fehler nach +y
+ * @property {number|object|null} yMinus  Fehler nach −y
  */
 
 /**
@@ -182,6 +199,41 @@ const mod = createModule({
         if (this._picker) this._picker.value = clean;
       },
 
+      /**
+       * Die Fehlerbalken einer Datenreihe setzen.
+       * @agent
+       * @param {number} index die Reihe, 0-basiert (read().datasets)
+       * @param {object} spec `{ mode, xPlus?, xMinus?, yPlus?, yMinus? }`; mode 'none',
+       *   'constant' (Zahlen) oder 'columns' (Spalten aus read().pickableColumns.y); fehlend = null
+       * @returns {void}
+       * @throws {Error} wenn index, mode, eine Zahl oder eine Spalte ungültig ist
+       */
+      setErrorBars(index, spec) {
+        requireIndex('index', index, this.model.datasets.length, { existing: true });
+        if (spec === null || typeof spec !== 'object' || Array.isArray(spec)) {
+          throw new Error(`invalid spec ${JSON.stringify(spec)}; allowed: { mode, xPlus, xMinus, yPlus, yMinus }`);
+        }
+        const mode = requireEnum('mode', spec.mode, ERROR_BAR_MODES);
+        const next = emptyErrorBars(mode);
+        if (mode !== 'none') {
+          const columnKeys = this.pickableColumns().y.map(c => c.key);
+          for (const key of ERROR_BAR_KEYS) {
+            const v = spec[key];
+            if (v == null) continue;
+            if (mode === 'constant') {
+              next[key] = requireNumber(key, v);
+            } else {
+              const k = v && typeof v === 'object' ? refToKey(v) : String(v);
+              requireKnownId(key, k, columnKeys);
+              next[key] = keyToRef(k);
+            }
+          }
+        }
+        this.model.datasets[index] = { ...this.model.datasets[index], errorBars: next };
+        if (this._picker) this._picker.value = this._datasetRows();
+        this._plot();
+      },
+
       /** Der Körper des Picker-`onChange`: Zeilen ins Model, Serienanpassungen verwerfen, neu zeichnen. */
       _applyDatasets(rows) {
         this.model.datasets = rows.map(ds => ({
@@ -189,6 +241,7 @@ const mod = createModule({
           yRef: ds.y || null,
           groupRef: ds.group || null,
           sizeRef: ds.size || null,
+          errorBars: ds.errorBars ? errorBarsFromJSON(ds.errorBars) : emptyErrorBars(),
         }));
         // Series count may change — drop stale overrides when structure changes.
         this.model.seriesOverrides = [];
@@ -197,7 +250,9 @@ const mod = createModule({
 
       /** Die aktuellen Zeilen in Picker-Form, aus dem Model. */
       _datasetRows() {
-        return this.model.datasets.map(ds => ({ x: ds.xRef, y: ds.yRef, group: ds.groupRef, size: ds.sizeRef }));
+        return this.model.datasets.map(ds => ({
+          x: ds.xRef, y: ds.yRef, group: ds.groupRef, size: ds.sizeRef, errorBars: ds.errorBars,
+        }));
       },
 
       /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle. */
@@ -335,7 +390,7 @@ const mod = createModule({
        */
       _buildSeries() {
         const series = [];
-        const pushSeries = (x, y, name, bubble) => {
+        const pushSeries = (x, y, name, bubble, errorBars) => {
           const seriesIdx = series.length;
           const defaultColor = CHART_COLORS[seriesIdx % CHART_COLORS.length];
           const ovr = this.model.seriesOverrides[seriesIdx] || {};
@@ -361,6 +416,7 @@ const mod = createModule({
             s.sizeValues = bubble.rawSizes;
             s.sizeLabel = bubble.label;
           }
+          if (errorBars) s.errorBars = errorBars;
           series.push(s);
         };
 
@@ -375,6 +431,15 @@ const mod = createModule({
           const groupVals = ds.groupRef ? this._getColumnValues(ds.groupRef) : null;
           const sizeVals = ds.sizeRef ? this._getColumnValues(ds.sizeRef) : null;
           const sizeName = ds.sizeRef ? this._getColumnName(ds.sizeRef) : '';
+          const errSpec = ds.errorBars;
+          const errValues = {};
+          if (errSpec?.mode === 'columns') {
+            for (const key of ERROR_BAR_KEYS) {
+              if (!errSpec[key]) continue;
+              const vals = this._getColumnValues(errSpec[key]);
+              if (Array.isArray(vals)) errValues[key] = vals;
+            }
+          }
 
           if (groupVals) {
             // Split into one sub-series per unique group level (insertion order).
@@ -395,11 +460,12 @@ const mod = createModule({
               const key = String(vg);
               let b = buckets.get(key);
               if (!b) {
-                b = { level: vg, x: [], y: [], rawSizes: sizeVals ? [] : null };
+                b = { level: vg, x: [], y: [], rows: [], rawSizes: sizeVals ? [] : null };
                 buckets.set(key, b);
               }
               b.x.push(vx);
               b.y.push(vy);
+              b.rows.push(r);
               if (sizeVals) b.rawSizes.push(sizeVals[r]);
             }
 
@@ -411,14 +477,17 @@ const mod = createModule({
             for (const b of buckets.values()) {
               if (b.x.length < 2) continue;
               const bubble = b.rawSizes ? this._buildBubble(b.rawSizes, sizeName) : null;
-              pushSeries(b.x, b.y, _t('groupSeriesName', { y: yName, level: String(b.level) }), bubble);
+              pushSeries(
+                b.x, b.y, _t('groupSeriesName', { y: yName, level: String(b.level) }), bubble,
+                buildErrorBars(errSpec, b.rows, errValues),
+              );
               hasAny = true;
             }
             if (!hasAny) {
               throw new Error(_t('errTooFew', { col: yName }));
             }
           } else {
-            const x = [], y = [], rawSizes = sizeVals ? [] : null;
+            const x = [], y = [], rows = [], rawSizes = sizeVals ? [] : null;
             const len = Math.min(
               xVals.length, yVals.length,
               sizeVals ? sizeVals.length : Infinity,
@@ -434,6 +503,7 @@ const mod = createModule({
               }
               x.push(vx);
               y.push(vy);
+              rows.push(r);
             }
 
             if (x.length < 2) {
@@ -441,7 +511,7 @@ const mod = createModule({
             }
 
             const bubble = rawSizes ? this._buildBubble(rawSizes, sizeName) : null;
-            pushSeries(x, y, yName, bubble);
+            pushSeries(x, y, yName, bubble, buildErrorBars(errSpec, rows, errValues));
           }
         }
 

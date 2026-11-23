@@ -161,13 +161,13 @@ export default class ScatterChart extends ChartBase {
         if (eb.yMode && eb.yMode !== 'none') {
           if (eb.yPlus && eb.yPlus[i] != null) {
             const yTop = yScale(resolveError(eb.yMode, s.y[i], eb.yPlus[i], +1));
-            svgEl('line', { x1: cx, y1: cy, x2: cx, y2: yTop, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
-            svgEl('line', { x1: cx - eCap, y1: yTop, x2: cx + eCap, y2: yTop, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: cx, y1: cy, x2: cx, y2: yTop, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: cx - eCap, y1: yTop, x2: cx + eCap, y2: yTop, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
           }
           if (eb.yMinus && eb.yMinus[i] != null) {
             const yBot = yScale(resolveError(eb.yMode, s.y[i], eb.yMinus[i], -1));
-            svgEl('line', { x1: cx, y1: cy, x2: cx, y2: yBot, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
-            svgEl('line', { x1: cx - eCap, y1: yBot, x2: cx + eCap, y2: yBot, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: cx, y1: cy, x2: cx, y2: yBot, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: cx - eCap, y1: yBot, x2: cx + eCap, y2: yBot, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
           }
         }
 
@@ -175,13 +175,13 @@ export default class ScatterChart extends ChartBase {
         if (eb.xMode && eb.xMode !== 'none') {
           if (eb.xPlus && eb.xPlus[i] != null) {
             const xRight = xScale(resolveError(eb.xMode, s.x[i], eb.xPlus[i], +1));
-            svgEl('line', { x1: cx, y1: cy, x2: xRight, y2: cy, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
-            svgEl('line', { x1: xRight, y1: cy - eCap, x2: xRight, y2: cy + eCap, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: cx, y1: cy, x2: xRight, y2: cy, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: xRight, y1: cy - eCap, x2: xRight, y2: cy + eCap, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
           }
           if (eb.xMinus && eb.xMinus[i] != null) {
             const xLeft = xScale(resolveError(eb.xMode, s.x[i], eb.xMinus[i], -1));
-            svgEl('line', { x1: cx, y1: cy, x2: xLeft, y2: cy, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
-            svgEl('line', { x1: xLeft, y1: cy - eCap, x2: xLeft, y2: cy + eCap, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: cx, y1: cy, x2: xLeft, y2: cy, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
+            svgEl('line', { class: 'chart-error-bar', x1: xLeft, y1: cy - eCap, x2: xLeft, y2: cy + eCap, stroke: eColor, 'stroke-width': eWidth }, plotGroup);
           }
         }
       }

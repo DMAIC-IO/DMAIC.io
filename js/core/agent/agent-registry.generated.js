@@ -23136,6 +23136,24 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Die ganze Liste der Datenreihen setzen."
+      },
+      "setErrorBars": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "die Reihe, 0-basiert (read().datasets)"
+          },
+          {
+            "name": "spec",
+            "type": "object",
+            "optional": false,
+            "help": "`{ mode, xPlus?, xMinus?, yPlus?, yMinus? }`; mode 'none', 'constant' (Zahlen) oder 'columns' (Spalten aus read().pickableColumns.y); fehlend = null"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Fehlerbalken einer Datenreihe setzen."
       }
     },
     "fields": {
@@ -23161,6 +23179,33 @@ export const AGENT_REGISTRY = {
           "sizeRef": {
             "type": "object|null",
             "help": "Spalte der Blasengröße (Slot size)"
+          },
+          "errorBars": {
+            "type": "ErrorBars",
+            "help": "Fehlerbalken der Reihe (setErrorBars)",
+            "keysOf": "ErrorBars",
+            "keys": {
+              "mode": {
+                "type": "string",
+                "help": "'none', 'constant' oder 'columns'"
+              },
+              "xPlus": {
+                "type": "number|object|null",
+                "help": "Fehler nach +x: Zahl (constant) oder Spaltenbezug (columns)"
+              },
+              "xMinus": {
+                "type": "number|object|null",
+                "help": "Fehler nach −x"
+              },
+              "yPlus": {
+                "type": "number|object|null",
+                "help": "Fehler nach +y"
+              },
+              "yMinus": {
+                "type": "number|object|null",
+                "help": "Fehler nach −y"
+              }
+            }
           }
         }
       },
