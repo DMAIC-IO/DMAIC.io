@@ -23131,7 +23131,7 @@ export const AGENT_REGISTRY = {
             "name": "rows",
             "type": "object[]",
             "optional": false,
-            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+            "help": "je Reihe `{ <slot>: ref|null, errorBars? }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; errorBars wie bei setErrorBars, fehlend = die bisherigen Fehlerbalken dieser Position; [] leert"
           }
         ],
         "returns": "void",
