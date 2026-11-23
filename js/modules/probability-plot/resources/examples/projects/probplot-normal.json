@@ -1,0 +1,20 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "datasets": [
+    {
+      "valueRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-probplot-two-groups",
+        "columnId": "c-messwert"
+      },
+      "groupRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-probplot-two-groups",
+        "columnId": "c-schicht"
+      }
+    }
+  ],
+  "sourceWorksheetFile": "worksheets/probplot-two-groups.json"
+}

@@ -1,0 +1,23 @@
+<div class="probplot dmike-split dmike-split--input-sm" x-data="probabilityPlot">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="probplot__input dmike-split__input">
+    <div class="dmike-split__section-title"><span data-help-key="modules.probability-plot.fields.distribution.help" x-text="t('sectionData')"></span></div>
+    <div class="probplot__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="field-error" data-ref="error-box" x-show="errorText" x-text="errorText"></div>
+  </div>
+
+  <div class="probplot__output dmike-split__output">
+    <div class="probplot__placeholder" data-ref="placeholder" x-show="!hasSeries">
+      <p x-text="t('placeholderText')"></p>
+    </div>
+    <template x-if="hasSeries">
+      <div class="probplot__chart-area" data-ref="chart-area">
+        <div class="probplot__chart-card" data-ref="chart-card">
+          <div class="probplot__plot-wrap" data-ref="plot" x-widget="probability-plot-chart" x-widget-config="probChart" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        </div>
+        <div data-ref="stats-panel" x-show="model.showStats" x-widget="stats-table" x-widget-rows="statsRows" x-widget-conf-level="model.confLevel"></div>
+      </div>
+    </template>
+  </div>
+</div>

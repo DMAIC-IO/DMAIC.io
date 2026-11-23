@@ -1,0 +1,16 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "datasets": [
+    {
+      "valueRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-dist-weibull",
+        "columnId": "c-lebensdauer"
+      },
+      "groupRef": null
+    }
+  ],
+  "sourceWorksheetFile": "shared/worksheets/distribution-weibull.json"
+}

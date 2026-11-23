@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Wahrscheinlichkeitsnetz",
+  "description": "Normales Wahrscheinlichkeitsnetz zur Prüfung auf Normalverteilung, mit optionaler Gruppierung",
+  "whenToUse": "Prüfen, ob eine oder mehrere numerische Spalten einer Verteilung folgen: Punkte auf der Geraden bedeuten eine gute Anpassung.",
+  "sectionData": "Datenquelle",
+  "placeholderText": "Wählen Sie mindestens eine numerische Spalte aus, um das Wahrscheinlichkeitsnetz zu erstellen. Optional eine Gruppierungs-Spalte hinzufügen, um mehrere Gruppen im selben Plot zu vergleichen.",
+  "chartTitle": "Wahrscheinlichkeitsnetz – {col}",
+  "xLabel": "Messwert",
+  "yLabel": "Wahrscheinlichkeit",
+  "errNoGroupLevels": "Datensatz {n}: Die Gruppierungsspalte enthält keine gültigen Werte.",
+  "errTooFew": "Zu wenig Werte für \"{col}\" (mindestens 2 erforderlich)."
+}

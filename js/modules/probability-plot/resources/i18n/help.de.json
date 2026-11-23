@@ -1,0 +1,139 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} (auch Normal Probability Plot) zeigt dir auf einen Blick mehrere wichtige Dinge:"
+        },
+        {
+          "type": "definition",
+          "term": "Verteilungsform",
+          "content": "Liegen die Datenpunkte annähernd auf einer Geraden, sind deine Daten normalverteilt. Systematische Abweichungen (S-Kurven, Ausreißer, Knicke) deuten auf {{term:schiefe|Schiefe}}, Ausreißer oder eine andere Verteilung hin."
+        },
+        {
+          "type": "definition",
+          "term": "Lage und Streuung",
+          "content": "Der {{term:median|Median}} (50%-Punkt) zeigt dir die zentrale Lage, und die Steigung der Geraden spiegelt die Streuung wider – eine flache Gerade bedeutet große Streuung, eine steile geringe."
+        },
+        {
+          "type": "definition",
+          "term": "Prozessfähigkeit abschätzen",
+          "content": "Du kannst direkt ablesen, welcher Anteil deiner Daten innerhalb oder außerhalb der {{term:spezifikationsgrenzen|Spezifikationsgrenzen}} liegt, indem du die Grenzen auf der x-Achse einträgst und den zugehörigen Prozentsatz auf der y-Achse abliest."
+        },
+        {
+          "type": "definition",
+          "term": "Ausreißer und Mischverteilungen erkennen",
+          "content": "Einzelne Punkte, die weit von der Geraden abweichen, sind Ausreißer. Ein Knick in der Mitte deutet oft darauf hin, dass zwei Prozesse überlagert sind (z. B. zwei Maschinen, zwei Schichten)."
+        },
+        {
+          "type": "paragraph",
+          "content": "Kurz gesagt: Es ist ein schnelles visuelles Werkzeug, um zu prüfen, ob deine Daten „brav\" normalverteilt sind und wie sich dein Prozess verhält – bevor du mit Cpk-Berechnungen oder Hypothesentests weiterarbeitest."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Wahrscheinlichkeitsnetz (Normal Probability Plot) ist eine grafische Methode, um zu prüfen, ob eine Stichprobe näherungsweise einer Normalverteilung folgt. Die geordneten Messwerte werden gegen die theoretischen Quantile der Standardnormalverteilung aufgetragen. Liegen die Punkte annähernd auf einer Geraden, ist Normalverteilung plausibel."
+        },
+        {
+          "type": "definition",
+          "term": "Plotting Positions (Blom)",
+          "content": "Für n Messwerte werden die kumulierten Wahrscheinlichkeiten p_i = (i − 3/8) / (n + 1/4) berechnet. Daraus ergeben sich über die Inverse der Standardnormalverteilung die theoretischen z-Werte."
+        },
+        {
+          "type": "definition",
+          "term": "Wahrscheinlichkeitsachse (Y)",
+          "content": "Die Y-Achse zeigt Prozentwerte (1 %, 5 %, 10 %, …, 99 %) an den Positionen der zugehörigen z-Quantile — wie auf klassischem Wahrscheinlichkeitspapier."
+        },
+        {
+          "type": "definition",
+          "term": "Referenzgerade",
+          "content": "Die gestrichelte Linie wird durch das erste und dritte Quartil (Q1/Q3) der Daten gelegt. Sie dient als visueller Vergleich: Punkte auf der Linie → normalverteilt, systematische Abweichungen → andere Verteilungsform."
+        },
+        {
+          "type": "definition",
+          "term": "Gruppen im selben Plot",
+          "content": "Optional kann eine kategoriale Spalte als Gruppierung hinzugefügt werden (z. B. Schicht, Maschine, Charge). Pro eindeutigem Gruppen-Wert entsteht eine eigene Serie mit eigener Q1/Q3-Anpassungsgerade — so lassen sich Verteilungsform, Lage und Streuung der Gruppen direkt im selben Plot vergleichen."
+        }
+      ]
+    },
+    "example": {
+      "title": "Praxisbeispiel",
+      "blocks": [
+        {
+          "type": "scenario",
+          "content": "Ein Qualitätsteam misst die Bohrungstiefe (mm) von 50 Werkstücken und möchte vor einer {{term:prozessfaehigkeit|Prozessfähigkeitsanalyse}} prüfen, ob die Werte normalverteilt sind."
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Modul „Wahrscheinlichkeitsnetz\" öffnen.",
+            "Spalte „Bohrungstiefe\" als Werte-Spalte auswählen.",
+            "Diagramm erscheint automatisch — Punkte und Referenzlinie vergleichen.",
+            "Liegen die Punkte nahe der Linie, kann mit der Normalverteilungsannahme gearbeitet werden."
+          ]
+        },
+        {
+          "type": "result",
+          "content": "Die Punkte folgen weitgehend der Referenzlinie, nur die Extreme weichen leicht ab. Eine Cpk-Analyse mit Normalverteilungsannahme ist vertretbar; zusätzlich kann ein formaler Test (Anderson-Darling, Shapiro-Wilk) im Modul „Verteilungsanpassung\" durchgeführt werden."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Typische Muster"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Punkte auf der Linie → Normalverteilung plausibel.",
+            "S-förmiges Muster → leichte/starke Schiefe der Verteilung.",
+            "Konvex (nach oben gewölbt) → rechtsschief (positiv schief).",
+            "Konkav (nach unten gewölbt) → linksschief (negativ schief).",
+            "Treppen-/Stufenmuster → diskrete oder gerundete Daten.",
+            "Einzelne Punkte weit abseits → mögliche Ausreißer.",
+            "Punkte folgen mehreren Geraden → gemischte Population (Stratifizierung prüfen)."
+          ]
+        },
+        {
+          "type": "decision",
+          "content": "Das Wahrscheinlichkeitsnetz ist ein visueller Schnelltest. Bei Unsicherheit sollte ein formaler {{term:normalitaetstest|Normalitätstest}} (Shapiro-Wilk, Anderson-Darling) ergänzt werden — verfügbar im Modul „Verteilungsanpassung\"."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "pitfall",
+          "content": "Zu kleine Stichprobe (n < 15): Auch normalverteilte Daten zeigen oft scheinbare Abweichungen. Aussagen werden erst ab n ≥ 30 robust."
+        },
+        {
+          "type": "pitfall",
+          "content": "Visuelle Beurteilung allein reicht nicht: Bei kritischen Entscheidungen (z. B. Freigabe einer Cpk-Analyse) immer einen formalen Normalitätstest ergänzen."
+        },
+        {
+          "type": "pitfall",
+          "content": "Diskrete oder stark gerundete Daten erzeugen ein typisches Treppenmuster — das ist keine Nicht-Normalität, sondern eine Eigenart der Datenerfassung."
+        },
+        {
+          "type": "pitfall",
+          "content": "Gemischte Populationen (z. B. zwei Maschinen, zwei Schichten) erzeugen oft mehrere Geradenstücke. Daten vor der Analyse stratifizieren."
+        },
+        {
+          "type": "pitfall",
+          "content": "Wahrscheinlichkeitsnetz ≠ Anpassungstest: Das Diagramm zeigt nur, ob die Normalverteilung passend erscheint — andere Verteilungen (Weibull, lognormal) erfordern eigene Tests."
+        }
+      ]
+    }
+  }
+}

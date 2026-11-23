@@ -7,11 +7,20 @@
  * Reihe.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertAlmostEqual } from '../../test-utils.js';
+import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/probability-plot/domain/model.js';
 import { storedSource } from '../../helpers/stored-source.js';
 
-const BASE = '../../../examples/';
+const BASE = '../../../js/modules/probability-plot/resources/examples/';
+const SHARED = '../../../examples/';
+
+/** Arbeitsblätter der Beispiele: eigene unter `worksheets/`, das Weibull-Blatt bleibt geteilt. */
+const WORKSHEET = {
+  'probplot-normal': 'worksheets/probplot-two-groups.json',
+  'probplot-resolution': 'worksheets/probplot-resolution.json',
+  'probplot-weibull': 'shared/worksheets/distribution-weibull.json',
+};
 
 /** Kennzahlen der Altform, mit dem Reihenbau des Altmoduls gerechnet (Konfidenzniveau 95 %). */
 const LEGACY = {
@@ -34,16 +43,31 @@ async function fetchJson(relPath) {
 }
 
 suite('probability-plot: Beispiele', () => {
+  test('die drei Beispiele stehen in der Modulablage', async () => {
+    const own = await fetchJson(`${BASE}examples.json`);
+    assertDeepEqual(own.examples.map((e) => e.id).sort(), Object.keys(LEGACY).sort());
+    for (const e of own.examples) {
+      assertEqual(e.type, 'project');
+      assertEqual(e.format, 'json');
+      assertEqual(e.file, `projects/${e.id}.json`);
+    }
+  });
+
   for (const [id, expected] of Object.entries(LEGACY)) {
     test(`${id}: lädt ohne Reparatur, Kennzahlen wie in der Altform`, async () => {
       const { sourceWorksheetFile, ...data } = await fetchJson(`${BASE}projects/${id}.json`);
-      const ws = await fetchJson(`${BASE}${sourceWorksheetFile}`);
-      const model = State.fromJSON(data);
+      assertEqual(sourceWorksheetFile, WORKSHEET[id]);
+      const ws = await fetchJson(`${sourceWorksheetFile.startsWith('shared/') ? SHARED : BASE}${sourceWorksheetFile}`);
+      assertEqual(data._schema?.version, '1.0');
+      assertDeepEqual(Object.keys(data).sort(), ['_schema', 'datasets']);
+      const model = State.fromJSON(rewriteColumnRefs(State, data, '__source__', 'ws1'));
+      assertEqual(model.datasets.length, 1);
+      assertEqual(model.datasets[0].valueRef.instanceId, 'ws1');
       assertEqual(model.confLevel, 95);
       assertEqual(model.showStats, true);
       assertDeepEqual(JSON.parse(JSON.stringify(model.chart)), {});
       assertDeepEqual(JSON.parse(JSON.stringify(model.legacySeries)), []);
-      const { stats } = evaluateDerived(model, storedSource({ __source__: ws }));
+      const { stats } = evaluateDerived(model, storedSource({ ws1: ws }));
       assertEqual(stats.length, expected.length);
       expected.forEach((e, i) => {
         assertEqual(stats[i].name, e.name);

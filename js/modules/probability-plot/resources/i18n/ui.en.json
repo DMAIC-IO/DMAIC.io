@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Probability Plot",
+  "description": "Normal probability plot for checking normality, with optional grouping",
+  "whenToUse": "Check whether one or more numeric columns follow a distribution: points on the straight line mean a good fit.",
+  "sectionData": "Data Source",
+  "placeholderText": "Select at least one numeric column to create the probability plot. Optionally add a grouping column to compare multiple groups in the same plot.",
+  "chartTitle": "Probability Plot – {col}",
+  "xLabel": "Value",
+  "yLabel": "Probability",
+  "errNoGroupLevels": "Dataset {n}: The grouping column contains no valid values.",
+  "errTooFew": "Too few values for \"{col}\" (at least 2 required)."
+}
