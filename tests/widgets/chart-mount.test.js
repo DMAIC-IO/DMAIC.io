@@ -12,6 +12,8 @@ import IndividualValuePlot from '../../js/core/chart/types/individual-value-plot
 import individualValuePlotChart from '../../js/widgets/individual-value-plot-chart/schema.js';
 import Boxplot from '../../js/core/chart/types/boxplot.js';
 import boxplotChart from '../../js/widgets/boxplot-chart/schema.js';
+import ProbabilityPlot from '../../js/core/chart/types/probability-plot.js';
+import probabilityPlotChart from '../../js/widgets/probability-plot-chart/schema.js';
 import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
@@ -60,6 +62,7 @@ function countingDoc(writes) {
 const ScatterDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: scatterChart.edits() } });
 const IvpDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chart: individualValuePlotChart.edits() } });
 const BoxDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chart: boxplotChart.edits() } });
+const ProbDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chart: probabilityPlotChart.edits() } });
 const TrendDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: trendChart.edits() } });
 const SERIES = (rev) => {
   const s = [{ name: 'A', values: [1, 2, 3], fillColor: 'red' }, { name: 'B', values: [4, 5], fillColor: 'blue' }];
@@ -450,6 +453,28 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     chart.config.onEditorChange(chart);
     await flush();
     assertDeepEqual(JSON.parse(JSON.stringify(data.model.chart)), { boxColors: [null, '#123456'] });
+    root.remove();
+  });
+
+  test('Wahrscheinlichkeitsnetz: Farbe der Geraden und Name der Reihe aus dem Editor gehen in value', async () => {
+    const charts = [];
+    const cm = {
+      create(el, type, config) { const c = new ProbabilityPlot(el, config, { i18n, language: 'de', theme: 'light' }); charts.push(c); return Promise.resolve(c); },
+      update(chart, patch) { Object.assign(chart.config, patch); },
+      destroy(chart) { chart.destroy?.(); },
+    };
+    const cfg = { series: [{ name: 'A', values: [1, 2, 3, 4] }, { name: 'B', values: [2, 4, 5, 7] }] };
+    const { root, data } = await host('<div x-widget="probability-plot-chart" x-widget-config="cfg" x-widget-value="model.chart"></div>', { cm, Model: ProbDoc, extra: { cfg } });
+    const chart = charts[0];
+    // Je Reihe zwei Deskriptoren: Punkte, dann die Gerade.
+    chart._getSeriesDescriptors()[1].setColor('#123456');
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(data.model.chart)), { series: [{ name: 'A', lineColor: '#123456' }] });
+    chart._getSeriesDescriptors()[0].setName('Neu');
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(data.model.chart)), { series: [{ name: 'A', label: 'Neu', lineColor: '#123456' }] });
     root.remove();
   });
 
