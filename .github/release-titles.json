@@ -106,5 +106,9 @@
   "1.8.0": {
     "de": "Feste Diagrammgröße in Pixeln im Grafik-Editor (auch nur für den Export), Schriftgröße der Legende",
     "en": "Fixed chart size in pixels in the chart editor (optionally for export only), legend font size"
+  },
+  "1.8.1": {
+    "de": "Versionswechsel übernimmt Grafik-Editor-Einstellungen, Modelle und Optimierungen",
+    "en": "Version takeover keeps chart editor settings, models and optimizations"
   }
 }
