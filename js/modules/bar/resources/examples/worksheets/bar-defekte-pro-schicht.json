@@ -1,0 +1,50 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-defekte",
+      "name": "Defekte pro Schicht",
+      "state": {
+        "columns": [
+          {
+            "id": "c-schicht",
+            "name": "Schicht",
+            "shortName": "Sch",
+            "type": "text",
+            "values": [
+              "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh",
+              "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh", "Früh",
+              "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät",
+              "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät", "Spät",
+              "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht",
+              "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht", "Nacht"
+            ]
+          },
+          {
+            "id": "c-defektart",
+            "name": "Defektart",
+            "shortName": "Def",
+            "type": "text",
+            "values": [
+              "Kratzer", "Kratzer", "Kratzer", "Kratzer",
+              "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung",
+              "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung",
+              "Oberfläche", "Oberfläche", "Oberfläche",
+              "Sonstige",
+              "Kratzer", "Kratzer", "Kratzer", "Kratzer", "Kratzer", "Kratzer",
+              "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung",
+              "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche",
+              "Sonstige", "Sonstige",
+              "Kratzer", "Kratzer", "Kratzer", "Kratzer", "Kratzer",
+              "Maßabweichung", "Maßabweichung", "Maßabweichung", "Maßabweichung",
+              "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche", "Oberfläche",
+              "Sonstige", "Sonstige", "Sonstige"
+            ]
+          }
+        ],
+        "rowCount": 60
+      }
+    }
+  ],
+  "activeSheetId": "sheet-defekte",
+  "sheetCounter": 1
+}

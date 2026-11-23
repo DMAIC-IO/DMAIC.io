@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Die Zeile mit der Kategorienspalte, der optionalen Wertespalte und der optionalen Gruppenspalte, jede Spalte unter keys einzeln beschrieben. Die Kategorienspalte ist für ein Diagramm Pflicht. Leeren geht über eine leere Zeile ([{ x: null, y: null, g: null }]), [] wird abgelehnt.",
+      "x": {
+        "label": "X",
+        "title": "Kategorie-Spalte (X-Achse)",
+        "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Balken. Pflicht, leer, solange keine gewählt ist."
+      },
+      "y": {
+        "label": "Y",
+        "title": "Wert-Spalte (numerisch, optional)",
+        "help": "Die Wertespalte (Slot y), numerisch und optional; ohne sie zählt jeder Balken die Zeilen seiner Kategorie. Leer, solange keine gewählt ist."
+      },
+      "g": {
+        "label": "G",
+        "title": "Gruppierung (optional)",
+        "help": "Die Gruppenspalte (Slot g), optional; sie teilt jede Kategorie in Gruppen. Leer, solange keine gewählt ist."
+      }
+    },
+    "aggregation": {
+      "help": "Wie die Werte der Wertespalte je Balken zusammengefasst werden: mean (Mittelwert) oder sum (Summe). Wirkt nur mit Wertespalte (Slot y); ohne sie zählt jeder Balken die Zeilen seiner Kategorie."
+    },
+    "stacked": {
+      "help": "Ob die Gruppen eines Balkens übereinander gestapelt (an) oder nebeneinander gestellt werden (aus). Wirkt nur mit Gruppenspalte (Slot g)."
+    },
+    "stats": {
+      "help": "Die Balkenwerte, jede Kennzahl unter keys einzeln beschrieben; null, solange es keine Daten gibt (keine Kategorienspalte, keine Werte oder eine gewählte Spalte nicht lesbar)."
+    },
+    "activeParams": {
+      "help": "Die Felder, die im aktuellen Zustand wirken: aggregation nur mit gesetzter Wertespalte (Slot y), stacked nur mit gesetzter Gruppenspalte (Slot g)."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: x, y, g."
+    },
+    "chartData": {
+      "help": "Die Kategorien und die Reihen (Name, Wert je Kategorie, Farbe) aus den gewählten Spalten, wie das Diagramm sie zeichnet; ohne Gruppenspalte genau eine Reihe. Leer, solange es keine Daten gibt."
+    }
+  },
+  "types": {
+    "BarStats": {
+      "categories": "Die Kategorien der X-Spalte in der Reihenfolge der Balken; die Tabelle zeigt sie in der Spalte Kategorie.",
+      "groups": "Je Gruppe die Werte aller Kategorien. Ohne Gruppenspalte gibt es genau eine Gruppe, benannt nach der Wertespalte, ohne sie nach der Kategorienspalte.",
+      "total": "Die Summe aller Werte; die Tabelle zeigt sie in der letzten Zeile. Sie gibt es nur bei Häufigkeiten, also ohne Wertespalte; mit Wertespalte ist das Feld leer."
+    },
+    "BarGroup": {
+      "name": "Der Name der Gruppe; die Tabelle zeigt ihn in der Spalte Gruppe, die nur mit Gruppenspalte erscheint.",
+      "values": "Der Wert je Kategorie in der Reihenfolge der Kategorien: ohne Wertespalte die Anzahl der Zeilen, sonst Mittelwert oder Summe der Wertespalte. Hat die Gruppe in einer Kategorie keine Zeilen, steht dort 0. Die Tabellenspalte wechselt ihren Kopf mit der Aggregation (Häufigkeit, Mittelwert, Summe)."
+    }
+  }
+}

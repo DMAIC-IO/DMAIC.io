@@ -1,0 +1,68 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of a Bar Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A {{term:balkendiagramm|bar chart}} draws one vertical bar per category, the height of which expresses a numeric value. It is the most straightforward tool to compare discrete quantities — the eye translates bar length into magnitude almost without error."
+        },
+        {
+          "type": "definition",
+          "term": "Category (X axis)",
+          "content": "A discrete level for which a bar is drawn — e.g. \"Shift A / B / C\", \"Defect type\", \"Supplier\". The category list is finite and named, not numerically ordered."
+        },
+        {
+          "type": "definition",
+          "term": "Value (Y axis)",
+          "content": "The quantity the bar represents. Three options: (1) a pure frequency count of the category (\"how often does it appear?\"), (2) the mean of a numeric column per category, (3) the sum of a numeric column per category."
+        },
+        {
+          "type": "definition",
+          "term": "Grouping",
+          "content": "When a second {{term:skalenniveau|categorical}} column is supplied, each X-category becomes a bundle of bars (or a stacked bar) — each subgroup in its own color. This makes effects such as \"defect type × shift\" or \"supplier × plant\" comparable at a glance."
+        },
+        {
+          "type": "definition",
+          "term": "Grouped vs. stacked",
+          "content": "\"Grouped\" places subgroups side-by-side — good for direct comparison. \"Stacked\" piles them — good for seeing the per-category total while still showing the split."
+        },
+        {
+          "type": "paragraph",
+          "content": "Bar charts are suited to comparing categories on a single metric — such as \"average cycle time per shift\" or \"frequency of defect types\". For a variant sorted by frequency with a cumulative line, use a Pareto chart. For continuous data with a binned axis, the histogram is the right tool."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Y axis does not start at zero",
+          "content": "Truncating the Y axis (e.g. starting at 90 instead of 0) makes differences look more dramatic than they are. This is one of the most common — and most misleading — manipulations with bar charts; length comparisons require the axis to start at 0."
+        },
+        {
+          "type": "definition",
+          "term": "Too many categories",
+          "content": "More than 10–15 categories become visually overwhelming. Sort by frequency (→ Pareto chart) or group small categories into \"Other\"."
+        },
+        {
+          "type": "definition",
+          "term": "Mean without spread",
+          "content": "A bar shows only the mean (or sum) — within-category spread is invisible. If heterogeneity is plausible, complement with a boxplot or individual-value plot."
+        },
+        {
+          "type": "definition",
+          "term": "Confusing frequency with mean",
+          "content": "When a Y column is set, the bar shows the mean (or sum) of Y per category, not the count. Check the axis label and the stats table so the chart is not misread."
+        },
+        {
+          "type": "definition",
+          "term": "Stacked bars with many subgroups",
+          "content": "Stacked bars are hard to read when subgroups are very uneven in size or when there are more than 4–5 of them. Prefer a mosaic chart or a heatmap in such cases."
+        }
+      ]
+    }
+  }
+}

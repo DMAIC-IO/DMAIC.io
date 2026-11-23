@@ -1,0 +1,22 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Säulendiagramm",
+  "description": "Säulen-/Balkendiagramm aus Worksheet-Spalten: Häufigkeit, Mittelwert oder Summe je Kategorie",
+  "whenToUse": "Anzahlen oder Werte über Kategorien vergleichen, optional nach einer Gruppe aufgeteilt oder gestapelt.",
+  "sectionData": "Datenquelle",
+  "placeholderPickX": "Wähle eine Kategorie-Spalte (X) — optional eine numerische Wert-Spalte (Y) und eine Gruppierungs-Spalte (G).",
+  "aggregation": "Aggregation",
+  "aggMean": "Mittelwert",
+  "aggSum": "Summe",
+  "stacked": "Gestapelt",
+  "axisCount": "Häufigkeit",
+  "axisMeanOf": "Mittelwert von",
+  "axisSumOf": "Summe von",
+  "statsTitle": "Statistik",
+  "statCategory": "Kategorie",
+  "statGroup": "Gruppe",
+  "statCount": "Häufigkeit",
+  "statMean": "Mittelwert",
+  "statSum": "Summe",
+  "statTotal": "Gesamt"
+}

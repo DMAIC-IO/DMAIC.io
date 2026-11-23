@@ -1,0 +1,22 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Bar Chart",
+  "description": "Bar chart from worksheet columns: frequency, mean, or sum per category",
+  "whenToUse": "Compare counts or values across categories, optionally split or stacked by a group.",
+  "sectionData": "Data Source",
+  "placeholderPickX": "Pick a category column (X) — optionally a numeric value column (Y) and a grouping column (G).",
+  "aggregation": "Aggregation",
+  "aggMean": "Mean",
+  "aggSum": "Sum",
+  "stacked": "Stacked",
+  "axisCount": "Count",
+  "axisMeanOf": "Mean of",
+  "axisSumOf": "Sum of",
+  "statsTitle": "Statistics",
+  "statCategory": "Category",
+  "statGroup": "Group",
+  "statCount": "Count",
+  "statMean": "Mean",
+  "statSum": "Sum",
+  "statTotal": "Total"
+}
