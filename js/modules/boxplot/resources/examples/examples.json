@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "boxplot-pizza-fahrer",
+      "type": "project",
+      "title": {
+        "de": "Lieferzeit pro Fahrer (Boxplot)",
+        "en": "Delivery time by driver (boxplot)"
+      },
+      "description": {
+        "de": "Drei Boxen Lieferzeit-Verteilung für Fahrer A/B/C. Bedient denselben Datensatz wie das ANOVA-Beispiel — Boxen zeigen visuell die ANOVA-Signifikanz.",
+        "en": "Three boxes showing delivery-time distributions for drivers A/B/C. Same data as the ANOVA example — the boxplot visualizes the ANOVA effect."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/boxplot-pizza-fahrer.json",
+      "format": "json",
+      "tags": [
+        "boxplot",
+        "groups",
+        "pizza"
+      ]
+    }
+  ]
+}

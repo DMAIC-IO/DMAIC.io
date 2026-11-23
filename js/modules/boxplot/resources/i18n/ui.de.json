@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Boxplot",
+  "description": "Horizontale Boxplots zum Vergleich von Verteilungen",
+  "whenToUse": "Streuung, Median und Ausreißer einer oder mehrerer numerischer Spalten vergleichen, optional nach einer Gruppe aufgeteilt.",
+  "sectionData": "Datenquelle",
+  "chartTitle": "Boxplot",
+  "xLabel": "Messwert",
+  "errNoData": "Keine gültigen Daten gefunden.",
+  "errTooFew": "Zu wenig Werte für \"{col}\" (mindestens 2 erforderlich)."
+}

@@ -1,0 +1,161 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of a Boxplot",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A boxplot summarizes a distribution in one compact graphic. All elements are derived from the sorted observations and show location, spread, {{term:schiefe|skewness}}, and outliers at a glance."
+        },
+        {
+          "type": "definition",
+          "term": "Box",
+          "content": "The rectangle spans from the 1st quartile (Q1, 25 % point) to the 3rd quartile (Q3, 75 % point). It contains the middle 50 % of the data. Its length is the interquartile range (IQR = Q3 − Q1) and is the most robust measure of spread in the boxplot."
+        },
+        {
+          "type": "definition",
+          "term": "Median Line",
+          "content": "The line crossing the box marks the {{term:median|median}} (Q2, 50 % point) — the value with half the data above and half below. If the line sits centered in the box, the distribution is symmetric; if it is shifted, the distribution is skewed."
+        },
+        {
+          "type": "definition",
+          "term": "Mean Marker",
+          "content": "A diamond (or cross) marks the arithmetic {{term:mittelwert|mean}}. When mean and median sit close together, the distribution is roughly symmetric. A noticeable gap indicates skewness or the influence of outliers."
+        },
+        {
+          "type": "definition",
+          "term": "Whiskers",
+          "content": "The two lines extending from the box are called whiskers. They reach to the smallest/largest observation that still lies within 1.5 × IQR of the box — not simply to the overall minimum or maximum. They mark the range of \"normal\" variation."
+        },
+        {
+          "type": "definition",
+          "term": "Fences (inner limits)",
+          "content": "The invisible cutoffs at Q1 − 1.5 × IQR and Q3 + 1.5 × IQR are called fences. They are not specification limits but a purely statistical rule of thumb (Tukey) separating outliers from \"normal\" values."
+        },
+        {
+          "type": "definition",
+          "term": "Outliers",
+          "content": "Individual points beyond the whiskers are drawn as separate markers. They lie outside the Tukey fences and should always be investigated — not every outlier is an error; sometimes the most important information sits in exactly these points."
+        },
+        {
+          "type": "paragraph",
+          "content": "In short: box = middle 50 %, median line = location, whiskers = normal range of variation, points beyond = outliers. With these four building blocks you can quickly characterize any distribution and compare several groups side by side."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Methodology",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A boxplot ({{term:boxplot|box-and-whisker plot}}) is a graphical display of a dataset's distribution based on its five-number summary: minimum, first quartile (Q1), median, third quartile (Q3), and maximum."
+        },
+        {
+          "type": "definition",
+          "term": "Box (IQR)",
+          "content": "The box spans from Q1 to Q3, containing the middle 50 % of the data. Its width is the interquartile range (IQR = Q3 − Q1)."
+        },
+        {
+          "type": "definition",
+          "term": "Whiskers",
+          "content": "Whiskers extend to the smallest/largest value within 1.5 × IQR of Q1/Q3. Values beyond are plotted as outliers."
+        },
+        {
+          "type": "definition",
+          "term": "Median Line",
+          "content": "The vertical line inside the box marks the median (50th percentile). Its position relative to the box indicates skewness."
+        },
+        {
+          "type": "definition",
+          "term": "Mean Diamond",
+          "content": "The diamond marks the arithmetic mean. Deviation from the median suggests skewness or outlier influence."
+        },
+        {
+          "type": "heading",
+          "content": "Input Modes"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Multiple columns: Each selected numeric column produces one boxplot. Ideal for comparing different measurements.",
+            "Grouped: A single value column is split by a grouping column (categorical attribute, e.g. machine, shift, supplier). Ideal for comparing the same measurement across categories."
+          ]
+        }
+      ]
+    },
+    "example": {
+      "title": "Practical Example",
+      "blocks": [
+        {
+          "type": "scenario",
+          "content": "A production team measures wall thickness (mm) of plastic parts across three shifts. The data is in the worksheet: column \"Wall Thickness\" (numeric) and column \"Shift\" (text: Morning, Afternoon, Night)."
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Open the Boxplot module.",
+            "Set input mode to \"Grouped\".",
+            "Select value column = \"Wall Thickness\", grouping column = \"Shift\".",
+            "Click \"Create Boxplot\".",
+            "Result: Three horizontal boxplots stacked vertically — one per shift.",
+            "Compare: Night shift shows a wider box (more variation) and two low outliers."
+          ]
+        },
+        {
+          "type": "result",
+          "content": "The night shift has significantly higher variability. The analysis is forwarded to the Improve team to investigate root causes (e.g. temperature control, crew changeover)."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "What to look for"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Median position in the box: Centered → symmetric, off-center → skewed.",
+            "Box width (IQR): Narrow → low spread, wide → high spread.",
+            "Whisker length: Asymmetric whiskers indicate skewness.",
+            "Outliers: Individual points beyond whiskers. Investigate causes (measurement error, special events).",
+            "Mean vs. Median: Large gap → outliers are pulling the mean.",
+            "Comparing multiple boxplots: Non-overlapping boxes suggest potentially significant differences."
+          ]
+        },
+        {
+          "type": "decision",
+          "content": "When boxes of different groups barely overlap, a significant difference is likely — confirm with a {{term:hypothesentest|hypothesis test}} (e.g. t-test, ANOVA)."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "pitfall",
+          "content": "Too few data points (n < 10): The boxplot loses reliability as quartiles and whiskers become unstable."
+        },
+        {
+          "type": "pitfall",
+          "content": "Ignoring outliers: Outliers are not noise — they often carry the most important information. Always investigate the cause."
+        },
+        {
+          "type": "pitfall",
+          "content": "Focusing only on the median: A boxplot shows spread and shape. Two groups with the same median can have vastly different spreads."
+        },
+        {
+          "type": "pitfall",
+          "content": "Mixed populations: If the grouping column hides subgroups (e.g. two machines within one shift), the picture can be misleading — use stratification."
+        },
+        {
+          "type": "pitfall",
+          "content": "Boxplot ≠ hypothesis test: The boxplot is exploratory. For statistical significance, run a formal test."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "_schema": { "version": "1.0" },
+  "datasets": [
+    { "value": { "instanceId": "__source__", "sheetId": "sheet-pizza-fahrer", "columnId": "c-fahrer-a" }, "group": null },
+    { "value": { "instanceId": "__source__", "sheetId": "sheet-pizza-fahrer", "columnId": "c-fahrer-b" }, "group": null },
+    { "value": { "instanceId": "__source__", "sheetId": "sheet-pizza-fahrer", "columnId": "c-fahrer-c" }, "group": null }
+  ],
+  "confLevel": 95,
+  "showStats": true,
+  "sourceWorksheetFile": "shared/worksheets/hypothesis-pizza-fahrer.json"
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben. Leeren geht über eine leere Zeile ([{ value: null, group: null }]), [] wird abgelehnt.",
+      "value": {
+        "label": "V",
+        "title": "Werte-Spalte (numerisch)",
+        "help": "Die Wertespalte der Reihe (Slot V), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist."
+      },
+      "group": {
+        "label": "G",
+        "title": "Gruppierung (kategorisch)",
+        "help": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Boxen, eine je Gruppenwert. Leer, solange keine gewählt ist."
+      }
+    },
+    "confLevel": {
+      "help": "Das Konfidenzniveau in Prozent, größer 0 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
+    },
+    "showStats": {
+      "help": "Kennzahlen je Box unter dem Diagramm ein- oder ausblenden."
+    },
+    "stats": {
+      "help": "Je gezeichneter Box ihre Kennzahlen und Konfidenzintervalle, aufgebaut wie modules.shared.types.SeriesStats; null, solange nichts gerechnet werden kann."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: value, group."
+    },
+    "groups": {
+      "help": "Die Boxen aus den Datenzeilen (Name und Werte), oder ein Objekt mit „error“ und „params“, wenn sich keine Boxen bilden lassen."
+    }
+  }
+}

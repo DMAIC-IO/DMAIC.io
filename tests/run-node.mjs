@@ -194,6 +194,7 @@ const SKIP = new Set([
   'modules/pie-chart-view.test.js',
   'modules/pareto-view.test.js',
   'modules/bar-view.test.js',
+  'modules/boxplot-view.test.js',
   'modules/heatmap-view.test.js',
   'modules/process-capability-view.test.js',
   'modules/data-import/viewmodel.test.js',

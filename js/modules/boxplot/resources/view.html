@@ -1,0 +1,21 @@
+<div class="boxplot dmike-split dmike-split--input-sm" x-data="boxplot">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="boxplot__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="boxplot__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="field-error" data-ref="error-box" x-show="errorText" x-text="errorText"></div>
+  </div>
+
+  <div class="boxplot__output dmike-split__output">
+    <div class="boxplot__placeholder" data-ref="placeholder" x-show="!hasSeries"></div>
+    <template x-if="hasSeries">
+      <div class="boxplot__chart-area" data-ref="chart-area">
+        <div class="boxplot__chart-card" data-ref="chart-card">
+          <div class="boxplot__plot-wrap" data-ref="plot" x-widget="boxplot-chart" x-widget-config="boxChart" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        </div>
+        <div data-ref="stats-panel" x-show="model.showStats" x-widget="stats-table" x-widget-rows="statsRows" x-widget-conf-level="model.confLevel"></div>
+      </div>
+    </template>
+  </div>
+</div>

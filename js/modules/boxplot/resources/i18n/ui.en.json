@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Boxplot",
+  "description": "Horizontal boxplots for comparing distributions",
+  "whenToUse": "Compare the spread, median and outliers of one or more numeric columns, optionally split by a group.",
+  "sectionData": "Data Source",
+  "chartTitle": "Boxplot",
+  "xLabel": "Value",
+  "errNoData": "No valid data found.",
+  "errTooFew": "Too few values for \"{col}\" (at least 2 required)."
+}

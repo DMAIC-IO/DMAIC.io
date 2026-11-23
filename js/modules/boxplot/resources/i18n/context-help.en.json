@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Per data row its columns, each column of a row described individually under keys. To clear, set one empty row ([{ value: null, group: null }]); [] is rejected.",
+      "value": {
+        "label": "V",
+        "title": "Value column (numeric)",
+        "help": "The value column of the row (slot V), numeric and required. Without it the row stays but is not plotted. Empty until one is chosen."
+      },
+      "group": {
+        "label": "G",
+        "title": "Grouping (categorical)",
+        "help": "The group column of the row (slot G), optional; it splits the row into boxes, one per group value. Empty until one is chosen."
+      }
+    },
+    "confLevel": {
+      "help": "The confidence level in percent, greater than 0 (for example 95). It determines the confidence intervals in the statistics table."
+    },
+    "showStats": {
+      "help": "Show or hide the statistics per box below the chart."
+    },
+    "stats": {
+      "help": "Per plotted box its statistics and confidence intervals, structured like modules.shared.types.SeriesStats; null while nothing can be computed."
+    },
+    "activeColumnSlots": {
+      "help": "The slot keys a row of the datasets carries: value, group."
+    },
+    "groups": {
+      "help": "The boxes built from the data rows (name and values), or an object with \"error\" and \"params\" when no boxes can be built."
+    }
+  }
+}
