@@ -10,6 +10,7 @@ import { State as ParetoState } from '../../js/modules/pareto/domain/model.js';
 import { State as BarState } from '../../js/modules/bar/domain/model.js';
 import { State as HeatmapState } from '../../js/modules/heatmap/domain/model.js';
 import { State as BoxplotState } from '../../js/modules/boxplot/domain/model.js';
+import { State as ProbabilityPlotState } from '../../js/modules/probability-plot/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -99,11 +100,14 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(m.aggregation, 'mean');
   });
 
-  test('run-chart, probability-plot → columnRef', () => {
+  test('run-chart → columnRef; die probability-plot-Vorbelegung lädt über die Migration als Zeile valueRef/groupRef', () => {
     assertEqual(buildPrefill('run-chart', [cont(10, 'a')], 'ws', 's').state.columnRef.columnId, 'a');
     const p = buildPrefill('probability-plot', [cont(10, 'a')], 'ws', 's');
     assertEqual(p.target, 'probability-plot');
-    assertEqual(p.state.columnRef.columnId, 'a');
+    const m = ProbabilityPlotState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [
+      { valueRef: { instanceId: 'ws', sheetId: 's', columnId: 'a' }, groupRef: null },
+    ]);
   });
 
   test('transformed-imr-chart mit lambdaMode auto', () => {

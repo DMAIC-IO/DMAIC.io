@@ -105,6 +105,11 @@
     "description": "Kreisdiagramm (Pie/Donut) aus Worksheet-Spalten",
     "whenToUse": "Zeigen, wie sich eine Summe auf Anteile verteilt: ein Segment je unterschiedlichem Wert oder je Beschriftung mit summierten Werten."
   },
+  "probability-plot": {
+    "name": "Wahrscheinlichkeitsnetz",
+    "description": "Normales Wahrscheinlichkeitsnetz zur Prüfung auf Normalverteilung, mit optionaler Gruppierung",
+    "whenToUse": "Prüfen, ob eine oder mehrere numerische Spalten einer Verteilung folgen: Punkte auf der Geraden bedeuten eine gute Anpassung."
+  },
   "process-capability": {
     "name": "Prozessfähigkeit",
     "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",

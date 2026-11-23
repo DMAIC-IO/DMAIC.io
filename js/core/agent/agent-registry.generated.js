@@ -14122,6 +14122,7 @@ export const AGENT_REGISTRY = {
   "probability-plot": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -14137,58 +14138,48 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setDatasets": {
+      "clearLegacySeries": {
+        "target": "model",
         "params": [
           {
-            "name": "rows",
-            "type": "object[]",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Die ganze Liste der Datenreihen setzen."
+        "help": "",
+        "keysOf": "clearLegacySeries",
+        "keysHelp": "actions.clearLegacySeries.params",
+        "keys": {}
       }
     },
     "fields": {
-      "distribution": {
-        "type": "string",
-        "help": "die Verteilung, gegen die geprüft wird; immer 'normal'",
-        "bulk": false,
-        "derived": true
-      },
       "datasets": {
-        "type": "Dataset[]",
-        "help": "per data row its columns, each described under keys",
+        "type": "Array<{ valueRef: { instanceId: string, sheetId?: string, columnId: string }|null, groupRef: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true,
-        "keysOf": "Dataset",
-        "keys": {
-          "valueRef": {
-            "type": "object|null",
-            "help": "Wertespalte (Slot value)"
-          },
-          "groupRef": {
-            "type": "object|null",
-            "help": "Gruppenspalte (Slot group)"
-          }
+        "rules": [
+          "datasets",
+          "multi"
+        ],
+        "slots": {
+          "valueRef": [
+            "columnRef",
+            "types:numeric",
+            "minCount:2",
+            "required"
+          ],
+          "groupRef": [
+            "columnRef",
+            "group"
+          ]
         }
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slot keys a row of `setDatasets` may carry",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
       "stats": {
-        "type": "SeriesStats[]|null",
-        "help": "per plotted series its statistics, each figure described under keys; null while nothing can be computed",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "SeriesStats",
@@ -14211,15 +14202,15 @@ export const AGENT_REGISTRY = {
                 "help": "Mittelwert"
               },
               "stddev": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Standardabweichung"
               },
               "variance": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Varianz"
               },
               "seMean": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Standardfehler des Mittelwerts"
               },
               "median": {
@@ -14247,11 +14238,11 @@ export const AGENT_REGISTRY = {
                 "help": "drittes Quartil"
               },
               "skewness": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Schiefe"
               },
               "kurtosis": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Kurtosis"
               }
             }
@@ -14262,17 +14253,17 @@ export const AGENT_REGISTRY = {
             "keysOf": "StatsCi",
             "keys": {
               "mean": {
-                "type": "number[]",
+                "type": "Array<number|null>",
                 "help": "Intervall des Mittelwerts",
                 "optional": true
               },
               "variance": {
-                "type": "number[]",
+                "type": "Array<number|null>",
                 "help": "Intervall der Varianz",
                 "optional": true
               },
               "stddev": {
-                "type": "number[]",
+                "type": "Array<number|null>",
                 "help": "Intervall der Standardabweichung",
                 "optional": true
               }
@@ -14284,18 +14275,42 @@ export const AGENT_REGISTRY = {
             "keysOf": "ReferenceLine",
             "keys": {
               "slope": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Steigung: z je Einheit des Messwerts"
               },
               "intercept": {
-                "type": "number",
+                "type": "number|null",
                 "help": "Achsenabschnitt: z bei Messwert 0"
               }
             }
           }
         }
+      },
+      "distribution": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "showStats",
+      "confLevel",
+      "chart",
+      "legacySeries"
+    ],
+    "settable": [
+      "datasets"
+    ],
+    "invariants": []
   },
   "process-capability": {
     "tagged": true,

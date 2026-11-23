@@ -4077,65 +4077,6 @@
       "recLargeN": "Sufficient sample size (n = {n}) — all three methods are statistically reliable.",
       "recLowMono": "Monotonicity index low ({pct}%) — relationship may not be monotonic."
     },
-    "probability-plot": {
-      "name": "Probability Plot",
-      "description": "Normal probability plot for checking normality, with optional grouping",
-      "whenToUse": "Check whether one or more numeric columns follow a distribution: points on the straight line mean a good fit.",
-      "actions": {
-        "read": {
-          "help": "Read the data rows (value and group column per row) and the columns each slot accepts, and the figures shown next to the chart."
-        },
-        "setDatasets": {
-          "help": "Set the data rows. A row consists of a value column and optionally a group column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
-          "params": {
-            "rows": "A list of rows, each { value, group }: 'value' — a numeric column with at least two values (required for the row to be plotted); 'group' — an optional column that splits the row into series. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
-          }
-        }
-      },
-      "fields": {
-        "distribution": {
-          "help": "The distribution the plot checks against. It is fixed to the normal distribution and cannot be changed: if the points lie close to the dashed line, the series fits a normal distribution. There is no goodness-of-fit test with a test value."
-        },
-        "datasets": {
-          "help": "Per data row its columns, each column of a row described individually under keys."
-        },
-        "activeColumnSlots": {
-          "help": "The slot keys a row may carry: value, group."
-        },
-        "pickableColumns": {
-          "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
-        },
-        "stats": {
-          "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed."
-        }
-      },
-      "types": {
-        "SeriesStats": {
-          "referenceLine": "The dashed line of this series, labelled “— Fit” in the legend. It passes through the points at the first and third quartile. Empty while the series has fewer than two values."
-        },
-        "ReferenceLine": {
-          "slope": "The slope of the line: how much the normal quantile (the vertical axis, labelled as a probability in percent) rises per unit of the measured value (the horizontal axis). It is positive and larger the more tightly the values are packed; roughly it is the inverse of the spread.",
-          "intercept": "The intercept of the line: the normal quantile at a measured value of 0. Together with the slope, normal quantile = slope · value + intercept; the line crosses the 50 percent level where the value equals minus intercept divided by slope, roughly at the mean."
-        },
-        "Dataset": {
-          "valueRef": "The value column of the row (slot V), numeric with at least two values, and required. Without it the row is kept but not plotted. Empty until one is chosen.",
-          "groupRef": "The group column of the row (slot G), optional; it splits the row into series, one per group value. Empty until one is chosen."
-        }
-      },
-      "sectionData": "Data Source",
-      "valueColumn": "Value column (numeric)",
-      "selectColumn": "— Select column —",
-      "noNumericColumns": "No numeric columns found.",
-      "noWorksheet": "Add a worksheet first.",
-      "placeholderText": "Select at least one numeric column to create the probability plot. Optionally add a grouping column to compare multiple groups in the same plot.",
-      "chartTitle": "Probability Plot – {col}",
-      "xLabel": "Value",
-      "yLabel": "Probability",
-      "groupSeriesName": "{col} — {level}",
-      "errNoGroupLevels": "Dataset {n}: The grouping column contains no valid values.",
-      "errTooFew": "Too few values for \"{col}\" (at least 2 required).",
-      "errGeneric": "An error occurred while creating the probability plot."
-    },
     "doe-advisor": {
       "whenToUse": "When an improvement project still has to settle WHICH design of experiments fits — screening, interactions, optimisation, robustness or mixture — or when the Overview tab with all designs and the comparison of the central composite designs are needed; not for planning or evaluating a concrete experiment, that is what the design planner and its evaluation are for.",
       "actions": {

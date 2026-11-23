@@ -105,6 +105,11 @@
     "description": "Pie/donut chart from worksheet columns",
     "whenToUse": "Show how a total splits into parts: one slice per distinct value, or per label with the values summed."
   },
+  "probability-plot": {
+    "name": "Probability Plot",
+    "description": "Normal probability plot for checking normality, with optional grouping",
+    "whenToUse": "Check whether one or more numeric columns follow a distribution: points on the straight line mean a good fit."
+  },
   "process-capability": {
     "name": "Process Capability",
     "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",

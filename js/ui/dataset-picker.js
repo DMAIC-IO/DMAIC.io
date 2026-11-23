@@ -49,21 +49,13 @@
  * In single mode the array always has length 1.
  */
 
-import {
-  discoverColumns, getColumnValues, getColumnName,
-  refToKey, keyToRef, isPickerFocused,
-} from './column-picker.js';
-
-export { discoverColumns, getColumnValues, getColumnName, refToKey, keyToRef, isPickerFocused };
-
+import { discoverColumns, refToKey, keyToRef, isPickerFocused } from './column-picker.js';
 import { h } from '../core/dom.js';
 import { nonReactive } from '../core/non-reactive.js';
 
 /**
  * Der Spaltenfilter EINES Slots: `types`, `minCount`, `maxCount`. `group` und
- * `required` filtern nicht. Eine Quelle für den Picker und für die
- * Lesefläche der Agenten (`datasetSlotColumns`) — beide zeigen damit
- * dieselben Spalten.
+ * `required` filtern nicht.
  *
  * @param {{ types?: string[], minCount?: number, maxCount?: number }} slot
  * @returns {{ types?: string[], minCount?: number, maxCount?: number }}

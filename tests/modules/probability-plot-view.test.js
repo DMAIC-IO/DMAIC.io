@@ -186,6 +186,14 @@ suite('probability-plot: Viewmodel im Browser', () => {
     assertDeepEqual(vm.statsRows.map((r) => r.color), [CHART_COLORS[0], '#123456']);
   });
 
+  test('Tabelle: das Widget zeichnet je sichtbarer Reihe eine Zeile (Zeilen ohne referenceLine)', async () => {
+    const h = await mount(stored({ datasets: [row(0, gref), row(1)] }));
+    const vm = h.vm();
+    assertTrue(vm.statsRows.every((r) => !('referenceLine' in r)), 'referenceLine in den Tabellenzeilen');
+    const rows = h.container.querySelectorAll('[data-ref="stats-panel"] table tbody tr');
+    assertEqual(rows.length, 3);
+  });
+
   test('ohne Wertespalte: keine Reihe, kein Fehlertext, Platzhalter sichtbar', async () => {
     const h = await mount(stored({ datasets: [row(null)] }));
     const vm = h.vm();

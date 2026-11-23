@@ -4,8 +4,7 @@
  * Model class unit tests. Shell/interface coverage (id, phase, init/destroy,
  * lazy help) lives in the Playwright E2E suite — importing the full module
  * shell here would transitively pull in @alpinejs/csp, which the headless /
- * browser test runner cannot resolve. Sibling migrated modules (xy-plot,
- * probability-plot) follow the same model-only convention.
+ * browser test runner cannot resolve.
  */
 
 import { suite, test, assertEqual } from '../test-utils.js';

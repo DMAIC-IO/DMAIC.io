@@ -80,8 +80,9 @@ export default createModule({
        */
       get statsRows() {
         const visible = this.shown.filter((/** @type {any} */ s) => s.visible !== false);
-        return (this.stats ?? []).map((r, j) => ({
-          ...r, color: visible[j]?.color || CHART_COLORS[j % CHART_COLORS.length],
+        // Ohne `referenceLine`: die kennt das Widget `stats-table` nicht.
+        return (this.stats ?? []).map(({ name, stats, ci }, j) => ({
+          name, stats, ci, color: visible[j]?.color || CHART_COLORS[j % CHART_COLORS.length],
         }));
       },
       /** Schlüssel der Editor-Einstellungen in den alten `chartEdits`. */

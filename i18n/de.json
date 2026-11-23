@@ -4081,65 +4081,6 @@
       "recLargeN": "Ausreichende Stichprobengröße (n = {n}) — alle drei Verfahren statistisch belastbar.",
       "recLowMono": "Monotonie-Index niedrig ({pct} %) — Zusammenhang möglicherweise nicht monoton."
     },
-    "probability-plot": {
-      "name": "Wahrscheinlichkeitsnetz",
-      "description": "Normales Wahrscheinlichkeitsnetz zur Prüfung auf Normalverteilung, mit optionaler Gruppierung",
-      "whenToUse": "Prüfen, ob eine oder mehrere numerische Spalten einer Verteilung folgen: Punkte auf der Geraden bedeuten eine gute Anpassung.",
-      "actions": {
-        "read": {
-          "help": "Die Datenreihen (Werte- und Gruppenspalte je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
-        },
-        "setDatasets": {
-          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer Wertespalte und optional einer Gruppenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
-          "params": {
-            "rows": "Eine Liste von Reihen, jeweils { value, group }: 'value' — eine numerische Spalte mit mindestens zwei Werten (Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Reihe in Serien aufteilt. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
-          }
-        }
-      },
-      "fields": {
-        "distribution": {
-          "help": "Die Verteilung, gegen die das Netz prüft. Sie ist fest die Normalverteilung und nicht einstellbar: Liegen die Punkte nahe an der gestrichelten Geraden, passt die Reihe zu einer Normalverteilung. Einen Test mit Prüfwert gibt es nicht."
-        },
-        "datasets": {
-          "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
-        },
-        "activeColumnSlots": {
-          "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: value, group."
-        },
-        "pickableColumns": {
-          "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
-        },
-        "stats": {
-          "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann."
-        }
-      },
-      "types": {
-        "SeriesStats": {
-          "referenceLine": "Die gestrichelte Gerade dieser Reihe, die in der Legende mit „— Fit“ steht. Sie läuft durch die Punkte beim ersten und beim dritten Quartil. Leer, solange die Reihe weniger als zwei Werte hat."
-        },
-        "ReferenceLine": {
-          "slope": "Die Steigung der Geraden: um wie viel das Normalquantil (die Hochachse, in der Beschriftung als Wahrscheinlichkeit in Prozent) pro Einheit Messwert (die Rechtsachse) steigt. Sie ist positiv und umso größer, je enger die Werte beieinander liegen; grob ist sie der Kehrwert der Streuung.",
-          "intercept": "Der Achsenabschnitt der Geraden: das Normalquantil bei Messwert 0. Zusammen mit der Steigung gilt Normalquantil = Steigung · Messwert + Achsenabschnitt; die Gerade schneidet die 50-Prozent-Linie dort, wo der Messwert gleich minus Achsenabschnitt durch Steigung ist, grob beim Mittelwert."
-        },
-        "Dataset": {
-          "valueRef": "Die Wertespalte der Reihe (Slot V), numerisch mit mindestens zwei Werten und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
-          "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Serien, eine je Gruppenwert. Leer, solange keine gewählt ist."
-        }
-      },
-      "sectionData": "Datenquelle",
-      "valueColumn": "Werte-Spalte (numerisch)",
-      "selectColumn": "— Spalte wählen —",
-      "noNumericColumns": "Keine numerischen Spalten gefunden.",
-      "noWorksheet": "Zuerst ein Arbeitsblatt hinzufügen.",
-      "placeholderText": "Wählen Sie mindestens eine numerische Spalte aus, um das Wahrscheinlichkeitsnetz zu erstellen. Optional eine Gruppierungs-Spalte hinzufügen, um mehrere Gruppen im selben Plot zu vergleichen.",
-      "chartTitle": "Wahrscheinlichkeitsnetz – {col}",
-      "xLabel": "Messwert",
-      "yLabel": "Wahrscheinlichkeit",
-      "groupSeriesName": "{col} — {level}",
-      "errNoGroupLevels": "Datensatz {n}: Die Gruppierungsspalte enthält keine gültigen Werte.",
-      "errTooFew": "Zu wenig Werte für \"{col}\" (mindestens 2 erforderlich).",
-      "errGeneric": "Beim Erstellen des Wahrscheinlichkeitsnetzes ist ein Fehler aufgetreten."
-    },
     "doe-advisor": {
       "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn die Übersicht der Versuchspläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht werden; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
       "actions": {

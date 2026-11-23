@@ -29,12 +29,6 @@ export default [
     load: () => import('./run-chart/run-chart.js'),
   },
   {
-    id: 'probability-plot',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./probability-plot/probability-plot.js'),
-  },
-  {
     id: 'rest-api',
     phase: 'data',
     group: 'collect',

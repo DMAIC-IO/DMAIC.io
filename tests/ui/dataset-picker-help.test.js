@@ -1,8 +1,9 @@
 /**
- * DatasetPicker — Kontexthilfe-Anker an Slot-Beschriftung und Hinzufügen-Knopf.
+ * DatasetPicker — Kontexthilfe-Anker an Slot-Beschriftung und Hinzufügen-Knopf,
+ * dazu der Spaltenfilter je Slot (`slotFilter`).
  */
-import { suite, test, assertEqual, afterEach } from '../test-utils.js';
-import { DatasetPicker } from '../../js/ui/dataset-picker.js';
+import { suite, test, assertEqual, assertDeepEqual, afterEach } from '../test-utils.js';
+import { DatasetPicker, slotFilter } from '../../js/ui/dataset-picker.js';
 import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 function makeContext() {
@@ -83,5 +84,13 @@ suite('DatasetPicker — syncValue', () => {
     p.syncValue([{ x: { ...ref } }]);
     assertEqual(host.querySelector('select') === after, true);
     p.destroy?.();
+  });
+});
+
+suite('dataset-picker slotFilter', () => {
+  test('nimmt types, minCount, maxCount; group und required filtern nicht', () => {
+    assertDeepEqual(slotFilter({ key: 'v', types: ['numeric'], minCount: 2, maxCount: 9, required: true }),
+      { types: ['numeric'], minCount: 2, maxCount: 9 });
+    assertDeepEqual(slotFilter({ key: 'g', group: true }), {});
   });
 });

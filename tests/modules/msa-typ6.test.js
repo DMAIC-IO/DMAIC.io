@@ -10,8 +10,7 @@
  * no import map — bare npm specifiers only resolve in the esbuild-bundled
  * app.min.js used by the real app / Playwright E2E suite). Sibling
  * Alpine-CSP-migrated modules follow the same model-only convention here
- * (see e.g. response-optimization.test.js, xy-plot.test.js,
- * probability-plot.test.js) and defer full init()/destroy() shell coverage
+ * (see e.g. response-optimization.test.js) and defer full init()/destroy() shell coverage
  * to the Playwright E2E suite.
  *
  * So this file verifies the two things Task 7 actually ships that ARE
