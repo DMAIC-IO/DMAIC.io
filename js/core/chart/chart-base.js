@@ -13,7 +13,7 @@ import { createModebar } from './modebar.js';
 import {
   edSection, edCheckboxRow, edRangeRow, edSelectRow,
   edTitleSection, edFontSizeSection, edAxisLabelSection,
-  edAxisTickSection, edRefLinesSection, edRefAreasSection,
+  edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
   MARKER_SYMBOLS,
@@ -25,7 +25,7 @@ import { debounce } from '../debounce.js';
 
 /** Font families embedded in SVG for export fidelity */
 export const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
-const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
+export const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
 /** Default margins (every element drawn). */
 export const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
@@ -79,7 +79,7 @@ export default class ChartBase {
   static editorKeys = [
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
     'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
-    'bgColor', 'refLines', 'refAreas',
+    'bgColor', 'refLines', 'refAreas', 'axisRange',
   ];
 
   /**
@@ -95,6 +95,9 @@ export default class ChartBase {
       showXTicks: true, showYTicks: true, showLegend: true,
       showCrosshair: false,
       xMin: null, xMax: null, yMin: null, yMax: null,
+      // Editor-set axis range `{ xMin?, xMax?, yMin?, yMax? }` — a set side
+      // pins the axis exactly, applied after the module values above.
+      axisRange: null,
       xDec: null, yDec: null,
       titleSize: 15, labelSize: 12, tickSize: 11,
       markerSize: 8,
@@ -356,6 +359,14 @@ export default class ChartBase {
     // Axis ticks (suppressed when both axes are categorical)
     const tickSec = edAxisTickSection(cfg, onChange, t, onEdit);
     if (tickSec) inner.appendChild(tickSec);
+
+    // Axis range (x/y min/max); an edit resets the zoom
+    const rangeSec = edAxisRangeSection(cfg, () => {
+      this._viewState = null;
+      onEdit('axisRange', cfg.axisRange);
+      onChange();
+    }, t, this._axisRangeAxes());
+    if (rangeSec) inner.appendChild(rangeSec);
 
     // Background color
     inner.appendChild(edBgColorSection(cfg, (changes) => {
@@ -790,12 +801,54 @@ export default class ChartBase {
     if (this.config.yMin !== null) yMin = this.config.yMin;
     if (this.config.yMax !== null) yMax = this.config.yMax;
 
+    // Editor axis range (wins over the module values; zoom still wins below)
+    // A single side beyond the automatic other side would invert the axis →
+    // that side is ignored (render() applies the same check when pinning).
+    const user = this._userAxisRange();
+    const ux = [user.xMin ?? xMin, user.xMax ?? xMax];
+    const uy = [user.yMin ?? yMin, user.yMax ?? yMax];
+    if (ux[1] > ux[0]) [xMin, xMax] = ux;
+    if (uy[1] > uy[0]) [yMin, yMax] = uy;
+
     // Zoom state
     if (this._viewState) {
       return { ...this._viewState };
     }
 
     return { xMin, xMax, yMin, yMax };
+  }
+
+  /**
+   * Axes whose range the editor may set. Categorical axes have no numeric
+   * range; chart types with a transformed or group axis override this.
+   * @protected
+   * @returns {{ x: boolean, y: boolean }}
+   */
+  _axisRangeAxes() {
+    return { x: this.config.categoricalX !== true, y: this.config.categoricalY !== true };
+  }
+
+  /**
+   * The valid sides of `config.axisRange` for the axes that allow it. An axis
+   * whose resulting range is not increasing (against the automatic bounds
+   * when only one side is set, see `_getAxisBounds`) contributes nothing.
+   * @private
+   * @returns {{ xMin?: number, xMax?: number, yMin?: number, yMax?: number }}
+   */
+  _userAxisRange() {
+    const r = this.config.axisRange;
+    if (!r || typeof r !== 'object') return {};
+    const axes = this._axisRangeAxes();
+    const out = {};
+    for (const a of ['x', 'y']) {
+      if (!axes[a]) continue;
+      const lo = Number.isFinite(r[`${a}Min`]) ? r[`${a}Min`] : undefined;
+      const hi = Number.isFinite(r[`${a}Max`]) ? r[`${a}Max`] : undefined;
+      if (lo !== undefined && hi !== undefined && hi <= lo) continue;
+      if (lo !== undefined) out[`${a}Min`] = lo;
+      if (hi !== undefined) out[`${a}Max`] = hi;
+    }
+    return out;
   }
 
   // ── Plot Area ────────────────────────────────────────────────────
@@ -1031,6 +1084,18 @@ export default class ChartBase {
       yTick.min = bounds.yMin;
       yTick.max = bounds.yMax;
       yTick.ticks = yTick.ticks.filter((t) => t >= bounds.yMin && t <= bounds.yMax);
+    }
+
+    // Editor axis range — a set side is pinned exactly (not while zoomed).
+    if (!this._viewState) {
+      const user = this._userAxisRange();
+      const pin = (tick, lo, hi) => {
+        if (lo !== undefined && lo < tick.max) tick.min = lo;
+        if (hi !== undefined && hi > tick.min) tick.max = hi;
+        tick.ticks = tick.ticks.filter((t) => t >= tick.min - 1e-12 && t <= tick.max + 1e-12);
+      };
+      if (user.xMin !== undefined || user.xMax !== undefined) pin(xTick, user.xMin, user.xMax);
+      if (user.yMin !== undefined || user.yMax !== undefined) pin(yTick, user.yMin, user.yMax);
     }
 
     const xScale = linearScale(xTick.min, xTick.max, pa.x, pa.x + pa.w);

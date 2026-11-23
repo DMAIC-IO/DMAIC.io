@@ -561,6 +561,10 @@
 /* Range slider row — now uses global .dmike-slider-row from components.css */
 
 /* Color swatch */
+.dmike-chart-ed-inline-row input.dmike-chart-ed-input--invalid {
+  border-color: var(--color-error);
+}
+
 .dmike-chart-ed-color-swatch {
   width: 22px;
   height: 22px;

@@ -100,6 +100,12 @@ export default class BoxplotChart extends ChartBase {
 
   /* ── Data Extent ─────────────────────────────────────────── */
 
+  /** @override — only the value axis has a range; the group axis is categorical. */
+  _axisRangeAxes() {
+    const vertical = this.config.orientation === 'vertical';
+    return { x: !vertical, y: vertical };
+  }
+
   /**
    * @override — extent along the data axis spans the union of values;
    * extent along the group axis covers [-0.5, n-0.5]. Axis assignment

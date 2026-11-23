@@ -71,9 +71,11 @@ globalThis.sessionStorage ??= new MemoryStorage();
 const SKIP = new Set([
   'algorithm-lab/lab-inline.test.js',
   'algorithm-lab/lab-renderer.test.js',
+  'core/chart/bar-numeric-axis.test.js',
   'core/chart/boxplot.test.js',
   'core/chart/chart-base-editor-change.test.js',
   'core/chart/chart-base-modebar.test.js',
+  'core/chart/chart-axis-range.test.js',
   'core/chart/chart-exact-range.test.js',
   'core/chart/chart-export-xlsx.test.js',
   'core/chart/chart-manager-destroy.test.js',

@@ -114,6 +114,19 @@ suite('Histogram — Model State', () => {
     assertEqual(s.seriesOverrides[0].name, 'S');
   });
 
+  test('axisRange round-trips and defaults to null', () => {
+    assertEqual(new State().toJSON().axisRange, null);
+    assertEqual(State.fromJSON({}).chartConfig.axisRange, null);
+    const s = new State();
+    s.chartConfig.axisRange = { yMin: 0, xMax: 40 };
+    const j = s.toJSON();
+    s.chartConfig.axisRange.yMin = 99;
+    assertEqual(j.axisRange.yMin, 0);
+    const r = State.fromJSON(structuredClone(j));
+    assertEqual(r.chartConfig.axisRange.yMin, 0);
+    assertEqual(r.chartConfig.axisRange.xMax, 40);
+  });
+
   test('fromJSON v1 backward-compat: seriesRefs → datasets', () => {
     const s = State.fromJSON({ seriesRefs: [{ columnId: 'c-0' }, { columnId: 'c-1' }] });
     assertEqual(s.datasets.length, 2);

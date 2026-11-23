@@ -404,6 +404,71 @@ export function edAxisTickSection(config, onUpdate, t, onEdit) {
 }
 
 /**
+ * Build the axis range section: min/max number inputs per axis that allows a
+ * range (`axes`). An empty field means automatic. Every edit replaces
+ * `config.axisRange` with a new object (`null` once all fields are empty).
+ * An axis with min >= max marks both its inputs invalid; ChartBase ignores
+ * that axis until it is fixed.
+ *
+ * @param {{ axisRange?: Object|null }} config - Mutated in-place
+ * @param {function} onChange - Called after `config.axisRange` changed
+ * @param {function} t
+ * @param {{ x: boolean, y: boolean }} axes - Axes that get inputs
+ * @returns {HTMLElement|null} null when no axis allows a range
+ */
+export function edAxisRangeSection(config, onChange, t, axes) {
+  if (!axes || (!axes.x && !axes.y)) return null;
+  const sec = edSection(t('axisRange'));
+  const inputs = {};
+
+  const markInvalid = () => {
+    const r = config.axisRange || {};
+    for (const a of ['x', 'y']) {
+      const lo = r[`${a}Min`], hi = r[`${a}Max`];
+      const bad = Number.isFinite(lo) && Number.isFinite(hi) && hi <= lo;
+      for (const k of [`${a}Min`, `${a}Max`]) {
+        if (!inputs[k]) continue;
+        inputs[k].classList.toggle('dmike-chart-ed-input--invalid', bad);
+        inputs[k].title = bad ? t('axisRangeInvalid') : '';
+      }
+    }
+  };
+
+  const row = (key) => {
+    const r = document.createElement('div');
+    r.className = 'dmike-chart-ed-inline-row';
+    const lbl = document.createElement('label');
+    lbl.textContent = t(key);
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = 'any';
+    inp.placeholder = t('auto');
+    inp.dataset.axisRange = key;
+    const cur = config.axisRange?.[key];
+    inp.value = Number.isFinite(cur) ? String(cur) : '';
+    inp.addEventListener('change', () => {
+      const next = { ...(config.axisRange || {}) };
+      const raw = inp.value.trim();
+      const num = raw === '' ? NaN : Number(raw);
+      if (Number.isFinite(num)) next[key] = num;
+      else { delete next[key]; inp.value = ''; }
+      config.axisRange = Object.keys(next).length ? next : null;
+      markInvalid();
+      onChange();
+    });
+    lbl.addEventListener('click', () => inp.focus());
+    inputs[key] = inp;
+    r.append(lbl, inp);
+    return r;
+  };
+
+  if (axes.x) sec.append(row('xMin'), row('xMax'));
+  if (axes.y) sec.append(row('yMin'), row('yMax'));
+  markInvalid();
+  return sec;
+}
+
+/**
  * Build plot background color section.
  * @param {{ bgColor: string }} config
  * @param {function} onChange

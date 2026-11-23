@@ -141,7 +141,7 @@ suite('ChartBase — editor changes reach _onEditorChange', () => {
     assertDeepEqual(ChartBase.editorKeys, [
       'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
       'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
-      'bgColor', 'refLines', 'refAreas',
+      'bgColor', 'refLines', 'refAreas', 'axisRange',
     ]);
   });
 });
