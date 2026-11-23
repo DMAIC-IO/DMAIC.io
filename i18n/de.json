@@ -6978,7 +6978,7 @@
       "whenToUse": "Den Zusammenhang zweier numerischer Spalten als Streudiagramm zeigen, optional gruppiert oder als Blasen, deren Größe eine dritte Spalte bestimmt.",
       "actions": {
         "read": {
-          "help": "Die Datenreihen (X-, Y-, Gruppen- und Größenspalte je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
+          "help": "Die Datenreihen (X-, Y-, Gruppen- und Größenspalte sowie die Fehlerbalken je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
         },
         "setDatasets": {
           "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer X- und einer Y-Spalte sowie optional einer Gruppen- und einer Größenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
@@ -6996,7 +6996,7 @@
       },
       "fields": {
         "datasets": {
-          "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
+          "help": "Je Datenreihe ihre Spalten und ihre Fehlerbalken, jeder Schlüssel einer Reihe unter keys einzeln beschrieben."
         },
         "activeColumnSlots": {
           "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: x, y, group, size."
@@ -7055,7 +7055,12 @@
       "edDirection": "Richtung",
       "edVertical": "Vertikal",
       "edHorizontal": "Horizontal",
-      "edValue": "Wert"
+      "edValue": "Wert",
+      "errorBars": "Fehlerbalken",
+      "ebModeNone": "keine",
+      "ebModeConstant": "konstant",
+      "ebModeColumns": "Spalten",
+      "ebNoColumn": "—"
     },
     "pie-chart": {
       "name": "Kuchendiagramm",

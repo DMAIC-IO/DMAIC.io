@@ -167,6 +167,7 @@ const SKIP = new Set([
   'ui/column-picker-sync-value.test.js',
   'ui/dashboard-grid-settings.test.js',
   'ui/dataset-picker-help.test.js',
+  'ui/dataset-picker-extension.test.js',
   'ui/dmaic-tiles-can-add.test.js',
   'ui/dialog-progress.test.js',
   'ui/dialog.test.js',

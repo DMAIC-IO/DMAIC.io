@@ -34,3 +34,62 @@
   width: 100%;
   height: 450px;
 }
+
+/* Error bar controls (DatasetPicker row extension) */
+.xyplot__eb-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.xyplot__eb-title {
+  flex-shrink: 0;
+}
+
+.xyplot__eb-mode {
+  flex: 1;
+  min-width: 0;
+}
+
+.xyplot__eb-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.xyplot__eb-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.xyplot__eb-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  min-width: 20px;
+  flex-shrink: 0;
+}
+
+.xyplot__eb-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.xyplot__eb-mode,
+.xyplot__eb-input {
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}

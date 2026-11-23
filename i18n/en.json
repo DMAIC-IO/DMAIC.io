@@ -6974,7 +6974,7 @@
       "whenToUse": "Show the relationship between two numeric columns as a scatter plot, optionally grouped or as bubbles sized by a third column.",
       "actions": {
         "read": {
-          "help": "Read the data rows (x, y, group and size column per row) and the columns each slot accepts, and the figures shown next to the chart."
+          "help": "Read the data rows (x, y, group and size column and the error bars per row) and the columns each slot accepts, and the figures shown next to the chart."
         },
         "setDatasets": {
           "help": "Set the data rows. A row consists of an X and a Y column and optionally a group and a size column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
@@ -6992,7 +6992,7 @@
       },
       "fields": {
         "datasets": {
-          "help": "Per data row its columns, each column of a row described individually under keys."
+          "help": "Per data row its columns and its error bars, each key of a row described individually under keys."
         },
         "activeColumnSlots": {
           "help": "The slot keys a row may carry: x, y, group, size."
@@ -7051,7 +7051,12 @@
       "edDirection": "Direction",
       "edVertical": "Vertical",
       "edHorizontal": "Horizontal",
-      "edValue": "Value"
+      "edValue": "Value",
+      "errorBars": "Error bars",
+      "ebModeNone": "none",
+      "ebModeConstant": "constant",
+      "ebModeColumns": "columns",
+      "ebNoColumn": "—"
     },
     "pie-chart": {
       "name": "Pie Chart",

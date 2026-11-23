@@ -41,9 +41,15 @@ import {
   openColorPicker,
 } from '../../core/chart/chart-editor.js';
 import {
-  DatasetPicker,
+  DatasetPicker, discoverColumns, slotFilter,
   getColumnValues, getColumnName,
 } from '../../ui/dataset-picker.js';
+import { h } from '../../core/dom.js';
+
+/** Labels of the four error directions — math symbols, the same in every language. */
+const ERROR_BAR_LABELS = { xPlus: '+X', xMinus: '−X', yPlus: '+Y', yMinus: '−Y' };
+/** i18n key (under `modules.xy-plot.`) of each error bar mode's option. */
+const ERROR_BAR_MODE_LABELS = { none: 'ebModeNone', constant: 'ebModeConstant', columns: 'ebModeColumns' };
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
@@ -236,6 +242,8 @@ const mod = createModule({
 
       /** Der Körper des Picker-`onChange`: Zeilen ins Model, Serienanpassungen verwerfen, neu zeichnen. */
       _applyDatasets(rows) {
+        const refsOf = (list) => JSON.stringify(list.map(ds => [ds.xRef, ds.yRef, ds.groupRef, ds.sizeRef]));
+        const before = refsOf(this.model.datasets);
         this.model.datasets = rows.map(ds => ({
           xRef: ds.x || null,
           yRef: ds.y || null,
@@ -243,8 +251,9 @@ const mod = createModule({
           sizeRef: ds.size || null,
           errorBars: ds.errorBars ? errorBarsFromJSON(ds.errorBars) : emptyErrorBars(),
         }));
-        // Series count may change — drop stale overrides when structure changes.
-        this.model.seriesOverrides = [];
+        // Series count may change — drop stale overrides when the columns change.
+        // An error bar edit alone keeps the series, so it keeps their overrides.
+        if (refsOf(this.model.datasets) !== before) this.model.seriesOverrides = [];
         this._plot();
       },
 
@@ -308,6 +317,11 @@ const mod = createModule({
           colors: CHART_COLORS,
           slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
           onChange: (rows) => this._applyDatasets(rows),
+          rowExtension: {
+            key: 'errorBars',
+            empty: () => emptyErrorBars(),
+            render: (el, value, update) => this._renderErrorBarControls(el, value, update),
+          },
         });
 
         // Restore saved refs
@@ -318,6 +332,54 @@ const mod = createModule({
 
       _refreshPicker() {
         this._picker?.refresh?.();
+      },
+
+      /**
+       * The error bar controls of one picker row: a mode select and, unless
+       * the mode is 'none', one field per direction (number or column).
+       * A mode change starts from empty values.
+       */
+      _renderErrorBarControls(el, value, update) {
+        const eb = value || emptyErrorBars();
+        const helpKey = (k) => `modules.xy-plot.types.ErrorBars.${k}`;
+        const modeSelect = h('select', { class: 'xyplot__eb-mode', 'data-ref': 'eb-mode' },
+          ERROR_BAR_MODES.map(m => h('option', { value: m, selected: m === eb.mode }, _t(ERROR_BAR_MODE_LABELS[m]))));
+        modeSelect.addEventListener('change', () => update(emptyErrorBars(modeSelect.value)));
+        el.append(h('label', { class: 'xyplot__eb-head', 'data-help-key': helpKey('mode') },
+          h('span', { class: 'xyplot__eb-title' }, _t('errorBars')), modeSelect));
+        if (eb.mode === 'none') return;
+
+        const ySlot = DATASET_SLOTS.find(s => s.key === 'y');
+        const columns = eb.mode === 'columns'
+          ? discoverColumns(module._context.stateManager, slotFilter(ySlot))
+          : [];
+        const fields = h('div', { class: 'xyplot__eb-fields' });
+        for (const key of ERROR_BAR_KEYS) {
+          let input;
+          if (eb.mode === 'constant') {
+            input = h('input', {
+              type: 'number', step: 'any', class: 'xyplot__eb-input', 'data-eb': key, value: eb[key] ?? '',
+            });
+            input.addEventListener('change', () => {
+              const n = input.value === '' ? null : Number(input.value);
+              update({ ...eb, [key]: Number.isFinite(n) ? n : null });
+            });
+          } else {
+            const current = eb[key] ? refToKey(eb[key]) : '';
+            input = h('select', { class: 'xyplot__eb-input', 'data-eb': key },
+              h('option', { value: '' }, _t('ebNoColumn')),
+              columns.map(c => {
+                const k = refToKey(c);
+                return h('option', { value: k, selected: k === current }, `${c.shortName} ${c.columnName}`);
+              }));
+            input.addEventListener('change', () => {
+              update({ ...eb, [key]: input.value ? keyToRef(input.value) : null });
+            });
+          }
+          fields.append(h('label', { class: 'xyplot__eb-field', 'data-help-key': helpKey(key) },
+            h('span', { class: 'xyplot__eb-label' }, ERROR_BAR_LABELS[key]), input));
+        }
+        el.append(fields);
       },
 
       // ── Error display ─────────────────────────────────────────
