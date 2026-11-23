@@ -6981,9 +6981,9 @@
           "help": "Die Datenreihen (X-, Y-, Gruppen- und Größenspalte sowie die Fehlerbalken je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
         },
         "setDatasets": {
-          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer X- und einer Y-Spalte sowie optional einer Gruppen- und einer Größenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
+          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer X- und einer Y-Spalte sowie optional einer Gruppen- und einer Größenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste. Ihre Fehlerbalken behält eine Reihe, wenn Reihen hinzukommen oder sich ändern.",
           "params": {
-            "rows": "Eine Liste von Reihen, jeweils { x, y, group, size }: 'x' und 'y' — numerische Spalten (beide Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Punkte einfärbt; 'size' — eine optionale numerische Spalte, die Punkte zu Blasen macht. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
+            "rows": "Eine Liste von Reihen, jeweils { x, y, group, size }: 'x' und 'y' — numerische Spalten (beide Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Punkte einfärbt; 'size' — eine optionale numerische Spalte, die Punkte zu Blasen macht. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. 'errorBars' — optional { mode, xPlus, xMinus, yPlus, yMinus } wie bei setErrorBars; ohne den Schlüssel bleiben die Fehlerbalken der Reihe an derselben Position erhalten, eine neue Reihe hat keine. [] leert die Liste, Fehlerbalken eingeschlossen."
           }
         },
         "setErrorBars": {

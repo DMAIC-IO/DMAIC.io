@@ -194,15 +194,35 @@ const mod = createModule({
       /**
        * Die ganze Liste der Datenreihen setzen.
        * @agent
-       * @param {object[]} rows je Reihe `{ <slot>: ref|null }`; Slots siehe
-       *   read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert
+       * @param {object[]} rows je Reihe `{ <slot>: ref|null, errorBars? }`; Slots siehe
+       *   read().activeColumnSlots, Spalten siehe read().pickableColumns; errorBars wie
+       *   bei setErrorBars, fehlend = die bisherigen Fehlerbalken dieser Position; [] leert
        * @returns {void}
-       * @throws {Error} wenn `rows` keine Liste ist, ein Slot unbekannt oder eine Spalte nicht wählbar
+       * @throws {Error} wenn `rows` keine Liste ist, ein Slot unbekannt, eine Spalte nicht wählbar
+       *   oder errorBars ungültig ist
        */
       setDatasets(rows) {
-        const clean = requireDatasetRows(rows, this.pickableColumns());
-        this._applyDatasets(clean);
-        if (this._picker) this._picker.value = clean;
+        const isRow = (row) => row !== null && typeof row === 'object' && !Array.isArray(row);
+        const list = Array.isArray(rows) ? rows : null;
+        // Split errorBars off before the slot check, which knows only column slots.
+        const bars = (list || []).map(row => (isRow(row) && row.errorBars != null
+          ? this._requireErrorBars(row.errorBars) : null));
+        const slotRows = list
+          ? list.map(row => {
+            if (!isRow(row) || !('errorBars' in row)) return row;
+            const rest = { ...row };
+            delete rest.errorBars;
+            return rest;
+          })
+          : rows;
+        const clean = requireDatasetRows(slotRows, this.pickableColumns());
+        const keepOld = list.length > 0; // [] clears, error bars included
+        const withBars = clean.map((row, i) => ({
+          ...row,
+          errorBars: bars[i] || (keepOld && this.model.datasets[i]?.errorBars) || emptyErrorBars(),
+        }));
+        this._applyDatasets(withBars);
+        if (this._picker) this._picker.value = withBars;
       },
 
       /**
@@ -216,28 +236,38 @@ const mod = createModule({
        */
       setErrorBars(index, spec) {
         requireIndex('index', index, this.model.datasets.length, { existing: true });
+        const next = this._requireErrorBars(spec);
+        this.model.datasets[index] = { ...this.model.datasets[index], errorBars: next };
+        if (this._picker) this._picker.value = this._datasetRows();
+        this._plot();
+      },
+
+      /**
+       * Validate an error bar spec from the agent and normalise it.
+       * @param {object} spec `{ mode, xPlus?, xMinus?, yPlus?, yMinus? }`
+       * @returns {ErrorBars} the normalised error bars
+       * @throws {Error} when the spec, mode, a number or a column is invalid
+       */
+      _requireErrorBars(spec) {
         if (spec === null || typeof spec !== 'object' || Array.isArray(spec)) {
           throw new Error(`invalid spec ${JSON.stringify(spec)}; allowed: { mode, xPlus, xMinus, yPlus, yMinus }`);
         }
         const mode = requireEnum('mode', spec.mode, ERROR_BAR_MODES);
         const next = emptyErrorBars(mode);
-        if (mode !== 'none') {
-          const columnKeys = this.pickableColumns().y.map(c => c.key);
-          for (const key of ERROR_BAR_KEYS) {
-            const v = spec[key];
-            if (v == null) continue;
-            if (mode === 'constant') {
-              next[key] = requireNumber(key, v);
-            } else {
-              const k = v && typeof v === 'object' ? refToKey(v) : String(v);
-              requireKnownId(key, k, columnKeys);
-              next[key] = keyToRef(k);
-            }
+        if (mode === 'none') return next;
+        const columnKeys = this.pickableColumns().y.map(c => c.key);
+        for (const key of ERROR_BAR_KEYS) {
+          const v = spec[key];
+          if (v == null) continue;
+          if (mode === 'constant') {
+            next[key] = requireNumber(key, v);
+          } else {
+            const k = v && typeof v === 'object' ? refToKey(v) : String(v);
+            requireKnownId(key, k, columnKeys);
+            next[key] = keyToRef(k);
           }
         }
-        this.model.datasets[index] = { ...this.model.datasets[index], errorBars: next };
-        if (this._picker) this._picker.value = this._datasetRows();
-        this._plot();
+        return next;
       },
 
       /** Der Körper des Picker-`onChange`: Zeilen ins Model, Serienanpassungen verwerfen, neu zeichnen. */
@@ -337,10 +367,18 @@ const mod = createModule({
       /**
        * The error bar controls of one picker row: a mode select and, unless
        * the mode is 'none', one field per direction (number or column).
-       * A mode change starts from empty values.
+       * A mode change starts from empty values and re-renders; a value edit
+       * stores without re-rendering.
        */
       _renderErrorBarControls(el, value, update) {
         const eb = value || emptyErrorBars();
+        // A value edit updates `cur` and skips the re-render, so focus and the
+        // click that ended the edit survive; only a mode change rebuilds.
+        let cur = eb;
+        const setValue = (key, v) => {
+          cur = { ...cur, [key]: v };
+          update(cur, { render: false });
+        };
         const helpKey = (k) => `modules.xy-plot.types.ErrorBars.${k}`;
         const modeSelect = h('select', { class: 'xyplot__eb-mode', 'data-ref': 'eb-mode' },
           ERROR_BAR_MODES.map(m => h('option', { value: m, selected: m === eb.mode }, _t(ERROR_BAR_MODE_LABELS[m]))));
@@ -362,7 +400,7 @@ const mod = createModule({
             });
             input.addEventListener('change', () => {
               const n = input.value === '' ? null : Number(input.value);
-              update({ ...eb, [key]: Number.isFinite(n) ? n : null });
+              setValue(key, Number.isFinite(n) ? n : null);
             });
           } else {
             const current = eb[key] ? refToKey(eb[key]) : '';
@@ -373,7 +411,7 @@ const mod = createModule({
                 return h('option', { value: k, selected: k === current }, `${c.shortName} ${c.columnName}`);
               }));
             input.addEventListener('change', () => {
-              update({ ...eb, [key]: input.value ? keyToRef(input.value) : null });
+              setValue(key, input.value ? keyToRef(input.value) : null);
             });
           }
           fields.append(h('label', { class: 'xyplot__eb-field', 'data-help-key': helpKey(key) },

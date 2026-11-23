@@ -6977,9 +6977,9 @@
           "help": "Read the data rows (x, y, group and size column and the error bars per row) and the columns each slot accepts, and the figures shown next to the chart."
         },
         "setDatasets": {
-          "help": "Set the data rows. A row consists of an X and a Y column and optionally a group and a size column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
+          "help": "Set the data rows. A row consists of an X and a Y column and optionally a group and a size column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call. A row keeps its error bars when rows are added or changed.",
           "params": {
-            "rows": "A list of rows, each { x, y, group, size }: 'x' and 'y' — numeric columns (both required for the row to be plotted); 'group' — an optional column that colours the points; 'size' — an optional numeric column that turns points into bubbles. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
+            "rows": "A list of rows, each { x, y, group, size }: 'x' and 'y' — numeric columns (both required for the row to be plotted); 'group' — an optional column that colours the points; 'size' — an optional numeric column that turns points into bubbles. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. 'errorBars' — optional { mode, xPlus, xMinus, yPlus, yMinus } as in setErrorBars; without the key the row at the same position keeps its error bars, a new row has none. [] clears the list, error bars included."
           }
         },
         "setErrorBars": {

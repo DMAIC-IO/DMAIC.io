@@ -50,9 +50,12 @@
  *   empty  — () => value for a new row
  *   render — (container, value, update, rowIdx) => void; called once per row
  *            into a `div.ds-picker__extension` after the slots. `update(next)`
- *            stores the value, fires onChange and re-renders.
+ *            stores the value, fires onChange and re-renders;
+ *            `update(next, { render: false })` skips the re-render, so a
+ *            value edit keeps focus and the click that ended it.
  *
  * Returned datasets:  [{ x: ref|null, y: ref|null, group: ref|null }, ...]
+ * plus `[rowExtension.key]: value` per row when a row extension is set.
  * In single mode the array always has length 1.
  */
 
@@ -95,7 +98,7 @@ export class DatasetPicker {
    * @param {function} [options.onChange] — Called with datasets array
    * @param {string[]} [options.colors] — Optional per-dataset color indicators
    * @param {string} [options.addHelpKey] — Kontexthilfe-Schlüssel für den Knopf „Datensatz hinzufügen“ (meist `modules.<id>.actions.setDatasets.help`)
-   * @param {{ key: string, empty: function(): any, render: function(HTMLElement, any, function(any): void, number): void }} [options.rowExtension]
+   * @param {{ key: string, empty: function(): any, render: function(HTMLElement, any, function(any, {render?: boolean}=): void, number): void }} [options.rowExtension]
    *   — An extra per-row value with its own controls (see file header)
    */
   constructor(container, context, options) {
@@ -247,10 +250,10 @@ export class DatasetPicker {
 
     if (this._ext) {
       const extEl = h('div', { class: 'ds-picker__extension', 'data-ds': idx });
-      const update = (next) => {
+      const update = (next, opts) => {
         this._datasets[idx][this._ext.key] = next;
         this._fireChange();
-        this._render();
+        if (opts?.render !== false) this._render();
       };
       this._ext.render(extEl, ds[this._ext.key], update, idx);
       item.append(extEl);
