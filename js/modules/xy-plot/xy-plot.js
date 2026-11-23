@@ -145,7 +145,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'data',
     icon: 'module.xy-plot',
-    version: '1.4.0',
+    version: '1.5.0',
     meta: import.meta,
   },
   Model: State,

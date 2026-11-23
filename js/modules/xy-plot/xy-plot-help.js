@@ -130,6 +130,65 @@ export default {
       },
     },
 
+    errorBars: {
+      de: {
+        title: 'Fehlerbalken',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Jeder Datensatz kann eigene Fehlerbalken zeigen. Unter „Fehlerbalken“ in der Datensatz-Zeile wählen Sie den Modus; die Balken erscheinen in der Farbe der Reihe.',
+          },
+          {
+            type: 'definition',
+            term: 'Konstant',
+            content: 'Vier feste Beträge: +x, −x, +y und −y. Jeder Punkt der Reihe erhält dieselben Balken — etwa die bekannte Messunsicherheit eines Messmittels.',
+          },
+          {
+            type: 'definition',
+            term: 'Spalten',
+            content: 'Je Richtung eine Worksheet-Spalte mit einem Betrag pro Zeile — etwa die Standardabweichung oder die halbe Breite eines Konfidenzintervalls je Messpunkt.',
+          },
+          {
+            type: 'list',
+            items: [
+              'Die Werte sind Abstände vom Punkt, keine Endpunkte. Ein negativer Wert wird als sein Betrag gelesen.',
+              'Ein leeres Feld oder eine leere bzw. nicht-numerische Zelle bedeutet: kein Balken in dieser Richtung. Der Punkt selbst bleibt immer sichtbar.',
+              'Für symmetrische Balken dieselbe Spalte (oder denselben Betrag) bei + und − eintragen.',
+              'Mit Gruppierung (G) trägt jede Gruppe die Fehler genau ihrer eigenen Zeilen; übersprungene Zeilen (ungültiges X, Y oder Größe) nehmen ihre Fehler mit.',
+            ],
+          },
+        ],
+      },
+      en: {
+        title: 'Error bars',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Each dataset can show its own error bars. Choose the mode under "Error bars" in the dataset row; the bars use the series colour.',
+          },
+          {
+            type: 'definition',
+            term: 'Constant',
+            content: 'Four fixed amounts: +x, −x, +y and −y. Every point of the series gets the same bars — for example the known measurement uncertainty of a gauge.',
+          },
+          {
+            type: 'definition',
+            term: 'Columns',
+            content: 'One worksheet column per direction holding an amount per row — for example the standard deviation or the half-width of a confidence interval at each point.',
+          },
+          {
+            type: 'list',
+            items: [
+              'Values are distances from the point, not end points. A negative value is read as its absolute value.',
+              'An empty field or an empty or non-numeric cell means: no bar in that direction. The point itself always stays visible.',
+              'For symmetric bars enter the same column (or the same amount) for + and −.',
+              'With grouping (G) each group carries the errors of exactly its own rows; skipped rows (invalid X, Y or size) take their errors with them.',
+            ],
+          },
+        ],
+      },
+    },
+
     methodology: {
       de: {
         title: 'Bedienung',
