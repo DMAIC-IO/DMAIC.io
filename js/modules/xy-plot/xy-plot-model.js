@@ -14,34 +14,145 @@
 
 import { columnRefFromJSON } from '../../core/chart/chart-data-prep.js';
 
+/** Error bar modes a dataset can use. */
+export const ERROR_BAR_MODES = ['none', 'constant', 'columns'];
+
+/** The four error directions, in display order. */
+export const ERROR_BAR_KEYS = ['xPlus', 'xMinus', 'yPlus', 'yMinus'];
+
+/**
+ * @typedef {object} ErrorBarsSpec
+ * @property {'none'|'constant'|'columns'} mode
+ * @property {number|object|null} xPlus  - constant distance or column ref
+ * @property {number|object|null} xMinus
+ * @property {number|object|null} yPlus
+ * @property {number|object|null} yMinus
+ */
+
+/**
+ * Error bar spec with all four directions unset.
+ * @param {'none'|'constant'|'columns'} [mode='none']
+ * @returns {ErrorBarsSpec}
+ */
+export function emptyErrorBars(mode = 'none') {
+  return { mode, xPlus: null, xMinus: null, yPlus: null, yMinus: null };
+}
+
+/**
+ * Coerce an error bar spec. Unknown modes fall back to 'none'; values that do
+ * not fit the mode (a number in columns mode, a ref in constant mode, a
+ * non-finite number) become null.
+ * @param {*} d
+ * @returns {ErrorBarsSpec}
+ */
+export function errorBarsFromJSON(d) {
+  if (!d || typeof d !== 'object' || !ERROR_BAR_MODES.includes(d.mode)) {
+    return emptyErrorBars();
+  }
+  const out = emptyErrorBars(d.mode);
+  for (const key of ERROR_BAR_KEYS) {
+    const v = d[key];
+    if (d.mode === 'constant') {
+      out[key] = (typeof v === 'number' && Number.isFinite(v)) ? v : null;
+    } else if (d.mode === 'columns') {
+      out[key] = columnRefFromJSON(v);
+    }
+  }
+  return out;
+}
+
+/**
+ * Turn a cell value into an error distance, or null when it is empty or not
+ * numeric.
+ * @param {*} v
+ * @returns {number|null}
+ */
+function toErrorValue(v) {
+  if (v === null || v === undefined || v === '') return null;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Build the scatter renderer's `series.errorBars` config for one series.
+ * Pure helper — no DOM, no worksheet access.
+ * @param {ErrorBarsSpec|null} spec
+ * @param {number[]} rows - source row index of each kept point of the series
+ * @param {Object<string, any[]>} errValues - column values per direction
+ *   (columns mode only); a missing key means the column did not resolve
+ * @returns {object|null} null when no point gets any bar
+ */
+export function buildErrorBars(spec, rows, errValues) {
+  if (!spec || (spec.mode !== 'constant' && spec.mode !== 'columns')) return null;
+  const values = errValues || {};
+  const arrays = {};
+  for (const key of ERROR_BAR_KEYS) {
+    let arr = null;
+    if (spec.mode === 'constant') {
+      const c = toErrorValue(spec[key]);
+      if (c !== null) arr = rows.map(() => c);
+    } else if (spec[key] && Array.isArray(values[key])) {
+      arr = rows.map(r => toErrorValue(values[key][r]));
+      if (arr.every(v => v === null)) arr = null;
+    }
+    arrays[key] = arr;
+  }
+  const hasX = arrays.xPlus !== null || arrays.xMinus !== null;
+  const hasY = arrays.yPlus !== null || arrays.yMinus !== null;
+  if (!hasX && !hasY) return null;
+  const fill = (arr) => arr || rows.map(() => null);
+  return {
+    show: true,
+    xMode: hasX ? 'relative' : 'none',
+    yMode: hasY ? 'relative' : 'none',
+    xPlus: hasX ? fill(arrays.xPlus) : null,
+    xMinus: hasX ? fill(arrays.xMinus) : null,
+    yPlus: hasY ? fill(arrays.yPlus) : null,
+    yMinus: hasY ? fill(arrays.yMinus) : null,
+  };
+}
+
+/**
+ * Copy an error bar spec for serialization (refs shallow-copied).
+ * @param {*} eb
+ * @returns {ErrorBarsSpec}
+ */
+function errorBarsToJSON(eb) {
+  const n = errorBarsFromJSON(eb);
+  for (const key of ERROR_BAR_KEYS) {
+    if (n[key] && typeof n[key] === 'object') n[key] = { ...n[key] };
+  }
+  return n;
+}
+
 /**
  * Coerce a single dataset entry. Each entry has an X and Y column ref plus
- * an optional grouping and size ref. All are either valid refs or null.
+ * an optional grouping and size ref (valid refs or null) and an error bar
+ * spec.
  * @param {*} d
- * @returns {{ xRef: object|null, yRef: object|null, groupRef: object|null, sizeRef: object|null }}
+ * @returns {{ xRef: object|null, yRef: object|null, groupRef: object|null, sizeRef: object|null, errorBars: ErrorBarsSpec }}
  */
 function datasetFromJSON(d) {
-  if (!d || typeof d !== 'object') {
-    return { xRef: null, yRef: null, groupRef: null, sizeRef: null };
-  }
+  if (!d || typeof d !== 'object') return emptyDataset();
   return {
     xRef: columnRefFromJSON(d.xRef),
     yRef: columnRefFromJSON(d.yRef),
     groupRef: columnRefFromJSON(d.groupRef),
     sizeRef: columnRefFromJSON(d.sizeRef),
+    errorBars: errorBarsFromJSON(d.errorBars),
   };
 }
 
 function emptyDataset() {
-  return { xRef: null, yRef: null, groupRef: null, sizeRef: null };
+  return { xRef: null, yRef: null, groupRef: null, sizeRef: null, errorBars: emptyErrorBars() };
 }
 
 export class State {
   /**
    * Array of dataset entries. Each dataset has its own X/Y column — datasets
    * need not share an X axis. Optional group (split into sub-series) and size
-   * (bubble plot) columns per dataset.
-   * @type {{ xRef: object|null, yRef: object|null, groupRef: object|null, sizeRef: object|null }[]}
+   * (bubble plot) columns per dataset, plus a user-defined error bar spec.
+   * @type {{ xRef: object|null, yRef: object|null, groupRef: object|null, sizeRef: object|null, errorBars: ErrorBarsSpec }[]}
    */
   datasets = [emptyDataset()];
 
@@ -124,6 +235,7 @@ export class State {
         yRef: d.yRef ? { ...d.yRef } : null,
         groupRef: d.groupRef ? { ...d.groupRef } : null,
         sizeRef: d.sizeRef ? { ...d.sizeRef } : null,
+        errorBars: errorBarsToJSON(d.errorBars),
       })),
       showLines: this.showLines,
       showMarkers: this.showMarkers,
@@ -164,6 +276,7 @@ export class State {
         yRef: columnRefFromJSON(yRef),
         groupRef: null,
         sizeRef: null,
+        errorBars: emptyErrorBars(),
       }));
       if (s.datasets.length === 0) s.datasets = [emptyDataset()];
     }

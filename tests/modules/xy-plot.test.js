@@ -7,8 +7,10 @@
  * mapping (buildBubble), and edge cases.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
-import { State } from '../../js/modules/xy-plot/xy-plot-model.js';
+import { suite, test, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
+import {
+  State, emptyErrorBars, errorBarsFromJSON, buildErrorBars, ERROR_BAR_MODES, ERROR_BAR_KEYS,
+} from '../../js/modules/xy-plot/xy-plot-model.js';
 
 const REF = (c) => ({ instanceId: 'i1', sheetId: 's1', columnId: c });
 
@@ -303,5 +305,105 @@ suite('XY-Plot Model — buildBubble', () => {
     const { rawSizes } = State.buildBubble([3, 6, 9], 'L');
     assertEqual(rawSizes[0], 3);
     assertEqual(rawSizes[2], 9);
+  });
+});
+
+// ─── Error bars ──────────────────────────────────────────────────────────────
+
+suite('XY-Plot Model — error bars', () => {
+  test('exports modes and keys', () => {
+    assertDeepEqual(ERROR_BAR_MODES, ['none', 'constant', 'columns']);
+    assertDeepEqual(ERROR_BAR_KEYS, ['xPlus', 'xMinus', 'yPlus', 'yMinus']);
+  });
+
+  test('default dataset has errorBars mode none', () => {
+    assertDeepEqual(new State().datasets[0].errorBars, emptyErrorBars());
+    assertDeepEqual(emptyErrorBars(), { mode: 'none', xPlus: null, xMinus: null, yPlus: null, yMinus: null });
+  });
+
+  test('old project without errorBars loads as none', () => {
+    const s = State.fromJSON({ datasets: [{ xRef: REF('a'), yRef: REF('b') }] });
+    assertEqual(s.datasets[0].errorBars.mode, 'none');
+  });
+
+  test('constant errorBars round-trip', () => {
+    const eb = { mode: 'constant', xPlus: 1, xMinus: null, yPlus: 2.5, yMinus: 0.5 };
+    const s = State.fromJSON({ datasets: [{ xRef: REF('a'), yRef: REF('b'), errorBars: eb }] });
+    const t = State.fromJSON(s.toJSON());
+    assertDeepEqual(t.datasets[0].errorBars, eb);
+  });
+
+  test('columns errorBars round-trip', () => {
+    const eb = { mode: 'columns', xPlus: null, xMinus: REF('ex'), yPlus: REF('e'), yMinus: REF('f') };
+    const s = State.fromJSON({ datasets: [{ xRef: REF('a'), yRef: REF('b'), errorBars: eb }] });
+    const t = State.fromJSON(s.toJSON());
+    assertDeepEqual(t.datasets[0].errorBars, eb);
+  });
+
+  test('toJSON copies column refs instead of sharing them', () => {
+    const s = State.fromJSON({ datasets: [{ xRef: REF('a'), yRef: REF('b'),
+      errorBars: { mode: 'columns', yPlus: REF('e') } }] });
+    const j = s.toJSON();
+    j.datasets[0].errorBars.yPlus.columnId = 'changed';
+    assertEqual(s.datasets[0].errorBars.yPlus.columnId, 'e');
+  });
+
+  test('toJSON tolerates a dataset without errorBars', () => {
+    const s = new State();
+    s.datasets[0] = { xRef: REF('cx'), yRef: REF('cy'), groupRef: null, sizeRef: null };
+    assertDeepEqual(s.toJSON().datasets[0].errorBars, emptyErrorBars());
+  });
+
+  test('fromJSON drops values that do not fit the mode', () => {
+    assertDeepEqual(errorBarsFromJSON({ mode: 'columns', yPlus: 3 }).yPlus, null);
+    assertDeepEqual(errorBarsFromJSON({ mode: 'constant', yPlus: REF('e') }).yPlus, null);
+    assertDeepEqual(errorBarsFromJSON({ mode: 'constant', yPlus: NaN, yMinus: Infinity }).yMinus, null);
+    assertDeepEqual(errorBarsFromJSON({ mode: 'none', yPlus: 3 }), emptyErrorBars());
+    assertEqual(errorBarsFromJSON({ mode: 'bogus' }).mode, 'none');
+    assertDeepEqual(errorBarsFromJSON(null), emptyErrorBars());
+  });
+
+  test('buildErrorBars constant fills every point', () => {
+    const eb = buildErrorBars({ mode: 'constant', xPlus: null, xMinus: null, yPlus: 2, yMinus: 1 }, [0, 3, 4], {});
+    assertEqual(eb.show, true);
+    assertDeepEqual(eb.yPlus, [2, 2, 2]);
+    assertDeepEqual(eb.yMinus, [1, 1, 1]);
+    assertEqual(eb.yMode, 'relative');
+    assertEqual(eb.xMode, 'none');
+    assertEqual(eb.xPlus, null);
+    assertEqual(eb.xMinus, null);
+  });
+
+  test('buildErrorBars asymmetric: only one direction set', () => {
+    const eb = buildErrorBars({ mode: 'constant', xPlus: null, xMinus: null, yPlus: 2, yMinus: null }, [0, 1], {});
+    assertDeepEqual(eb.yPlus, [2, 2]);
+    assertDeepEqual(eb.yMinus, [null, null]);
+    assertEqual(eb.yMode, 'relative');
+  });
+
+  test('buildErrorBars uses the kept row indices', () => {
+    const eb = buildErrorBars({ mode: 'columns', xPlus: null, xMinus: null, yPlus: REF('e'), yMinus: null },
+      [0, 2], { yPlus: [10, 20, 30] });
+    assertDeepEqual(eb.yPlus, [10, 30]);
+  });
+
+  test('buildErrorBars empty or non-numeric cells give null', () => {
+    const eb = buildErrorBars({ mode: 'columns', xPlus: null, xMinus: null, yPlus: REF('e'), yMinus: null },
+      [0, 1, 2, 3, 4], { yPlus: [1, '', 'abc', null, '2.5'] });
+    assertDeepEqual(eb.yPlus, [1, null, null, null, 2.5]);
+  });
+
+  test('missing column values give no bars', () => {
+    assertEqual(buildErrorBars({ mode: 'columns', xPlus: null, xMinus: null, yPlus: REF('gone'), yMinus: null }, [0], {}), null);
+  });
+
+  test('all-empty column gives no bars', () => {
+    assertEqual(buildErrorBars({ mode: 'columns', xPlus: null, xMinus: null, yPlus: REF('e'), yMinus: null },
+      [0, 1], { yPlus: ['', null] }), null);
+  });
+
+  test('buildErrorBars mode none returns null', () => {
+    assertEqual(buildErrorBars(emptyErrorBars(), [0, 1], {}), null);
+    assertEqual(buildErrorBars(null, [0, 1], {}), null);
   });
 });
