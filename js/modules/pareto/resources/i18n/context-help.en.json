@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "The row with the category column, the optional value column and the optional group column, each column described individually under keys. The category column is required for a chart. To clear, set one empty row ([{ x: null, y: null, g: null }]); [] is rejected.",
+      "x": {
+        "label": "X",
+        "title": "Category column (X axis)",
+        "help": "The category column (slot x); its values become the ranked bars. Required, empty until one is chosen."
+      },
+      "y": {
+        "label": "Y",
+        "title": "Value column (numeric, optional — sum per category)",
+        "help": "The value column (slot y), numeric and optional; without it each bar counts the rows of its category. Empty until one is chosen."
+      },
+      "g": {
+        "label": "G",
+        "title": "Grouping (optional, stacked Pareto)",
+        "help": "The stacking column (slot g), optional; it stacks each bar by its values. Empty until one is chosen."
+      }
+    },
+    "aggregation": {
+      "help": "How the values of the value column are combined per category: sum or mean. Takes effect only with a value column (slot y); without it each category counts its rows."
+    },
+    "stats": {
+      "help": "The ranked Pareto table, each figure described individually under keys; null while there is no data (no category column, no values or a chosen column not readable)."
+    },
+    "activeParams": {
+      "help": "The fields that take effect in the current state: aggregation only with a value column (slot y) set."
+    },
+    "activeColumnSlots": {
+      "help": "The slot keys a row of the datasets carries: x, y, g."
+    },
+    "chartData": {
+      "help": "The entries (name, value, colour) or, with a group column, the categories and groups (name, values per category, colour) from the chosen columns, as the chart draws them; empty while there is no data."
+    }
+  },
+  "types": {
+    "ParetoStats": {
+      "rows": "The categories in descending order of value, as the table shows them. With a stacking column the value is the sum over all stacks. The chart's collective category Other is not listed here; the table lists every category individually.",
+      "total": "The sum of all values, negative ones count as 0; the basis of the cumulative share."
+    },
+    "ParetoRow": {
+      "name": "The category.",
+      "value": "The value of the category: without a value column the number of rows, otherwise the sum or mean of the value column; with a stack column the sum of the stack values. The table column changes its header with the aggregation (Count, Sum, Mean).",
+      "cumPct": "The cumulative share up to and including this row of the sum of all values, in percent from 0 to 100; the table shows it with a percent sign."
+    }
+  }
+}

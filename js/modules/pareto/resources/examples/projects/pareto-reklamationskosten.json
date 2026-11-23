@@ -1,0 +1,24 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "datasets": [
+    {
+      "x": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-reklamationen",
+        "columnId": "c-grund"
+      },
+      "y": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-reklamationen",
+        "columnId": "c-kosten"
+      },
+      "g": null
+    }
+  ],
+  "chart": {
+    "title": "Reklamationskosten Q2 nach Grund"
+  },
+  "sourceWorksheetFile": "worksheets/pareto-reklamationskosten.json"
+}

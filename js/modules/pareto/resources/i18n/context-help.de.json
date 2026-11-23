@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Die Zeile mit der Kategorienspalte, der optionalen Wertespalte und der optionalen Gruppenspalte, jede Spalte unter keys einzeln beschrieben. Die Kategorienspalte ist für ein Diagramm Pflicht. Leeren geht über eine leere Zeile ([{ x: null, y: null, g: null }]), [] wird abgelehnt.",
+      "x": {
+        "label": "X",
+        "title": "Kategorie-Spalte (X-Achse)",
+        "help": "Die Kategorienspalte (Slot x); ihre Werte werden die geordneten Balken. Pflicht, leer, solange keine gewählt ist."
+      },
+      "y": {
+        "label": "Y",
+        "title": "Wert-Spalte (numerisch, optional — Summe je Kategorie)",
+        "help": "Die Wertespalte (Slot y), numerisch und optional; ohne sie zählt jeder Balken die Zeilen seiner Kategorie. Leer, solange keine gewählt ist."
+      },
+      "g": {
+        "label": "G",
+        "title": "Gruppierung (optional, gestapeltes Pareto)",
+        "help": "Die Stapelspalte (Slot g), optional; sie stapelt jeden Balken nach ihren Werten. Leer, solange keine gewählt ist."
+      }
+    },
+    "aggregation": {
+      "help": "Wie die Werte der Wertespalte je Kategorie zusammengefasst werden: sum (Summe) oder mean (Mittelwert). Wirkt nur mit Wertespalte (Slot y); ohne sie zählt jede Kategorie ihre Zeilen."
+    },
+    "stats": {
+      "help": "Die geordnete Pareto-Tabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange es keine Daten gibt (keine Kategorienspalte, keine Werte oder eine gewählte Spalte nicht lesbar)."
+    },
+    "activeParams": {
+      "help": "Die Felder, die im aktuellen Zustand wirken: aggregation nur mit gesetzter Wertespalte (Slot y)."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: x, y, g."
+    },
+    "chartData": {
+      "help": "Die Einträge (Name, Wert, Farbe) bzw. mit Gruppenspalte die Kategorien und Gruppen (Name, Werte je Kategorie, Farbe) aus den gewählten Spalten, wie das Diagramm sie zeichnet; leer, solange es keine Daten gibt."
+    }
+  },
+  "types": {
+    "ParetoStats": {
+      "rows": "Die Kategorien absteigend nach Wert, so wie die Tabelle sie zeigt. Mit Stapelspalte ist der Wert die Summe über alle Stapel. Die Sammelkategorie Sonstige des Diagramms steht hier nicht, die Tabelle führt jede Kategorie einzeln.",
+      "total": "Die Summe aller Werte, negative zählen als 0; Grundlage des kumulierten Anteils."
+    },
+    "ParetoRow": {
+      "name": "Die Kategorie.",
+      "value": "Der Wert der Kategorie: ohne Wertespalte die Anzahl der Zeilen, sonst Summe oder Mittelwert der Wertespalte; mit Stapelspalte die Summe der Stapelwerte. Die Tabellenspalte wechselt ihren Kopf mit der Aggregation (Häufigkeit, Summe, Mittelwert).",
+      "cumPct": "Der kumulierte Anteil bis einschließlich dieser Zeile an der Summe aller Werte, in Prozent von 0 bis 100; die Tabelle zeigt ihn mit Prozentzeichen."
+    }
+  }
+}

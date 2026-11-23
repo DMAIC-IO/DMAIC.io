@@ -1,0 +1,55 @@
+<div class="pareto-module dmike-split dmike-split--input-sm" x-data="pareto">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="pareto-module__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="pareto-module__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="pareto-module__options" data-ref="options-wrap">
+      <template x-if="showAggregation">
+        <label class="pareto-module__opt-row">
+          <span data-help-key="modules.pareto.fields.aggregation.help" x-text="t('aggregation')"></span>
+          <select class="field" data-action="set-agg" data-help-key="" x-field="model.aggregation">
+            <template x-for="o in aggregationOptions" :key="o.value">
+              <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+            </template>
+          </select>
+        </label>
+      </template>
+    </div>
+  </div>
+
+  <div class="pareto-module__output dmike-split__output">
+    <div data-ref="placeholder" class="pareto-module__placeholder" x-show="!hasData" x-text="t('placeholderPickX')"></div>
+    <template x-if="hasData">
+      <div class="pareto-module__chart-area" data-ref="chart-area">
+        <div class="pareto-module__chart-wrap" data-ref="chart-wrap" x-widget="pareto-chart" x-widget-config="paretoChart" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        <div class="pareto-module__stats-panel" data-ref="stats-panel">
+          <div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
+            <table class="dmike-table pareto-module__stats-table">
+              <thead><tr>
+                <th><span data-help-key="modules.pareto.types.ParetoRow.name" x-text="t('statCategory')"></span></th>
+                <th><span data-help-key="modules.pareto.types.ParetoRow.value" x-text="statsValueHeader"></span></th>
+                <th><span class="context-help-anchor--overlay" data-help-key="modules.pareto.types.ParetoRow.cumPct" x-text="t('statCumPct')"></span></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td><span class="pareto-module__stats-color" :style="swatchStyle(r)"></span><span x-text="rowLabel(r)"></span></td>
+                    <td x-text="r.value"></td>
+                    <td x-text="r.cumPct"></td>
+                  </tr>
+                </template>
+                <tr class="pareto-module__stats-total">
+                  <td x-text="t('statTotal')"></td>
+                  <td x-text="statsTotal"></td>
+                  <td x-text="statsTotalPct"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>

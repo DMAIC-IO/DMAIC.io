@@ -1,0 +1,68 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of a Pareto Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The Pareto chart is one of the \"7 QC tools\" and combines a bar chart sorted by descending value with a cumulative-percentage line. It makes the 80/20 principle (\"vital few — trivial many\") visually obvious: a few categories drive most of the problem."
+        },
+        {
+          "type": "definition",
+          "term": "Sorting",
+          "content": "Bars are always sorted by descending value. At a glance you see which categories contribute the most — unlike a plain bar chart, where the X axis stays in input order."
+        },
+        {
+          "type": "definition",
+          "term": "Cumulative percentage line",
+          "content": "A line over the bars shows, for every point, the cumulative share (in %) of the grand total. If it reaches the 80 % mark after three categories, those three together account for 80 % of the problem."
+        },
+        {
+          "type": "definition",
+          "term": "80 % threshold",
+          "content": "A horizontal reference line at 80 % marks the classic Pareto boundary. It helps to read off the \"vital few\" — all bars to the left of the intersection belong to them. The chart editor lets you change the threshold or hide it (value 0)."
+        },
+        {
+          "type": "definition",
+          "term": "\"Other\" bucket",
+          "content": "With many categories, the long tail (smallest contributions) is collapsed into a single \"Other\" bar at the end. The chart stays readable without losing the tail. The chart editor lets you tune the maximum bar count."
+        },
+        {
+          "type": "paragraph",
+          "content": "Classic Six-Sigma uses: prioritising defect types, weighting complaint reasons, identifying cost drivers. The module accepts a categorical column (frequency mode), optionally a value column (sum per category — e.g. complaint cost) and/or a grouping column for stacked Pareto charts."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Frequency ≠ importance",
+          "content": "A frequently-occurring defect type is not necessarily the most expensive one. When each complaint carries a different cost, fill the value column (Y) and sort by sum — otherwise the chart points the focus to the most frequent, not the most damaging issues."
+        },
+        {
+          "type": "definition",
+          "term": "Too many categories",
+          "content": "If all contributions are similar, there are no \"vital few\" — the Pareto principle does not apply. A Pareto chart with 20 nearly equal bars is more a symptom of a definition problem: the categories may be too granular or too generic."
+        },
+        {
+          "type": "definition",
+          "term": "Wrong aggregation",
+          "content": "When the Y column is set, you must choose whether to sum or to average across the category. For costs/damage/quantities, \"sum\" is right (total contribution); for an average complaint amount, use \"mean\". The wrong choice produces the wrong ranking."
+        },
+        {
+          "type": "definition",
+          "term": "Comparing over time",
+          "content": "Pareto charts are snapshots — the bar order changes between periods. For trends, prefer line or stacked bar charts and use a Pareto chart only as a per-period snapshot."
+        },
+        {
+          "type": "definition",
+          "term": "\"Other\" bucket too large",
+          "content": "If the \"Other\" bar is itself among the largest, the top-N cut is set too tightly. Increase the max bar count in the chart editor until \"Other\" is smaller than the individual top categories."
+        }
+      ]
+    }
+  }
+}
