@@ -102,5 +102,9 @@
   "1.7.0": {
     "de": "Achsenbereich (x/y min/max) im Grafik-Editor, echte Zahlenachse für Balkendiagramme mit Zahlenkategorien, Rückfrage vor jedem Löschen",
     "en": "Axis range (x/y min/max) in the chart editor, a real numeric axis for bar charts with numeric categories, confirmation before every delete"
+  },
+  "1.8.0": {
+    "de": "Feste Diagrammgröße in Pixeln im Grafik-Editor (auch nur für den Export), Schriftgröße der Legende",
+    "en": "Fixed chart size in pixels in the chart editor (optionally for export only), legend font size"
   }
 }
