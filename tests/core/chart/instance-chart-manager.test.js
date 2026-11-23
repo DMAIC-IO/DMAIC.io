@@ -21,7 +21,7 @@ function fakeChart(config) {
 /** ChartBase.editorKeys (kept literal: the node runner does not load chart classes). */
 const BASE_EDITOR_KEYS = [
   'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
-  'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
+  'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
   'bgColor', 'refLines', 'refAreas',
 ];
 

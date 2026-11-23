@@ -1007,6 +1007,7 @@
       "titleFontSize": "Überschrift",
       "labelFontSize": "Achsen",
       "tickFontSize": "Skalenwerte",
+      "legendFontSize": "Legende",
       "axisLabels": "Achsenbeschriftung",
       "showXLabel": "X-Achse beschriften",
       "showYLabel": "Y-Achse beschriften",

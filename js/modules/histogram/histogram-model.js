@@ -45,7 +45,7 @@ export class State {
   /** Shared chart display config (mutated in-place by the shared editor builders). */
   chartConfig = {
     showTitle: true, title: '',
-    titleSize: 15, labelSize: 12, tickSize: 11,
+    titleSize: 15, labelSize: 12, tickSize: 11, legendSize: 11,
     showXLabel: true, showYLabel: true, xLabel: '', yLabel: '',
     showXTicks: true, showYTicks: true,
     bgColor: null,
@@ -77,6 +77,7 @@ export class State {
       titleSize: cc.titleSize,
       labelSize: cc.labelSize,
       tickSize: cc.tickSize,
+      legendSize: cc.legendSize,
       showXLabel: cc.showXLabel,
       showYLabel: cc.showYLabel,
       showXTicks: cc.showXTicks,
@@ -110,6 +111,7 @@ export class State {
       titleSize: d.titleSize ?? 15,
       labelSize: d.labelSize ?? 12,
       tickSize: d.tickSize ?? 11,
+      legendSize: d.legendSize ?? 11,
       showXLabel: d.showXLabel ?? true,
       showYLabel: d.showYLabel ?? true,
       showXTicks: d.showXTicks ?? true,

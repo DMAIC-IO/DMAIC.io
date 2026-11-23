@@ -301,18 +301,23 @@ export function edTitleSection(config, onUpdate, t, onEdit, auto = {}) {
 }
 
 /**
- * Build the font size section: title, axis labels, tick labels.
+ * Build the font size section: title, axis labels, tick labels and — for
+ * charts with a legend — the legend.
  * Mutates config in-place, calls onUpdate() after each change.
- * @param {{ titleSize: number, labelSize: number, tickSize: number }} config - Mutated in-place
+ * @param {{ titleSize: number, labelSize: number, tickSize: number, legendSize?: number }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t
+ * @param {{ legend?: boolean }} [opts] - legend: also offer the legend font size
  * @returns {HTMLElement}
  */
-export function edFontSizeSection(config, onUpdate, t) {
+export function edFontSizeSection(config, onUpdate, t, opts = {}) {
   const sec = edSection(t('fontSizes'));
   sec.appendChild(edRangeRow(t('titleFontSize'), config.titleSize ?? 15, (v) => { config.titleSize = v; onUpdate(); }, 8, 30, 1));
   sec.appendChild(edRangeRow(t('labelFontSize'), config.labelSize ?? 12, (v) => { config.labelSize = v; onUpdate(); }, 8, 24, 1));
   sec.appendChild(edRangeRow(t('tickFontSize'), config.tickSize ?? 11, (v) => { config.tickSize = v; onUpdate(); }, 6, 20, 1));
+  if (opts.legend) {
+    sec.appendChild(edRangeRow(t('legendFontSize'), config.legendSize ?? 11, (v) => { config.legendSize = v; onUpdate(); }, 6, 20, 1));
+  }
   return sec;
 }
 

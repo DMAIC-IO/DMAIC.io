@@ -1007,6 +1007,7 @@
       "titleFontSize": "Title",
       "labelFontSize": "Axes",
       "tickFontSize": "Ticks",
+      "legendFontSize": "Legend",
       "axisLabels": "Axis Labels",
       "showXLabel": "X axis label",
       "showYLabel": "Y axis label",

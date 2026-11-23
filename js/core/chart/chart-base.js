@@ -78,7 +78,7 @@ export default class ChartBase {
    */
   static editorKeys = [
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
-    'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
+    'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
     'bgColor', 'refLines', 'refAreas', 'axisRange',
   ];
 
@@ -99,7 +99,7 @@ export default class ChartBase {
       // pins the axis exactly, applied after the module values above.
       axisRange: null,
       xDec: null, yDec: null,
-      titleSize: 15, labelSize: 12, tickSize: 11,
+      titleSize: 15, labelSize: 12, tickSize: 11, legendSize: 11,
       markerSize: 8,
       refLines: [], refAreas: [],
     }, config);
@@ -342,7 +342,8 @@ export default class ChartBase {
     inner.appendChild(edTitleSection(cfg, onChange, t, onEdit, auto));
 
     // Legend toggle
-    if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
+    const hasLegend = this._getLegendItems().length > 0 || !!(cfg.refLines && cfg.refLines.length) || !!(cfg.refAreas && cfg.refAreas.length);
+    if (hasLegend) {
       inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => {
         cfg.showLegend = v;
         onEdit('showLegend', v);
@@ -351,7 +352,8 @@ export default class ChartBase {
     }
 
     // Font sizes
-    inner.appendChild(edFontSizeSection(cfg, onChange, t));
+    // Legend size changes the legend width and so the plot area: onChange re-renders.
+    inner.appendChild(edFontSizeSection(cfg, onChange, t, { legend: hasLegend }));
 
     // Axis labels
     inner.appendChild(edAxisLabelSection(cfg, onChange, t, onEdit, auto));
@@ -1355,7 +1357,7 @@ export default class ChartBase {
     if (labels.length === 0) return LEGEND_WIDTH;
 
     const ctx = document.createElement('canvas').getContext('2d');
-    ctx.font = `11px ${FONT_MAIN}`;
+    ctx.font = `${this._legendFontSize()}px ${FONT_MAIN}`;
 
     let maxW = 0;
     for (const label of labels) {
@@ -1365,6 +1367,16 @@ export default class ChartBase {
 
     // icon (14px) + gap (6px) + text + small padding
     return Math.max(LEGEND_WIDTH, Math.ceil(maxW) + 26);
+  }
+
+  /**
+   * Legend font size in px (`config.legendSize`, default 11).
+   * @protected
+   * @returns {number}
+   */
+  _legendFontSize() {
+    const v = Number(this.config.legendSize);
+    return Number.isFinite(v) && v > 0 ? v : 11;
   }
 
   /** @private */
@@ -1385,7 +1397,9 @@ export default class ChartBase {
 
     const lx = pa.x + pa.w + 12;
     const ly = pa.y + 4;
-    const lineH = 22;
+    const fs = this._legendFontSize();
+    // Row height grows with the font; 22 px is the height at the default 11 px.
+    const lineH = Math.max(22, Math.round(fs * 2));
 
     items.forEach((item, i) => {
       const y = ly + i * lineH;
@@ -1409,8 +1423,9 @@ export default class ChartBase {
         }
       }
       svgText(item.label, {
-        x: lx + 20, y: y + 11,
-        'font-size': '11px', fill: textColor,
+        // Vertically centred on the icon (centre at y + 7).
+        x: lx + 20, y: y + 7 + Math.round(fs * 0.36),
+        'font-size': `${fs}px`, fill: textColor,
         'font-family': FONT_MAIN,
         'data-legend-item': ''
       }, svg);

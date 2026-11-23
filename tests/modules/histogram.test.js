@@ -55,6 +55,7 @@ suite('Histogram — Model State', () => {
     assertEqual(j.titleSize, 15);
     assertEqual(j.labelSize, 12);
     assertEqual(j.tickSize, 11);
+    assertEqual(j.legendSize, 11);
     assertEqual(j.showXLabel, true);
     assertEqual(j.barGap, 1);
   });
@@ -140,7 +141,7 @@ suite('Histogram — Model State', () => {
     s.datasets = [{ valueRef: { columnId: 'c-0' }, groupRef: null }];
     s.binMode = 'manual'; s.binWidth = 4; s.confLevel = 80;
     s.showPareto = false; s.barGap = 2;
-    s.chartConfig.title = 'Hi'; s.chartConfig.tickSize = 8;
+    s.chartConfig.title = 'Hi'; s.chartConfig.tickSize = 8; s.chartConfig.legendSize = 14;
     s.refLines = [{ dir: 'v', value: 7 }];
     const back = State.fromJSON(s.toJSON());
     assertEqual(back.binMode, 'manual');
@@ -150,6 +151,7 @@ suite('Histogram — Model State', () => {
     assertEqual(back.barGap, 2);
     assertEqual(back.chartConfig.title, 'Hi');
     assertEqual(back.chartConfig.tickSize, 8);
+    assertEqual(back.chartConfig.legendSize, 14);
     assertEqual(back.refLines[0].value, 7);
   });
 
