@@ -35,6 +35,7 @@ import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { State, MODEL_TYPES } from './contour-plot-model.js';
 
 import { createModebar } from '../../core/chart/modebar.js';
+import { normalizeChartSize } from '../../core/chart/chart-editor.js';
 import { DatasetPicker, getColumnValues, refToKey, keyToRef } from '../../ui/dataset-picker.js';
 
 import { editorMethods } from './contour-plot-editor.js';
@@ -488,9 +489,26 @@ const mod = createModule({
 
       _exportPNG() {
         if (!this._canvas) return;
+        // Export-only size: redraw at that size, capture, redraw for screen.
+        const cc = this._chartConfig || {};
+        const exportOnly = !!cc.sizeExportOnly && !!this._lastGrid
+          && (normalizeChartSize(cc.chartWidth) !== null || normalizeChartSize(cc.chartHeight) !== null);
+        let href;
+        if (exportOnly) {
+          this._exportSizeActive = true;
+          try {
+            this._drawContour();
+            href = this._canvas.toDataURL('image/png');
+          } finally {
+            this._exportSizeActive = false;
+            this._drawContour();
+          }
+        } else {
+          href = this._canvas.toDataURL('image/png');
+        }
         const link = document.createElement('a');
         link.download = 'contour-plot.png';
-        link.href = this._canvas.toDataURL('image/png');
+        link.href = href;
         link.click();
       },
 

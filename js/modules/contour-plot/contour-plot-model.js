@@ -30,6 +30,8 @@ export const DEFAULT_CHART_CONFIG = {
   showXLabel: true, showYLabel: true,
   showXTicks: true, showYTicks: true,
   bgColor: '',
+  // Fixed chart size in px (null = automatic), see chart editor size section
+  chartWidth: null, chartHeight: null, sizeExportOnly: false,
   // Data point styling
   markerSymbol: 'circle',
   markerSize: 10,

@@ -8,6 +8,7 @@
 
 export { getColor } from '../../core/chart/color-schemes.js';
 import { getColor } from '../../core/chart/color-schemes.js';
+import { normalizeChartSize } from '../../core/chart/chart-editor.js';
 import { legendModel } from './contour-plot-legend.js';
 import { scanSurface } from './contour-plot-surface.js';
 
@@ -111,6 +112,26 @@ function canvasDash(style) {
   }
 }
 
+/**
+ * Canvas size of the contour plot. Auto sides follow the responsive formula
+ * (fit the available width, aspect 0.78, at least 400 wide); a fixed side
+ * (`chartWidth` / `chartHeight`, px) overrides its value. With
+ * `sizeExportOnly` the fixed sides apply only while exporting.
+ * @param {object} cc - chart config
+ * @param {number} availW - available width in px
+ * @param {number} availH - available height in px
+ * @param {boolean} exportOnlyActive - true while an export-only export renders
+ * @returns {{W: number, H: number}}
+ */
+export function contourCanvasSize(cc, availW, availH, exportOnlyActive) {
+  const maxW = Math.min(availW, Math.round(availH / 0.78));
+  const autoW = Math.max(400, maxW);
+  const useFixed = !cc?.sizeExportOnly || exportOnlyActive;
+  const fw = useFixed ? normalizeChartSize(cc?.chartWidth) : null;
+  const fh = useFixed ? normalizeChartSize(cc?.chartHeight) : null;
+  return { W: fw ?? autoW, H: fh ?? Math.round(autoW * 0.78) };
+}
+
 // ═══════════════════════════════════════════════════════════════
 // Render mixin
 // ═══════════════════════════════════════════════════════════════
@@ -127,13 +148,15 @@ export const renderMethods = {
     this._container.querySelector('[data-ref="chart-area"]').style.display = '';
     this._container.querySelector('[data-ref="infoRow"]').style.display = '';
 
-    // Responsive: fit into available space without forcing scroll
+    // Responsive: fit into available space without forcing scroll, unless
+    // the editor fixes a side (then the host scrolls).
     const mainEl = this._container.querySelector('.contour__chart-main');
+    const screenFixed = !cc.sizeExportOnly
+      && (normalizeChartSize(cc.chartWidth) !== null || normalizeChartSize(cc.chartHeight) !== null);
+    if (mainEl) mainEl.classList.toggle('contour__chart-main--fixed', screenFixed);
     const availW = mainEl ? mainEl.clientWidth : 600;
     const availH = window.innerHeight * 0.6;
-    const maxW = Math.min(availW, Math.round(availH / 0.78));
-    const W = Math.max(400, maxW);
-    const H = Math.round(W * 0.78);
+    const { W, H } = contourCanvasSize(cc, availW, availH, !!this._exportSizeActive);
 
     // HiDPI: scale canvas buffer by devicePixelRatio for crisp rendering
     const dpr = window.devicePixelRatio || 1;

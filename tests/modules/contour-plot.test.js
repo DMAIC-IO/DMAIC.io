@@ -1,5 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { State, DEFAULT_CHART_CONFIG } from '../../js/modules/contour-plot/contour-plot-model.js';
+import { contourCanvasSize } from '../../js/modules/contour-plot/contour-plot-render.js';
 
 suite('Contour Plot Model — State defaults', () => {
   test('constructor sets default model spec', () => {
@@ -226,5 +227,38 @@ suite('Contour Plot Model — DEFAULT_CHART_CONFIG export', () => {
     assertEqual(typeof DEFAULT_CHART_CONFIG, 'object');
     assertEqual(DEFAULT_CHART_CONFIG.markerSymbol, 'circle');
     assertEqual(DEFAULT_CHART_CONFIG.markerStrokeWidth, 2);
+  });
+});
+
+suite('Contour Plot — fixed chart size', () => {
+  test('auto size keeps the responsive formula', () => {
+    const s = contourCanvasSize({}, 800, 600, false);
+    assertEqual(s.W, 769);
+    assertEqual(s.H, 600);
+  });
+
+  test('a fixed width overrides W, H stays automatic', () => {
+    const s = contourCanvasSize({ chartWidth: 1200 }, 800, 600, false);
+    assertEqual(s.W, 1200);
+    assertEqual(s.H, 600);
+  });
+
+  test('both sides fixed', () => {
+    const s = contourCanvasSize({ chartWidth: 1200, chartHeight: 300 }, 800, 600, false);
+    assertEqual(s.W, 1200);
+    assertEqual(s.H, 300);
+  });
+
+  test('export-only applies only while exporting', () => {
+    const cc = { chartWidth: 1200, sizeExportOnly: true };
+    assertEqual(contourCanvasSize(cc, 800, 600, false).W, 769);
+    assertEqual(contourCanvasSize(cc, 800, 600, true).W, 1200);
+  });
+
+  test('old data loads with auto size', () => {
+    const cc = State.fromJSON({ chartConfig: { titleSize: 15 } }).chartConfig;
+    assertEqual(cc.chartWidth, null);
+    assertEqual(cc.chartHeight, null);
+    assertEqual(cc.sizeExportOnly, false);
   });
 });

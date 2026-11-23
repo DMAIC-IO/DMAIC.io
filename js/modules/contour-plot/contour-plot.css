@@ -120,6 +120,12 @@
   position: relative;
 }
 
+/* Fixed chart size from the editor: oversized canvases scroll. */
+.contour__chart-main--fixed {
+  overflow: auto;
+  align-items: flex-start;
+}
+
 .contour__chart-wrap {
   position: relative;
   overflow: hidden;

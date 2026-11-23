@@ -7,7 +7,7 @@
 
 import {
   edSection, edCheckboxRow, edSelectRow, edRangeRow, edInputRow,
-  edTitleSection, edFontSizeSection, edAxisTickSection,
+  edTitleSection, edFontSizeSection, edSizeSection, edAxisTickSection,
   edBgColorSection, edRefLinesSection, edRefAreasSection,
   edColorPair, openColorPicker,
 } from '../../core/chart/chart-editor.js';
@@ -129,6 +129,9 @@ export const editorMethods = {
 
     // ── Font Sizes (shared) ──
     inner.appendChild(edFontSizeSection(this._chartConfig, () => { this._saveState(); redraw(); }, te));
+
+    // ── Size (shared) ──
+    inner.appendChild(edSizeSection(this._chartConfig, () => { this._saveState(); redraw(); }, te));
 
     // ── Axis Labels (shared) ──
     const axLbl = edSection(te('axisLabels'));
