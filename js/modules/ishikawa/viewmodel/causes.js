@@ -786,7 +786,9 @@ export class CausesViewModel {
     const chart = this._paretoChart;
     const cfg = chart.config;
     const te = (k) => this._context.i18n.t(`chart.editor.${k}`);
-    const rerender = () => chart.render();
+    // Report every edit: the instance chart manager persists the editor
+    // keys (title, font sizes, chart size) through this notification.
+    const rerender = () => { chart.render(); chart._notifyEditorChange?.(); };
     import('../../../core/chart/chart-editor.js').then(({
       edTitleSection, edFontSizeSection, edSizeSection, edCheckboxRow, edSection,
       edRangeRow, edSelectRow, edColorPair, openColorPicker,

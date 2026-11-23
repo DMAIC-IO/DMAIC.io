@@ -326,7 +326,13 @@ suite('ishikawa-vm causes — Pareto editor', () => {
     const container = fakeContainer({ '[data-ref="paretoEditorInner"]': inner });
     const vm = new CausesViewModel({ t, context: ctx, container: () => container });
     let renders = 0;
-    vm._paretoChart = { config: { items: [] }, render() { renders += 1; } };
+    let notified = 0;
+    vm._paretoChart = {
+      config: { items: [] },
+      render() { renders += 1; },
+      // The instance chart manager persists editor keys through this hook.
+      _notifyEditorChange() { notified += 1; },
+    };
     vm._buildParetoEditor();
     // The editor helpers load via a dynamic import; wait until they arrive.
     for (let i = 0; i < 50 && !inner.children.length; i++) {
@@ -338,5 +344,6 @@ suite('ishikawa-vm causes — Pareto editor', () => {
     w.dispatchEvent(new Event('change'));
     assertEqual(vm._paretoChart.config.chartWidth, 700);
     assertEqual(renders, 1);
+    assertEqual(notified, 1, 'edit is reported so the size persists');
   });
 });
