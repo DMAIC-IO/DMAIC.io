@@ -2,7 +2,7 @@
  * Histogram Module — unit tests (model).
  * Written TDD-first for the createModule + Alpine migration.
  */
-import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
 import { State } from '../../js/modules/histogram/histogram-model.js';
 
 // ─── Model: State ───────────────────────────────────────────
@@ -143,6 +143,15 @@ suite('Histogram — Model State', () => {
     assertEqual(old.chartWidth, null);
     assertEqual(old.chartHeight, null);
     assertEqual(old.sizeExportOnly, false);
+  });
+
+  test('legend order defaults to empty, round-trips and loads old data', () => {
+    assertDeepEqual(new State().chartConfig.legendOrder, []);
+    const s = new State();
+    s.chartConfig.legendOrder = ['l:LSL', 's:A'];
+    const r = State.fromJSON(structuredClone(s.toJSON()));
+    assertDeepEqual(r.chartConfig.legendOrder, ['l:LSL', 's:A']);
+    assertDeepEqual(State.fromJSON({}).chartConfig.legendOrder, []);
   });
 
   test('fromJSON v1 backward-compat: seriesRefs → datasets', () => {

@@ -7,7 +7,7 @@
  * German default.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertAlmostEqual, assertTrue } from '../../test-utils.js';
 import ParetoChart from '../../../js/core/chart/types/pareto.js';
 
 /** 30 flat items 100, 99, …, 71 — grand total 2565. */
@@ -87,9 +87,15 @@ suite('Pareto type — right axis mirrors the left axis', () => {
     };
   };
 
-  test('axis title is as far from the right edge as the left title from the left edge', () => {
-    const { m, pa, leftTitle, rightTitle } = setup();
-    assertEqual(pa.totalW - Number(rightTitle.getAttribute('x')), Number(leftTitle.getAttribute('x')));
+  test('axis title keeps the same gap to its tick labels on both sides', () => {
+    const { m, leftTitle, rightTitle } = setup();
+    const texts = [...m.host.querySelectorAll('svg text.tick-label')];
+    const leftTicks = texts.filter(t => t.getAttribute('text-anchor') === 'end').map(t => t.getBoundingClientRect());
+    const rightTicks = texts.filter(t => t.getAttribute('text-anchor') === 'start').map(t => t.getBoundingClientRect());
+    const gapLeft = Math.min(...leftTicks.map(r => r.left)) - leftTitle.getBoundingClientRect().right;
+    const gapRight = rightTitle.getBoundingClientRect().left - Math.max(...rightTicks.map(r => r.right));
+    assertTrue(Math.abs(gapLeft - gapRight) <= 1, `left=${gapLeft.toFixed(1)}, right=${gapRight.toFixed(1)}`);
+    assertTrue(rightTitle.getBoundingClientRect().right <= m.host.querySelector('svg').getBoundingClientRect().right, 'right title inside');
     unmount(m);
   });
 

@@ -41,18 +41,126 @@ export function normalizeChartSize(v) {
 // ── Low-Level Element Builders ───────────────────────────────
 
 /**
- * Create an editor section with title.
+ * Titles of the collapsible sections the user opened. Module-level, so the
+ * state survives an editor rebuild and lasts until the page reloads.
+ * @type {Set<string>}
+ */
+const _openSections = new Set();
+
+/**
+ * Create an editor section with title. By default the section is
+ * collapsible: it starts closed (unless opened before under the same title)
+ * and a click on the title toggles it.
  * @param {string} title
+ * @param {{ collapsible?: boolean }} [opts] - `collapsible: false` keeps a static, always visible section
  * @returns {HTMLElement}
  */
-export function edSection(title) {
+export function edSection(title, opts = {}) {
   const div = document.createElement('div');
   div.className = 'dmike-chart-ed-section';
-  const titleEl = document.createElement('div');
+  if (opts.collapsible === false) {
+    const titleEl = document.createElement('div');
+    titleEl.className = 'dmike-chart-ed-section-title';
+    titleEl.textContent = title;
+    div.appendChild(titleEl);
+    return div;
+  }
+  div.classList.add('dmike-chart-ed-section--collapsible');
+  const titleEl = document.createElement('button');
+  titleEl.type = 'button';
   titleEl.className = 'dmike-chart-ed-section-title';
-  titleEl.textContent = title;
+  const text = document.createElement('span');
+  text.textContent = title;
+  const chevron = icon('nav.expand-down', { size: 'sm', cls: 'dmike-chart-ed-section-chevron' });
+  titleEl.append(text, chevron);
+  const setOpen = (open) => {
+    div.classList.toggle('open', open);
+    titleEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) _openSections.add(title); else _openSections.delete(title);
+  };
+  setOpen(_openSections.has(title));
+  titleEl.addEventListener('click', () => setOpen(!div.classList.contains('open')));
   div.appendChild(titleEl);
   return div;
+}
+
+/**
+ * Legend order section: one row per legend entry, reorderable by drag & drop
+ * and by up/down buttons.
+ * @param {Array<{key: string, label: string, color?: string}>} entries - in current order
+ * @param {function(string[]): void} onReorder - called with the new key list
+ * @param {function(string): string} t - editor translation function
+ * @returns {HTMLElement}
+ */
+export function edLegendOrderSection(entries, onReorder, t) {
+  const sec = edSection(t('legendOrder'));
+  sec.dataset.edSection = 'legendOrder';
+  const keys = entries.map(e => e.key);
+  const move = (from, to) => {
+    if (from === to || from < 0 || to < 0 || from >= keys.length || to >= keys.length) return;
+    const next = keys.slice();
+    const [k] = next.splice(from, 1);
+    next.splice(to, 0, k);
+    onReorder(next);
+  };
+  const list = document.createElement('div');
+  list.className = 'dmike-chart-ed-legend-list';
+  let dragFrom = -1;
+  const rows = [];
+  entries.forEach((entry, i) => {
+    const row = document.createElement('div');
+    row.className = 'dmike-chart-ed-legend-row';
+    row.draggable = true;
+    row.dataset.legendKey = entry.key;
+    const handle = icon('action.drag-handle', { size: 'sm', cls: 'dmike-chart-ed-legend-handle' });
+    const swatch = document.createElement('span');
+    swatch.className = 'dmike-chart-ed-legend-swatch';
+    if (entry.color) swatch.style.background = entry.color;
+    const label = document.createElement('span');
+    label.className = 'dmike-chart-ed-legend-label';
+    label.textContent = entry.label;
+    const btn = (dir, iconName, aria, disabled, to) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'dmike-chart-ed-btn-icon dmike-chart-ed-legend-move';
+      b.dataset.move = dir;
+      b.setAttribute('aria-label', aria);
+      b.title = aria;
+      b.disabled = disabled;
+      b.appendChild(icon(iconName, { size: 'sm' }));
+      b.addEventListener('click', () => move(i, to));
+      return b;
+    };
+    row.append(handle, swatch, label,
+      btn('up', 'nav.arrow-up', t('moveUp'), i === 0, i - 1),
+      btn('down', 'nav.arrow-down', t('moveDown'), i === entries.length - 1, i + 1));
+    row.addEventListener('dragstart', (e) => {
+      dragFrom = i;
+      row.classList.add('is-dragging');
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', entry.key); } catch { /* ignore */ }
+    });
+    row.addEventListener('dragover', (e) => {
+      if (dragFrom < 0) return;
+      e.preventDefault();
+      rows.forEach(r => r.classList.toggle('is-drop-target', r === row));
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('is-drop-target'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const from = dragFrom;
+      dragFrom = -1;
+      rows.forEach(r => r.classList.remove('is-drop-target', 'is-dragging'));
+      move(from, i);
+    });
+    row.addEventListener('dragend', () => {
+      dragFrom = -1;
+      rows.forEach(r => r.classList.remove('is-drop-target', 'is-dragging'));
+    });
+    rows.push(row);
+    list.appendChild(row);
+  });
+  sec.appendChild(list);
+  return sec;
 }
 
 /**

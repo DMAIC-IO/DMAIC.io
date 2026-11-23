@@ -13,7 +13,7 @@ import { createModebar } from './modebar.js';
 import {
   edSection, edCheckboxRow, edRangeRow, edSelectRow,
   edTitleSection, edFontSizeSection, edSizeSection, edAxisLabelSection,
-  edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection,
+  edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection, edLegendOrderSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
   MARKER_SYMBOLS, normalizeChartSize,
@@ -80,7 +80,7 @@ export default class ChartBase {
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
     'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
     'bgColor', 'refLines', 'refAreas', 'axisRange',
-    'chartWidth', 'chartHeight', 'sizeExportOnly',
+    'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder',
   ];
 
   /**
@@ -353,6 +353,16 @@ export default class ChartBase {
         onEdit('showLegend', v);
         onUpdate();
       }, 'showLegend'));
+      if (cfg.showLegend !== false) {
+        const entries = this._legendEntries();
+        if (entries.length >= 2) {
+          inner.appendChild(edLegendOrderSection(entries, (keys) => {
+            cfg.legendOrder = keys;
+            onEdit('legendOrder', keys);
+            onUpdate();
+          }, t));
+        }
+      }
     }
 
     // Font sizes
@@ -995,6 +1005,7 @@ export default class ChartBase {
    * @returns {number} Required left margin in px (the default floor applies only while labels are drawn)
    */
   _measureLeftMargin() {
+    this._yTickLabelW = 0;
     const { labels, mono } = this._getYAxisLabels();
     if (!labels || labels.length === 0) {
       if (this._hasLeftTickLabels()) return DEFAULT_MARGIN.left;
@@ -1011,7 +1022,60 @@ export default class ChartBase {
       if (w > maxW) maxW = w;
     }
 
-    return Math.max(DEFAULT_MARGIN.left, Math.ceil(maxW) + Y_LABEL_PAD);
+    this._yTickLabelW = maxW;
+    const base = Math.max(DEFAULT_MARGIN.left, Math.ceil(maxW) + Y_LABEL_PAD);
+    if (this.config.showYLabel === false || !this.config.yLabel) return base;
+    // room for the y title left of the tick labels, at the x-axis distance
+    const { ascent } = this._axisTitleMetrics();
+    return Math.max(base, Math.ceil(this._yTitleOffset() + ascent) + 2);
+  }
+
+  /**
+   * Font box of the axis titles and the tick labels (what the browser lays
+   * the text out in), measured on an offscreen canvas.
+   * @protected
+   * @returns {{ascent:number, descent:number, tickDescent:number}}
+   */
+  _axisTitleMetrics() {
+    const ctx = document.createElement('canvas').getContext('2d');
+    const ls = Number(this.config.labelSize) || 12;
+    const ts = Number(this.config.tickSize) || 11;
+    ctx.font = `600 ${ls}px ${FONT_MAIN}`;
+    const m = ctx.measureText('Ag');
+    ctx.font = `${ts}px ${FONT_MONO}`;
+    const tm = ctx.measureText('0');
+    return {
+      ascent: m.fontBoundingBoxAscent ?? ls * 0.93,
+      descent: m.fontBoundingBoxDescent ?? ls * 0.24,
+      tickDescent: tm.fontBoundingBoxDescent ?? ts * 0.24,
+    };
+  }
+
+  /**
+   * Distance from the plot's left edge to the y title's baseline, chosen so
+   * the gap between tick labels and title equals the one under the x axis
+   * (tick baseline +18, title baseline +46 → 28 px baseline to baseline).
+   * Types with a second, right-hand axis pass that axis' widest tick label.
+   * @protected
+   * @param {number} [tickW] widest tick label in px (default: the left axis)
+   * @returns {number}
+   */
+  _yTitleOffset(tickW = this._yTickLabelW || 0) {
+    const { ascent, descent, tickDescent } = this._axisTitleMetrics();
+    const gap = 28 - tickDescent - ascent;
+    return 10 + tickW + gap + descent;
+  }
+
+  /**
+   * x of the (rotated) y title's baseline: next to the tick labels when the
+   * left margin was measured from them, else the fixed gutter position.
+   * @private
+   * @param {{x:number}} pa plot area
+   * @returns {number}
+   */
+  _yTitleX(pa) {
+    if (!this._yTickLabelW) return 18;
+    return Math.max(this._axisTitleMetrics().ascent, pa.x - this._yTitleOffset());
   }
 
   /** @private */
@@ -1242,7 +1306,7 @@ export default class ChartBase {
     // Title
     if (this.config.showTitle !== false && this.config.title) {
       svgText(this.config.title, {
-        x: pa.x + pa.w / 2, y: 26,
+        x: this._titleX(pa, size), y: 26,
         'text-anchor': 'middle', 'font-size': `${this.config.titleSize  }px`, 'font-weight': '700', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);
@@ -1259,11 +1323,12 @@ export default class ChartBase {
 
     // Y Label
     if (this.config.showYLabel !== false && this.config.yLabel) {
+      const yTitleX = this._yTitleX(pa);
       svgText(this.config.yLabel, {
-        x: 18, y: pa.y + pa.h / 2,
+        x: yTitleX, y: pa.y + pa.h / 2,
         'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN,
-        transform: `rotate(-90, 18, ${pa.y + pa.h / 2})`
+        transform: `rotate(-90, ${yTitleX}, ${pa.y + pa.h / 2})`
       }, svg);
     }
 
@@ -1380,7 +1445,7 @@ export default class ChartBase {
       labels.push(l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value);
     });
     (this.config.refAreas || []).forEach(a => {
-      labels.push(a.label || 'Bereich');
+      labels.push(a.label || this._refAreaDefaultLabel());
     });
     return labels;
   }
@@ -1409,6 +1474,25 @@ export default class ChartBase {
   }
 
   /**
+   * Horizontal centre of the title: over the plot area while the title fits
+   * into the image there, else over the whole image (a long title next to a
+   * wide left margin or legend would otherwise be cut off on one side).
+   * @protected
+   * @param {{x: number, w: number}} pa - plot area
+   * @param {{w: number}} size - image size
+   * @returns {number}
+   */
+  _titleX(pa, size) {
+    const plotCentre = pa.x + pa.w / 2;
+    const ctx = document.createElement('canvas').getContext('2d');
+    const fs = Number(this.config.titleSize) || 15;
+    ctx.font = `700 ${fs}px ${FONT_MAIN}`;
+    const half = ctx.measureText(String(this.config.title)).width / 2;
+    const fits = plotCentre - half >= 0 && plotCentre + half <= size.w;
+    return fits ? plotCentre : size.w / 2;
+  }
+
+  /**
    * Legend font size in px (`config.legendSize`, default 11).
    * @protected
    * @returns {number}
@@ -1418,21 +1502,63 @@ export default class ChartBase {
     return Number.isFinite(v) && v > 0 ? v : 11;
   }
 
-  /** @private */
-  _drawLegend(svg, pa, size, textColor) {
-    const items = this._getLegendItems();
+  /**
+   * Default label of an unlabelled reference area, translated.
+   * @protected
+   * @returns {string}
+   */
+  _refAreaDefaultLabel() {
+    const key = 'chart.editor.refAreaDefault';
+    const val = this.context?.i18n?.t(key);
+    return val && val !== key ? val : 'Bereich';
+  }
 
-    // Add ref line items
+  /**
+   * All legend entries in display order: the chart type's items, then the
+   * reference lines, then the reference areas, rearranged by
+   * `config.legendOrder` (list of entry keys). Entries the order does not
+   * name follow at the end in their default order.
+   *
+   * Keys: an item's own `key`, else `s:<label>`; `l:<label>` for reference
+   * lines, `a:<label>` for reference areas (`a:` alone when unlabelled, so the
+   * key does not depend on the UI language). Repeated keys get a `#n` suffix.
+   * @protected
+   * @returns {Array<Object>} legend items, each with a `key`
+   */
+  _legendEntries() {
+    const entries = this._getLegendItems().map(it => ({ ...it, key: it.key ?? `s:${it.label}` }));
     (this.config.refLines || []).forEach((l) => {
-      items.push({
+      const label = l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value;
+      entries.push({
         type: 'line', color: resolveColor(l.color), dash: l.dash, width: l.width,
-        label: l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value
+        label, key: `l:${label}`,
       });
     });
-    // Add ref area items
     (this.config.refAreas || []).forEach((a) => {
-      items.push({ type: 'rect', color: resolveColor(a.color), label: a.label || 'Bereich' });
+      const label = a.label || this._refAreaDefaultLabel();
+      entries.push({ type: 'rect', color: resolveColor(a.color), label, key: `a:${a.label || ''}` });
     });
+    const seen = new Map();
+    entries.forEach((e) => {
+      const n = seen.get(e.key) || 0;
+      seen.set(e.key, n + 1);
+      if (n > 0) e.key = `${e.key}#${n + 1}`;
+    });
+    const order = Array.isArray(this.config.legendOrder) ? this.config.legendOrder : [];
+    if (!order.length) return entries;
+    const rank = (e, i) => {
+      const idx = order.indexOf(e.key);
+      return idx >= 0 ? idx : order.length + i;
+    };
+    return entries
+      .map((e, i) => ({ e, r: rank(e, i) }))
+      .sort((x, y) => x.r - y.r)
+      .map(x => x.e);
+  }
+
+  /** @private */
+  _drawLegend(svg, pa, size, textColor) {
+    const items = this._legendEntries();
 
     const lx = pa.x + pa.w + 12;
     const ly = pa.y + 4;

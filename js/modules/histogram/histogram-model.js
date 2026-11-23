@@ -51,6 +51,7 @@ export class State {
     bgColor: null,
     axisRange: null,
     chartWidth: null, chartHeight: null, sizeExportOnly: false,
+    legendOrder: [],
   };
   barGap = 1;
   refLines = [];
@@ -89,6 +90,7 @@ export class State {
       chartWidth: cc.chartWidth ?? null,
       chartHeight: cc.chartHeight ?? null,
       sizeExportOnly: !!cc.sizeExportOnly,
+      legendOrder: Array.isArray(cc.legendOrder) ? cc.legendOrder.slice() : [],
       refLines: deepCopy(this.refLines) || [],
       refAreas: deepCopy(this.refAreas) || [],
       seriesOverrides: deepCopy(this.seriesOverrides) || [],
@@ -125,6 +127,7 @@ export class State {
       chartWidth: d.chartWidth ?? null,
       chartHeight: d.chartHeight ?? null,
       sizeExportOnly: !!d.sizeExportOnly,
+      legendOrder: Array.isArray(d.legendOrder) ? d.legendOrder.slice() : [],
     };
     s.barGap = (typeof d.barGap === 'number' && isFinite(d.barGap)) ? d.barGap : 1;
     s.refLines = Array.isArray(d.refLines) ? deepCopy(d.refLines) : [];

@@ -288,6 +288,17 @@ suite('EditBoundChartManager', () => {
     assertDeepEqual(s.writes, [['histogram', 'showYTicks', true]]);
   });
 
+  test('tile charts store the legend order and lay it over on create', async () => {
+    const s = boundStore();
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const c = await f.create({}, 'histogram', {});
+    c._onLabelEdit('legendOrder', ['s:B', 's:A']);
+    assertDeepEqual(s.writes, [['histogram', 'legendOrder', ['s:B', 's:A']]]);
+    c.destroy?.();
+    const d = await f.create({}, 'histogram', {});
+    assertDeepEqual(d.config.legendOrder, ['s:B', 's:A']);
+  });
+
   test('tile charts store the axis range and lay it over on create', async () => {
     const s = boundStore();
     const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
