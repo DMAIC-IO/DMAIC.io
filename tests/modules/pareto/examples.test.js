@@ -19,7 +19,7 @@ const LEGACY = {
     names: ['Maßabweichung', 'Verspätete Lieferung', 'Transportschaden', 'Falschlieferung', 'Beschädigte Verpackung', 'Sonstige'],
     values: [24970, 7380, 1910, 1505, 310, 60],
     total: 36135,
-    chart: { title: 'Reklamationskosten Q2 nach Grund' },
+    chart: { title: 'Reklamationskosten Q2 nach Grund', showTitle: true },
   },
 };
 

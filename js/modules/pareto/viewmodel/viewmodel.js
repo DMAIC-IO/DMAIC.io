@@ -50,7 +50,8 @@ export default createModule({
       /**
        * Konfiguration des Diagramms: Daten, Achsentitel aus den Spaltennamen,
        * übersetzte Texte und die Vorgaben des Moduls, die von denen des Typs
-       * abweichen (Sammelposten an, Legende nur mit Gruppenspalte).
+       * abweichen (Titel aus, Sammelposten an, Legende nur mit Gruppenspalte).
+       * Der Titel erscheint erst, wenn die Einstellungen `showTitle` setzen.
        */
       get paretoChart() {
         const row = this.model.datasets[0];
@@ -67,6 +68,8 @@ export default createModule({
           }
           : { items: items.map((it) => ({ name: it.name, value: it.value, color: it.color })) };
         return {
+          title: '',
+          showTitle: false,
           ...data,
           xLabel: nameOf(row?.x),
           yLabel,

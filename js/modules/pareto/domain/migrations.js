@@ -24,8 +24,10 @@ const nonEmpty = (v) => typeof v === 'string' && v !== '';
 
 /**
  * Die Darstellungsfelder des alten `chartConfig`: nur Abweichungen von den
- * alten Vorgaben. `refLineValue` auf ≥ 0 geklemmt, `maxItems` gerundet
- * (0 und Negatives entfallen, der Typ las dann die Vorgabe), `otherBucket`
+ * alten Vorgaben. Ein sichtbarer Titel bringt `showTitle` mit, weil die
+ * Konfiguration den Titel ohne eigenen Text ausblendet. `refLineValue` auf
+ * ≥ 0 geklemmt, `maxItems` gerundet (0 und Negatives entfallen, der Typ las
+ * dann die Vorgabe), `otherBucket`
  * nur als `false`. Was danach nicht zum `edits()`-Feld passt, entfällt
  * einzeln. `barOpacity`, `legendTitle`, `aggregation` und fremde Schlüssel
  * entfallen.
@@ -39,7 +41,7 @@ function chartFrom(raw) {
   const cfg = /** @type {Record<string, any>} */ (raw);
   if (nonEmpty(cfg.title)) {
     chart.title = cfg.title;
-    if (cfg.showTitle === false) chart.showTitle = false;
+    if (cfg.showTitle !== false) chart.showTitle = true;
   }
   if (finite(cfg.refLineValue)) {
     const v = Math.max(0, cfg.refLineValue);

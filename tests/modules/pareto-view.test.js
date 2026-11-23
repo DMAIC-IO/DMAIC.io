@@ -145,6 +145,8 @@ suite('pareto: Viewmodel im Browser', () => {
     const vm = h.vm();
     assertTrue(vm.hasData, 'keine Daten');
     assertDeepEqual(JSON.parse(JSON.stringify(vm.paretoChart)), {
+      title: '',
+      showTitle: false,
       items: [
         { name: 'A', value: 34, color: PALETTE[0] },
         { name: 'B', value: 7.5, color: PALETTE[1] },
@@ -310,13 +312,14 @@ suite('pareto: Viewmodel im Browser', () => {
     const h = await mount(legacy, { chartEdits: { [INST]: { pareto: { title: 'Legacy', refLineValue: 90, cumDotSymbol: 'square' } } } });
     const vm = h.vm();
     assertDeepEqual(sorted(vm.model.chart), sorted({
-      title: 'Legacy', refLineValue: 90, cumDotSymbol: 'square', maxItems: 4, bgColor: '#fff8e1',
+      title: 'Legacy', showTitle: true, refLineValue: 90, cumDotSymbol: 'square', maxItems: 4, bgColor: '#fff8e1',
     }));
     assertDeepEqual(JSON.parse(JSON.stringify(vm.model.datasets)), [{ x: ref('cx'), y: ref('cy'), g: ref('cg') }]);
     assertEqual(vm.model.aggregation, 'mean');
     assertEqual(Object.keys(h.chartEdits[INST].pareto).length, 0, 'Alteintrag nicht gelöscht');
     const shown = h.shown();
     assertEqual(shown.title, 'Legacy');
+    assertEqual(shown.showTitle, true);
     assertEqual(shown.refLineValue, 90);
     assertEqual(shown.cumDotSymbol, 'square');
     assertEqual(shown.maxItems, 4);
@@ -324,5 +327,34 @@ suite('pareto: Viewmodel im Browser', () => {
     assertEqual(shown.showLegend, true);
     assertEqual(shown.bgColor, '#fff8e1');
     assertEqual(mod.historyCan('undo'), false);
+  });
+
+  test('Altprojekt mit leerem Modeltitel: Titel aus chartEdits bleibt verborgen wie in der Altform', async () => {
+    const legacy = {
+      xRef: ref('cx'),
+      yRef: ref('cy'),
+      gRef: null,
+      chartConfig: { title: '', showTitle: true, aggregation: 'sum', maxItems: 20, otherBucket: true, refLineValue: 80, barOpacity: 0.75, bgColor: null },
+      exampleWorksheetId: null,
+    };
+    const h = await mount(legacy, { chartEdits: { [INST]: { pareto: { title: 'X' } } } });
+    const vm = h.vm();
+    assertDeepEqual(sorted(vm.model.chart), { title: 'X' });
+    assertEqual(vm.paretoChart.showTitle, false);
+    assertEqual(h.shown().title, 'X');
+    assertEqual(h.shown().showTitle, false);
+  });
+
+  test('neue Instanz: Titel aus, ein im Editor getippter Titel bleibt verborgen bis „Titel anzeigen“', async () => {
+    const h = await mount(stored());
+    assertEqual(h.vm().paretoChart.showTitle, false);
+    assertEqual(h.shown().showTitle, false);
+    h.vm().model.chart = { title: 'Neu' };
+    await settle();
+    assertEqual(h.shown().title, 'Neu');
+    assertEqual(h.shown().showTitle, false);
+    h.vm().model.chart = { title: 'Neu', showTitle: true };
+    await settle();
+    assertEqual(h.shown().showTitle, true);
   });
 });

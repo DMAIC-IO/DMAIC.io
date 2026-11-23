@@ -18,7 +18,8 @@
     }
   ],
   "chart": {
-    "title": "Reklamationskosten Q2 nach Grund"
+    "title": "Reklamationskosten Q2 nach Grund",
+    "showTitle": true
   },
   "sourceWorksheetFile": "worksheets/pareto-reklamationskosten.json"
 }

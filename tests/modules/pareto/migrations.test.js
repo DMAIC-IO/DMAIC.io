@@ -46,7 +46,7 @@ suite('pareto: Migration', () => {
     assertDeepEqual(plain(m.datasets), [{ x: col('col_par_art'), y: col('col_par_wert'), g: col('col_par_schicht') }]);
     assertEqual(m.aggregation, 'mean');
     assertEqual(m.exampleWorksheetId, null);
-    assertDeepEqual(plain(m.chart), { title: 'Modelltitel', refLineValue: 70, maxItems: 4, bgColor: '#fff8e1' });
+    assertDeepEqual(plain(m.chart), { title: 'Modelltitel', showTitle: true, refLineValue: 70, maxItems: 4, bgColor: '#fff8e1' });
   });
 
   test('unprüfbare Bezüge entfallen; nur y, nur g bleiben; alle leer → Vorgabe', () => {
@@ -79,11 +79,12 @@ suite('pareto: Migration', () => {
     assertDeepEqual(from0({ chartConfig: 'kaputt' }).chart, {});
   });
 
-  test('Titel: mit Text übernommen, showTitle nur als false bei sichtbarem Text', () => {
-    assertDeepEqual(from0({ chartConfig: { title: 'T' } }).chart, { title: 'T' });
-    assertDeepEqual(from0({ chartConfig: { title: 'T', showTitle: true } }).chart, { title: 'T' });
-    assertDeepEqual(from0({ chartConfig: { title: 'T', showTitle: false } }).chart, { title: 'T', showTitle: false });
+  test('Titel: mit Text übernommen, sichtbarer Titel bringt showTitle: true mit, leerer entfällt', () => {
+    assertDeepEqual(from0({ chartConfig: { title: 'T' } }).chart, { title: 'T', showTitle: true });
+    assertDeepEqual(from0({ chartConfig: { title: 'T', showTitle: true } }).chart, { title: 'T', showTitle: true });
+    assertDeepEqual(from0({ chartConfig: { title: 'T', showTitle: false } }).chart, { title: 'T' });
     assertDeepEqual(from0({ chartConfig: { title: '', showTitle: false } }).chart, {});
+    assertDeepEqual(from0({ chartConfig: { title: '', showTitle: true } }).chart, {});
   });
 
   test('Zahlen: refLineValue auf ≥ 0 geklemmt, maxItems gerundet, 0 entfällt', () => {
