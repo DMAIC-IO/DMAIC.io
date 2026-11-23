@@ -118,5 +118,9 @@
   "1.9.0": {
     "de": "Fehlerbalken im XY-Plot: konstant oder aus Spalten, je Richtung einzeln",
     "en": "Error bars in the XY plot: constant or from columns, per direction"
+  },
+  "1.9.1": {
+    "de": "Beispiel mit Fehlerbalken im XY-Plot",
+    "en": "Error bar example in the XY plot"
   }
 }
