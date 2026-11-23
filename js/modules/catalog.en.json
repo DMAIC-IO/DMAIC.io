@@ -95,6 +95,11 @@
     "description": "Two-column flow: value-added steps versus rework",
     "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet."
   },
+  "outlier-test": {
+    "name": "Outlier Test",
+    "description": "Run classical outlier tests (Grubbs, Dixon Q, Generalized ESD, Tukey IQR, Hampel, Z-Score) in parallel on a column",
+    "whenToUse": "When a measured characteristic may contain outliers: tests one numeric column with up to seven methods (Grubbs, Dixon Q, generalized ESD, Tukey IQR, Hampel, Z-score, modified Z-score) and reports which values each method flags; requires at least 3 numeric values."
+  },
   "pareto": {
     "name": "Pareto Chart",
     "description": "Bar chart sorted by descending value with a cumulative-percentage line — the classic \"vital few\" tool.",

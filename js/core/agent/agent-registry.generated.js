@@ -13420,14 +13420,10 @@ export const AGENT_REGISTRY = {
   "outlier-test": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet mit der gewählten Spalte und allen aktivierten Methoden; ohne Spalte oder mit weniger als 3 numerischen Werten bleibt result null (keine Absage, wie die Oberfläche)."
-      },
       "read": {
         "params": [
           {
@@ -13440,333 +13436,131 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setParam": {
+      "toggleMethod": {
+        "target": "model",
         "params": [
           {
-            "name": "key",
-            "type": "'alpha'|'side'|'tukeyFactor'|'hampelK'|'zThreshold'|'modZThreshold'|'esdMaxOutliers'|'enabled'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "welcher Parameter"
-          },
-          {
-            "name": "value",
-            "type": "number|string|string[]|null",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "toggleMethod",
+        "keysHelp": "actions.toggleMethod.params",
         "keys": {
-          "alpha": {
-            "type": "number",
-            "help": "Signifikanzniveau"
+          "method": {
+            "type": "'grubbs'|'dixon-q'|'generalized-esd'|'tukey-iqr'|'hampel'|'z-score'|'modified-z'",
+            "help": ""
           },
-          "side": {
-            "type": "'two-sided'|'upper'|'lower'",
-            "help": "Richtung"
-          },
-          "tukeyFactor": {
-            "type": "number",
-            "help": "Faktor der Tukey-Zäune"
-          },
-          "hampelK": {
-            "type": "number",
-            "help": "Schwelle des Hampel-Filters"
-          },
-          "zThreshold": {
-            "type": "number",
-            "help": "Schwelle des z-Werts"
-          },
-          "modZThreshold": {
-            "type": "number",
-            "help": "Schwelle des modifizierten z-Werts"
-          },
-          "esdMaxOutliers": {
-            "type": "number",
-            "help": "Höchstzahl beim verallgemeinerten ESD, leer für automatisch"
-          },
-          "enabled": {
-            "type": "string[]",
-            "help": "aktive Verfahren"
+          "on": {
+            "type": "boolean",
+            "help": ""
           }
         }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Messwertspalte wählen; die Analyse läuft danach neu."
-      },
-      "setChartMethod": {
-        "params": [
-          {
-            "name": "method",
-            "type": "string",
-            "optional": false,
-            "help": "`'all'` oder eine Methode aus chartMethodOptions"
-          }
-        ],
-        "returns": "void",
-        "help": "Wählt, welche Methode das Diagramm hervorhebt."
       }
     },
     "fields": {
       "colRef": {
-        "type": "object|null",
-        "help": "the chosen data column, `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:3"
+        ]
       },
       "alpha": {
-        "type": "number|null",
-        "help": "significance level of Grubbs, Dixon Q and generalized ESD",
-        "bulk": false,
-        "derived": true
+        "type": "number",
+        "help": "",
+        "bulk": false
       },
       "side": {
         "type": "'two-sided'|'upper'|'lower'",
-        "help": "which tail Grubbs and Dixon Q test",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "tukeyFactor": {
         "type": "number",
-        "help": "fence multiplier of the Tukey IQR rule",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "hampelK": {
         "type": "number",
-        "help": "threshold of the Hampel identifier in scaled MAD units",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "zThreshold": {
         "type": "number",
-        "help": "threshold of the Z-score rule",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "modZThreshold": {
         "type": "number",
-        "help": "threshold of the modified Z-score",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "esdMaxOutliers": {
         "type": "number|null",
-        "help": "upper limit of outliers for generalized ESD; null chooses it automatically",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "enabled": {
-        "type": "string[]",
-        "help": "the methods that are run, in the fixed order of the module",
+        "type": "Array<'grubbs'|'dixon-q'|'generalized-esd'|'tukey-iqr'|'hampel'|'z-score'|'modified-z'>",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "unique"
+        ]
       },
-      "chartMethod": {
-        "type": "string",
-        "help": "the method the chart highlights; `'all'` or one of chartMethodOptions",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+      "result": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "chartMethodOptions": {
-        "type": "string[]",
-        "help": "the values `setChartMethod` accepts: `'all'` plus every method that flagged a value",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "result": {
-        "type": "Result|null",
-        "help": "the flagged points per method, or null while no column is chosen or it has fewer than 3 numeric values",
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true,
-        "keysOf": "Result",
-        "keys": {
-          "n": {
-            "type": "number",
-            "help": "verwertete Zahlen"
-          },
-          "flaggedIdxs": {
-            "type": "number[]",
-            "help": "von mindestens einem Verfahren markiert"
-          },
-          "methods": {
-            "type": "MethodResult[]",
-            "help": "je aktivem Verfahren",
-            "keysOf": "MethodResult",
-            "keys": {
-              "id": {
-                "type": "string",
-                "help": "Verfahren"
-              },
-              "flagged": {
-                "type": "number[]",
-                "help": "markierte Punkte"
-              },
-              "error": {
-                "type": "string|null",
-                "help": "Fehlerkennung"
-              },
-              "metrics": {
-                "type": "MethodMetrics|null",
-                "help": "Kennzahlen der Karte; leer, wenn das Verfahren nicht anwendbar ist",
-                "keysOf": "MethodMetrics",
-                "keys": {
-                  "statistic": {
-                    "type": "number|null",
-                    "help": "Prüfgröße G (Grubbs) bzw. Q (Dixon Q)",
-                    "optional": true
-                  },
-                  "critical": {
-                    "type": "number|null",
-                    "help": "kritischer Wert zur Prüfgröße",
-                    "optional": true
-                  },
-                  "pValue": {
-                    "type": "number|null",
-                    "help": "p-Wert (nur Grubbs)",
-                    "optional": true
-                  },
-                  "mean": {
-                    "type": "number|null",
-                    "help": "Mittelwert (Grubbs, Z-Score)",
-                    "optional": true
-                  },
-                  "sd": {
-                    "type": "number|null",
-                    "help": "Standardabweichung (Grubbs, Z-Score)",
-                    "optional": true
-                  },
-                  "detected": {
-                    "type": "number|null",
-                    "help": "erkannte Ausreißer (Generalized ESD)",
-                    "optional": true
-                  },
-                  "maxOutliers": {
-                    "type": "number|null",
-                    "help": "geprüfte Höchstzahl (Generalized ESD)",
-                    "optional": true
-                  },
-                  "q1": {
-                    "type": "number|null",
-                    "help": "erstes Quartil (Tukey)",
-                    "optional": true
-                  },
-                  "median": {
-                    "type": "number|null",
-                    "help": "Median (Tukey, Hampel, Modified Z-Score)",
-                    "optional": true
-                  },
-                  "q3": {
-                    "type": "number|null",
-                    "help": "drittes Quartil (Tukey)",
-                    "optional": true
-                  },
-                  "iqr": {
-                    "type": "number|null",
-                    "help": "Quartilsabstand (Tukey)",
-                    "optional": true
-                  },
-                  "fenceLower": {
-                    "type": "number|null",
-                    "help": "untere Schranke (Tukey)",
-                    "optional": true
-                  },
-                  "fenceUpper": {
-                    "type": "number|null",
-                    "help": "obere Schranke (Tukey)",
-                    "optional": true
-                  },
-                  "mad": {
-                    "type": "number|null",
-                    "help": "MAD (Hampel, Modified Z-Score)",
-                    "optional": true
-                  },
-                  "madScaled": {
-                    "type": "number|null",
-                    "help": "1,4826·MAD (Hampel)",
-                    "optional": true
-                  },
-                  "k": {
-                    "type": "number|null",
-                    "help": "Schwelle k (Hampel)",
-                    "optional": true
-                  },
-                  "threshold": {
-                    "type": "number|null",
-                    "help": "Schwelle (Hampel, Z-Score, Modified Z-Score)",
-                    "optional": true
-                  }
-                }
-              },
-              "steps": {
-                "type": "EsdStep[]|null",
-                "help": "Schritte der Generalized ESD; nur dort, sonst leer",
-                "keysOf": "EsdStep",
-                "keys": {
-                  "i": {
-                    "type": "number",
-                    "help": "Nummer des Schritts ab 1"
-                  },
-                  "value": {
-                    "type": "number",
-                    "help": "der Wert, der in diesem Schritt geprüft wird"
-                  },
-                  "R": {
-                    "type": "number",
-                    "help": "Prüfgröße Rᵢ"
-                  },
-                  "lambda": {
-                    "type": "number",
-                    "help": "kritischer Wert λᵢ"
-                  }
-                }
-              }
-            }
-          }
-        }
+        "derived": true
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "why drawing the chart failed, or an empty string",
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "chartMethod",
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "colRef",
+      "alpha",
+      "side",
+      "tukeyFactor",
+      "hampelK",
+      "zThreshold",
+      "modZThreshold",
+      "esdMaxOutliers",
+      "enabled"
+    ],
+    "invariants": [
+      "enabledNotEmpty"
+    ]
   },
   "pairwise-comparison": {
     "tagged": true,

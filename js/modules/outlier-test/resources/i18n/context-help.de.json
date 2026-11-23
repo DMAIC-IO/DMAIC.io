@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "colRef": {
-      "help": "Die Messwertspalte als { instanceId, sheetId, columnId }: eine numerische Spalte mit mindestens 3 Zahlen. Leere und nichtnumerische Zellen werden übersprungen; mit weniger als 3 Zahlen bleibt die Auswertung leer. Mit instance.set wählen, null leert die Wahl."
+      "help": "Die Messwertspalte: eine numerische Spalte mit mindestens 3 Zahlen. Leere und nichtnumerische Zellen werden übersprungen; mit weniger als 3 Zahlen bleibt die Auswertung leer. Leer, solange keine gewählt ist; ein leerer Wert hebt die Wahl auf."
     },
     "alpha": {
       "help": "Das Signifikanzniveau α von Grubbs, Dixon Q und Generalized ESD; die übrigen vier Verfahren nutzen es nicht. Ein kleineres α verlangt einen deutlicheren Ausreißer, bevor er markiert wird. Zulässig sind 0,0001 bis 0,5; Dixon Q liest seine kritischen Werte aus einer Tabelle für 0,10, 0,05 und 0,01 und interpoliert dazwischen, außerhalb gilt der nächste Tabellenwert."
@@ -26,13 +26,19 @@
       "help": "Die Höchstzahl k der Ausreißer, die Generalized ESD prüft, eine ganze Zahl von 1 bis 50. Leer heißt automatisch: ⌊n/4⌋, mindestens 1 und höchstens 10. Das Verfahren entfernt schrittweise den Wert mit dem größten Rᵢ = |x − x̄| / s der Restdaten und vergleicht mit dem kritischen Wert λᵢ; Ausreißer sind die Werte bis zum letzten Schritt mit Rᵢ > λᵢ. Die Schritte brechen früher ab, wenn weniger als 3 Werte übrig sind oder die Restdaten keine Streuung mehr haben (s = 0); dann gibt es weniger als k Schritte."
     },
     "enabled": {
-      "help": "Die Verfahren, die laufen, in fester Reihenfolge: Grubbs-Test (G = max|x − x̄| / s über dem kritischen Wert, höchstens ein Ausreißer), Dixon Q-Test (Lückenquotient Q über dem Tabellenwert, höchstens ein Ausreißer, nur für 3 bis 30 Werte), Generalized ESD (bis zu k Ausreißer), Tukey IQR-Regel (außerhalb der Zäune), Hampel-Identifier (robuster Abstand zum Median über k), Z-Score (Abstand zu x̄ in s über der Schwelle) und Modified Z-Score (robuster z-Wert über der Schwelle). Doppelte Einträge zählen einmal. Die Liste darf nicht leer sein: [] wird abgelehnt, und das letzte aktive Verfahren lässt sich nicht abwählen."
+      "help": "Die Verfahren, die laufen, in fester Reihenfolge: Grubbs-Test (G = max|x − x̄| / s über dem kritischen Wert, höchstens ein Ausreißer), Dixon Q-Test (Lückenquotient Q über dem Tabellenwert, höchstens ein Ausreißer, nur für 3 bis 30 Werte), Generalized ESD (bis zu k Ausreißer), Tukey IQR-Regel (außerhalb der Zäune), Hampel-Identifier (robuster Abstand zum Median über k), Z-Score (Abstand zu x̄ in s über der Schwelle) und Modified Z-Score (robuster z-Wert über der Schwelle). Doppelte Einträge zählen einmal. Die Liste darf nicht leer sein: eine leere Liste wird abgelehnt, und das letzte aktive Verfahren lässt sich nicht abwählen."
     },
     "chartMethod": {
       "help": "Wählt, welches Verfahren das Diagramm hervorhebt: 'all' (Vereinigung aller Methoden) hebt jeden Wert hervor, den irgendein Verfahren markiert hat, sonst eines der sieben Verfahren. Ein Verfahren, das im aktuellen Ergebnis nichts markiert oder nicht aktiv ist, zeigt die Vereinigung; der gespeicherte Wert bleibt. Die wirksamen Ziele nennt chartMethodOptions."
     },
     "chart": {
       "help": "Die Einstellungen aus dem Diagramm-Editor (Titel, Achsen, Hintergrund, Mittel- und Medianmarken, Punktfarben, -symbol und -größe); leer, solange nichts geändert ist."
+    },
+    "values": {
+      "help": "Die Zahlen der Messwertspalte in ihrer Reihenfolge; leere und nichtnumerische Zellen sind übersprungen. Leer, solange keine Spalte gewählt oder lesbar ist."
+    },
+    "analysis": {
+      "help": "Die Rechnung aller aktiven Verfahren über diese Zahlen, je Verfahren sein Ergebnis oder sein Fehler. Leer, solange es weniger als 3 Zahlen gibt."
     },
     "exampleWorksheetId": {
       "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."

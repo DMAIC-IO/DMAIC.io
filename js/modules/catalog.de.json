@@ -95,6 +95,11 @@
     "description": "Zwei-Spalten-Ablauf: wertschöpfende Schritte gegen Nacharbeit",
     "whenToUse": "Wenn eine bestehende Kette danach sortiert werden soll, was wertschöpfend ist und was Nacharbeit — nicht für eine neue Prozessaufnahme ohne diese Unterscheidung."
   },
+  "outlier-test": {
+    "name": "Test auf Ausreißer",
+    "description": "Klassische Ausreißertests (Grubbs, Dixon Q, Generalized ESD, Tukey IQR, Hampel, Z-Score) parallel auf einer Spalte rechnen",
+    "whenToUse": "Wenn ein gemessenes Merkmal Ausreißer enthalten könnte: prüft eine numerische Spalte mit bis zu sieben Verfahren (Grubbs, Dixon Q, verallgemeinerter ESD, Tukey-IQR, Hampel, Z-Score, modifizierter Z-Score) und meldet, welche Werte jedes Verfahren markiert; braucht mindestens 3 numerische Werte."
+  },
   "pareto": {
     "name": "Pareto-Diagramm",
     "description": "Nach Größe sortiertes Säulendiagramm mit kumulativer Prozent-Linie — das klassische „vital few“-Werkzeug.",

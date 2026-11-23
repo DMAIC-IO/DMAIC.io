@@ -11,7 +11,7 @@ import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/outlier-test/domain/model.js';
 import { storedSource } from '../../helpers/stored-source.js';
 
-const FILE = '../../fixtures/outlier-test/outlier-bolzen-grubbs.json';
+const FILE = '../../../examples/projects/outlier-bolzen-grubbs.json';
 const SHARED = '../../../examples/';
 
 /** Ergebnis der Altform für das Beispiel (Konfidenzniveau beliebig: alpha steht in der Datei). */

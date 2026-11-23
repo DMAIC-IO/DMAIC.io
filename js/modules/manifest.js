@@ -312,17 +312,6 @@ export default [
       eightd: { phase: 'rootcause' },
     },
   },
-  {
-    id: 'outlier-test',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./outlier-test/outlier-test.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
 
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {

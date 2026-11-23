@@ -79,7 +79,7 @@ export class DatasetPicker {
    * @param {boolean} [options.multi=false] — Allow multiple datasets
    * @param {function} [options.onChange] — Called with datasets array
    * @param {string[]} [options.colors] — Optional per-dataset color indicators
-   * @param {string} [options.addHelpKey] — Kontexthilfe-Schlüssel für den Knopf „Datensatz hinzufügen“ (meist `modules.<id>.actions.setDatasets.help`)
+   * @param {string} [options.addHelpKey] — Kontexthilfe-Schlüssel für den Knopf „Datensatz hinzufügen“ (z. B. `modules.<id>.fields.datasets.help`, wie es das Widget `dataset-picker` übergibt)
    */
   constructor(container, context, options) {
     // Runtime handle: kept raw in Alpine view-model data (see non-reactive.js).

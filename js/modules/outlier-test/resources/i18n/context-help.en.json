@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "colRef": {
-      "help": "The value column as { instanceId, sheetId, columnId }: a numeric column with at least 3 numbers. Empty and non-numeric cells are skipped; with fewer than 3 numbers the evaluation stays empty. Choose it with instance.set; null clears the choice."
+      "help": "The value column: a numeric column with at least 3 numbers. Empty and non-numeric cells are skipped; with fewer than 3 numbers the evaluation stays empty. Empty until one is chosen; an empty value clears the choice."
     },
     "alpha": {
       "help": "The significance level α of Grubbs, Dixon Q and generalized ESD; the other four methods do not use it. A smaller α requires a clearer outlier before it is flagged. Allowed are 0.0001 to 0.5; Dixon Q reads its critical values from a table for 0.10, 0.05 and 0.01 and interpolates in between, outside that range the nearest table value applies."
@@ -26,13 +26,19 @@
       "help": "The maximum number k of outliers generalized ESD checks, a whole number from 1 to 50. Empty means automatic: ⌊n/4⌋, at least 1 and at most 10. The method removes, step by step, the value with the largest Rᵢ = |x − x̄| / s of the remaining data and compares it with the critical value λᵢ; outliers are the values up to the last step with Rᵢ > λᵢ. The steps stop early when fewer than 3 values are left or the remaining data have no spread (s = 0); then there are fewer than k steps."
     },
     "enabled": {
-      "help": "The methods that run, in fixed order: Grubbs' Test (G = max|x − x̄| / s above the critical value, at most one outlier), Dixon Q Test (gap ratio Q above the table value, at most one outlier, only for 3 to 30 values), Generalized ESD (up to k outliers), Tukey IQR Rule (outside the fences), Hampel Identifier (robust distance to the median above k), Z-Score (distance to x̄ in units of s above the threshold) and Modified Z-Score (robust z value above the threshold). Duplicate entries count once. The list must not be empty: [] is rejected, and the last enabled method cannot be unchecked."
+      "help": "The methods that run, in fixed order: Grubbs' Test (G = max|x − x̄| / s above the critical value, at most one outlier), Dixon Q Test (gap ratio Q above the table value, at most one outlier, only for 3 to 30 values), Generalized ESD (up to k outliers), Tukey IQR Rule (outside the fences), Hampel Identifier (robust distance to the median above k), Z-Score (distance to x̄ in units of s above the threshold) and Modified Z-Score (robust z value above the threshold). Duplicate entries count once. The list must not be empty: an empty list is rejected, and the last enabled method cannot be unchecked."
     },
     "chartMethod": {
       "help": "Chooses which method the chart highlights: 'all' (union of all methods) highlights every value any method flagged, otherwise one of the seven methods. A method that flags nothing in the current result or is not enabled shows the union; the stored value stays. chartMethodOptions names the effective targets."
     },
     "chart": {
       "help": "The settings from the chart editor (title, axes, background, mean and median marks, point colors, symbol and size); empty while nothing was changed."
+    },
+    "values": {
+      "help": "The numbers of the value column in their order; empty and non-numeric cells are skipped. Empty while no column is chosen or readable."
+    },
+    "analysis": {
+      "help": "The calculation of all enabled methods over these numbers, per method its result or its error. Empty while there are fewer than 3 numbers."
     },
     "exampleWorksheetId": {
       "help": "The id of the example worksheet this module was loaded from; empty when it does not come from an example."

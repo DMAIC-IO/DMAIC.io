@@ -102,7 +102,7 @@ export const MIN_VALUES = 3;
  *
  * @typedef {object} AnalysisParams
  * @property {number} alpha
- * @property {string} side
+ * @property {'two-sided'|'upper'|'lower'} side
  * @property {number} tukeyFactor
  * @property {number} hampelK
  * @property {number} zThreshold
