@@ -1,7 +1,7 @@
 /**
  * ChartBase `axisRange`: user-set axis min/max from the chart editor.
  * A set side pins the axis exactly; an empty side keeps the module value or
- * the automatic range. See docs/superpowers/specs/2026-11-23-chart-axis-range-design.md.
+ * the automatic range.
  */
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import ScatterChart from '../../../js/core/chart/types/scatter.js';
