@@ -6794,6 +6794,7 @@ export const AGENT_REGISTRY = {
   "heatmap": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -6808,98 +6809,42 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'x'|'g'|'v'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'aggregation'",
-            "optional": false,
-            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "'mean'|'sum'",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Analyseoption setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "aggregation": {
-            "type": "'mean'|'sum'",
-            "help": "Zusammenfassung je Zelle, nur mit Wertespalte",
-            "optional": true
-          }
-        }
       }
     },
     "fields": {
-      "xRef": {
-        "type": "object|null",
-        "help": "the column whose categories become the columns of the grid (slot `x`), or null",
+      "datasets": {
+        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, g: { instanceId: string, sheetId?: string, columnId: string }|null, v: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "gRef": {
-        "type": "object|null",
-        "help": "the column whose categories become the rows (slot `g`), or null",
-        "bulk": false,
-        "derived": true
-      },
-      "vRef": {
-        "type": "object|null",
-        "help": "the optional numeric value column (slot `v`), or null — without it cells count rows",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "datasets"
+        ],
+        "slots": {
+          "x": [
+            "columnRef",
+            "minCount:1",
+            "required"
+          ],
+          "g": [
+            "columnRef",
+            "minCount:1",
+            "required"
+          ],
+          "v": [
+            "columnRef",
+            "types:numeric,currency,percent",
+            "minCount:1"
+          ]
+        }
       },
       "aggregation": {
-        "type": "string",
-        "help": "how values are combined per cell: `mean` or `sum`; applies only with a value column",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the options `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "type": "'mean'|'sum'",
+        "help": "",
+        "bulk": false
       },
       "stats": {
-        "type": "HeatmapStats|null",
-        "help": "the heatmap grid, each figure described under keys; null while a required slot is empty",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "HeatmapStats",
@@ -6929,8 +6874,30 @@ export const AGENT_REGISTRY = {
             "help": "Gesamtsumme aller Zellen; null im Mittelwertmodus"
           }
         }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "datasets",
+      "aggregation"
+    ],
+    "invariants": []
   },
   "histogram": {
     "tagged": true,

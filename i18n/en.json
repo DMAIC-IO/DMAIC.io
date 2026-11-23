@@ -4172,66 +4172,6 @@
       "errTooFew": "Too few values for \"{col}\" (at least 2 required).",
       "errGeneric": "An error occurred while creating the probability plot."
     },
-    "heatmap": {
-      "name": "Heatmap",
-      "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",
-      "whenToUse": "Show a value or a count for every combination of two categories as a colour grid — e.g. cycle time per shift and line.",
-      "actions": {
-        "read": { "help": "Read the three chosen columns, the aggregation and the columns each slot accepts, and the figures shown next to the chart." },
-        "setColumn": {
-          "help": "Assign a column to a slot. The other slots keep their columns.",
-          "params": {
-            "slot": "'x' — categories that become the grid columns (required); 'g' — categories that become the grid rows (required); 'v' — an optional numeric value column; without it each cell counts rows.",
-            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
-          }
-        },
-        "setParam": {
-          "help": "Set an analysis option. read().activeParams names the options valid right now.",
-          "params": {
-            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
-            "value": "The value; type and allowed range per key are given under keys."
-          }
-        }
-      },
-      "fields": {
-        "xRef": { "help": "The category column (slot x); its values become the columns of the grid. Required, empty until one is chosen." },
-        "gRef": { "help": "The category column (slot g); its values become the rows of the grid. Required, empty until one is chosen." },
-        "vRef": { "help": "The value column (slot v), numeric and optional; without it each cell counts the rows of its combination. Empty until one is chosen." },
-        "aggregation": { "help": "How values are combined per cell: mean or sum." },
-        "activeParams": { "help": "The options setParam accepts in the current state." },
-        "activeColumnSlots": { "help": "The slots setColumn accepts: x, g, v." },
-        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "The heatmap grid, each figure described individually under keys; null while a required slot is empty." }
-      },
-      "types": {
-        "Params": {
-          "aggregation": "How the value column is combined per cell: as mean or as sum. Without a value column each cell counts the rows of its combination, and this option does not exist."
-        },
-        "HeatmapStats": {
-          "xCategories": "The categories of the X column; they form the columns of the grid, the table shows them as column headers.",
-          "yCategories": "The categories of the G column; they form the rows of the grid. The corner of the table shows “G column \\ X column”: the name of the G column, then that of the X column; to its right the categories of the X column stand as column headers.",
-          "cells": "The value per cell, ordered by row first, then by column, following the two category lists. Without a value column it is the number of rows with that combination, otherwise the mean or the sum of the value column. A combination without rows is empty; the table shows a dash there.",
-          "rowTotals": "The total per row, in row order; empty cells do not count. The table shows it in the last column. For the mean there are no totals, then the field is empty.",
-          "colTotals": "The total per column, in column order; empty cells do not count. The table shows it in the last row. For the mean there are no totals, then the field is empty.",
-          "total": "The grand total of all cells; the table shows it at the bottom right under the “Total” header. For the mean there are no totals, then the field is empty."
-        }
-      },
-      "sectionData": "Data Source",
-      "slotX": "Column variable (X — categorical)",
-      "slotG": "Row variable (G — categorical)",
-      "slotV": "Value column (numeric, optional — mean/sum per cell)",
-      "placeholderPickBoth": "Pick two categorical columns (X and G). Optionally a numeric value column (V) — otherwise the heatmap shows frequencies.",
-      "aggregation": "Aggregation",
-      "aggMean": "Mean",
-      "aggSum": "Sum",
-      "axisCount": "Count",
-      "axisMeanOf": "Mean of",
-      "axisSumOf": "Sum of",
-      "statsTitle": "Cross-tabulation",
-      "statX": "X category",
-      "statG": "G category",
-      "statTotal": "Total"
-    },
     "doe-advisor": {
       "whenToUse": "When an improvement project still has to settle WHICH design of experiments fits — screening, interactions, optimisation, robustness or mixture — or when the Overview tab with all designs and the comparison of the central composite designs are needed; not for planning or evaluating a concrete experiment, that is what the design planner and its evaluation are for.",
       "actions": {

@@ -8,6 +8,7 @@ import { State as IvpState } from '../../js/modules/individual-value-plot/domain
 import { State as MosaicState } from '../../js/modules/mosaic/domain/model.js';
 import { State as ParetoState } from '../../js/modules/pareto/domain/model.js';
 import { State as BarState } from '../../js/modules/bar/domain/model.js';
+import { State as HeatmapState } from '../../js/modules/heatmap/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -88,11 +89,13 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertDeepEqual(JSON.parse(JSON.stringify(m.chart)), {});
   });
 
-  test('heatmap mit 1 stetig + 2 kategorial → Mittelwert', () => {
+  test('heatmap mit 1 stetig + 2 kategorial → Mittelwert; die Vorbelegung lädt über die Migration als Zeile x/g/v', () => {
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
     const p = buildPrefill('heatmap', [cont(10, 'y'), cat(['A'], 'a'), cat(['P'], 'b')], 'ws', 's');
     assertEqual(p.target, 'heatmap');
-    assertEqual(p.state.vRef.columnId, 'y');
-    assertEqual(p.state.chartConfig.aggregation, 'mean');
+    const m = HeatmapState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [{ x: r('b'), g: r('a'), v: r('y') }]);
+    assertEqual(m.aggregation, 'mean');
   });
 
   test('run-chart, probability-plot → columnRef', () => {

@@ -4176,66 +4176,6 @@
       "errTooFew": "Zu wenig Werte für \"{col}\" (mindestens 2 erforderlich).",
       "errGeneric": "Beim Erstellen des Wahrscheinlichkeitsnetzes ist ein Fehler aufgetreten."
     },
-    "heatmap": {
-      "name": "Heatmap",
-      "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",
-      "whenToUse": "Einen Wert oder eine Anzahl für jede Kombination zweier Kategorien als Farbraster zeigen — z. B. Zykluszeit je Schicht und Linie.",
-      "actions": {
-        "read": { "help": "Die drei gewählten Spalten, die Aggregation und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm." },
-        "setColumn": {
-          "help": "Eine Spalte einem Slot zuweisen. Die anderen Slots behalten ihre Spalten.",
-          "params": {
-            "slot": "'x' — Kategorien, die zu den Rasterspalten werden (Pflicht); 'g' — Kategorien, die zu den Rasterzeilen werden (Pflicht); 'v' — eine optionale numerische Wertespalte; ohne sie zählt jede Zelle Zeilen.",
-            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
-          }
-        },
-        "setParam": {
-          "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
-          "params": {
-            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
-          }
-        }
-      },
-      "fields": {
-        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Spalten des Rasters. Pflicht, leer, solange keine gewählt ist." },
-        "gRef": { "help": "Die Kategorienspalte (Slot g); ihre Werte werden die Zeilen des Rasters. Pflicht, leer, solange keine gewählt ist." },
-        "vRef": { "help": "Die Wertespalte (Slot v), numerisch und optional; ohne sie zählt jede Zelle die Zeilen ihrer Kombination. Leer, solange keine gewählt ist." },
-        "aggregation": { "help": "Wie die Werte je Zelle zusammengefasst werden: mean oder sum." },
-        "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
-        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g, v." },
-        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Das Raster der Heatmap, jede Kennzahl unter keys einzeln beschrieben; null, solange ein Pflicht-Slot leer ist." }
-      },
-      "types": {
-        "Params": {
-          "aggregation": "Wie die Werte der Wertespalte je Zelle zusammengefasst werden: als Mittelwert oder als Summe. Ohne Wertespalte zählt jede Zelle die Zeilen ihrer Kombination, dann gibt es diese Option nicht."
-        },
-        "HeatmapStats": {
-          "xCategories": "Die Kategorien der X-Spalte; sie bilden die Spalten des Rasters, die Tabelle zeigt sie als Spaltenköpfe.",
-          "yCategories": "Die Kategorien der G-Spalte; sie bilden die Zeilen des Rasters. Die Ecke der Tabelle zeigt „G-Spalte \\ X-Spalte“, also den Namen der G-Spalte, dann den der X-Spalte; rechts daneben stehen die Kategorien der X-Spalte als Spaltenköpfe.",
-          "cells": "Der Wert je Zelle, erst nach Zeile, dann nach Spalte geordnet, in der Reihenfolge der beiden Kategorienlisten. Ohne Wertespalte ist es die Anzahl der Zeilen mit dieser Kombination, sonst der Mittelwert oder die Summe der Wertespalte. Eine Kombination ohne Zeilen ist leer; die Tabelle zeigt dort einen Strich.",
-          "rowTotals": "Die Summe je Zeile, in der Reihenfolge der Zeilen; leere Zellen zählen nicht. Die Tabelle zeigt sie in der letzten Spalte. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer.",
-          "colTotals": "Die Summe je Spalte, in der Reihenfolge der Spalten; leere Zellen zählen nicht. Die Tabelle zeigt sie in der letzten Zeile. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer.",
-          "total": "Die Gesamtsumme aller Zellen; die Tabelle zeigt sie unten rechts unter dem Kopf „Gesamt“. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer."
-        }
-      },
-      "sectionData": "Datenquelle",
-      "slotX": "Spalten-Variable (X — kategorial)",
-      "slotG": "Zeilen-Variable (G — kategorial)",
-      "slotV": "Wert-Spalte (numerisch, optional — Mittelwert/Summe je Zelle)",
-      "placeholderPickBoth": "Wähle zwei kategoriale Spalten (X und G). Optional eine numerische Wert-Spalte (V) — sonst zeigt die Heatmap die Häufigkeit.",
-      "aggregation": "Aggregation",
-      "aggMean": "Mittelwert",
-      "aggSum": "Summe",
-      "axisCount": "Häufigkeit",
-      "axisMeanOf": "Mittelwert von",
-      "axisSumOf": "Summe von",
-      "statsTitle": "Kreuztabelle",
-      "statX": "X-Kategorie",
-      "statG": "G-Kategorie",
-      "statTotal": "Gesamt"
-    },
     "doe-advisor": {
       "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn die Übersicht der Versuchspläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht werden; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
       "actions": {

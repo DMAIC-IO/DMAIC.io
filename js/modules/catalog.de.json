@@ -35,6 +35,11 @@
     "description": "Versuchsplanung: Vollfaktoriell, Teilfaktoriell, Plackett-Burman, CCD, Box-Behnken, Taguchi",
     "whenToUse": "Wenn der Einfluss mehrerer Faktoren auf eine oder mehrere Zielgrößen mit einem geplanten Versuch untersucht werden soll: vollfaktoriell, teilfaktoriell, Plackett-Burman, Wirkungsflächen (CCD, Box-Behnken), Taguchi oder optimal (D, A, G), auch als EVOP-Projekt über mehrere Phasen. Welcher Plantyp passt, klärt vorher der DoE-Berater (doe-advisor)."
   },
+  "heatmap": {
+    "name": "Heatmap",
+    "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",
+    "whenToUse": "Einen Wert oder eine Anzahl für jede Kombination zweier Kategorien als Farbraster zeigen — z. B. Zykluszeit je Schicht und Linie."
+  },
   "histogram": {
     "name": "Histogramm",
     "description": "Häufigkeitsverteilung mit Boxplot und Statistik",

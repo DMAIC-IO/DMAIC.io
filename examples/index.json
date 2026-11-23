@@ -1954,31 +1954,6 @@
       ]
     },
     {
-      "id": "heatmap-zykluszeit-schicht-linie",
-      "type": "project",
-      "title": {
-        "de": "Zykluszeit Schicht × Linie (Heatmap)",
-        "en": "Cycle Time Shift × Line (heatmap)"
-      },
-      "description": {
-        "de": "45 Zykluszeit-Messungen (in Sekunden) über drei Schichten (Früh/Spät/Nacht) und drei Produktionslinien (L1/L2/L3) — 5 Messungen pro Kombination. Die Heatmap zeigt zwei Effekte gleichzeitig: einen Linieneffekt (L3 ≈ 30 s langsamer als L1) und einen Schichteffekt (Nacht ≈ 10 s langsamer als Früh). Die Kombination (Nacht, L3) ist mit 82 s das klare Worst-Case-Feld — perfekter Einstieg für die Analyze-Phase.",
-        "en": "45 cycle-time measurements (in seconds) across three shifts (early/late/night) and three production lines (L1/L2/L3) — 5 readings per combination. The heatmap reveals two effects at once: a line effect (L3 ≈ 30 s slower than L1) and a shift effect (night ≈ 10 s slower than early). The (night, L3) cell at 82 s is the clear worst case — a perfect starting point for the Analyze phase."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/heatmap-zykluszeit-schicht-linie.json",
-      "format": "json",
-      "modules": [
-        "heatmap"
-      ],
-      "tags": [
-        "heatmap",
-        "categorical",
-        "cross-tab",
-        "cycle-time"
-      ]
-    },
-    {
       "id": "todo-pizza-lieferzeit",
       "type": "project",
       "title": {

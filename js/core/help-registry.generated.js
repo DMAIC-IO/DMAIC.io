@@ -14,41 +14,40 @@ import h11 from '../modules/five-why/five-why-help.js';
 import h12 from '../modules/fmea/fmea-help.js';
 import h13 from '../modules/gage-run-chart/gage-run-chart-help.js';
 import h14 from '../modules/glm-regression/glm-regression-help.js';
-import h15 from '../modules/heatmap/heatmap-help.js';
-import h16 from '../modules/kano/kano-help.js';
-import h17 from '../modules/lessons-learned/lessons-learned-help.js';
-import h18 from '../modules/makigami/makigami-help.js';
-import h19 from '../modules/model-data-generator/model-data-generator-help.js';
-import h20 from '../modules/msa-typ1/msa-typ1-help.js';
-import h21 from '../modules/msa-typ4/msa-typ4-help.js';
-import h22 from '../modules/msa-typ6/msa-typ6-help.js';
-import h23 from '../modules/multivariate-control-chart/multivariate-control-chart-help.js';
-import h24 from '../modules/outlier-test/outlier-test-help.js';
-import h25 from '../modules/pairwise-comparison/pairwise-comparison-help.js';
-import h26 from '../modules/probability-plot/probability-plot-help.js';
-import h27 from '../modules/process-map/process-map-help.js';
-import h28 from '../modules/raci-matrix/raci-matrix-help.js';
-import h29 from '../modules/random-generator/random-generator-help.js';
-import h30 from '../modules/rare-event-chart/rare-event-chart-help.js';
-import h31 from '../modules/regression/regression-help.js';
-import h32 from '../modules/response-optimization/response-optimization-help.js';
-import h33 from '../modules/rest-api/rest-api-help.js';
-import h34 from '../modules/run-chart/run-chart-help.js';
-import h35 from '../modules/sample-size/sample-size-help.js';
-import h36 from '../modules/short-run-chart/short-run-chart-help.js';
-import h37 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h38 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
-import h39 from '../modules/todo/todo-help.js';
-import h40 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
-import h41 from '../modules/triz-9-windows/triz-9-windows-help.js';
-import h42 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
-import h43 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h44 from '../modules/triz-ifr/triz-ifr-help.js';
-import h45 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h46 from '../modules/triz-resources/triz-resources-help.js';
-import h47 from '../modules/triz-sufield/triz-sufield-help.js';
-import h48 from '../modules/unit-converter/unit-converter-help.js';
-import h49 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h15 from '../modules/kano/kano-help.js';
+import h16 from '../modules/lessons-learned/lessons-learned-help.js';
+import h17 from '../modules/makigami/makigami-help.js';
+import h18 from '../modules/model-data-generator/model-data-generator-help.js';
+import h19 from '../modules/msa-typ1/msa-typ1-help.js';
+import h20 from '../modules/msa-typ4/msa-typ4-help.js';
+import h21 from '../modules/msa-typ6/msa-typ6-help.js';
+import h22 from '../modules/multivariate-control-chart/multivariate-control-chart-help.js';
+import h23 from '../modules/outlier-test/outlier-test-help.js';
+import h24 from '../modules/pairwise-comparison/pairwise-comparison-help.js';
+import h25 from '../modules/probability-plot/probability-plot-help.js';
+import h26 from '../modules/process-map/process-map-help.js';
+import h27 from '../modules/raci-matrix/raci-matrix-help.js';
+import h28 from '../modules/random-generator/random-generator-help.js';
+import h29 from '../modules/rare-event-chart/rare-event-chart-help.js';
+import h30 from '../modules/regression/regression-help.js';
+import h31 from '../modules/response-optimization/response-optimization-help.js';
+import h32 from '../modules/rest-api/rest-api-help.js';
+import h33 from '../modules/run-chart/run-chart-help.js';
+import h34 from '../modules/sample-size/sample-size-help.js';
+import h35 from '../modules/short-run-chart/short-run-chart-help.js';
+import h36 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
+import h37 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
+import h38 from '../modules/todo/todo-help.js';
+import h39 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
+import h40 from '../modules/triz-9-windows/triz-9-windows-help.js';
+import h41 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
+import h42 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
+import h43 from '../modules/triz-ifr/triz-ifr-help.js';
+import h44 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h45 from '../modules/triz-resources/triz-resources-help.js';
+import h46 from '../modules/triz-sufield/triz-sufield-help.js';
+import h47 from '../modules/unit-converter/unit-converter-help.js';
+import h48 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -66,39 +65,38 @@ export const HELP = {
   "fmea": h12,
   "gage-run-chart": h13,
   "glm-regression": h14,
-  "heatmap": h15,
-  "kano": h16,
-  "lessons-learned": h17,
-  "makigami": h18,
-  "model-data-generator": h19,
-  "msa-typ1": h20,
-  "msa-typ4": h21,
-  "msa-typ6": h22,
-  "multivariate-control-chart": h23,
-  "outlier-test": h24,
-  "pairwise-comparison": h25,
-  "probability-plot": h26,
-  "process-map": h27,
-  "raci-matrix": h28,
-  "random-generator": h29,
-  "rare-event-chart": h30,
-  "regression": h31,
-  "response-optimization": h32,
-  "rest-api": h33,
-  "run-chart": h34,
-  "sample-size": h35,
-  "short-run-chart": h36,
-  "stakeholder-analysis": h37,
-  "time-weighted-chart": h38,
-  "todo": h39,
-  "transformed-imr-chart": h40,
-  "triz-9-windows": h41,
-  "triz-contradiction-matrix": h42,
-  "triz-evolution-trends": h43,
-  "triz-ifr": h44,
-  "triz-physical-contradiction": h45,
-  "triz-resources": h46,
-  "triz-sufield": h47,
-  "unit-converter": h48,
-  "voc-ctx-tree": h49,
+  "kano": h15,
+  "lessons-learned": h16,
+  "makigami": h17,
+  "model-data-generator": h18,
+  "msa-typ1": h19,
+  "msa-typ4": h20,
+  "msa-typ6": h21,
+  "multivariate-control-chart": h22,
+  "outlier-test": h23,
+  "pairwise-comparison": h24,
+  "probability-plot": h25,
+  "process-map": h26,
+  "raci-matrix": h27,
+  "random-generator": h28,
+  "rare-event-chart": h29,
+  "regression": h30,
+  "response-optimization": h31,
+  "rest-api": h32,
+  "run-chart": h33,
+  "sample-size": h34,
+  "short-run-chart": h35,
+  "stakeholder-analysis": h36,
+  "time-weighted-chart": h37,
+  "todo": h38,
+  "transformed-imr-chart": h39,
+  "triz-9-windows": h40,
+  "triz-contradiction-matrix": h41,
+  "triz-evolution-trends": h42,
+  "triz-ifr": h43,
+  "triz-physical-contradiction": h44,
+  "triz-resources": h45,
+  "triz-sufield": h46,
+  "unit-converter": h47,
+  "voc-ctx-tree": h48,
 };

@@ -35,6 +35,11 @@
     "description": "Design of Experiments: Full Factorial, Fractional, Plackett-Burman, CCD, Box-Behnken, Taguchi",
     "whenToUse": "When the effect of several factors on one or more responses is to be studied in a planned experiment: full or fractional factorial, Plackett-Burman, response surface (CCD, Box-Behnken), Taguchi or optimal (D, A, G), also as an EVOP project over several phases. Which design type fits is settled beforehand in the DoE advisor (doe-advisor)."
   },
+  "heatmap": {
+    "name": "Heatmap",
+    "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",
+    "whenToUse": "Show a value or a count for every combination of two categories as a colour grid — e.g. cycle time per shift and line."
+  },
   "histogram": {
     "name": "Histogram",
     "description": "Frequency distribution with boxplot and statistics",
