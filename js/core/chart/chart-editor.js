@@ -428,6 +428,50 @@ export function edAxisTickSection(config, onUpdate, t, onEdit) {
 }
 
 /**
+ * Build the chart size section: width/height inputs in px (100–4000, empty =
+ * auto) and the "export only" checkbox. A typed value is rounded and clamped,
+ * and the input shows the stored value afterwards.
+ *
+ * @param {{ chartWidth?: number|null, chartHeight?: number|null, sizeExportOnly?: boolean }} config - Mutated in-place
+ * @param {function} onChange - Called after an edit
+ * @param {function} t - Translator for `chart.editor.*` keys
+ * @returns {HTMLElement}
+ */
+export function edSizeSection(config, onChange, t) {
+  const sec = edSection(t('size'));
+  const row = (key) => {
+    const r = document.createElement('div');
+    r.className = 'dmike-chart-ed-inline-row';
+    const lbl = document.createElement('label');
+    lbl.textContent = t(key);
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = String(CHART_SIZE_MIN);
+    inp.max = String(CHART_SIZE_MAX);
+    inp.step = '1';
+    inp.placeholder = t('auto');
+    inp.dataset.chartSize = key;
+    const cur = normalizeChartSize(config[key]);
+    inp.value = cur === null ? '' : String(cur);
+    inp.addEventListener('change', () => {
+      const next = normalizeChartSize(inp.value.trim());
+      config[key] = next;
+      inp.value = next === null ? '' : String(next);
+      onChange();
+    });
+    lbl.addEventListener('click', () => inp.focus());
+    r.append(lbl, inp);
+    return r;
+  };
+  sec.append(row('chartWidth'), row('chartHeight'));
+  sec.appendChild(edCheckboxRow(t('sizeExportOnly'), !!config.sizeExportOnly, (v) => {
+    config.sizeExportOnly = v;
+    onChange();
+  }, 'sizeExportOnly'));
+  return sec;
+}
+
+/**
  * Build the axis range section: min/max number inputs per axis that allows a
  * range (`axes`). An empty field means automatic. Every edit replaces
  * `config.axisRange` with a new object (`null` once all fields are empty).

@@ -24,7 +24,7 @@ import {
 } from '../chart-core.js';
 import {
   edSection, edCheckboxRow, edRangeRow, edSelectRow,
-  edTitleSection, edBgColorSection, edInlineInput,
+  edTitleSection, edBgColorSection, edInlineInput, edSizeSection,
   openColorPicker,
 } from '../chart-editor.js';
 
@@ -73,6 +73,7 @@ export default class PieChart extends ChartBase {
     'title', 'showTitle', 'showLegend', 'showLabels', 'labelMode', 'labelSize',
     'innerRadius', 'padAngle', 'startAngle', 'explodeDistance', 'strokeWidth',
     'sortSlices', 'centerLabel', 'centerSub', 'bgColor',
+    'chartWidth', 'chartHeight', 'sizeExportOnly',
   ];
 
   constructor(container, config, context) {
@@ -427,6 +428,9 @@ export default class PieChart extends ChartBase {
     ], cfg.labelMode, (v) => { cfg.labelMode = v; onUpdate(); }));
     secLabels.appendChild(edRangeRow(t('labelSize'), cfg.labelSize, (v) => { cfg.labelSize = v; onSlide(); }, 7, 18, 1));
     inner.appendChild(secLabels);
+
+    // Fixed chart size
+    inner.appendChild(edSizeSection(cfg, onSlide, tBase));
 
     // Shape
     const secShape = edSection(t('shapeStyle'));

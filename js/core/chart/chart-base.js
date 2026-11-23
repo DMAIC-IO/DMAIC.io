@@ -12,7 +12,7 @@ import {
 import { createModebar } from './modebar.js';
 import {
   edSection, edCheckboxRow, edRangeRow, edSelectRow,
-  edTitleSection, edFontSizeSection, edAxisLabelSection,
+  edTitleSection, edFontSizeSection, edSizeSection, edAxisLabelSection,
   edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
@@ -358,6 +358,9 @@ export default class ChartBase {
     // Font sizes
     // Legend size changes the legend width and so the plot area: onChange re-renders.
     inner.appendChild(edFontSizeSection(cfg, onChange, t, { legend: hasLegend }));
+
+    // Fixed chart size (px; screen + export, or export only)
+    inner.appendChild(edSizeSection(cfg, onChange, t));
 
     // Axis labels
     inner.appendChild(edAxisLabelSection(cfg, onChange, t, onEdit, auto));
