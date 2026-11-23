@@ -788,7 +788,7 @@ export class CausesViewModel {
     const te = (k) => this._context.i18n.t(`chart.editor.${k}`);
     const rerender = () => chart.render();
     import('../../../core/chart/chart-editor.js').then(({
-      edTitleSection, edFontSizeSection, edCheckboxRow, edSection,
+      edTitleSection, edFontSizeSection, edSizeSection, edCheckboxRow, edSection,
       edRangeRow, edSelectRow, edColorPair, openColorPicker,
     }) => {
       const cpOpen = (e, color, cb) => {
@@ -808,6 +808,7 @@ export class CausesViewModel {
       ];
       inner.appendChild(edTitleSection(cfg, rerender, te));
       inner.appendChild(edFontSizeSection(cfg, rerender, te));
+      inner.appendChild(edSizeSection(cfg, rerender, te));
       const axSec = edSection(this._t('paretoAxes'));
       axSec.appendChild(edCheckboxRow(te('showYLabel'), cfg.showYLabel !== false, (v) => { cfg.showYLabel = v; rerender(); }));
       axSec.appendChild(edCheckboxRow(te('showYTicks'), cfg.showYTicks !== false, (v) => { cfg.showYTicks = v; rerender(); }));

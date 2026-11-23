@@ -317,3 +317,26 @@ suite('ishikawa-vm causes — summary and CSV', () => {
     assertTrue(csv.includes('"1","Stau"'));
   });
 });
+
+suite('ishikawa-vm causes — Pareto editor', () => {
+  test('the Pareto editor offers the chart size section', async () => {
+    if (typeof document === 'undefined') return; // needs a DOM (browser runner)
+    const inner = document.createElement('div');
+    const ctx = fakeContext();
+    const container = fakeContainer({ '[data-ref="paretoEditorInner"]': inner });
+    const vm = new CausesViewModel({ t, context: ctx, container: () => container });
+    let renders = 0;
+    vm._paretoChart = { config: { items: [] }, render() { renders += 1; } };
+    vm._buildParetoEditor();
+    // The editor helpers load via a dynamic import; wait until they arrive.
+    for (let i = 0; i < 50 && !inner.children.length; i++) {
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    const w = inner.querySelector('input[data-chart-size="chartWidth"]');
+    assertTrue(!!w, 'size input exists');
+    w.value = '700';
+    w.dispatchEvent(new Event('change'));
+    assertEqual(vm._paretoChart.config.chartWidth, 700);
+    assertEqual(renders, 1);
+  });
+});
