@@ -1,0 +1,207 @@
+<div class="outliertest dmike-split" x-data="outlierTest">
+  <!-- data-help-key="" am Picker-Wirt ist gewollt: die Beschriftung trägt den Anker fields.colRef. -->
+
+  <!-- ── Input panel ─────────────────────────────────────────── -->
+  <div class="outliertest__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.outlier-test.fields.colRef.help" x-text="t('column')"></label>
+      <div data-ref="picker-wrap" data-help-key="" x-field="model.colRef"></div>
+    </div>
+
+    <div class="dmike-split__section-title"><span data-help-key="modules.outlier-test.fields.enabled.help" x-text="t('sectionMethods')"></span></div>
+
+    <div class="outliertest__methods">
+      <template x-for="mid in allMethods" :key="mid">
+        <label class="outliertest__method">
+          <input type="checkbox"
+                 :data-method="mid"
+                 :checked="isMethodEnabled(mid)"
+                 @change="methodChanged(mid, $event)">
+          <span x-text="methodLabel(mid)"></span>
+        </label>
+      </template>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label data-help-key="modules.outlier-test.fields.side.help" x-text="t('side')"></label>
+        <select data-ref="side" class="field" data-help-key="" x-field="model.side">
+          <template x-for="o in sideOptions" :key="o.value">
+            <option :value="o.value" x-text="o.label"></option>
+          </template>
+        </select>
+      </div>
+      <div class="field-group field-group--minor">
+        <label data-help-key="modules.outlier-test.fields.alpha.help">&#945;</label>
+        <input data-ref="alpha" class="field field--num" x-field="model.alpha">
+      </div>
+    </div>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.outlier-test.fields.tukeyFactor.help" :title="t('tipTukeyFactor')" x-text="t('tukeyFactor')"></label>
+        <input data-ref="tukey-factor" class="field field--num" x-field="model.tukeyFactor">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.outlier-test.fields.hampelK.help" :title="t('tipHampelK')" x-text="t('hampelK')"></label>
+        <input data-ref="hampel-k" class="field field--num" x-field="model.hampelK">
+      </div>
+    </div>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.outlier-test.fields.zThreshold.help" :title="t('tipZThreshold')" x-text="t('zThreshold')"></label>
+        <input data-ref="z-threshold" class="field field--num" x-field="model.zThreshold">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.outlier-test.fields.modZThreshold.help" :title="t('tipModZThreshold')" x-text="t('modZThreshold')"></label>
+        <input data-ref="modz-threshold" class="field field--num" x-field="model.modZThreshold">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.outlier-test.fields.esdMaxOutliers.help" :title="t('tipEsdMax')" x-text="t('esdMax')"></label>
+      <input data-ref="esd-max" class="field field--num" :placeholder="t('esdMaxAuto')" x-field="model.esdMaxOutliers">
+    </div>
+
+  </div>
+
+  <!-- ── Output panel ─────────────────────────────────────────── -->
+  <div class="outliertest__output dmike-split__output">
+
+    <div class="outliertest__placeholder" data-ref="placeholder" x-show="!hasResult">
+      <span class="icon icon--lg icon--empty-state" data-icon="status.warning" aria-hidden="true"></span>
+      <p x-text="t('placeholderText')"></p>
+    </div>
+
+    <div data-ref="results" x-show="hasResult">
+      <template x-if="hasResult">
+        <div class="outliertest__panel">
+          <!-- ── Summary ── -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionSummary')"></span></div>
+          <div class="dmike-kpi-strip">
+            <template x-for="(c, i) in summaryKpis" :key="i">
+              <div class="dmike-kpi" :class="c.kpiClass">
+                <div class="dmike-kpi-value" :class="c.valueClass" x-text="c.value"></div>
+                <div class="dmike-kpi-label" :data-help-key="c.help" x-text="c.label"></div>
+              </div>
+            </template>
+          </div>
+
+          <!-- ── Chart ── -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionChart')"></span></div>
+          <div class="outliertest__chart-method btn-group context-help-anchor--overlay" role="radiogroup" x-set="model.chartMethod" data-help-key="modules.outlier-test.fields.chartMethod.help">
+            <template x-for="(s, i) in chartSegs" :key="s.val">
+              <button type="button" role="radio" class="btn--segment outliertest__chart-method-btn" data-help-key=""
+                      :value="s.val"
+                      :class="s.activeClass"
+                      :data-chart-method="s.val"
+                      x-text="s.label"></button>
+            </template>
+          </div>
+          <div class="outliertest__chart-card">
+            <div data-ref="chart" class="outliertest__chart" x-widget="individual-value-plot-chart" x-widget-config="ivp" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+          </div>
+
+          <!-- ── Per-method cards ── -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMethods')"></span></div>
+          <template x-for="(card, ci) in methodCards" :key="ci">
+            <div class="outliertest__card" :class="card.cardClass">
+              <template x-if="card.isError">
+                <div>
+                  <div class="outliertest__card-header">
+                    <span><span x-text="card.label + ' '"></span><span x-widget="algo-lab-link" x-widget-algo-id="card.algoId"></span></span>
+                  </div>
+                  <div class="outliertest__card-error" x-text="card.errorText"></div>
+                </div>
+              </template>
+              <template x-if="!card.isError">
+                <div>
+                  <div class="outliertest__card-header">
+                    <span class="outliertest__card-title"><span x-text="card.label + ' '"></span><span x-widget="algo-lab-link" x-widget-algo-id="card.algoId"></span></span>
+                    <span class="outliertest__verdict" :class="card.verdictClass">
+                      <span class="icon icon--sm icon--text" :data-icon="card.verdictIcon" aria-hidden="true"></span>
+                      <span x-text="card.verdictText"></span>
+                    </span>
+                  </div>
+                  <div class="dmike-kpi-strip">
+                    <template x-for="(m, mi) in card.metrics" :key="mi">
+                      <div class="dmike-kpi" :class="m.kpiClass">
+                        <div class="dmike-kpi-value" :class="m.valueClass" x-text="m.value"></div>
+                        <div class="dmike-kpi-label" :data-help-key="m.help || null" x-text="m.label"></div>
+                      </div>
+                    </template>
+                  </div>
+                  <template x-if="card.chips.length">
+                    <div class="outliertest__chips">
+                      <template x-for="(chip, chi) in card.chips" :key="chi">
+                        <span class="outliertest__chip" :class="chip.moreClass"><span x-text="chip.text"></span><template x-if="chip.stat"><span class="outliertest__chip-stat" x-text="chip.stat"></span></template></span>
+                      </template>
+                    </div>
+                  </template>
+                  <template x-if="card.steps.length">
+                    <table class="dmike-table outliertest__steps">
+                      <thead><tr><th><span data-help-key="modules.outlier-test.types.EsdStep.i" x-text="t('symStep')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.value" x-text="t('value')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.R" x-text="t('symR')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.lambda" x-text="t('symLambda')"></span></th><th x-text="card.stepsHeader"></th></tr></thead>
+                      <tbody>
+                        <template x-for="(st, si) in card.steps" :key="si">
+                          <tr :class="st.rejectClass">
+                            <td x-text="st.i"></td><td x-text="st.value"></td>
+                            <td x-text="st.R"></td>
+                            <td x-text="st.lambda"></td>
+                            <td><span class="icon icon--sm icon--text" :data-icon="st.markIcon" aria-hidden="true"></span></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </template>
+                  <template x-if="card.hint">
+                    <div class="field-hint" x-text="card.hint"></div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ── Flagged-points table ── -->
+          <template x-if="flaggedShow">
+            <div class="outliertest__flagged-block">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.outlier-test.types.MethodResult.flagged" x-text="t('sectionFlagged')"></span></div>
+              <table class="dmike-table outliertest__flagged">
+                <thead><tr>
+                  <th><span data-help-key="modules.outlier-test.types.Result.flaggedIdxs">#</span></th>
+                  <th x-text="t('value')"></th>
+                  <template x-for="(h, hi) in flaggedHeaders" :key="hi">
+                    <th :title="h.title" x-text="h.short"></th>
+                  </template>
+                  <th><span data-help-key="modules.outlier-test.types.Result.flaggedIdxs">Σ</span></th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="(row, ri) in flaggedRows" :key="ri">
+                    <tr>
+                      <td x-text="row.idx"></td>
+                      <td x-text="row.value"></td>
+                      <template x-for="(cell, cci) in row.cells" :key="cci">
+                        <td :class="cell.cls">
+                          <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true" x-show="cell.flagged"></span>
+                          <span x-show="!cell.flagged">–</span>
+                        </td>
+                      </template>
+                      <td><strong x-text="row.count"></strong></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+
+  </div>
+
+</div>

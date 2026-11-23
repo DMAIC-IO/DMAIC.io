@@ -1,0 +1,260 @@
+/**
+ * D.Mike — Outlier Test Module Styles
+ * BEM-light naming: .outliertest__*
+ * Section labels: use global .dmike-split__output-section.
+ */
+
+/* ── Results panel wrapper ────────────────────────────────── */
+
+/* The composite results panel lives inside a single x-if root <div>
+   (Alpine requires exactly one root child). display:contents lets its
+   sections participate directly in [data-ref="results"]'s block layout,
+   so the legacy section-margin rules (:first-child / :not(:first-child))
+   behave identically — preserving byte/visual parity. */
+.outliertest__panel {
+  display: contents;
+}
+
+/* The flagged-points block is wrapped in a single x-if root (Alpine needs one
+   root child). Its inner section label is therefore :first-child of the wrapper
+   and loses the legacy :not(:first-child) top margin — restore it on the wrapper
+   so the gap above the section matches the original imperative layout. */
+.outliertest__flagged-block {
+  margin-top: var(--spacing-lg);
+}
+
+/* ── Method checkbox grid ─────────────────────────────────── */
+
+.outliertest__methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.outliertest__method {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.outliertest__method:hover {
+  border-color: var(--color-accent);
+}
+
+.outliertest__method input {
+  margin: 0;
+}
+
+/* ── Error box (shared with other modules) ─────────────────── */
+
+/* ── Placeholder ──────────────────────────────────────────── */
+
+.outliertest__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+/* ── Result cards ─────────────────────────────────────────── */
+
+.outliertest__card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.outliertest__card--error {
+  border-color: rgb(var(--color-error-rgb, 239, 68, 68), 0.4);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.05);
+}
+
+.outliertest__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.outliertest__card-title {
+  font-weight: 600;
+  font-size: var(--font-size-md);
+}
+
+.outliertest__card-error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Verdict pill ─────────────────────────────────────────── */
+
+.outliertest__verdict {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.outliertest__verdict--clean {
+  background: rgb(var(--color-success-rgb, 52, 211, 153), 0.15);
+  color: var(--color-success);
+}
+
+.outliertest__verdict--flag {
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.15);
+  color: var(--color-error);
+}
+
+/* Long text in a kpi value (column name, test name) — shrink to fit. */
+.outliertest__card .dmike-kpi-value--sm {
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
+/* ── Outlier chips ────────────────────────────────────────── */
+
+.outliertest__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.outliertest__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.08);
+  color: var(--color-error);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: 1px solid rgb(var(--color-error-rgb, 239, 68, 68), 0.2);
+}
+
+.outliertest__chip--more {
+  background: var(--color-bg-primary);
+  color: var(--color-text-tertiary);
+  border-color: var(--color-border-primary);
+}
+
+.outliertest__chip-stat {
+  color: var(--color-text-tertiary);
+}
+
+/* ── ESD step trace ───────────────────────────────────────── */
+
+.outliertest__steps {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  margin-top: var(--spacing-xs);
+}
+
+.outliertest__steps th,
+.outliertest__steps td {
+  border-bottom: var(--border-width) solid var(--color-border-primary);
+  text-align: right;
+}
+
+.outliertest__steps th:first-child,
+.outliertest__steps td:first-child {
+  text-align: left;
+}
+
+.outliertest__steps th {
+  background: var(--color-bg-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.outliertest__step--reject {
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.06);
+  color: var(--color-error);
+}
+
+/* ── Flagged-points combined table ─────────────────────────── */
+
+.outliertest__flagged {
+  font-family: var(--font-family-mono);
+  margin-bottom: var(--spacing-sm);
+}
+
+.outliertest__flagged th,
+.outliertest__flagged td {
+  padding: var(--spacing-s) var(--spacing-sm);
+  border-bottom: var(--border-width) solid var(--color-border-primary);
+  text-align: center;
+}
+
+.outliertest__flagged th:first-child,
+.outliertest__flagged td:first-child,
+.outliertest__flagged th:nth-child(2),
+.outliertest__flagged td:nth-child(2) {
+  text-align: right;
+}
+
+.outliertest__flagged th {
+  background: var(--color-bg-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+}
+
+.outliertest__flag {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.outliertest__no-flag {
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+}
+
+/* ── Chart-method segmented selector ───────────────────────── */
+
+.outliertest__chart-method {
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ── Chart card ───────────────────────────────────────────── */
+
+.outliertest__chart-card {
+  display: flex;
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.outliertest__chart {
+  flex: 1;
+  min-width: 0;
+  height: 420px;
+}
+
+/* Die Widget-Wurzel ist `display: contents`; die Höhe kommt vom Wirt. */
+.outliertest__chart > .widget-root {
+  min-height: inherit;
+}

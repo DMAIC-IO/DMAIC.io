@@ -1,0 +1,106 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "An outlier test checks whether individual observations deviate so far from the rest of the data that they cannot plausibly come from the same distribution — and may instead reflect measurement errors, data entry errors, or a changed process state. The module runs several classical procedures in parallel and compares their verdicts side by side, because no single test is optimal in all situations."
+        },
+        {
+          "type": "definition",
+          "term": "Outlier",
+          "content": "A data point that deviates significantly from the rest. Caveat: an outlier is not automatically \"wrong\" — sometimes it is the most valuable observation in the dataset because it flags an unexpected effect."
+        },
+        {
+          "type": "definition",
+          "term": "Grubbs' Test",
+          "content": "Identifies the point most distant from the {{term:mittelwert|mean}} and checks via the t-distribution whether that distance is compatible with normality. Classical single-outlier test, n ≥ 3, requires normality."
+        },
+        {
+          "type": "definition",
+          "term": "Dixon Q Test",
+          "content": "Compares the suspected value to its neighbour, scaled by the range. Tabulated for n = 3..30. Very common in analytical chemistry (DIN 53804) for small samples."
+        },
+        {
+          "type": "definition",
+          "term": "Generalized ESD (Rosner 1983)",
+          "content": "Iterative procedure that identifies up to k outliers simultaneously — avoiding the \"masking\" effect of single-step tests where one extreme value can hide a second. Recommended when multiple outliers are suspected."
+        },
+        {
+          "type": "definition",
+          "term": "Tukey IQR Rule",
+          "content": "Flags points below Q1 − k·IQR or above Q3 + k·IQR (default k = 1.5; \"extreme\" outliers at k = 3). Distribution-free, robust, and matches the whiskers in a boxplot."
+        },
+        {
+          "type": "definition",
+          "term": "Hampel Identifier",
+          "content": "Like the Z-score but using the {{term:median|median}} and MAD (Median Absolute Deviation) in place of mean and {{term:standardabweichung|standard deviation}}. Robust against the bias that real outliers exert on x̄ and s — ideal for \"contaminated\" data."
+        },
+        {
+          "type": "definition",
+          "term": "Z-score and Modified Z-score",
+          "content": "Z = (xᵢ − x̄)/s, typical threshold 3. Beware: mean and standard deviation are themselves distorted by outliers (\"masking\"). The Modified Z-score (Iglewicz & Hoaglin 1993) uses median and MAD and is more robust — typical threshold 3.5."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Look first — a boxplot or individual-value plot immediately shows whether any points look suspect at all.",
+            "Pick a numeric column (at least n ≥ 3; for Generalized ESD prefer n ≥ 15).",
+            "Enable methods that fit the data: small sample → Dixon Q or Grubbs; multiple outliers suspected → Generalized ESD; distribution-free → Tukey IQR or Hampel.",
+            "Set the significance level α (typical 0.05) and the thresholds — Tukey factor 1.5 (potential) or 3 (extreme), Hampel k = 3, Z-score 3, Modified Z 3.5.",
+            "Compare results: when several methods agree the verdict is robust; when they disagree, inspect the distribution.",
+            "Never delete automatically — investigate the {{term:ursachenanalyse|root cause}} of any outlier (measurement error, process disturbance, real new effect) and document what was done.",
+            "If in doubt, run the downstream analysis both with and without the flagged points and evaluate how sensitive the conclusion is."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Just deleting outliers",
+          "content": "An outlier is information, not a data defect. Before removing, check whether there is a physical, measurement, or organisational cause. Otherwise you bias the analysis yourself."
+        },
+        {
+          "type": "definition",
+          "term": "Masking",
+          "content": "Two extreme values can hide each other: mean and standard deviation grow with them, and the individual Z-score looks ordinary. Fix: use Generalized ESD or robust methods (Hampel, Modified Z)."
+        },
+        {
+          "type": "definition",
+          "term": "Swamping",
+          "content": "The opposite: a single extreme point pulls x̄ and s so far that ordinary points are flagged as outliers too. Robust methods help here as well."
+        },
+        {
+          "type": "definition",
+          "term": "Grubbs on non-normal data",
+          "content": "On skewed or heavy-tailed distributions Grubbs produces too many false positives. {{term:normalitaetstest|Test for normality}} first — otherwise switch to Hampel or Tukey IQR."
+        },
+        {
+          "type": "definition",
+          "term": "Dixon outside n = 3..30",
+          "content": "Dixon tables are valid for small samples only. For n > 30 use Grubbs (under normality) or Generalized ESD."
+        },
+        {
+          "type": "definition",
+          "term": "Multiple testing without correction",
+          "content": "Testing every point in a large sample individually at α = 0.05 will flag 5 % as \"outliers\" by chance. Generalized ESD corrects step by step — naive single tests do not."
+        },
+        {
+          "type": "definition",
+          "term": "Z-score on small samples",
+          "content": "For n < 30 the estimate of s is unstable; a single extreme point distorts the Z-score so strongly that it reports itself as \"normal\". Modified Z (MAD-based) is more reliable here."
+        }
+      ]
+    }
+  }
+}
