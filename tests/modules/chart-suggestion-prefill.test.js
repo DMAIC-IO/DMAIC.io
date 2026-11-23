@@ -9,6 +9,7 @@ import { State as MosaicState } from '../../js/modules/mosaic/domain/model.js';
 import { State as ParetoState } from '../../js/modules/pareto/domain/model.js';
 import { State as BarState } from '../../js/modules/bar/domain/model.js';
 import { State as HeatmapState } from '../../js/modules/heatmap/domain/model.js';
+import { State as BoxplotState } from '../../js/modules/boxplot/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -119,10 +120,15 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(buildPrefill('control-chart', [d, cont(2, 'a')], 'ws', 's'), null);
   });
 
-  test('boxplot/ivp: ein Gruppenbezug je Reihe', () => {
+  test('boxplot/ivp: ein Gruppenbezug je Reihe; die boxplot-Vorbelegung lädt über die Migration als Zeilen value/group', () => {
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
     const p = buildPrefill('boxplot', [cont(5, 'a'), cont(5, 'b'), cat(['x'], 'g')], 'ws', 's');
-    assertEqual(p.state.seriesRefs.length, 2);
-    assertEqual(p.state.groupRefs[1].columnId, 'g');
+    assertEqual(p.target, 'boxplot');
+    const m = BoxplotState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [
+      { value: r('a'), group: r('g') },
+      { value: r('b'), group: r('g') },
+    ]);
     const q = buildPrefill('individual-value-plot', [cont(5, 'a')], 'ws', 's');
     assertEqual(q.target, 'individual-value-plot');
     assertEqual(q.state.groupRefs[0], null);

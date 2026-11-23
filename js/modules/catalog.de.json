@@ -10,6 +10,11 @@
     "description": "Säulen-/Balkendiagramm aus Worksheet-Spalten: Häufigkeit, Mittelwert oder Summe je Kategorie",
     "whenToUse": "Anzahlen oder Werte über Kategorien vergleichen, optional nach einer Gruppe aufgeteilt oder gestapelt."
   },
+  "boxplot": {
+    "name": "Boxplot",
+    "description": "Horizontale Boxplots zum Vergleich von Verteilungen",
+    "whenToUse": "Streuung, Median und Ausreißer einer oder mehrerer numerischer Spalten vergleichen, optional nach einer Gruppe aufgeteilt."
+  },
   "chart-suggestion": {
     "name": "Diagramm-Vorschlag",
     "description": "Schlägt passende Diagrammtypen für die ausgewählten Spalten vor",

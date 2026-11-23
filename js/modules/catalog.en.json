@@ -10,6 +10,11 @@
     "description": "Bar chart from worksheet columns: frequency, mean, or sum per category",
     "whenToUse": "Compare counts or values across categories, optionally split or stacked by a group."
   },
+  "boxplot": {
+    "name": "Boxplot",
+    "description": "Horizontal boxplots for comparing distributions",
+    "whenToUse": "Compare the spread, median and outliers of one or more numeric columns, optionally split by a group."
+  },
   "chart-suggestion": {
     "name": "Chart Suggestion",
     "description": "Proposes suitable chart types for the selected columns",

@@ -23,12 +23,6 @@
 export default [
   // ─── Daten-Bereich (cycle-independent) ────────────────────────
   {
-    id: 'boxplot',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./boxplot/boxplot.js'),
-  },
-  {
     id: 'run-chart',
     phase: 'data',
     group: 'visualize',

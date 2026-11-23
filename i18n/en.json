@@ -4077,42 +4077,6 @@
       "recLargeN": "Sufficient sample size (n = {n}) — all three methods are statistically reliable.",
       "recLowMono": "Monotonicity index low ({pct}%) — relationship may not be monotonic."
     },
-    "boxplot": {
-      "name": "Boxplot",
-      "description": "Horizontal boxplots for comparing distributions",
-      "whenToUse": "Compare the spread, median and outliers of one or more numeric columns, optionally split by a group.",
-      "actions": {
-        "read": { "help": "Read the data rows (value and group column per row) and the columns each slot accepts, and the figures shown next to the chart." },
-        "setDatasets": {
-          "help": "Set the data rows. A row consists of a value column and optionally a group column; the button \"Add dataset\" adds a row. A row without a value column is neither plotted nor kept. The agent replaces the whole list in one call.",
-          "params": {
-            "rows": "A list of rows, each { value, group }: 'value' — a numeric column (required for the row to count); 'group' — an optional column that splits the row into boxes. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
-          }
-        }
-      },
-      "fields": {
-        "seriesRefs": { "help": "Per data row its value column (slot V), numeric and required; a row without a value column is dropped. Empty until a row is chosen." },
-        "groupRefs": { "help": "Per data row its group column (slot G), optional; it splits the row into boxes, one per group value, in the same order as the value columns. Empty until one is chosen." },
-        "activeColumnSlots": { "help": "The slot keys a row may carry: value, group." },
-        "pickableColumns": { "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed." }
-      },
-      "sectionData": "Data Source",
-      "datasets": "Data series",
-      "showMean": "Show mean",
-      "showOutliers": "Show outliers",
-      "plotBtn": "Create Boxplot",
-      "reset": "Reset",
-      "placeholderText": "Select data sources and click \"Create Boxplot\".",
-      "chartTitle": "Boxplot",
-      "xLabel": "Value",
-      "errNoSeries": "Please add at least one data series.",
-      "errNoValue": "Please select a value column.",
-      "errNoGroup": "Please select a grouping column.",
-      "errNoData": "No valid data found.",
-      "errTooFew": "Too few values for \"{col}\" (at least 2 required).",
-      "errGeneric": "An error occurred while creating the boxplot."
-    },
     "probability-plot": {
       "name": "Probability Plot",
       "description": "Normal probability plot for checking normality, with optional grouping",
