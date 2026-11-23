@@ -1,0 +1,30 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "datasets": [
+    {
+      "x": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-zykluszeit",
+        "columnId": "c-linie"
+      },
+      "g": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-zykluszeit",
+        "columnId": "c-schicht"
+      },
+      "v": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-zykluszeit",
+        "columnId": "c-zykluszeit"
+      }
+    }
+  ],
+  "chart": {
+    "title": "Mittlere Zykluszeit nach Schicht × Linie (s)",
+    "showTitle": true,
+    "valueDecimals": 0
+  },
+  "sourceWorksheetFile": "worksheets/heatmap-zykluszeit-schicht-linie.json"
+}

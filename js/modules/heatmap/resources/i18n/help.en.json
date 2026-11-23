@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of a Heatmap",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A {{term:heatmap|heatmap}} arranges the cells of a {{term:kontingenztafel|cross-tabulation}} in a grid and encodes their value with color intensity. Patterns and anomalies in two-dimensional data become visible at a glance — much faster than reading numbers off a table."
+        },
+        {
+          "type": "definition",
+          "term": "X and Y axis",
+          "content": "Both axes are {{term:skalenniveau|categorical}}: the X column (X slot) drives the columns; the G column (G slot) drives the rows. Category order follows the input order in the worksheet."
+        },
+        {
+          "type": "definition",
+          "term": "Cell value",
+          "content": "Without a value column, each cell shows the frequency of the (X, G) combination — the heatmap becomes a color-coded cross-tabulation. With a value column (V), each cell shows the mean or sum of V within the combination — e.g. \"mean cycle time per shift × line\"."
+        },
+        {
+          "type": "definition",
+          "term": "Color scale",
+          "content": "The accent color scales linearly from light (smallest value) to dark (largest value). Cells without data appear neutral gray. Hotspots and cold spots stand out instantly, while the exact numbers shown inside the cells (toggle in the editor) preserve quantitative readability."
+        },
+        {
+          "type": "paragraph",
+          "content": "Typical Six-Sigma uses: defect counts by shift × line, mean processing time by site × order type, effective yield by machine × material. When both categorical variables have few (≤10) levels, a heatmap often beats a series of boxplots or a {{term:balkendiagramm|stacked bar chart}}."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Don't ignore empty cells",
+          "content": "In frequency mode an empty cell means \"this combination never occurs\". In mean mode it means \"no V values for this combination\". Both are informative — don't overlook empty cells, ask why no observations exist."
+        },
+        {
+          "type": "definition",
+          "term": "Unbalanced samples",
+          "content": "When one X-category appears only once, its mean equals that single value — the color there reflects a singular event, not a robust pattern. With strongly different cell counts, check the stats table and consider a mosaic plot of the combination distribution alongside."
+        },
+        {
+          "type": "definition",
+          "term": "Mean vs. sum",
+          "content": "With a V slot the module offers mean or sum. For rates (defect rate per category) use \"mean\"; for volumes (total scrap per category) use \"sum\". The wrong choice misleads — check the cell labels: \"Mean of …\" or \"Sum of …\"."
+        },
+        {
+          "type": "definition",
+          "term": "Too many categories",
+          "content": "Beyond ~15 categories per axis cells become so small that labels disappear and color shades blend together. Bin the categories (e.g. into hours instead of minutes) or collapse the rarest into \"Other\"."
+        },
+        {
+          "type": "definition",
+          "term": "Not the correlation heatmap",
+          "content": "A correlation-matrix heatmap (numeric correlations between variables) is a different use case — the correlation module handles that. This heatmap visualises cross-tabulations of categorical data, not pairwise correlations."
+        }
+      ]
+    }
+  }
+}

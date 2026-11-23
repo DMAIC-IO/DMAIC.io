@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Heatmap",
+  "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",
+  "whenToUse": "Einen Wert oder eine Anzahl für jede Kombination zweier Kategorien als Farbraster zeigen — z. B. Zykluszeit je Schicht und Linie.",
+  "sectionData": "Datenquelle",
+  "placeholderPickBoth": "Wähle zwei kategoriale Spalten (X und G). Optional eine numerische Wert-Spalte (V) — sonst zeigt die Heatmap die Häufigkeit.",
+  "aggregation": "Aggregation",
+  "aggMean": "Mittelwert",
+  "aggSum": "Summe",
+  "axisCount": "Häufigkeit",
+  "axisMeanOf": "Mittelwert von",
+  "axisSumOf": "Summe von",
+  "statsTitle": "Kreuztabelle",
+  "statX": "X-Kategorie",
+  "statG": "G-Kategorie",
+  "statTotal": "Gesamt"
+}

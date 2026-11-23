@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Die Zeile mit der Spaltenvariable, der Zeilenvariable und der optionalen Wertespalte, jede Spalte unter keys einzeln beschrieben. Spalten- und Zeilenvariable sind für ein Raster Pflicht. Leeren geht über eine leere Zeile ([{ x: null, g: null, v: null }]), [] wird abgelehnt.",
+      "x": {
+        "label": "X",
+        "title": "Spalten-Variable (X — kategorial)",
+        "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Spalten des Rasters. Pflicht, leer, solange keine gewählt ist."
+      },
+      "g": {
+        "label": "G",
+        "title": "Zeilen-Variable (G — kategorial)",
+        "help": "Die Kategorienspalte (Slot g); ihre Werte werden die Zeilen des Rasters. Pflicht, leer, solange keine gewählt ist."
+      },
+      "v": {
+        "label": "V",
+        "title": "Wert-Spalte (numerisch, optional — Mittelwert/Summe je Zelle)",
+        "help": "Die Wertespalte (Slot v), numerisch und optional; ohne sie zählt jede Zelle die Zeilen ihrer Kombination. Leer, solange keine gewählt ist."
+      }
+    },
+    "aggregation": {
+      "help": "Wie die Werte der Wertespalte je Zelle zusammengefasst werden: mean (Mittelwert) oder sum (Summe). Wirkt nur mit Wertespalte (Slot v); ohne sie zählt jede Zelle die Zeilen ihrer Kombination."
+    },
+    "stats": {
+      "help": "Das Raster der Heatmap, jede Kennzahl unter keys einzeln beschrieben; null, solange es kein Raster gibt (Spalten- oder Zeilenvariable leer, keine gültigen Paare oder eine gewählte Spalte nicht lesbar)."
+    },
+    "activeParams": {
+      "help": "Die Felder, die im aktuellen Zustand wirken: aggregation nur mit gesetzter Wertespalte (Slot v)."
+    },
+    "activeColumnSlots": {
+      "help": "Die Slot-Schlüssel, die eine Zeile der Datensätze trägt: x, g, v."
+    },
+    "grid": {
+      "help": "Die Stufen beider Achsen und der Wert je Zelle aus den gewählten Spalten, wie das Diagramm sie zeichnet; eine leere Wertzelle ist leer. Leer, solange es kein Raster gibt."
+    }
+  },
+  "types": {
+    "HeatmapStats": {
+      "xCategories": "Die Kategorien der X-Spalte; sie bilden die Spalten des Rasters, die Tabelle zeigt sie als Spaltenköpfe.",
+      "yCategories": "Die Kategorien der G-Spalte; sie bilden die Zeilen des Rasters. Die Ecke der Tabelle zeigt „G-Spalte \\ X-Spalte“, also den Namen der G-Spalte, dann den der X-Spalte; rechts daneben stehen die Kategorien der X-Spalte als Spaltenköpfe.",
+      "cells": "Der Wert je Zelle, erst nach Zeile, dann nach Spalte geordnet, in der Reihenfolge der beiden Kategorienlisten. Ohne Wertespalte ist es die Anzahl der Zeilen mit dieser Kombination, sonst der Mittelwert oder die Summe der Wertespalte. Eine Kombination ohne Zeilen ist leer; die Tabelle zeigt dort einen Strich.",
+      "rowTotals": "Die Summe je Zeile, in der Reihenfolge der Zeilen; leere Zellen zählen nicht. Die Tabelle zeigt sie in der letzten Spalte. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer.",
+      "colTotals": "Die Summe je Spalte, in der Reihenfolge der Spalten; leere Zellen zählen nicht. Die Tabelle zeigt sie in der letzten Zeile. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer.",
+      "total": "Die Gesamtsumme aller Zellen; die Tabelle zeigt sie unten rechts unter dem Kopf „Gesamt“. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer."
+    }
+  }
+}

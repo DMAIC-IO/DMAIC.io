@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Heatmap",
+  "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",
+  "whenToUse": "Show a value or a count for every combination of two categories as a colour grid — e.g. cycle time per shift and line.",
+  "sectionData": "Data Source",
+  "placeholderPickBoth": "Pick two categorical columns (X and G). Optionally a numeric value column (V) — otherwise the heatmap shows frequencies.",
+  "aggregation": "Aggregation",
+  "aggMean": "Mean",
+  "aggSum": "Sum",
+  "axisCount": "Count",
+  "axisMeanOf": "Mean of",
+  "axisSumOf": "Sum of",
+  "statsTitle": "Cross-tabulation",
+  "statX": "X category",
+  "statG": "G category",
+  "statTotal": "Total"
+}

@@ -1,0 +1,67 @@
+<div class="heatmap-module dmike-split dmike-split--input-sm" x-data="heatmap">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="heatmap-module__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="heatmap-module__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="heatmap-module__options" data-ref="options-wrap">
+      <template x-if="showAggregation">
+        <label class="heatmap-module__opt-row">
+          <span data-help-key="modules.heatmap.fields.aggregation.help" x-text="t('aggregation')"></span>
+          <select class="field" data-action="set-agg" data-help-key="" x-field="model.aggregation">
+            <template x-for="o in aggregationOptions" :key="o.value">
+              <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+            </template>
+          </select>
+        </label>
+      </template>
+    </div>
+  </div>
+
+  <div class="heatmap-module__output dmike-split__output">
+    <div data-ref="placeholder" class="heatmap-module__placeholder" x-show="!hasData" x-text="t('placeholderPickBoth')"></div>
+    <template x-if="hasData">
+      <div class="heatmap-module__chart-area" data-ref="chart-area">
+        <div class="heatmap-module__chart-wrap" data-ref="chart-wrap" x-widget="heatmap-chart" x-widget-config="heatmapChart" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        <div class="heatmap-module__stats-panel" data-ref="stats-panel">
+          <div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.heatmap.types.HeatmapStats.cells" x-text="t('statsTitle')"></span></div>
+            <table class="dmike-table heatmap-module__stats-table">
+              <thead><tr>
+                <th><span data-help-key="modules.heatmap.types.HeatmapStats.yCategories" x-text="statsCorner"></span></th>
+                <template x-for="(h, hi) in statsHeaders" :key="hi">
+                  <th x-text="h"></th>
+                </template>
+                <template x-if="showTotals">
+                  <th><span data-help-key="modules.heatmap.types.HeatmapStats.total" x-text="t('statTotal')"></span></th>
+                </template>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td x-text="r.label"></td>
+                    <template x-for="(c, ci) in r.cells" :key="ci">
+                      <td x-text="c"></td>
+                    </template>
+                    <template x-if="showTotals">
+                      <td x-text="r.total"></td>
+                    </template>
+                  </tr>
+                </template>
+                <template x-if="showTotals">
+                  <tr class="heatmap-module__stats-total">
+                    <td x-text="t('statTotal')"></td>
+                    <template x-for="(c, ci) in statsColTotals" :key="ci">
+                      <td x-text="c"></td>
+                    </template>
+                    <td x-text="statsGrandTotal"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "The row with the column variable, the row variable and the optional value column, each column described individually under keys. Column and row variable are required for a grid. To clear, set one empty row ([{ x: null, g: null, v: null }]); [] is rejected.",
+      "x": {
+        "label": "X",
+        "title": "Column variable (X — categorical)",
+        "help": "The category column (slot x); its values become the columns of the grid. Required, empty until one is chosen."
+      },
+      "g": {
+        "label": "G",
+        "title": "Row variable (G — categorical)",
+        "help": "The category column (slot g); its values become the rows of the grid. Required, empty until one is chosen."
+      },
+      "v": {
+        "label": "V",
+        "title": "Value column (numeric, optional — mean/sum per cell)",
+        "help": "The value column (slot v), numeric and optional; without it each cell counts the rows of its combination. Empty until one is chosen."
+      }
+    },
+    "aggregation": {
+      "help": "How the values of the value column are combined per cell: mean or sum. Takes effect only with a value column (slot v); without it each cell counts the rows of its combination."
+    },
+    "stats": {
+      "help": "The heatmap grid, each figure described individually under keys; null while there is no grid (column or row variable empty, no valid pairs or a chosen column not readable)."
+    },
+    "activeParams": {
+      "help": "The fields that take effect in the current state: aggregation only with a value column set (slot v)."
+    },
+    "activeColumnSlots": {
+      "help": "The slot keys a row of the datasets carries: x, g, v."
+    },
+    "grid": {
+      "help": "The levels of both axes and the value per cell from the chosen columns, as the chart draws them; an empty value cell is empty. Empty while there is no grid."
+    }
+  },
+  "types": {
+    "HeatmapStats": {
+      "xCategories": "The categories of the X column; they form the columns of the grid, the table shows them as column headers.",
+      "yCategories": "The categories of the G column; they form the rows of the grid. The corner of the table shows “G column \\ X column”: the name of the G column, then that of the X column; to its right the categories of the X column stand as column headers.",
+      "cells": "The value per cell, ordered by row first, then by column, following the two category lists. Without a value column it is the number of rows with that combination, otherwise the mean or the sum of the value column. A combination without rows is empty; the table shows a dash there.",
+      "rowTotals": "The total per row, in row order; empty cells do not count. The table shows it in the last column. For the mean there are no totals, then the field is empty.",
+      "colTotals": "The total per column, in column order; empty cells do not count. The table shows it in the last row. For the mean there are no totals, then the field is empty.",
+      "total": "The grand total of all cells; the table shows it at the bottom right under the “Total” header. For the mean there are no totals, then the field is empty."
+    }
+  }
+}

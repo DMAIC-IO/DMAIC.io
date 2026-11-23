@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau einer Heatmap",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Eine {{term:heatmap|Heatmap}} ordnet die Zellen einer {{term:kontingenztafel|Kreuztabelle}} in einem Gitter an und kodiert ihren Wert über die Farbintensität. So lassen sich Muster und Auffälligkeiten in zweidimensionalen Daten auf einen Blick erkennen — viel schneller, als wenn man Zahlen aus einer Tabelle ablesen müsste."
+        },
+        {
+          "type": "definition",
+          "term": "X- und Y-Achse",
+          "content": "Beide Achsen sind {{term:skalenniveau|kategorial}}: die X-Spalte (X-Slot) bestimmt die Spalten, die G-Spalte (G-Slot) bestimmt die Zeilen. Die Reihenfolge der Kategorien entspricht der Eingabereihenfolge im Worksheet."
+        },
+        {
+          "type": "definition",
+          "term": "Zellwert",
+          "content": "Ohne Wertespalte zeigt jede Zelle die Häufigkeit der Kombination (X, G) — die Heatmap wird dann zu einer farbcodierten Kreuztabelle. Mit Wertespalte (V) zeigt jede Zelle den {{term:mittelwert|Mittelwert}} oder die Summe der V-Werte innerhalb der Kombination — z. B. „mittlere Zykluszeit pro Schicht × Linie\"."
+        },
+        {
+          "type": "definition",
+          "term": "Farbskala",
+          "content": "Die Akzentfarbe wird linear von hell (kleinster Wert) zu dunkel (größter Wert) skaliert. Zellen ohne Daten erscheinen in neutralem Grau. So sieht man Hotspots und kalte Stellen auf einen Blick, während die exakten Zahlen in den Zellen (Zellbeschriftung im Editor) die quantitative Lesbarkeit erhalten."
+        },
+        {
+          "type": "paragraph",
+          "content": "Typische Anwendungen im Six-Sigma-Kontext: Defekthäufigkeit nach Schicht × Linie, mittlere {{term:durchlaufzeit|Bearbeitungszeit}} nach Standort × Auftragstyp, Effektive Yield nach Maschine × Werkstoff. Wenn beide kategorialen Variablen wenige (≤10) Ausprägungen haben, ist die Heatmap dem mehrfachen {{term:boxplot|Boxplot}} oder dem gestapelten Säulendiagramm oft überlegen."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Leere Zellen ignorieren",
+          "content": "Im Häufigkeitsmodus bedeutet eine leere Zelle „Kombination kommt nicht vor\". Im Mittelwertmodus bedeutet sie „keine V-Werte für diese Kombination\". Beides ist informativ — leere Zellen nicht übersehen, sondern fragen, warum es keine Beobachtungen gibt."
+        },
+        {
+          "type": "definition",
+          "term": "Unbalancierte Stichproben",
+          "content": "Wenn eine X-Kategorie nur einmal vorkommt, ist der Mittelwert dort gleich dem Einzelwert — die Farbe in dieser Spalte ist ein Einzelschicksal, kein robustes Muster. Bei stark unterschiedlichen Fallzahlen pro Zelle die Statistiktabelle und ggf. ein {{term:mosaikdiagramm|Mosaikdiagramm}} der Kombinationsverteilung dazunehmen."
+        },
+        {
+          "type": "definition",
+          "term": "Mittelwert vs. Summe",
+          "content": "Bei aktivem V-Slot bietet das Modul Mittelwert oder Summe an. Für Raten (Ausschussquote pro Kategorie) ist „Mittelwert\" richtig, für Volumen (Gesamtausschuss pro Kategorie) „Summe\". Falsche Wahl führt zu Fehlinterpretationen — die Achsenbeschriftung der Zellen prüft, ob „Mittelwert von …\" oder „Summe von …\" steht."
+        },
+        {
+          "type": "definition",
+          "term": "Zu viele Kategorien",
+          "content": "Bei mehr als ~15 Kategorien je Achse werden die Zellen so klein, dass die Beschriftung wegfällt und die Farbnuancen schlecht unterscheidbar sind. In diesem Fall die Kategorien gruppieren (z. B. zu Stunden statt Minuten) oder die seltensten Kategorien in „Sonstige\" zusammenfassen."
+        },
+        {
+          "type": "definition",
+          "term": "Verwechslung mit Korrelations-Heatmap",
+          "content": "Eine Korrelationsmatrix-Heatmap (numerische Korrelationen zwischen Variablen) ist ein anderer Anwendungsfall — dafür gibt es das Korrelations-Modul. Diese Heatmap zeigt Kreuztabellen kategorialer Daten, keine paarweisen Korrelationen."
+        }
+      ]
+    }
+  }
+}
