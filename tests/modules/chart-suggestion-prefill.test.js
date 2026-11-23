@@ -7,6 +7,7 @@ import { State as XyState } from '../../js/modules/xy-plot/domain/model.js';
 import { State as IvpState } from '../../js/modules/individual-value-plot/domain/model.js';
 import { State as MosaicState } from '../../js/modules/mosaic/domain/model.js';
 import { State as ParetoState } from '../../js/modules/pareto/domain/model.js';
+import { State as BarState } from '../../js/modules/bar/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -59,19 +60,22 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(p.state.datasets[0].valueRef.columnId, 'a');
   });
 
-  test('bar mit 1 stetig + 1 kategorial', () => {
+  test('bar mit 1 stetig + 1 kategorial: die Vorbelegung lädt über die Migration als Zeile x/y', () => {
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
     const p = buildPrefill('bar', [cont(10, 'y'), cat(['A', 'B'], 'g')], 'ws', 's');
     assertEqual(p.target, 'bar');
-    assertEqual(p.state.xRef.columnId, 'g');
-    assertEqual(p.state.yRef.columnId, 'y');
-    assertEqual(p.state.gRef, null);
+    const m = BarState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [{ x: r('g'), y: r('y'), g: null }]);
+    assertEqual(m.aggregation, 'mean');
+    assertEqual(m.stacked, false);
   });
 
-  test('bar mit 2 kategorial → gestapelt', () => {
+  test('bar mit 2 kategorial → gestapelt nach der Migration', () => {
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
     const p = buildPrefill('bar', [cat(['X'], 'a'), cat(['P'], 'b')], 'ws', 's');
-    assertEqual(p.state.xRef.columnId, 'a');
-    assertEqual(p.state.gRef.columnId, 'b');
-    assertEqual(p.state.chartConfig.stacked, true);
+    const m = BarState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.datasets)), [{ x: r('a'), y: null, g: r('b') }]);
+    assertEqual(m.stacked, true);
   });
 
   test('mosaic braucht 2 kategoriale; die Vorbelegung lädt über die Migration als Zeile x/g', () => {

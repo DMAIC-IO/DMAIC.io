@@ -23,12 +23,6 @@
 export default [
   // ─── Daten-Bereich (cycle-independent) ────────────────────────
   {
-    id: 'bar',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./bar/bar.js'),
-  },
-  {
     id: 'heatmap',
     phase: 'data',
     group: 'visualize',

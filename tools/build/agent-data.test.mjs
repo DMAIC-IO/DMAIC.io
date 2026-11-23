@@ -98,11 +98,11 @@ const MODEL = `export class State {
 }`;
 
 test('collectAgentData: untagged module is listed but not available, without violations', async () => {
-  const root = fixture({ bar: { 'bar.js': 'export default createModule({ config: { id: "bar" }, data() { return { nope() {} }; } });', 'bar-model.js': MODEL } });
+  const root = fixture({ qux: { 'qux.js': 'export default createModule({ config: { id: "qux" }, data() { return { nope() {} }; } });', 'qux-model.js': MODEL } });
   const { modules, coverage } = await collectAgentData(root);
-  assert.equal(modules.bar.tagged, false);
-  assert.equal(modules.bar.available, false);
-  assert.deepEqual(modules.bar.violations, []);
+  assert.equal(modules.qux.tagged, false);
+  assert.equal(modules.qux.available, false);
+  assert.deepEqual(modules.qux.violations, []);
   assert.deepEqual(coverage, { total: 1, available: 0 });
 });
 
@@ -230,11 +230,11 @@ test('collectAgentData: a DOM detour counts as a violation on a TAGGED module', 
 });
 
 test('collectAgentData: a DOM detour on an UNTAGGED module is reported but not a violation', async () => {
-  const vm = 'export default createModule({ config: { id: "bar" }, data() { return { paint(el) { el.innerHTML = ""; } }; } });';
-  const root = fixture({ bar: { 'bar.js': vm } });
+  const vm = 'export default createModule({ config: { id: "qux" }, data() { return { paint(el) { el.innerHTML = ""; } }; } });';
+  const root = fixture({ qux: { 'qux.js': vm } });
   const { modules } = await collectAgentData(root);
-  assert.deepEqual(modules.bar.violations, []);
-  assert.ok(modules.bar.reported.some(v => v.startsWith('dom_detour:innerHTML')));
+  assert.deepEqual(modules.qux.violations, []);
+  assert.ok(modules.qux.reported.some(v => v.startsWith('dom_detour:innerHTML')));
 });
 
 test('renderAgentRegistryModule emits a data-only module', async () => {
@@ -286,11 +286,11 @@ test('collectAgentData: a multi-line spread expression is reported on one line',
 });
 
 test('collectAgentData: a spread on an UNTAGGED module is reported but not a violation', async () => {
-  const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return { ...renderMethods }; } });';
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State { toJSON() { return {}; } }' } });
+  const vm = 'import { State } from "./qux-model.js"; export default createModule({ config: { id: "qux" }, Model: State, data(module) { return { ...renderMethods }; } });';
+  const root = fixture({ qux: { 'qux.js': vm, 'qux-model.js': 'export class State { toJSON() { return {}; } }' } });
   const { modules } = await collectAgentData(root);
-  assert.deepEqual(modules.bar.violations, []);
-  assert.deepEqual(modules.bar.reported, ['unresolved_spread:renderMethods']);
+  assert.deepEqual(modules.qux.violations, []);
+  assert.deepEqual(modules.qux.reported, ['unresolved_spread:renderMethods']);
 });
 
 test('collectAgentData: a data() without a return literal is a violation, not silence', async () => {
@@ -314,11 +314,11 @@ export default createModule({
 });
 
 test('collectAgentData: a missing data() literal on an UNTAGGED module does not block the build', async () => {
-  const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return build(module); } });';
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State { toJSON() { return {}; } }' } });
+  const vm = 'import { State } from "./qux-model.js"; export default createModule({ config: { id: "qux" }, Model: State, data(module) { return build(module); } });';
+  const root = fixture({ qux: { 'qux.js': vm, 'qux-model.js': 'export class State { toJSON() { return {}; } }' } });
   const { modules, coverage } = await collectAgentData(root);
-  assert.deepEqual(modules.bar.violations, []);
-  assert.deepEqual(modules.bar.reported, ['unresolvable_data_literal']);
+  assert.deepEqual(modules.qux.violations, []);
+  assert.deepEqual(modules.qux.reported, ['unresolvable_data_literal']);
   assert.deepEqual(coverage, { total: 1, available: 0 });
 });
 
@@ -977,7 +977,7 @@ const AGENT_READ_VM = `/**
  */
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { State } from './bar-model.js';
+import { State } from './qux-model.js';
 
 /**
  * Die Agenten-Lesefläche dieses Moduls.
@@ -986,7 +986,7 @@ import { State } from './bar-model.js';
  * @property {any[][]} rows  [bulk] every data row of the active sheet
  */
 export default createModule({
-  config: { id: 'bar' },
+  config: { id: 'qux' },
   Model: State,
   data(module, _t) {
     return {
@@ -995,7 +995,7 @@ export default createModule({
        * @param {object} [options] field/row selection
        * @returns {AgentRead} the agent-facing read surface
        */
-      read(options) { return readAgentState('bar', { activeSheetId: '', rows: [] }, options); },
+      read(options) { return readAgentState('qux', { activeSheetId: '', rows: [] }, options); },
       /**
        * Ein Schreibweg — ohne ihn greift module_tag_without_actions, und die
        * Fälle unten prüften die Lesefläche an einem gar nicht freigebbaren Modul.
@@ -1015,20 +1015,20 @@ const BAR_MODEL = `export class State {
 }`;
 
 test('collectAgentData: an AgentRead typedef REPLACES the model fields', async () => {
-  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': AGENT_READ_VM, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
-  assert.deepEqual(Object.keys(modules.bar.fields), ['activeSheetId', 'rows']);
-  assert.equal(modules.bar.fields.activeSheetId.type, 'string');
-  assert.equal(modules.bar.fields.activeSheetId.help, 'id of the active sheet');
-  assert.equal(modules.bar.fields.activeSheetId.derived, true);
+  assert.deepEqual(Object.keys(modules.qux.fields), ['activeSheetId', 'rows']);
+  assert.equal(modules.qux.fields.activeSheetId.type, 'string');
+  assert.equal(modules.qux.fields.activeSheetId.help, 'id of the active sheet');
+  assert.equal(modules.qux.fields.activeSheetId.derived, true);
 });
 
 test('collectAgentData: the [bulk] sentinel marks a bulk field and leaves the help clean', async () => {
-  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': AGENT_READ_VM, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
-  assert.equal(modules.bar.fields.rows.bulk, true);
-  assert.equal(modules.bar.fields.rows.help, 'every data row of the active sheet');
-  assert.equal(modules.bar.fields.activeSheetId.bulk, false);
+  assert.equal(modules.qux.fields.rows.bulk, true);
+  assert.equal(modules.qux.fields.rows.help, 'every data row of the active sheet');
+  assert.equal(modules.qux.fields.activeSheetId.bulk, false);
 });
 
 test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke steht nichts da', async () => {
@@ -1040,9 +1040,9 @@ test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke
     ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
     + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
   );
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': vm, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
-  const fields = modules.bar.fields;
+  const fields = modules.qux.fields;
 
   assert.equal(fields.rows.bulk, true);
   assert.equal(fields.rows.bulkKind, 'table');
@@ -1083,12 +1083,12 @@ test('collectAgentData: eine unbekannte Massendaten-Art im Typedef ist ein Verst
   // wurde als Tabelle BESCHRIEBEN, zählte aber nicht als Tabelle, und beide
   // Massenfelder bekamen die globalen Spalten.
   const vm = AGENT_READ_VM.replace('[bulk] every data row', '[bulk:graph] every data row');
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': vm, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
 
-  assert.ok(modules.bar.violations.includes('invalid_bulk_kind:rows:graph'),
-    `erwartet invalid_bulk_kind:rows:graph, bekam ${JSON.stringify(modules.bar.violations)}`);
-  assert.equal(modules.bar.available, false);
+  assert.ok(modules.qux.violations.includes('invalid_bulk_kind:rows:graph'),
+    `erwartet invalid_bulk_kind:rows:graph, bekam ${JSON.stringify(modules.qux.violations)}`);
+  assert.equal(modules.qux.available, false);
 });
 
 test('collectAgentData: eine unbekannte Massendaten-Art am Model-Feld ist ein Verstoß, einzeilig', async () => {
@@ -1116,11 +1116,11 @@ test('collectAgentData: table und tree sind erlaubt und melden nichts — die Pr
     ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
     + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
   ).replace('rows: [] }', 'rows: [], nodes: [] }');
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': vm, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
 
-  assert.deepEqual(modules.bar.reported.filter(v => v.startsWith('invalid_bulk_kind')), []);
-  assert.equal(modules.bar.available, true);
+  assert.deepEqual(modules.qux.reported.filter(v => v.startsWith('invalid_bulk_kind')), []);
+  assert.equal(modules.qux.available, true);
 });
 
 const OMIT_MODEL = `export class State {
@@ -1162,18 +1162,18 @@ test('collectAgentData: @agentOmit am Model-Feld landet als omit im Feldschema',
 
 test('collectAgentData: [omit:…] im Typedef, vor oder nach [bulk], hält die Hilfe sauber', async () => {
   for (const sentinels of ['[bulk] [omit:[][].image]', '[omit:[][].image] [bulk]']) {
-    const root = fixture({ bar: { 'bar.js': cellsVm(sentinels), 'bar-model.js': BAR_MODEL } });
+    const root = fixture({ qux: { 'qux.js': cellsVm(sentinels), 'qux-model.js': BAR_MODEL } });
     const { modules } = await collectAgentData(root);
-    const cells = modules.bar.fields.cells;
+    const cells = modules.qux.fields.cells;
 
     assert.equal(cells.bulk, true, sentinels);
     assert.equal(cells.bulkKind, 'table', sentinels);
     assert.deepEqual(cells.omit, ['[][].image'], sentinels);
     assert.equal(cells.help, 'the 3x3 cells', sentinels);
-    assert.deepEqual(modules.bar.reported.filter(v => v.includes('omit')), [], sentinels);
+    assert.deepEqual(modules.qux.reported.filter(v => v.includes('omit')), [], sentinels);
   }
-  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
-  assert.equal('omit' in (await collectAgentData(root)).modules.bar.fields.rows, false);
+  const root = fixture({ qux: { 'qux.js': AGENT_READ_VM, 'qux-model.js': BAR_MODEL } });
+  assert.equal('omit' in (await collectAgentData(root)).modules.qux.fields.rows, false);
 });
 
 test('collectAgentData: ein Auslassungspfad gegen die Grammatik ist invalid_omit_path', async () => {
@@ -1212,8 +1212,8 @@ test('collectAgentData: ein Pfad, der nicht zum Typ passt, ist omit_path_mismatc
     const { modules } = await collectAgentData(root);
     assert.ok(modules.foo.violations.includes(code), `erwartet ${code}, bekam ${JSON.stringify(modules.foo.violations)}`);
   }
-  const root = fixture({ bar: { 'bar.js': cellsVm('[bulk] [omit:[].image]'), 'bar-model.js': BAR_MODEL } });
-  assert.ok((await collectAgentData(root)).modules.bar.violations.includes('omit_path_mismatch:cells:[].image'));
+  const root = fixture({ qux: { 'qux.js': cellsVm('[bulk] [omit:[].image]'), 'qux-model.js': BAR_MODEL } });
+  assert.ok((await collectAgentData(root)).modules.qux.violations.includes('omit_path_mismatch:cells:[].image'));
 });
 
 test('collectAgentData: ein nicht auflösbarer Typ widerlegt keinen Pfad', async () => {
@@ -1228,10 +1228,10 @@ test('collectAgentData: a module with an AgentRead typedef is available without 
   // Kein `Model:`-Mitglied → readModelFields würde `unresolvable_model_class`
   // melden. Mit deklarierter Lesefläche ist das Model irrelevant.
   const noModel = AGENT_READ_VM.replace('  Model: State,\n', '');
-  const root = fixture({ bar: { 'bar.js': noModel, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': noModel, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
-  assert.deepEqual(modules.bar.violations, []);
-  assert.equal(modules.bar.available, true);
+  assert.deepEqual(modules.qux.violations, []);
+  assert.equal(modules.qux.available, true);
 });
 
 test('readAgentReadTypedef: returns null when the module declares none', async () => {
@@ -1244,10 +1244,10 @@ const TRAILING_AGENT_READ_VM = `/**
  * @agent
  */
 import { createModule } from '../../core/template-module.js';
-import { State } from './bar-model.js';
+import { State } from './qux-model.js';
 
 export default createModule({
-  config: { id: 'bar' },
+  config: { id: 'qux' },
   Model: State,
   data(module, _t) {
     return {
@@ -1275,10 +1275,10 @@ test('readAgentReadTypedef: a typedef block NOT attached to a statement (trailin
 });
 
 test('collectAgentData: a trailing, unattached AgentRead typedef falls back to the Model-derived fields', async () => {
-  const root = fixture({ bar: { 'bar.js': TRAILING_AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': TRAILING_AGENT_READ_VM, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
-  assert.deepEqual(Object.keys(modules.bar.fields), ['sheets']);
-  assert.equal('derived' in modules.bar.fields.sheets, false);
+  assert.deepEqual(Object.keys(modules.qux.fields), ['sheets']);
+  assert.equal('derived' in modules.qux.fields.sheets, false);
 });
 
 const VIA_VM = (via) => TAGGED_VM.replace('export default createModule', `/**
@@ -1868,9 +1868,9 @@ test('unresolvable_tojson: ein Spread im Rückgabeobjekt ist eine Blindstelle', 
 });
 
 test('ein erklärtes AgentRead-Typedef setzt das Gate aus', async () => {
-  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const root = fixture({ qux: { 'qux.js': AGENT_READ_VM, 'qux-model.js': BAR_MODEL } });
   const { modules } = await collectAgentData(root);
-  assert.deepEqual(modules.bar.reported, []);
+  assert.deepEqual(modules.qux.reported, []);
 });
 
 test('geerbtes toJSON wird gefunden', async () => {
