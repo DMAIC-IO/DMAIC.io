@@ -11,7 +11,7 @@
 import { defineModel, text, oneOf, columnRef, datasets } from '../../../core/model.js';
 import { sourceColumns } from '../../../core/source-columns.js';
 import paretoChart from '../../../widgets/pareto-chart/schema.js';
-import { buildChartData, hasData, statsRows } from './pareto-data.js';
+import { buildChartData, hasData, statsRows } from './chart-data.js';
 import { from0 } from './migrations.js';
 
 /**

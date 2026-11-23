@@ -80,6 +80,11 @@
     "description": "Two-column flow: value-added steps versus rework",
     "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet."
   },
+  "pareto": {
+    "name": "Pareto Chart",
+    "description": "Bar chart sorted by descending value with a cumulative-percentage line — the classic \"vital few\" tool.",
+    "whenToUse": "Rank categories by frequency or by a summed value to find the vital few — with a cumulative percentage line."
+  },
   "pie-chart": {
     "name": "Pie Chart",
     "description": "Pie/donut chart from worksheet columns",

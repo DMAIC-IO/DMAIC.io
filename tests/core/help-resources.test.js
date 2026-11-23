@@ -33,7 +33,7 @@ suite('Registries: Module in neuer Form', () => {
     assertEqual(await getModuleHelp('neu', 'de'), null);
     assertEqual(hasModuleReferences('neu'), false);
     assertDeepEqual(await getModuleReferences('neu'), []);
-    assertEqual(hasModuleHelp('pareto'), true, 'alte Form');
+    assertEqual(hasModuleHelp('bar'), true, 'alte Form');
   });
 
   test('hasModuleHelp/hasModuleReferences lesen die Liste; getModuleHelp reicht die Sprache durch', () => withResources(async (r) => {
@@ -52,7 +52,7 @@ suite('Registries: Module in neuer Form', () => {
   }));
 
   test('alte Form gewinnt und fragt ModuleResources nicht', () => withResources(async (r) => {
-    assertEqual((await getModuleHelp('pareto', 'de')).moduleId, 'pareto');
+    assertEqual((await getModuleHelp('bar', 'de')).moduleId, 'bar');
     assertDeepEqual(r.asked, []);
   }));
 

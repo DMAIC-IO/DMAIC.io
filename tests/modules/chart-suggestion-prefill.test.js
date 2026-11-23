@@ -6,6 +6,7 @@ import { buildPrefill, MODULE_PREFILL } from '../../js/modules/chart-suggestion/
 import { State as XyState } from '../../js/modules/xy-plot/domain/model.js';
 import { State as IvpState } from '../../js/modules/individual-value-plot/domain/model.js';
 import { State as MosaicState } from '../../js/modules/mosaic/domain/model.js';
+import { State as ParetoState } from '../../js/modules/pareto/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -143,9 +144,16 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(blank.hasContent(), false);
   });
 
-  test('pareto', () => {
-    const p = buildPrefill('pareto', [cat(['a'], 'x'), cat(['b'], 'y')], 'ws', 's');
-    assertEqual(p.target, 'pareto');
-    assertEqual(p.state.gRef.columnId, 'y');
+  test('pareto: die Vorbelegung lädt über die Migration als Zeile x/y/g', () => {
+    const r = (c) => ({ instanceId: 'ws', sheetId: 's', columnId: c });
+    const two = buildPrefill('pareto', [cat(['a'], 'x'), cat(['b'], 'y')], 'ws', 's');
+    assertEqual(two.target, 'pareto');
+    const m2 = ParetoState.fromJSON(two.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m2.datasets)), [{ x: r('x'), y: null, g: r('y') }]);
+    assertEqual(m2.aggregation, 'sum');
+    assertDeepEqual(JSON.parse(JSON.stringify(m2.chart)), {});
+    const one = buildPrefill('pareto', [cat(['a'], 'x')], 'ws', 's');
+    const m1 = ParetoState.fromJSON(one.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m1.datasets)), [{ x: r('x'), y: null, g: null }]);
   });
 });

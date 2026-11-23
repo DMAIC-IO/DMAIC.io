@@ -1,9 +1,9 @@
 /**
- * Pareto-Diagramm: Diagrammdaten und Tabelle (domain/pareto-data.js) gegen
+ * Pareto-Diagramm: Diagrammdaten und Tabelle (domain/chart-data.js) gegen
  * Werte von Hand.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertAlmostEqual } from '../../test-utils.js';
-import { buildChartData, hasData, statsRows } from '../../../js/modules/pareto/domain/pareto-data.js';
+import { buildChartData, hasData, statsRows } from '../../../js/modules/pareto/domain/chart-data.js';
 import { PALETTE } from '../../../js/core/chart/chart-data-prep.js';
 
 const REF_X = { instanceId: 'i1', sheetId: 's1', columnId: 'cx' };

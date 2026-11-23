@@ -29,12 +29,6 @@ export default [
     load: () => import('./bar/bar.js'),
   },
   {
-    id: 'pareto',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./pareto/pareto.js'),
-  },
-  {
     id: 'heatmap',
     phase: 'data',
     group: 'visualize',

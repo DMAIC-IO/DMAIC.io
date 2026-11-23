@@ -1979,31 +1979,6 @@
       ]
     },
     {
-      "id": "pareto-reklamationskosten",
-      "type": "project",
-      "title": {
-        "de": "Reklamationskosten Q2 (Pareto)",
-        "en": "Complaint Cost Q2 (Pareto)"
-      },
-      "description": {
-        "de": "50 Reklamationen aus Q2 mit Grund und individueller Kostenposition. Die Pareto-Auswertung summiert die Kosten je Grund und sortiert absteigend — die 80%-Linie zeigt, dass „Maßabweichung“ allein bereits den Großteil der Kosten verursacht, obwohl es nicht die häufigste Reklamation ist. Klassisches Lehrbeispiel: Frequenz ≠ Wichtigkeit.",
-        "en": "50 Q2 complaints with reason and individual cost. The Pareto analysis sums cost per reason and sorts descending — the 80 % line shows that 'dimensional deviation' alone accounts for most of the cost, even though it is not the most frequent reason. Textbook example: frequency ≠ importance."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/pareto-reklamationskosten.json",
-      "format": "json",
-      "modules": [
-        "pareto"
-      ],
-      "tags": [
-        "pareto",
-        "categorical",
-        "cost",
-        "vital-few"
-      ]
-    },
-    {
       "id": "heatmap-zykluszeit-schicht-linie",
       "type": "project",
       "title": {

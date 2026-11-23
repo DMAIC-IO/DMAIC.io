@@ -30,7 +30,7 @@ async function fetchJson(relPath) {
 }
 
 suite('pareto: Beispiele', () => {
-  test('das Beispiel steht in der Modulablage', async () => {
+  test('das Beispiel steht in der Modulablage, nicht im Gesamtkatalog', async () => {
     const own = await fetchJson(`${BASE}examples.json`);
     assertDeepEqual(own.examples.map((e) => e.id), Object.keys(LEGACY));
     for (const e of own.examples) {
@@ -38,6 +38,8 @@ suite('pareto: Beispiele', () => {
       assertEqual(e.format, 'json');
       assertEqual(e.file, `projects/${e.id}.json`);
     }
+    const catalog = await fetchJson('../../../examples/index.json');
+    assertEqual(catalog.examples.filter((x) => x.id in LEGACY).length, 0);
   });
 
   for (const [id, want] of Object.entries(LEGACY)) {

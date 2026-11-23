@@ -79,7 +79,7 @@ test('catalogConflicts meldet Ids, die in manifest.js und CONVERTED_MODULES steh
 
 test('readLegacyIds liest die Ids aus manifest.js (ohne umgestellte)', async () => {
   const ids = await readLegacyIds(APP_DIR);
-  assert.ok(ids.includes('pareto'));
+  assert.ok(ids.includes('bar'));
   assert.ok(!ids.includes('sipoc'));
   assert.ok(!ids.includes('dmaic-calendar'));
   assert.equal(new Set(ids).size, ids.length);

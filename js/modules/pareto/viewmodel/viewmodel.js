@@ -12,7 +12,7 @@ import { sourceColumns, columnName } from '../../../core/source-columns.js';
 import { formatNum, formatPct } from '../../../core/chart/chart-core.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
-import { buildChartData, hasData, statsRows } from '../domain/pareto-data.js';
+import { buildChartData, hasData, statsRows } from '../domain/chart-data.js';
 
 /**
  * Zeile der geordneten Tabelle, als Text.

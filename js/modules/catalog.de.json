@@ -80,6 +80,11 @@
     "description": "Zwei-Spalten-Ablauf: wertschöpfende Schritte gegen Nacharbeit",
     "whenToUse": "Wenn eine bestehende Kette danach sortiert werden soll, was wertschöpfend ist und was Nacharbeit — nicht für eine neue Prozessaufnahme ohne diese Unterscheidung."
   },
+  "pareto": {
+    "name": "Pareto-Diagramm",
+    "description": "Nach Größe sortiertes Säulendiagramm mit kumulativer Prozent-Linie — das klassische „vital few“-Werkzeug.",
+    "whenToUse": "Kategorien nach Häufigkeit oder nach einem summierten Wert ordnen, um die wenigen wichtigen zu finden — mit Linie der kumulierten Anteile."
+  },
   "pie-chart": {
     "name": "Kuchendiagramm",
     "description": "Kreisdiagramm (Pie/Donut) aus Worksheet-Spalten",

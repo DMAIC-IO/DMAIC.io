@@ -13995,6 +13995,7 @@ export const AGENT_REGISTRY = {
   "pareto": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -14009,98 +14010,41 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'x'|'y'|'g'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'aggregation'",
-            "optional": false,
-            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "'sum'|'mean'",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Analyseoption setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "aggregation": {
-            "type": "'sum'|'mean'",
-            "help": "Zusammenfassung je Kategorie, nur mit Wertespalte",
-            "optional": true
-          }
-        }
       }
     },
     "fields": {
-      "xRef": {
-        "type": "object|null",
-        "help": "the category column (slot `x`), or null",
+      "datasets": {
+        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, g: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "yRef": {
-        "type": "object|null",
-        "help": "the optional numeric value column (slot `y`), or null — without it bars count rows",
-        "bulk": false,
-        "derived": true
-      },
-      "gRef": {
-        "type": "object|null",
-        "help": "the optional column that stacks each bar (slot `g`), or null",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "datasets"
+        ],
+        "slots": {
+          "x": [
+            "columnRef",
+            "minCount:1",
+            "required"
+          ],
+          "y": [
+            "columnRef",
+            "types:numeric,currency,percent",
+            "minCount:1"
+          ],
+          "g": [
+            "columnRef",
+            "group"
+          ]
+        }
       },
       "aggregation": {
-        "type": "string",
-        "help": "how values are combined per category: `sum` or `mean`; applies only with a value column",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the options `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "type": "'sum'|'mean'",
+        "help": "",
+        "bulk": false
       },
       "stats": {
-        "type": "ParetoStats|null",
-        "help": "the ranked table, each figure described under keys; null while nothing is plotted",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "ParetoStats",
@@ -14129,8 +14073,30 @@ export const AGENT_REGISTRY = {
             "help": "Summe aller Werte"
           }
         }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "datasets",
+      "aggregation"
+    ],
+    "invariants": []
   },
   "pie-chart": {
     "tagged": true,
