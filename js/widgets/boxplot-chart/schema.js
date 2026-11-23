@@ -14,5 +14,6 @@ export default chartWidget({
     showOutliers: boolean(ed), showMean: boolean(ed), boxHeight: number({ ...ed, min: 0 }),
     outlierSymbol: text(ed), outlierSize: number({ ...ed, min: 0 }), outlierColor: text({ ...ed, nullable: true }),
     outlierStroke: text({ ...ed, nullable: true }), outlierStrokeWidth: number({ ...ed, min: 0 }),
+    boxColors: list(text({ nullable: true }), ed),
   },
 });

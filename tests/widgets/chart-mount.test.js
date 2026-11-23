@@ -10,6 +10,8 @@ import { WIDGETS } from '../../js/widgets/registry.js';
 import HistogramChart from '../../js/core/chart/types/histogram.js';
 import IndividualValuePlot from '../../js/core/chart/types/individual-value-plot.js';
 import individualValuePlotChart from '../../js/widgets/individual-value-plot-chart/schema.js';
+import Boxplot from '../../js/core/chart/types/boxplot.js';
+import boxplotChart from '../../js/widgets/boxplot-chart/schema.js';
 import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
@@ -57,6 +59,7 @@ function countingDoc(writes) {
 }
 const ScatterDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: scatterChart.edits() } });
 const IvpDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chart: individualValuePlotChart.edits() } });
+const BoxDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chart: boxplotChart.edits() } });
 const TrendDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: trendChart.edits() } });
 const SERIES = (rev) => {
   const s = [{ name: 'A', values: [1, 2, 3], fillColor: 'red' }, { name: 'B', values: [4, 5], fillColor: 'blue' }];
@@ -430,6 +433,33 @@ suite('Diagramm-Widgets (chart-mount)', () => {
       cm, Model: IvpDoc, model: { chart: { pointColors: ['#abcdef', null] } }, extra: { cfg },
     });
     assertDeepEqual(cm.log.created[0].config.pointColors, ['#abcdef', null]);
+    root.remove();
+  });
+
+  test('Boxplot: Farbe der Box aus dem Editor geht in value', async () => {
+    const charts = [];
+    const cm = {
+      create(el, type, config) { const c = new Boxplot(el, config, { i18n, language: 'de', theme: 'light' }); charts.push(c); return Promise.resolve(c); },
+      update(chart, patch) { Object.assign(chart.config, patch); },
+      destroy(chart) { chart.destroy?.(); },
+    };
+    const cfg = { groups: [{ name: 'A', values: [1, 2, 3] }, { name: 'B', values: [2, 4] }] };
+    const { root, data } = await host('<div x-widget="boxplot-chart" x-widget-config="cfg" x-widget-value="model.chart"></div>', { cm, Model: BoxDoc, extra: { cfg } });
+    const chart = charts[0];
+    chart._getSeriesDescriptors()[1].setColor('#123456');
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(data.model.chart)), { boxColors: [null, '#123456'] });
+    root.remove();
+  });
+
+  test('Boxplot: gespeicherte Farben bleiben, solange die Gruppen keine Farbe tragen', async () => {
+    const cm = fakeManager();
+    const cfg = { groups: [{ name: 'A', values: [1, 2] }, { name: 'B', values: [3, 4] }] };
+    const { root } = await host('<div x-widget="boxplot-chart" x-widget-config="cfg" x-widget-value="model.chart"></div>', {
+      cm, Model: BoxDoc, model: { chart: { boxColors: ['#abcdef', null] } }, extra: { cfg },
+    });
+    assertDeepEqual(cm.log.created[0].config.boxColors, ['#abcdef', null]);
     root.remove();
   });
 
