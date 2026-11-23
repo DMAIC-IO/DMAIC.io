@@ -142,6 +142,7 @@ suite('ChartBase — editor changes reach _onEditorChange', () => {
       'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
       'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
       'bgColor', 'refLines', 'refAreas', 'axisRange',
+      'chartWidth', 'chartHeight', 'sizeExportOnly',
     ]);
   });
   test('legend text uses config.legendSize', () => {

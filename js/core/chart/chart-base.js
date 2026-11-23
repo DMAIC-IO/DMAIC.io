@@ -16,7 +16,7 @@ import {
   edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
-  MARKER_SYMBOLS,
+  MARKER_SYMBOLS, normalizeChartSize,
 } from './chart-editor.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 import { icon } from '../icon.js';
@@ -80,6 +80,7 @@ export default class ChartBase {
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
     'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
     'bgColor', 'refLines', 'refAreas', 'axisRange',
+    'chartWidth', 'chartHeight', 'sizeExportOnly',
   ];
 
   /**
@@ -98,6 +99,9 @@ export default class ChartBase {
       // Editor-set axis range `{ xMin?, xMax?, yMin?, yMax? }` — a set side
       // pins the axis exactly, applied after the module values above.
       axisRange: null,
+      // Editor-set fixed size in px (100–4000, null = auto per side);
+      // `sizeExportOnly` limits it to the export.
+      chartWidth: null, chartHeight: null, sizeExportOnly: false,
       xDec: null, yDec: null,
       titleSize: 15, labelSize: 12, tickSize: 11, legendSize: 11,
       markerSize: 8,
@@ -857,11 +861,42 @@ export default class ChartBase {
 
   /** @private */
   _getSize() {
+    if (this._sizeOverride) return this._sizeOverride;
     if (!this._svgWrap) return { w: 0, h: 0 };
     const rect = this._svgWrap.getBoundingClientRect();
+    const fixed = this._fixedSize();
     // Round to whole pixels so viewBox matches rendered size exactly —
     // fractional viewBox dimensions cause sub-pixel scaling artifacts
-    return { w: Math.round(rect.width), h: Math.round(rect.height) };
+    return {
+      w: fixed.w ?? Math.round(rect.width),
+      h: fixed.h ?? Math.round(rect.height),
+    };
+  }
+
+  /**
+   * The fixed screen size from the chart editor, normalized. Both sides are
+   * `null` when the size applies to the export only.
+   * @protected
+   * @returns {{ w: number|null, h: number|null }}
+   */
+  _fixedSize() {
+    const cfg = this.config || {};
+    if (cfg.sizeExportOnly) return { w: null, h: null };
+    return { w: normalizeChartSize(cfg.chartWidth), h: normalizeChartSize(cfg.chartHeight) };
+  }
+
+  /**
+   * Pin the svg wrap to the fixed screen size (or release it) and mark the
+   * chart wrap scrollable. Skipped while an export override is active, so
+   * an export-only render never touches the screen layout.
+   * @protected
+   */
+  _applyFixedSize() {
+    if (this._sizeOverride || !this._svgWrap) return;
+    const { w, h } = this._fixedSize();
+    this._svgWrap.style.width = w ? `${w}px` : '';
+    this._svgWrap.style.height = h ? `${h}px` : '';
+    this._svgWrap.parentElement?.classList.toggle('dmike-chart-wrap--fixed', !!(w || h));
   }
 
   /**
@@ -1018,6 +1053,7 @@ export default class ChartBase {
    * Full re-render. Called on config change, resize, zoom, pan, theme change.
    */
   render() {
+    this._applyFixedSize();
     const size = this._getSize();
     if (size.w <= 0 || size.h <= 0) return;
 

@@ -133,6 +133,7 @@ export default class PieChart extends ChartBase {
   /* ── Render (complete override) ──────────────────────────── */
 
   render() {
+    this._applyFixedSize();
     const size = this._getSize();
     if (size.w <= 0 || size.h <= 0) return;
 

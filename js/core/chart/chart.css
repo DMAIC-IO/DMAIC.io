@@ -25,6 +25,10 @@
   min-width: 0;
 }
 
+/* Fixed chart size (chart editor): the chart keeps its pixels, the wrap scrolls. */
+.dmike-chart-wrap--fixed { overflow: auto; }
+.dmike-chart-wrap--fixed > .dmike-chart-svg-wrap { flex: none; }
+
 .dmike-chart-svg-wrap {
   width: 100%;
   height: 100%;

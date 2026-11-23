@@ -19,6 +19,25 @@ export { esc };
 import { h } from '../dom.js';
 import { icon } from '../icon.js';
 
+// ── Chart Size ───────────────────────────────────────────────
+
+/** Bounds of a fixed chart side in px (chart editor "Größe"). */
+export const CHART_SIZE_MIN = 100;
+export const CHART_SIZE_MAX = 4000;
+
+/**
+ * Normalize a fixed chart side: empty / non-numeric → `null` (auto),
+ * otherwise rounded and clamped to 100–4000 px.
+ * @param {*} v - raw value (number or input string)
+ * @returns {number|null}
+ */
+export function normalizeChartSize(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(CHART_SIZE_MAX, Math.max(CHART_SIZE_MIN, Math.round(n)));
+}
+
 // ── Low-Level Element Builders ───────────────────────────────
 
 /**

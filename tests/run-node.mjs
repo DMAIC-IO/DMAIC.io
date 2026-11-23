@@ -76,6 +76,7 @@ const SKIP = new Set([
   'core/chart/chart-base-editor-change.test.js',
   'core/chart/chart-base-modebar.test.js',
   'core/chart/chart-axis-range.test.js',
+  'core/chart/chart-fixed-size.test.js',
   'core/chart/chart-exact-range.test.js',
   'core/chart/chart-export-xlsx.test.js',
   'core/chart/chart-manager-destroy.test.js',
