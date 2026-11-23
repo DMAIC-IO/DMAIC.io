@@ -110,5 +110,9 @@
   "1.8.1": {
     "de": "Versionswechsel übernimmt Grafik-Editor-Einstellungen, Modelle und Optimierungen",
     "en": "Version takeover keeps chart editor settings, models and optimizations"
+  },
+  "1.8.2": {
+    "de": "Einklappbare Abschnitte im Grafik-Editor, frei sortierbare Legende, besser platzierte Titel",
+    "en": "Collapsible chart editor sections, freely ordered legend, better placed titles"
   }
 }
