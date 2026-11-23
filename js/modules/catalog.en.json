@@ -80,6 +80,11 @@
     "description": "Two-column flow: value-added steps versus rework",
     "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet."
   },
+  "pie-chart": {
+    "name": "Pie Chart",
+    "description": "Pie/donut chart from worksheet columns",
+    "whenToUse": "Show how a total splits into parts: one slice per distinct value, or per label with the values summed."
+  },
   "process-capability": {
     "name": "Process Capability",
     "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",

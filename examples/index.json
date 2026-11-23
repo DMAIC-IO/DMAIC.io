@@ -817,56 +817,6 @@
       ]
     },
     {
-      "id": "pie-defekte-ausschuss",
-      "type": "project",
-      "title": {
-        "de": "Ausschuss nach Defektart",
-        "en": "Scrap by defect type"
-      },
-      "description": {
-        "de": "395 Ausschussteile aus einer Fertigungslinie, aufgeteilt auf sechs sich gegenseitig ausschließende Defektarten. Klassischer Anwendungsfall für ein Tortendiagramm: Anteil weniger Kategorien an einem Ganzen. Variante mit vollem Kreis (innerRadius = 0).",
-        "en": "395 scrap parts from a production line, split across six mutually exclusive defect types. Textbook pie-chart use case: share of a few categories of a whole. Full-circle variant (innerRadius = 0)."
-      },
-      "source": "Qprovement synthetisch",
-      "license": "public-domain",
-      "file": "projects/pie-defekte-ausschuss.json",
-      "format": "json",
-      "modules": [
-        "pie-chart"
-      ],
-      "tags": [
-        "pie",
-        "categorical",
-        "defects",
-        "full-circle"
-      ]
-    },
-    {
-      "id": "pie-reklamationen-q1",
-      "type": "project",
-      "title": {
-        "de": "Reklamationsgründe Q1 (Donut)",
-        "en": "Complaint reasons Q1 (donut)"
-      },
-      "description": {
-        "de": "248 Kundenreklamationen aus dem ersten Quartal, aufgeteilt auf sechs Gründe. Donut-Variante (innerRadius = 0,5) mit Gesamtsumme als Mittelpunkt-Beschriftung — eignet sich, wenn die Summe selbst eine wichtige Aussage trägt.",
-        "en": "248 customer complaints from Q1, split across six reasons. Donut variant (innerRadius = 0.5) with the total shown as the center label — useful when the total itself carries a key message."
-      },
-      "source": "Qprovement synthetisch",
-      "license": "public-domain",
-      "file": "projects/pie-reklamationen-q1.json",
-      "format": "json",
-      "modules": [
-        "pie-chart"
-      ],
-      "tags": [
-        "pie",
-        "donut",
-        "categorical",
-        "complaints"
-      ]
-    },
-    {
       "id": "spc-multivariate-t2",
       "type": "project",
       "title": {

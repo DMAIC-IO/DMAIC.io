@@ -23,12 +23,6 @@
 export default [
   // ─── Daten-Bereich (cycle-independent) ────────────────────────
   {
-    id: 'pie-chart',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./pie-chart/pie-chart.js'),
-  },
-  {
     id: 'bar',
     phase: 'data',
     group: 'visualize',

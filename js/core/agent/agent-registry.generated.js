@@ -14135,6 +14135,7 @@ export const AGENT_REGISTRY = {
   "pie-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -14149,84 +14150,77 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'|'label'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen; der andere Slot bleibt."
       }
     },
     "fields": {
-      "valueRef": {
-        "type": "object|null",
-        "help": "the value column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+      "datasets": {
+        "type": "Array<{ value: { instanceId: string, sheetId?: string, columnId: string }|null, label: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "labelRef": {
-        "type": "object|null",
-        "help": "the label column (slot `label`), or null — without it slices count distinct values",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "datasets"
+        ],
+        "slots": {
+          "value": [
+            "columnRef",
+            "minCount:1",
+            "required"
+          ],
+          "label": [
+            "columnRef",
+            "minCount:1",
+            "group"
+          ]
+        }
       },
       "stats": {
-        "type": "PieStats|null",
-        "help": "the slice table, each figure described under keys; null while nothing is plotted",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "PieStats",
         "keys": {
           "slices": {
             "type": "Slice[]",
-            "help": "Segmente",
+            "help": "Segmente in der Reihenfolge des ersten Auftretens",
             "keysOf": "Slice",
             "keys": {
               "name": {
                 "type": "string",
-                "help": "Segmentname"
+                "help": "Kategorie (Wert oder Beschriftung)"
               },
               "value": {
                 "type": "number",
-                "help": "Wert des Segments"
+                "help": "Häufigkeit oder Summe"
               },
               "share": {
                 "type": "number",
-                "help": "Anteil an der Summe, 0 bis 1"
+                "help": "Anteil an der Summe (0–1)"
               }
             }
           },
           "total": {
             "type": "number",
-            "help": "Summe aller Segmente"
+            "help": "Summe aller Segmentwerte"
           }
         }
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "datasets"
+    ],
+    "invariants": []
   },
   "probability-plot": {
     "tagged": true,
