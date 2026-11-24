@@ -461,7 +461,7 @@ test('typedefHelpSuffixes: Erweiterung von datasets mit Satz unter fields.<feld>
   const M = defineModel({ fields: { datasets: datasets({ x: columnRef() }, { extension: object({ errorBars: ext }) }) } });
   assert.deepEqual(typedefHelpSuffixes({ fields: schemaAgentEntry(M).fields }), [
     'fields.datasets.errorBars.constant.help', 'fields.datasets.errorBars.constant.yPlus.help',
-    'fields.datasets.errorBars.help', 'fields.datasets.errorBars.mode.help',
+    'fields.datasets.errorBars.help', 'fields.datasets.errorBars.mode.help', 'fields.datasets.x.help',
   ]);
   const P = defineModel({ fields: { datasets: datasets({ x: columnRef() }) } });
   assert.deepEqual(typedefHelpSuffixes({ fields: schemaAgentEntry(P).fields }), []);

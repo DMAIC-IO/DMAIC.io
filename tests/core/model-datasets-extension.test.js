@@ -200,6 +200,7 @@ suite('datasets({ extension }) — Agentenfläche', () => {
     const out = await describeModule({ moduleRegistry, i18n, registry: { board: schemaAgentEntry(M) }, getHelp: async () => null }, 'board');
     const f = out.fields.find((x) => x.name === 'datasets');
     assertDeepEqual(Object.keys(f.extension), ['errorBars']);
+    assertDeepEqual(f.keys.map((k) => k.name), ['x', 'group', 'errorBars']);
     const eb = f.keys.find((k) => k.name === 'errorBars');
     assertEqual(eb.help, 'Fehlerbalken der Reihe');
     const yPlus = eb.keys.find((k) => k.name === 'constant').keys.find((k) => k.name === 'yPlus');

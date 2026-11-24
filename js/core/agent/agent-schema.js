@@ -79,6 +79,19 @@ function extensionKeys(shape, prefix) {
 }
 
 /**
+ * Schlüsselbaum einer Zeile von `datasets` mit Erweiterung: die Slots (Satz
+ * unter `<prefix>.<slot>.help`, Regeln wie `slots`) und die Erweiterung. So
+ * erklärt `describe` jeden Schlüssel, den `read()` je Zeile liefert.
+ * @param {any} spec datasets-Spec mit `extension` @param {string} prefix
+ * @returns {{ keysOf: string, keysHelp: string, keysHelpSuffix: string, keys: Record<string, object> }}
+ */
+function datasetsKeys(spec, prefix) {
+  const ext = extensionKeys(spec.extension.shape, prefix);
+  const slots = Object.fromEntries(Object.entries(spec.slots).map(([k, v]) => [k, { type: describeType(v), help: '', rules: slotTokens(v) }]));
+  return { ...ext, keys: { ...slots, ...ext.keys } };
+}
+
+/**
  * Die Auslassungspfade eines Feldes, relativ zu seinem Wert: wo `read()` nur
  * `{ $omitted: true, bytes }` liefert. Gefragt wird allein das Merkmal
  * `omitOnRead`, nie die Feldart. `list` → `[]`, `object`/`record` →
@@ -229,7 +242,7 @@ export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {
       ...(spec.kind === 'datasets' && spec.extension
         ? {
           extension: Object.fromEntries(Object.entries(spec.extension.shape).map(([k, v]) => [k, extensionTokens(v)])),
-          ...extensionKeys(spec.extension.shape, `fields.${name}`),
+          ...datasetsKeys(spec, `fields.${name}`),
         } : {}),
     };
   }

@@ -23207,6 +23207,43 @@ export const AGENT_REGISTRY = {
         "keysHelp": "fields.datasets",
         "keysHelpSuffix": "help",
         "keys": {
+          "x": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+            "help": "",
+            "rules": [
+              "columnRef",
+              "types:numeric,currency,percent",
+              "minCount:1",
+              "required"
+            ]
+          },
+          "y": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+            "help": "",
+            "rules": [
+              "columnRef",
+              "types:numeric,currency,percent",
+              "minCount:1",
+              "required"
+            ]
+          },
+          "group": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+            "help": "",
+            "rules": [
+              "columnRef",
+              "group"
+            ]
+          },
+          "size": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+            "help": "",
+            "rules": [
+              "columnRef",
+              "types:numeric,currency,percent",
+              "minCount:1"
+            ]
+          },
           "errorBars": {
             "type": "{ mode: 'none' }|{ mode: 'constant', constant?: { xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null } }|{ mode: 'columns', columns?: { xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null } }",
             "help": "",
