@@ -108,6 +108,28 @@ suite('ChartBase — legend order', () => {
     host.remove();
   });
 
+  test('a "legend" section holds the show-legend checkbox and the order list', () => {
+    const m = mount();
+    const sec = m.inner.querySelector('[data-ed-section="legend"]');
+    assertTrue(!!sec, 'legend section present');
+    assertEqual(sec.querySelector('.dmike-chart-ed-section-title').textContent, 'legend');
+    assertTrue(!!sec.querySelector('input[data-key="showLegend"]'), 'checkbox inside the section');
+    assertTrue(!!sec.querySelector('[data-ed-section="legendOrder"]'), 'order list inside the section');
+    assertEqual(m.inner.querySelector(':scope > .dmike-chart-ed-check input[data-key="showLegend"]'), null);
+    done(m);
+  });
+
+  test('hiding the legend keeps the section but drops the order list', () => {
+    const m = mount();
+    const cb = m.inner.querySelector('input[data-key="showLegend"]');
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change'));
+    const sec = m.inner.querySelector('[data-ed-section="legend"]');
+    assertTrue(!!sec.querySelector('input[data-key="showLegend"]'));
+    assertEqual(sec.querySelector('[data-ed-section="legendOrder"]'), null);
+    done(m);
+  });
+
   test('no order section for a legend with fewer than two entries', () => {
     class One extends TwoItems { _getLegendItems() { return [{ type: 'rect', color: 'red', label: 'A' }]; } }
     const host = document.createElement('div');

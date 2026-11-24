@@ -85,16 +85,37 @@ export function edSection(title, opts = {}) {
 }
 
 /**
- * Legend order section: one row per legend entry, reorderable by drag & drop
+ * Legend section: the show-legend checkbox and — while the legend is shown
+ * and has two or more entries — the entry order, reorderable by drag & drop
  * and by up/down buttons.
+ * @param {{ show: boolean, entries: Array<{key: string, label: string, color?: string}>,
+ *   onToggle: function(boolean): void, onReorder: function(string[]): void }} opts
+ *   entries in current order; onReorder is called with the new key list
+ * @param {function(string): string} t - editor translation function
+ * @returns {HTMLElement}
+ */
+export function edLegendSection({ show, entries, onToggle, onReorder }, t) {
+  const sec = edSection(t('legend'));
+  sec.dataset.edSection = 'legend';
+  sec.appendChild(edCheckboxRow(t('showLegend'), show, onToggle, 'showLegend'));
+  if (show && entries.length >= 2) sec.appendChild(edLegendOrderList(entries, onReorder, t));
+  return sec;
+}
+
+/**
+ * Legend order block: a caption and one row per legend entry.
  * @param {Array<{key: string, label: string, color?: string}>} entries - in current order
  * @param {function(string[]): void} onReorder - called with the new key list
  * @param {function(string): string} t - editor translation function
  * @returns {HTMLElement}
  */
-export function edLegendOrderSection(entries, onReorder, t) {
-  const sec = edSection(t('legendOrder'));
+function edLegendOrderList(entries, onReorder, t) {
+  const sec = document.createElement('div');
   sec.dataset.edSection = 'legendOrder';
+  const caption = document.createElement('div');
+  caption.className = 'dmike-chart-ed-subsection-title';
+  caption.textContent = t('legendOrder');
+  sec.appendChild(caption);
   const keys = entries.map(e => e.key);
   const move = (from, to) => {
     if (from === to || from < 0 || to < 0 || from >= keys.length || to >= keys.length) return;
@@ -427,6 +448,10 @@ export function edTitleSection(config, onUpdate, t, onEdit, auto = {}) {
   return sec;
 }
 
+/** Bounds of every font size slider (px). */
+const FONT_SIZE_MIN = 6;
+const FONT_SIZE_MAX = 30;
+
 /**
  * Build the font size section: title, axis labels, tick labels and — for
  * charts with a legend — the legend.
@@ -439,11 +464,13 @@ export function edTitleSection(config, onUpdate, t, onEdit, auto = {}) {
  */
 export function edFontSizeSection(config, onUpdate, t, opts = {}) {
   const sec = edSection(t('fontSizes'));
-  sec.appendChild(edRangeRow(t('titleFontSize'), config.titleSize ?? 15, (v) => { config.titleSize = v; onUpdate(); }, 8, 30, 1));
-  sec.appendChild(edRangeRow(t('labelFontSize'), config.labelSize ?? 12, (v) => { config.labelSize = v; onUpdate(); }, 8, 24, 1));
-  sec.appendChild(edRangeRow(t('tickFontSize'), config.tickSize ?? 11, (v) => { config.tickSize = v; onUpdate(); }, 6, 20, 1));
+  // One shared scale, so equal sizes sit at equal slider positions.
+  const row = (label, value, set) => edRangeRow(label, value, (v) => { set(v); onUpdate(); }, FONT_SIZE_MIN, FONT_SIZE_MAX, 1);
+  sec.appendChild(row(t('titleFontSize'), config.titleSize ?? 15, (v) => { config.titleSize = v; }));
+  sec.appendChild(row(t('labelFontSize'), config.labelSize ?? 12, (v) => { config.labelSize = v; }));
+  sec.appendChild(row(t('tickFontSize'), config.tickSize ?? 11, (v) => { config.tickSize = v; }));
   if (opts.legend) {
-    sec.appendChild(edRangeRow(t('legendFontSize'), config.legendSize ?? 11, (v) => { config.legendSize = v; onUpdate(); }, 6, 20, 1));
+    sec.appendChild(row(t('legendFontSize'), config.legendSize ?? 11, (v) => { config.legendSize = v; }));
   }
   return sec;
 }

@@ -440,6 +440,9 @@ export function histogramData(module, _t) {
     _addStatsToggle(inner) {
       // The legend toggle is not part of the persisted model shape: hide it.
       inner.querySelector('input[data-key="showLegend"]')?.closest('label')?.remove();
+      // Without the toggle and without an order list the legend section is empty.
+      const legendSec = inner.querySelector('[data-ed-section="legend"]');
+      if (legendSec && !legendSec.querySelector('[data-ed-section="legendOrder"]')) legendSec.remove();
       const target = inner.querySelector('[data-ed-section="display"]') || inner;
       target.appendChild(edCheckboxRow(t('showStats'), this.model.showStats, (v) => {
         this.model.showStats = v;

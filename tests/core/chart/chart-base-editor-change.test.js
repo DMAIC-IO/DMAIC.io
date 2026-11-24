@@ -151,6 +151,13 @@ suite('ChartBase — editor changes reach _onEditorChange', () => {
     assertEqual(txt.getAttribute('font-size'), '17px');
     m.chart.destroy(); m.host.remove();
   });
+  test('all font size sliders share one scale', () => {
+    const m = mount({ s: { name: 'A', visible: true } });
+    const ranges = ['titleFontSize', 'labelFontSize', 'tickFontSize', 'legendFontSize']
+      .map((l) => { const i = slider(m.inner, l); return `${i.min}-${i.max}`; });
+    assertDeepEqual(ranges, ['6-30', '6-30', '6-30', '6-30']);
+    m.chart.destroy(); m.host.remove();
+  });
   test('font size section offers a legend slider that sets legendSize', () => {
     const m = mount({ s: { name: 'A', visible: true } });
     const row = [...m.inner.querySelectorAll('.dmike-slider-row')]

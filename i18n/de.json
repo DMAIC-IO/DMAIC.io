@@ -1000,8 +1000,9 @@
     "editor": {
       "title": "Überschrift",
       "showTitle": "Überschrift anzeigen",
+      "legend": "Legende",
       "showLegend": "Legende anzeigen",
-      "legendOrder": "Reihenfolge der Legende",
+      "legendOrder": "Reihenfolge",
       "refAreaDefault": "Bereich",
       "moveUp": "Nach oben",
       "moveDown": "Nach unten",

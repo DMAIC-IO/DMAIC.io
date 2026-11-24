@@ -13,7 +13,7 @@ import { createModebar } from './modebar.js';
 import {
   edSection, edCheckboxRow, edRangeRow, edSelectRow,
   edTitleSection, edFontSizeSection, edSizeSection, edAxisLabelSection,
-  edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection, edLegendOrderSection,
+  edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection, edLegendSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
   MARKER_SYMBOLS, normalizeChartSize,
@@ -345,24 +345,24 @@ export default class ChartBase {
     // Title section
     inner.appendChild(edTitleSection(cfg, onChange, t, onEdit, auto));
 
-    // Legend toggle
+    // Legend: show toggle and entry order
     const hasLegend = this._getLegendItems().length > 0 || !!(cfg.refLines && cfg.refLines.length) || !!(cfg.refAreas && cfg.refAreas.length);
     if (hasLegend) {
-      inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => {
-        cfg.showLegend = v;
-        onEdit('showLegend', v);
-        onUpdate();
-      }, 'showLegend'));
-      if (cfg.showLegend !== false) {
-        const entries = this._legendEntries();
-        if (entries.length >= 2) {
-          inner.appendChild(edLegendOrderSection(entries, (keys) => {
-            cfg.legendOrder = keys;
-            onEdit('legendOrder', keys);
-            onUpdate();
-          }, t));
-        }
-      }
+      const show = cfg.showLegend !== false;
+      inner.appendChild(edLegendSection({
+        show,
+        entries: show ? this._legendEntries() : [],
+        onToggle: (v) => {
+          cfg.showLegend = v;
+          onEdit('showLegend', v);
+          onUpdate();
+        },
+        onReorder: (keys) => {
+          cfg.legendOrder = keys;
+          onEdit('legendOrder', keys);
+          onUpdate();
+        },
+      }, t));
     }
 
     // Font sizes

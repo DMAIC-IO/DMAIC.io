@@ -1000,8 +1000,9 @@
     "editor": {
       "title": "Title",
       "showTitle": "Show title",
+      "legend": "Legend",
       "showLegend": "Show legend",
-      "legendOrder": "Legend order",
+      "legendOrder": "Order",
       "refAreaDefault": "Area",
       "moveUp": "Move up",
       "moveDown": "Move down",
