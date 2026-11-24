@@ -1,0 +1,94 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRef": {
+      "help": "The measured column, label Values Column: a numeric column with the measured values in time order. The analysis runs from 3 numbers; empty and non-numeric cells are skipped, including text such as “2,5”. With fewer numbers, without spread or with a deleted column the output stays empty. Empty while none is chosen; an empty value clears the choice. A change recomputes."
+    },
+    "chartTypeId": {
+      "help": "The chart procedure, label Control Chart Type: EWMA (exponentially weighted moving average) smooths the series and detects small persistent shifts; CUSUM (cumulative sums, tabular) accumulates the deviations from the target and is very sensitive to shifts of about 1σ. The procedure decides which parameters take effect: λ and L only for EWMA, k and h only for CUSUM. The parameters of both procedures stay stored; switching discards nothing. Any other value is rejected. A change recomputes."
+    },
+    "sigmaMethod": {
+      "help": "How σ is estimated from the baseline as long as no spread σ greater than 0 is given, label σ Estimation Method: MR̄ / d₂ is the average moving range of consecutive values divided by d₂ = 1.128; because only neighboring values are compared, shifts and trends in the baseline hardly inflate the estimate. Sample SD is the standard deviation with n − 1 in the denominator, n being the number of values in the baseline. MR̄ / d₂ is preset. If a spread greater than 0 is given, the choice has no effect. Any other value is rejected."
+    },
+    "baselineCount": {
+      "help": "How many of the first used values form the baseline (Phase I) from which target (mean) and σ are estimated, unless they are given, label Baseline Count. Empty (shown as “all”) means all values; a number larger than the number of values acts like all. Without a count the baseline is therefore the whole series: a shift in the data then drags target and σ along, the chart shows it more weakly, and signals can appear before the shift in the opposite direction. Whole numbers from 1 are allowed, anything else is rejected. With a single value σ cannot be estimated: there is then no result unless σ is given. A change recomputes."
+    },
+    "targetOverride": {
+      "help": "The target μ₀ the chart refers to, instead of the baseline mean, label Target μ₀. Any number is allowed; empty (shown as “auto”) means the baseline mean. For EWMA it is the start value z₀ and the center line, for CUSUM the value from which deviations are accumulated. A change recomputes."
+    },
+    "sigmaOverride": {
+      "help": "The given spread σ of the individual values instead of the estimate from the baseline, label Spread σ; a number from 0, a negative one is rejected. Only a value greater than 0 is used: 0 acts like empty (shown as “auto”), and σ is then estimated from the baseline. A given spread makes the choice of the σ estimation method irrelevant. A change recomputes."
+    },
+    "params": {
+      "help": "The parameters of both chart types: under ewma the weight λ and the limit width L, under cusum the reference value k and the decision interval h, each in multiples of σ. Both sets stay stored; only those of the chosen chart type take effect (see activeParams). The parameters are written only as a whole, with both chart types and all four values; a single chart type or a single value on its own is rejected. A number given as text such as “0.5” is taken as a number.",
+      "ewma": {
+        "help": "The parameters of the EWMA chart: the weight λ and the limit width L. They take effect only when EWMA is chosen.",
+        "lambda": {
+          "help": "The weight λ (smoothing) of the newest value, label λ (smoothing): zᵢ = λ·xᵢ + (1 − λ)·zᵢ₋₁ with z₀ = target μ₀. Greater than 0 and at most 1, anything else is rejected. A smaller λ smooths more and detects small shifts earlier; λ = 1 gives an individuals chart without smoothing. Preset 0.2. Takes effect only for EWMA; with CUSUM the value stays stored. A change recomputes."
+        },
+        "L": {
+          "help": "The limit width L in multiples of σ, label L (limit width). At point i the limits are target ± L·σ·√(λ/(2 − λ)·(1 − (1 − λ)^(2i))), i = 1, 2, …; they widen at first and approach target ± L·σ_z. Greater than 0, anything else is rejected. Preset 3. Takes effect only for EWMA; with CUSUM the value stays stored. A change recomputes."
+        }
+      },
+      "cusum": {
+        "help": "The parameters of the CUSUM chart: the reference value k and the decision interval h, each in multiples of σ. They take effect only when CUSUM is chosen.",
+        "kSigma": {
+          "help": "The reference value k (allowance) in multiples of σ, label k (in σ); in units of the measured values this gives k · σ (see the result). Deviations from the target up to k are not accumulated: C⁺ = max(0, x − target − k + previous C⁺), C⁻ likewise downward. Rule of thumb for a shift of Δ·σ: k = Δ/2. Greater than 0, anything else is rejected. Preset 0.5. Takes effect only for CUSUM; with EWMA the value stays stored. A change recomputes."
+        },
+        "hSigma": {
+          "help": "The decision interval h in multiples of σ, label h (in σ); in units of the measured values this gives h · σ (see the result). A signal arises as soon as C⁺ or C⁻ is greater than h. 4 or 5 are common. Greater than 0, anything else is rejected. Preset 4. Takes effect only for CUSUM; with EWMA the value stays stored. A change recomputes."
+        }
+      }
+    },
+    "charts": {
+      "help": "The settings from the chart editor per sub-chart, under ewma (EWMA chart), cusum_plus (CUSUM C⁺) and cusum_minus (CUSUM C⁻): title, axis titles, font sizes, background, reference lines, point color, symbol, size and outline of the series. A sub-chart without changes has no entry; other keys are rejected."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example sheet this module was loaded from; empty if it does not come from an example."
+    },
+    "analysis": {
+      "help": "The computation for the current column and settings: target, σ and the values from the engine (for EWMA the EWMA values with limits per point, for CUSUM the sums C⁺ and C⁻ with h and k) together with the signal points, or the reason errCompute when the computation fails or yields non-finite values. Empty without a column, with a deleted column, with fewer than 3 numbers or without spread."
+    },
+    "result": {
+      "help": "The computed result, each figure described individually under keys; null without a column, with a deleted column, with fewer than 3 numbers, without spread (σ not greater than 0) or when the computation fails (the interface then shows “Computation failed.”)."
+    },
+    "points": {
+      "help": "One row per used number, in data order: for EWMA { ewma, ucl, lcl, signal }, for CUSUM { cPlus, cMinus, signalHigh, signalLow }; empty without a result. read({ fields: ['points'] }) returns them in full."
+    },
+    "activeParams": {
+      "help": "The fields that currently take effect: chartTypeId, sigmaMethod, baselineCount, targetOverride, sigmaOverride and the parameters of the chosen chart type as a path under params (params.ewma.lambda and params.ewma.L, or params.cusum.kSigma and params.cusum.hSigma). instance.set always writes params as a whole field; the parameters of the other chart type are stored as well and take effect only after a switch."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields that instance.set currently writes with effect: columnRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "chartType": "The procedure that was used: ewma or cusum. It decides which further figures exist.",
+      "n": "Number of used numbers in the series; empty and non-numeric cells are already removed. A result exists from 3 numbers on. The numbers of the signal points count these numbers from 0, not the worksheet rows. The sub-line of the Signals tile shows n as “of n data points”.",
+      "target": "The target μ₀ that was used: the given target, otherwise the baseline mean (of the first values up to the baseline count, without a count of all values). Tile “μ₀ (target)”; its sub-line shows σ̂, the spread of the individual values that was used (result σ), both with four decimals. Missing when the value is not finite.",
+      "sigma": "The spread σ of the individual values that was used: the given one if it is greater than 0, otherwise estimated from the baseline (MR̄ / 1.128 or sample SD with the number of baseline values − 1 in the denominator, depending on the σ estimation method). It appears as σ̂ in the sub-line of the tile “μ₀ (target)”. A result exists only if σ is greater than 0.",
+      "lambda": "EWMA only: the weight λ that was used. It appears in the sub-line of the tile “σ_z (steady state)”.",
+      "L": "EWMA only: the limit width L in multiples of σ that was used.",
+      "cl": "EWMA only: the center line of the chart; it equals the target μ₀, where the EWMA value z also starts. Missing when the value is not finite.",
+      "sigmaSteady": "EWMA only: the steady-state spread σ_z = σ·√(λ/(2 − λ)), the limit of the spread of the EWMA value z for long series; the limits approach target ± L·σ_z. Tile “σ_z (steady state)”; its sub-line shows the λ that was used.",
+      "signals": "EWMA only: the numbers of the points whose EWMA value z lies strictly outside the limits (z above the upper or below the lower limit). The numbers count the used numbers from 0, not the worksheet rows. The tile “Signals” shows their count; the sub-line gives the number of data points.",
+      "k": "CUSUM only: the reference value in units of the measured values, k = (field k in σ) · σ, with the spread σ that was used. It appears in the sub-line of the tile “h (limit)”. Missing when the value is not finite.",
+      "h": "CUSUM only: the decision interval in units of the measured values, h = (field h in σ) · σ, with the spread σ that was used. A signal arises as soon as C⁺ or C⁻ is greater than h. Tile “h (limit)”; its sub-line shows k in units of the measured values. Missing when the value is not finite.",
+      "signalsHigh": "CUSUM only: the numbers of the points at which the upper sum C⁺ = max(0, x − target − k + previous C⁺) is greater than h, that is signals upward. The numbers count the used numbers from 0, not the worksheet rows. The tile “Signals” counts these together with the downward signals.",
+      "signalsLow": "CUSUM only: the numbers of the points at which the lower sum C⁻ = max(0, target − x − k + previous C⁻) is greater than h, that is signals downward. The numbers count the used numbers from 0, not the worksheet rows. The tile “Signals” counts these together with the upward signals."
+    },
+    "EwmaPoint": {
+      "ewma": "The EWMA value z of the point, zᵢ = λ·xᵢ + (1 − λ)·zᵢ₋₁ with z₀ = target; it is plotted as such. Missing when it is not finite.",
+      "ucl": "The upper limit at this point, target + L·σ_zᵢ; it widens at first and approaches target + L·σ_z. Missing when it is not finite.",
+      "lcl": "The lower limit at this point, target − L·σ_zᵢ. Missing when it is not finite.",
+      "signal": "True when the EWMA value lies strictly outside the limits of this point."
+    },
+    "CusumPoint": {
+      "cPlus": "The upper sum C⁺ of the point, max(0, x − target − k + previous C⁺), starting at 0; it is plotted as such in the upper sub-chart. Missing when it is not finite.",
+      "cMinus": "The lower sum C⁻ of the point, max(0, target − x − k + previous C⁻), starting at 0; it is plotted as such in the lower sub-chart. Missing when it is not finite.",
+      "signalHigh": "True when C⁺ is greater than h at this point (signal upward).",
+      "signalLow": "True when C⁻ is greater than h at this point (signal downward)."
+    }
+  }
+}

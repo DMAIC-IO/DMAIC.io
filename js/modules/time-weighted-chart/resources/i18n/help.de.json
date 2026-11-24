@@ -1,0 +1,97 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Zeitgewichtete Regelkarten",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Klassische Shewhart-{{term:regelkarte|Regelkarten}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}) sind unempfindlich gegenüber kleinen, anhaltenden Verschiebungen — ein Drift von 1σ wird oft erst nach 40–50 Punkten erkannt. Zeitgewichtete Karten integrieren Information über mehrere Beobachtungen hinweg und erkennen genau diese Muster sehr viel schneller."
+        },
+        {
+          "type": "definition",
+          "term": "EWMA — Exponentially Weighted Moving Average",
+          "content": "Bei der {{term:ewma-chart|EWMA-Karte}} ist jeder Wert ein gewichteter {{term:mittelwert|Durchschnitt}} aus aktueller Beobachtung und vorherigem EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. Der Glättungsparameter λ steuert das „Gedächtnis“: kleines λ (0,05–0,1) reagiert auf sehr kleine Verschiebungen, größeres λ (0,3–0,4) verhält sich Shewhart-ähnlich."
+        },
+        {
+          "type": "definition",
+          "term": "CUSUM — Cumulative Sum",
+          "content": "Die {{term:cusum-chart|CUSUM-Karte}} summiert die Abweichungen vom Sollwert auf, zählt aber nur den Teil einer Abweichung, der über den Referenzwert k hinausgeht. Zwei einseitige Summen C⁺ und C⁻ erkennen Aufwärts- bzw. Abwärtsverschiebungen. Signal, sobald eine der beiden Summen die Entscheidungsgrenze h überschreitet."
+        },
+        {
+          "type": "paragraph",
+          "content": "Beide Karten werden in der Control-Phase eingesetzt, wenn ein Prozess bereits eingefahren ist (Sollwert μ₀ und σ bekannt) und kleine, schleichende Drifts früh erkannt werden sollen — typische Anwendung: chemische Prozesse, Werkzeugverschleiß, Eichdrift."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen und Parameterwahl",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Sollwert μ₀ und Streuung σ aus einem stabilen Vorlauf bestimmen (Baseline). Im Modul dafür die Baseline-Anzahl auf die Länge des Vorlaufs setzen oder Sollwert und σ vorgeben; ohne Angabe zählt die ganze Reihe als Baseline.",
+            "σ vorzugsweise aus der mittleren gleitenden {{term:spannweite|Spannweite}} MR̄/d₂ schätzen: Weil nur aufeinanderfolgende Werte verglichen werden, blähen Verschiebungen und Trends in der Baseline die Schätzung weniger auf als die Stichproben-SD.",
+            "Verschiebungsgröße festlegen, die früh erkannt werden soll — z. B. 1σ.",
+            "EWMA: λ ≈ 0,1 für 1σ-Shifts; L = 2,7 (statt 3,0) bei kleinen λ, sonst L = 3.",
+            "CUSUM: k = 0,5 und h = 4 oder 5 (je in σ) — diese Kombination erkennt eine Verschiebung um 1σ im Mittel nach etwa 8 (h = 4) bzw. 10 Punkten (h = 5).",
+            "Karte laufen lassen und auf erste Signale (Punkt außerhalb Grenzen) reagieren."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Faustregel zur Verschiebungsgröße: für eine Δ·σ-Shift wähle k = Δ/2 (in σ). Damit ist das CUSUM-Verfahren auf diese Verschiebung optimal abgestimmt."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Lesen und Reagieren",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "EWMA: Die zᵢ-Linie kreuzt UCL/LCL → {{term:sonderursache|Sonderursache}}. Die Grenzen weiten sich zu Beginn (Einschwingphase) und nähern sich asymptotisch dem Steady-State.",
+            "CUSUM: C⁺ steigt → positive Verschiebung; C⁻ steigt → negative Verschiebung. Signal sobald eine Summe die horizontale Grenze h überschreitet.",
+            "Beide Karten melden eine Verschiebung erst einige Punkte nach ihrem Beginn, weil sich die Abweichung erst ansammeln muss — das kostet Reaktionszeit, bringt aber Empfindlichkeit für kleine Verschiebungen. Bei CUSUM liegt der Beginn meist kurz nach dem letzten Punkt, an dem die betroffene Summe 0 war.",
+            "Nach einem Signal: Ursache untersuchen und den Prozess korrigieren. Das Modul rechnet die Reihe ohne Neustart durch; die Auswertung nach der Korrektur mit einer Spalte beginnen, die erst ab der Korrektur Werte enthält."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Falsche σ-Schätzung",
+          "content": "Wird σ aus einer Stichprobe mit Sonderursachen berechnet, sind die Grenzen zu weit. Immer aus einer als stabil bestätigten Baseline schätzen — vorzugsweise mit MR̄/d₂."
+        },
+        {
+          "type": "definition",
+          "term": "Baseline nicht festgelegt",
+          "content": "Ohne Baseline-Anzahl und ohne Vorgaben schätzt das Modul Sollwert und σ aus der ganzen Reihe. Enthält sie schon die Verschiebung, liegt der Sollwert zwischen altem und neuem Niveau: Die Karte meldet die Verschiebung schwächer, und Signale können schon vor ihr in der Gegenrichtung erscheinen. Baseline-Anzahl auf den stabilen Vorlauf setzen oder Sollwert und σ vorgeben."
+        },
+        {
+          "type": "definition",
+          "term": "EWMA bei Shewhart-Aufgaben",
+          "content": "EWMA reagiert träge auf große, plötzliche Sprünge. Für einzelne große Ausreißer ist eine {{term:i-mr-chart|I-MR-Karte}} schneller. EWMA und Shewhart parallel zu betreiben ist üblich (zweistufige Überwachung)."
+        },
+        {
+          "type": "definition",
+          "term": "CUSUM nicht zurücksetzen",
+          "content": "Nach einer Korrektur müssen C⁺ und C⁻ wieder bei 0 beginnen — sonst trägt die alte Abweichung weiter zum nächsten Signal bei. Das Modul setzt die Summen nicht selbst zurück: die Werte ab der Korrektur in einer eigenen Spalte auswerten."
+        },
+        {
+          "type": "definition",
+          "term": "Autokorrelation ignoriert",
+          "content": "Beide Verfahren setzen unabhängige Beobachtungen voraus. Bei autokorrelierten Daten (Chargenprozesse, kontinuierliche Messreihen) liefern sie zu viele Falsch-Alarme. Erst entkorrelieren oder eine Modell-Residuen-Karte verwenden."
+        },
+        {
+          "type": "definition",
+          "term": "k und h willkürlich gewählt",
+          "content": "Andere Werte als die Standardpaare (k = 0,5 mit h = 4 oder 5) ändern das ARL-Verhalten drastisch. Wer abweicht, sollte ARL-Tabellen oder Simulation zu Rate ziehen."
+        }
+      ]
+    }
+  }
+}
