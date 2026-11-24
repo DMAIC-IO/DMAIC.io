@@ -13,6 +13,7 @@ import { State as BoxplotState } from '../../js/modules/boxplot/domain/model.js'
 import { State as ProbabilityPlotState } from '../../js/modules/probability-plot/domain/model.js';
 import { State as RunChartState } from '../../js/modules/run-chart/domain/model.js';
 import { State as TransformedImrState } from '../../js/modules/transformed-imr-chart/domain/model.js';
+import { State as ControlChartState } from '../../js/modules/control-chart/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -129,10 +130,13 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(m.lambdaManual, 0);
   });
 
-  test('control-chart → I-MR; mit Datumsspalte → null', () => {
+  test('control-chart: die Vorbelegung lädt über die Migration als Bezug mit I-MR; mit Datumsspalte → null', () => {
     const p = buildPrefill('control-chart', [cont(30, 'a')], 'ws', 's');
     assertEqual(p.target, 'control-chart');
-    assertEqual(p.state.chartTypeId, 'i-mr');
+    const m = ControlChartState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.columnRef)), { instanceId: 'ws', sheetId: 's', columnId: 'a' });
+    assertEqual(m.chartTypeId, 'i-mr');
+    assertEqual(m.subgroupSize, 1);
     const d = col('d', 'date', ['2026-01-02', '2026-01-01']);
     assertEqual(buildPrefill('control-chart', [d, cont(2, 'a')], 'ws', 's'), null);
   });
