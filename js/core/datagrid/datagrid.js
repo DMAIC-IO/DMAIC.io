@@ -1689,6 +1689,112 @@ export class DataGrid {
     return { colIdx: parseInt(td.dataset.colIdx), rowIdx: parseInt(td.dataset.rowIdx) };
   }
 
+  /**
+   * Cell under a viewport point, with the point clamped into the visible
+   * body area of the grid: a pointer below, beside or above the grid still
+   * resolves to the nearest visible edge cell.
+   *
+   * @param {number} x - clientX
+   * @param {number} y - clientY
+   * @returns {{colIdx:number,rowIdx:number}|null}
+   */
+  _cellFromPoint(x, y) {
+    const rows = this.tbodyEl?.children;
+    if (!rows || !rows.length || !this.scrollDiv) return null;
+    const box = this.scrollDiv.getBoundingClientRect();
+    const headH = this.theadEl ? this.theadEl.getBoundingClientRect().height : 0;
+    const cx = Math.min(Math.max(x, box.left), box.left + this.scrollDiv.clientWidth - 1);
+    const cy = Math.min(Math.max(y, box.top + headH), box.top + this.scrollDiv.clientHeight - 1);
+    let row = rows[rows.length - 1];
+    for (const tr of rows) {
+      if (tr.getBoundingClientRect().bottom > cy) { row = tr; break; }
+    }
+    const cells = row.querySelectorAll('td[data-col-idx]');
+    if (!cells.length) return null;
+    let td = cells[cells.length - 1];
+    for (const c of cells) {
+      if (c.getBoundingClientRect().right > cx) { td = c; break; }
+    }
+    return { colIdx: parseInt(td.dataset.colIdx), rowIdx: parseInt(td.dataset.rowIdx) };
+  }
+
+  /**
+   * Cell for a drag pointer: the body cell under the event target, otherwise
+   * the nearest cell to the pointer position (pointer outside the grid).
+   */
+  _cellAtPointer(e) {
+    const td = e.target?.closest?.('td[data-col-idx]');
+    if (td && this.tbodyEl?.contains(td)) {
+      return { colIdx: parseInt(td.dataset.colIdx), rowIdx: parseInt(td.dataset.rowIdx) };
+    }
+    return this._cellFromPoint(e.clientX, e.clientY);
+  }
+
+  // ─── Drag autoscroll ────────────────────────────────────────
+
+  /**
+   * Remembers the pointer of a drag-select / fill drag and starts the
+   * autoscroll loop: while the pointer sits in the edge zone of the viewport
+   * (or past it), the grid scrolls and the drag target follows.
+   */
+  _trackDragPointer(e) {
+    this._dragPointer = { x: e.clientX, y: e.clientY, ctrl: Boolean(e.ctrlKey || e.metaKey) };
+    if (this._autoScrollFrame == null && this._autoScrollDelta()) {
+      this._autoScrollFrame = requestAnimationFrame(() => this._autoScrollStep());
+    }
+  }
+
+  /** Scroll delta per frame for the stored pointer, or null when inside. */
+  _autoScrollDelta() {
+    const p = this._dragPointer;
+    if (!p || !this.scrollDiv) return null;
+    const box = this.scrollDiv.getBoundingClientRect();
+    const headH = this.theadEl ? this.theadEl.getBoundingClientRect().height : 0;
+    const zone = 24;
+    const speed = (depth) => Math.min(40, 2 + depth * 0.5);
+    const axis = (pos, lo, hi) => {
+      if (pos > hi - zone) return speed(pos - (hi - zone));
+      if (pos < lo + zone) return -speed((lo + zone) - pos);
+      return 0;
+    };
+    const dx = axis(p.x, box.left, box.left + this.scrollDiv.clientWidth);
+    const dy = axis(p.y, box.top + headH, box.top + this.scrollDiv.clientHeight);
+    return dx || dy ? { dx, dy } : null;
+  }
+
+  _autoScrollStep() {
+    this._autoScrollFrame = null;
+    if (!this._fillDrag && !this.isSelecting) return;
+    const d = this._autoScrollDelta();
+    if (!d) return;
+    const top = this.scrollDiv.scrollTop;
+    const left = this.scrollDiv.scrollLeft;
+    this.scrollDiv.scrollTop = top + d.dy;
+    this.scrollDiv.scrollLeft = left + d.dx;
+    const p = this._dragPointer;
+    const cell = this._cellFromPoint(p.x, p.y);
+    if (cell) {
+      if (this._fillDrag) this._setFillTarget(cell);
+      else this._extendSelectionTo(cell);
+    }
+    this._autoScrollFrame = requestAnimationFrame(() => this._autoScrollStep());
+  }
+
+  _stopAutoScroll() {
+    if (this._autoScrollFrame != null) cancelAnimationFrame(this._autoScrollFrame);
+    this._autoScrollFrame = null;
+    this._dragPointer = null;
+  }
+
+  /** Moves the end corner of the drag selection to `cell`. */
+  _extendSelectionTo(cell) {
+    if (!this.selection) return;
+    if (this.selection.endCol === cell.colIdx && this.selection.endRow === cell.rowIdx) return;
+    this.selection.endCol = cell.colIdx;
+    this.selection.endRow = cell.rowIdx;
+    this._renderSelection();
+  }
+
   _onBodyMouseDown(e) {
     // A click inside the open inline editor belongs to the input: let the
     // browser place the caret instead of committing and toggling the cell.
@@ -1776,14 +1882,14 @@ export class DataGrid {
     }
 
     if (!this.isSelecting || !this.selection) return;
-    const cell = this._getCellFromEvent(e);
+    this._trackDragPointer(e);
+    const cell = this._cellAtPointer(e);
     if (!cell) return;
-    this.selection.endCol = cell.colIdx;
-    this.selection.endRow = cell.rowIdx;
-    this._renderSelection();
+    this._extendSelectionTo(cell);
   }
 
   _onMouseUp() {
+    this._stopAutoScroll();
     this._rowDragPending = null;
     this._colDragPending = null;
     if (this._fillDrag) { this._finishFillDrag(); return; }
@@ -1829,8 +1935,16 @@ export class DataGrid {
     // Refresh Ctrl/Cmd state on every move so toggling mid-drag works.
     fd.ctrl = Boolean(e.ctrlKey || e.metaKey);
     this.container.classList.toggle('datagrid--fill-ctrl', fd.ctrl);
-    const cell = this._getCellFromEvent(e);
+    this._trackDragPointer(e);
+    const cell = this._cellAtPointer(e);
     if (!cell) return;
+    this._setFillTarget(cell);
+  }
+
+  /** Extends the fill target rectangle towards `cell` (axis-locked). */
+  _setFillTarget(cell) {
+    const fd = this._fillDrag;
+    if (!fd) return;
 
     // Decide axis on first meaningful move (sticky once chosen).
     if (fd.axis == null) {
@@ -1890,6 +2004,7 @@ export class DataGrid {
   }
 
   _cancelFillDrag() {
+    this._stopAutoScroll();
     this._fillDrag = null;
     if (this.fillPreviewEl) this.fillPreviewEl.style.display = 'none';
     this.container.classList.remove('datagrid--fill-dragging');
@@ -3645,6 +3760,7 @@ export class DataGrid {
   // ═══════════════════════════════════════════════════════════
 
   destroy() {
+    this._stopAutoScroll();
     document.removeEventListener('mousemove', this._boundMouseMove);
     document.removeEventListener('mouseup', this._boundMouseUp);
     document.removeEventListener('keydown', this._boundKeyDown);
