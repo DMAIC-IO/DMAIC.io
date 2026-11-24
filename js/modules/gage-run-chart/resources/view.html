@@ -1,0 +1,141 @@
+<div class="gage-run-chart dmike-split" x-data="gageRunChart">
+  <!-- data-help-key="" an den Wirten der Wähler und Zahlfelder ist gewollt: die Beschriftungen tragen die Anker fields.*. -->
+  <div class="gage-run-chart__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.part.help" x-text="t('partColumn')"></label>
+      <div data-ref="col-part-wrap" data-help-key="" x-field="model.part"></div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.operator.help" x-text="t('operatorColumn')"></label>
+      <div data-ref="col-operator-wrap" data-help-key="" x-field="model.operator"></div>
+      <span class="field-hint" x-text="t('operatorHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.measurement.help" x-text="t('measurementColumn')"></label>
+      <div data-ref="col-measurement-wrap" data-help-key="" x-field="model.measurement"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.refValue.help" x-text="t('refValue')"></label>
+      <input class="field field--num" data-ref="inp-ref-value" data-help-key="" x-field="model.refValue">
+      <span class="field-hint" x-text="t('refValueHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.partsPerRow.help" x-text="t('partsPerRow')"></label>
+      <input class="field field--num" data-ref="inp-parts-per-row" data-help-key="" x-field="model.partsPerRow">
+    </div>
+
+    <div class="field-checks">
+      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.fields.connectWithin.help" class="field-check">
+        <input type="checkbox" data-ref="chk-connect" x-model="model.connectWithin">
+        <span x-text="t('connectWithin')"></span>
+      </label>
+      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.fields.showOperatorMean.help" class="field-check">
+        <input type="checkbox" data-ref="chk-operator-mean" x-model="model.showOperatorMean">
+        <span x-text="t('showOperatorMean')"></span>
+      </label>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionGageInfo')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.gageInfo.name.help" x-text="t('gageInfo_name')"></label>
+      <input type="text" class="field" data-ref="inp-gage-name" x-model="model.gageInfo.name">
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.gageInfo.date.help" x-text="t('gageInfo_date')"></label>
+      <input type="text" class="field" data-ref="inp-gage-date" x-model="model.gageInfo.date">
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.gageInfo.reporter.help" x-text="t('gageInfo_reporter')"></label>
+      <input type="text" class="field" data-ref="inp-gage-reporter" x-model="model.gageInfo.reporter">
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.gageInfo.tolerance.help" x-text="t('gageInfo_tolerance')"></label>
+      <input type="text" class="field" data-ref="inp-gage-tolerance" x-model="model.gageInfo.tolerance">
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.gage-run-chart.fields.gageInfo.misc.help" x-text="t('gageInfo_misc')"></label>
+      <input type="text" class="field" data-ref="inp-gage-misc" x-model="model.gageInfo.misc">
+    </div>
+
+    <div class="field-error" data-ref="error-box" x-text="errorText"></div>
+  </div>
+
+  <div class="gage-run-chart__output dmike-split__output">
+    <template x-if="hasResult">
+      <div class="gage-run-chart__result">
+
+        <div class="gage-run-chart__gage-info" data-ref="gage-info" x-show="hasGageInfo">
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('name')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('name')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('name')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('date')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('date')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('date')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('reporter')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('reporter')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('reporter')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('tolerance')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('tolerance')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('tolerance')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('misc')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('misc')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('misc')"></span>
+          </div>
+        </div>
+
+        <div class="dmike-kpi-strip" data-ref="stats-bar">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.n"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.gage-run-chart.types.Result.n" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.partsText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.operatorCount"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.gage-run-chart.types.Result.operatorCount" x-text="t('statOperators')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.rowsText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.refText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.gage-run-chart.types.Result.refValue" x-text="kpi.refLabel"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.refSubText"></div>
+          </div>
+        </div>
+
+        <div class="gage-run-chart__warnings" data-ref="warnings" x-show="hasWarnings">
+          <template x-for="(w, i) in warningTexts" :key="i">
+            <div class="gage-run-chart__warning" x-text="w"></div>
+          </template>
+        </div>
+
+        <div class="gage-run-chart__chart-header">
+          <span class="gage-run-chart__chart-title" x-text="chartTitle"></span>
+        </div>
+
+        <div class="gage-run-chart__strips" data-ref="strips">
+          <template x-for="(strip, i) in runStrips" :key="strip.key">
+            <div class="gage-run-chart__strip" :data-strip="i"
+                 x-widget="gage-run-chart"
+                 x-widget-config="strip.config"
+                 x-widget-value="model.runStripEdits[i]"
+                 x-widget-legacy-edit-key="strip.legacyEditKey"></div>
+          </template>
+        </div>
+
+      </div>
+    </template>
+  </div>
+</div>

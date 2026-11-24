@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Messverlaufsdiagramm",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Messverlaufsdiagramm zeigt **jede einzelne Messung** einer Prüfmittelstudie: gruppiert in ein Feld je Prüfeinheit, farblich und symbolisch getrennt nach Prüfer, gegen eine gemeinsame waagerechte Referenzlinie. Es rechnet nichts aus — es macht sichtbar, was eine Kennzahl verdichtet."
+        },
+        {
+          "type": "paragraph",
+          "content": "In Minitab liegt es unter *Statistik → Qualitätswerkzeuge → Messsystemanalyse → Messverlaufsdiagramm*. Es ist **nicht** dasselbe wie das Verlaufsdiagramm ({{term:run-chart|Run Chart}}) — jenes zeigt eine einzelne Reihe über die Zeit mit Medianlinie und vier Lauftests und hat mit Messmitteln nichts zu tun."
+        },
+        {
+          "type": "definition",
+          "term": "Feld je Prüfeinheit",
+          "content": "Jedes Feld enthält alle Messungen an einer Prüfeinheit. Innerhalb des Felds stehen die Prüfer blockweise nebeneinander, ihre Wiederholmessungen sind verbunden."
+        },
+        {
+          "type": "definition",
+          "term": "Referenzlinie",
+          "content": "Standardmäßig der {{term:mittelwert|Mittelwert}} aller Messwerte. Ein eigener Wert lässt sich eintragen — etwa der bekannte Referenzwert eines Normals oder die Mitte des Toleranzbands."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Daten & Bedienung",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Long/tidy-Format mit zwei Pflicht-Spalten: **Prüfeinheit** und **Messwert**. Jede Zeile ist eine Einzelmessung.",
+            "Optionale **Prüfer**-Spalte. Fehlt sie, wird je Prüfeinheit eine einzelne Reihe gezeichnet — sinnvoll für Studien mit nur einem Prüfer oder automatisierten Messsystemen.",
+            "Die Reihenfolge der Zeilen im Arbeitsblatt definiert die Wiederholung. Eine eigene Wiederholungs-Spalte gibt es bewusst nicht.",
+            "Prüfeinheiten werden numerisch sortiert, wenn alle Bezeichner Zahlen sind (3, 4, 10, 15), sonst alphabetisch.",
+            "Prüfer behalten die Reihenfolge ihres ersten Auftretens im Arbeitsblatt — eine bewusst gewählte Reihenfolge bleibt damit erhalten."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Bei vielen Prüfeinheiten bricht die Darstellung in mehrere Zeilen um. Alle Zeilen teilen sich dieselbe Y-Skala und dieselbe Referenzlinie, sind also direkt vergleichbar. Über „Prüfeinheiten je Zeile\" lässt sich der Umbruch steuern."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die fünf Freitextfelder unter „Prüfmittelinformationen\" dokumentieren die Studie (Messgerät, Datum, Berichtersteller, Toleranz, Sonstiges) und erscheinen über dem Diagramm. Sie werden mit dem Projekt gespeichert."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Ein Prüfer liegt durchgehend höher oder tiefer** als die anderen: Hinweis auf Prüfer-Bias — unterschiedliche Ablesegewohnheit, Aufspannung oder Auslegung der Prüfvorschrift.",
+            "**Ein Prüfer streut sichtbar breiter**: schlechte Wiederholpräzision bei diesem Prüfer. Die Verbindungslinien zwischen den Wiederholmessungen zeigen das direkt.",
+            "**Große senkrechte Sprünge innerhalb eines Felds**: die Wiederholmessungen an derselben Prüfeinheit gehen auseinander — das Messsystem ist an dieser Stelle nicht reproduzierbar.",
+            "**Felder streuen stark untereinander, innerhalb aber wenig**: das ist der Normalfall einer brauchbaren Prüfmittelstudie — die {{term:teile-variation|Teile-zu-Teile-Streuung}} dominiert.",
+            "**Alle Felder liegen dicht beieinander**: die Prüfeinheiten decken den Prozessbereich nicht ab. Die Studie kann das Messsystem so nicht sinnvoll bewerten."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Das Diagramm liefert keine Kennzahlen. Für %GRR, Wiederholpräzision und Vergleichspräzision gehört eine {{term:gage-rr|Prüfmittelfähigkeitsstudie}} daneben — Typ 2 für variable, Typ 5 für attributive Merkmale. Das Messverlaufsdiagramm zeigt, *warum* eine Kennzahl so ausfällt."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolpersteine",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Namensverwechslung.** „Messverlaufsdiagramm\" ist der Gage Run Chart, „Verlaufsdiagramm\" der Run Chart. Wer die Lauftests sucht, ist im Modul Verlaufsdiagramm richtig.",
+            "**Unbalancierter Versuchsplan.** Fehlt einem Prüfer eine Prüfeinheit, wird das als Warnung gemeldet. Das Diagramm bleibt lesbar, aber die Felder sind nicht mehr direkt vergleichbar.",
+            "**Zu viele Prüfeinheiten je Zeile.** Ab etwa zehn Feldern pro Zeile werden die Punkte ununterscheidbar. Lieber den Umbruch verkleinern als das Diagramm breiter ziehen.",
+            "**Attributive Daten.** Bei 0/1-Ergebnissen liegen fast alle Punkte auf zwei Höhen — genau das macht die wenigen Abweichler auffällig. Der Mittelwert als Referenzlinie ist dann aber kaum interpretierbar.",
+            "**Reihenfolge im Arbeitsblatt.** Da die Zeilenreihenfolge die Wiederholung definiert, verändert Sortieren des Arbeitsblatts die Verbindungslinien."
+          ]
+        }
+      ]
+    }
+  }
+}

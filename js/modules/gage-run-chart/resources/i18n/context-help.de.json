@@ -1,0 +1,97 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "part": {
+      "help": "Die Spalte mit der Prüfeinheit je Messwert, Beschriftung Prüfeinheit (Pflicht). Jede Spalte ist wählbar; jede Teilbezeichnung wird ein Feld im Diagramm. Leer, solange keine gewählt ist; null hebt die Wahl auf. Ohne Teile- oder Messwertspalte bleibt die Ausgabe leer. Eine Änderung rechnet neu."
+    },
+    "operator": {
+      "help": "Die Spalte mit dem Prüfer je Messwert, Beschriftung Prüfer (optional). Jede Spalte ist wählbar. Ohne sie zählen alle Wiederholungen eines Teils als eine Reihe; null hebt die Wahl auf. Ist die gewählte Spalte gelöscht, bleibt die Ausgabe leer, statt ohne Prüfer zu rechnen. Eine Änderung rechnet neu."
+    },
+    "measurement": {
+      "help": "Die Spalte mit den Messwerten, Beschriftung Messwert (Pflicht): eine numerische, binäre (0/1 bei attributiven Studien), Prozent- oder Währungsspalte. Zeilen ohne endlichen Zahlenwert werden übersprungen und als Hinweis gezählt. Leer, solange keine gewählt ist; null hebt die Wahl auf. Eine Änderung rechnet neu."
+    },
+    "refValue": {
+      "help": "Lage der waagrechten Bezugslinie in allen Streifen, Beschriftung Referenzwert: eine Zahl, oder null für das Gesamtmittel aller Messwerte (voreingestellt). Im Feld mit Dezimalkomma oder Dezimalpunkt eingegeben; ein leeres Feld nimmt das Gesamtmittel, nicht als Zahl lesbarer Text wird abgelehnt. Eine Änderung verschiebt nur die Linie, die Gruppierung bleibt."
+    },
+    "partsPerRow": {
+      "help": "Wie viele Teile nebeneinander in einem Streifen stehen, Beschriftung Prüfeinheiten je Zeile: eine ganze Zahl von 1 bis 20, voreingestellt 7. Ein Wert außerhalb wird abgelehnt. Mehr Teile ergeben weitere Streifen untereinander, alle mit derselben senkrechten Achse."
+    },
+    "connectWithin": {
+      "help": "Ob die Wiederholmessungen eines Prüfers an einem Teil in Erfassungsreihenfolge mit einer Linie verbunden werden. Voreingestellt an; reine Darstellung."
+    },
+    "showOperatorMean": {
+      "help": "Ob je Teil und Prüfer der Mittelwert der Wiederholmessungen als kurze Marke gezeichnet wird. Voreingestellt an; reine Darstellung."
+    },
+    "gageInfo": {
+      "help": "Die Kopfzeile über dem Diagramm, je Zeile unter ihrem Schlüssel (name, date, reporter, tolerance, misc) als freier Text; leer bleibt die Zeile weg. Geschrieben wird sie als ganzes Objekt mit allen fünf Schlüsseln. Kein Einfluss auf die Rechnung.",
+      "name": {
+        "help": "Name des Messmittels für die Kopfzeile über dem Diagramm. Freier Text ohne Einfluss auf die Rechnung; leer bleibt die Zeile weg."
+      },
+      "date": {
+        "help": "Datum der Untersuchung für die Kopfzeile, als freier Text in beliebiger Schreibweise. Kein Einfluss auf die Rechnung; leer bleibt die Zeile weg."
+      },
+      "reporter": {
+        "help": "Wer die Studie erstellt hat, für die Kopfzeile. Freier Text ohne Einfluss auf die Rechnung; leer bleibt die Zeile weg."
+      },
+      "tolerance": {
+        "help": "Toleranz des Merkmals für die Kopfzeile, als freier Text. Sie dient nur der Beschriftung und geht in keine Rechnung ein; leer bleibt die Zeile weg."
+      },
+      "misc": {
+        "help": "Weitere Angaben für die Kopfzeile, als freier Text. Kein Einfluss auf die Rechnung; leer bleibt die Zeile weg."
+      }
+    },
+    "runStripEdits": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor je Streifen, unter der Nummer des Streifens ab 0 (Titel, Achsentitel, Schriftgrößen, Hintergrund, Legende, Bezugslinien); leer, solange nichts geändert ist. Sie hängen an der Nummer, nicht an den Teilen darin: Ändert sich die Zahl der Streifen, bleibt eine Einstellung auf dem Streifen mit derselben Nummer. Punktgröße und Randbreite aus dem Editor werden nicht gespeichert."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "columns": {
+      "help": "Die Rohwerte der Teile-, Prüfer- und Messwertspalte in Zeilenfolge. Leer ohne Teile- oder Messwertspalte oder wenn eine gewählte Spalte gelöscht ist."
+    },
+    "analysis": {
+      "help": "Die Gruppierung der Messwerte: je Teil ein Feld, darin je Prüfer eine Reihe mit Mittelwert, dazu Gesamtmittel, kleinster und größter Messwert und Hinweise. Leer ohne Eingabe."
+    },
+    "runStrips": {
+      "help": "Je Streifen die Konfiguration des Messverlaufsdiagramms mit höchstens so vielen Teilen, wie Prüfeinheiten je Zeile erlauben; alle mit derselben senkrechten Achse und Bezugslinie. Leer ohne verwertbare Messwerte."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Teile- und Messwertspalte, bei einer gelöschten Spalte oder ohne verwertbare Messwerte."
+    },
+    "points": {
+      "help": "Je Messwert eine Zeile in Feldfolge: { part, operator, value }, Teil und Prüfer als Text; leer ohne Ergebnis. read({ fields: ['points'] }) liefert sie vollständig."
+    },
+    "activeParams": {
+      "help": "Die Parameterfelder, die instance.set im aktuellen Zustand annimmt: immer refValue, partsPerRow, connectWithin, showOperatorMean und gageInfo."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die instance.set im aktuellen Zustand annimmt: part, operator, measurement."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Zahl der verwertbaren Messwerte: Zeilen mit einer Teilbezeichnung und einem endlichen Zahlenwert in der Messwertspalte. Jeder davon ist ein Punkt im Diagramm.",
+      "droppedRows": "Zahl der verworfenen Zeilen: leere Teilbezeichnung oder kein endlicher Zahlenwert als Messwert, dazu jede Zeile hinter dem Ende der kürzesten gewählten Spalte.",
+      "partCount": "Zahl der verschiedenen Teile mit mindestens einem verwertbaren Messwert; je Teil ein Feld im Diagramm.",
+      "operatorCount": "Zahl der verschiedenen Prüfer in der Prüferspalte. Ohne Prüferspalte 0. Mit Prüferspalte zählt eine leere Prüferzelle als eigener, unbenannter Prüfer.",
+      "operators": "Die Prüfer in der Reihenfolge ihres ersten Auftretens in den Daten. Ohne Prüferspalte ein einziger Eintrag mit leerem Namen.",
+      "hasOperators": "Ob eine Prüferspalte gewählt ist. Ohne sie zählen alle Wiederholungen eines Teils als eine Reihe.",
+      "grandMean": "Arithmetisches Mittel aller n verwertbaren Messwerte, gleich gewichtet. Es ist die Vorgabe für die Bezugslinie, solange kein eigener Referenzwert eingegeben ist.",
+      "refValue": "Wo die Bezugslinie tatsächlich liegt: der eingegebene Referenzwert, ohne eigenen Wert (null) das Gesamtmittel.",
+      "yMin": "Kleinster verwertbarer Messwert. Er ist die Untergrenze der gemeinsamen senkrechten Achse aller Streifen.",
+      "yMax": "Größter verwertbarer Messwert. Er ist die Obergrenze der gemeinsamen senkrechten Achse aller Streifen.",
+      "warnings": "Hinweiscodes zur Datenlage: „unbalanced“, wenn nicht jede Kombination aus Teil und Prüfer vorkommt oder nicht alle gleich viele Messwerte haben; „droppedRows“, wenn mindestens eine Zeile verworfen wurde. Leer, wenn alles passt.",
+      "cellMeans": "Je Teil und Prüfer, die gemeinsam vorkommen, ein Mittelwert. Reihenfolge wie im Diagramm: Teile numerisch sortiert, wenn alle Bezeichnungen Zahlen sind, sonst alphabetisch; darin die Prüfer in der Reihenfolge ihres ersten Auftretens. Fehlende Kombinationen haben keinen Eintrag."
+    },
+    "CellMean": {
+      "part": "Die Teilbezeichnung, wie sie in der Teilspalte steht, als Text.",
+      "operator": "Der Prüfer, wie er in der Prüferspalte steht, als Text; ohne Prüferspalte leer.",
+      "mean": "Arithmetisches Mittel der Wiederholmessungen dieses Prüfers an diesem Teil; im Diagramm die kurze Marke, wenn der Prüfer-Mittelwert eingeschaltet ist."
+    },
+    "Point": {
+      "part": "Die Teilbezeichnung, wie sie in der Teilspalte steht, als Text.",
+      "operator": "Der Prüfer, wie er in der Prüferspalte steht, als Text; ohne Prüferspalte leer.",
+      "value": "Der Messwert dieser Zeile; die Zeilen eines Teils und Prüfers in der Reihenfolge des Arbeitsblatts."
+    }
+  }
+}

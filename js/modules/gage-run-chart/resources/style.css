@@ -1,0 +1,78 @@
+/* ============================================================
+   Messverlaufsdiagramm (resources/style.css)
+   BEM: .gage-run-chart__ prefix
+   ============================================================ */
+
+/* ── Gage information block (Minitab's report header) ── */
+
+.gage-run-chart__gage-info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--spacing-2xs) var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}
+
+.gage-run-chart__gage-row { display: contents; }
+
+.gage-run-chart__gage-label {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.gage-run-chart__gage-value { color: var(--color-text-primary); }
+
+/* ── Warnings ── */
+
+.gage-run-chart__warnings { margin-bottom: var(--spacing-md); }
+
+.gage-run-chart__warning {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.gage-run-chart__warning + .gage-run-chart__warning { margin-top: var(--spacing-2xs); }
+
+/* ── Chart strips ── */
+
+.gage-run-chart__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+}
+
+.gage-run-chart__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.gage-run-chart__strips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Die Höhe muss definit sein, sonst driftet die SVG-Höhe bei jedem
+   Neuzeichnen. */
+.gage-run-chart__strip {
+  height: 280px;
+  min-height: 280px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+}
+
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Wirt. */
+.gage-run-chart__strip > .widget-root {
+  min-height: inherit;
+}

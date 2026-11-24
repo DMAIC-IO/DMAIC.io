@@ -199,6 +199,7 @@ const SKIP = new Set([
   'modules/outlier-test-view.test.js',
   'modules/distribution-fit-view.test.js',
   'modules/run-chart-view.test.js',
+  'modules/gage-run-chart-view.test.js',
   'modules/heatmap-view.test.js',
   'modules/process-capability-view.test.js',
   'modules/data-import/viewmodel.test.js',

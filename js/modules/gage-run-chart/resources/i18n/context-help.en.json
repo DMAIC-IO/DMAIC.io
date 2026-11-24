@@ -1,0 +1,97 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "part": {
+      "help": "The column with the part of each measurement, labelled Parts (required). Any column can be chosen; every part label becomes a panel in the chart. Empty until one is chosen; null clears the choice. Without a part or measurement column the output stays empty. A change recomputes."
+    },
+    "operator": {
+      "help": "The column with the operator of each measurement, labelled Operators (optional). Any column can be chosen. Without it all repeats of a part count as one series; null clears the choice. If the chosen column is deleted, the output stays empty rather than being computed without operators. A change recomputes."
+    },
+    "measurement": {
+      "help": "The column with the measurements, labelled Measurement data (required): a numeric, binary (0/1 in attribute studies), percent or currency column. Rows without a finite number are skipped and counted in a notice. Empty until one is chosen; null clears the choice. A change recomputes."
+    },
+    "refValue": {
+      "help": "Position of the horizontal reference line in every strip, labelled Reference value: a number, or null for the grand mean of all measurements (default). Typed into the field with a decimal comma or a decimal point; an empty field uses the grand mean, text that does not read as a number is rejected. A change only moves the line; the grouping stays."
+    },
+    "partsPerRow": {
+      "help": "How many parts stand side by side in one strip, labelled Parts per row: a whole number from 1 to 20, default 7. A value outside is rejected. More parts give further strips below, all with the same vertical axis."
+    },
+    "connectWithin": {
+      "help": "Whether the repeat measurements of one operator on a part are joined by a line in recording order. On by default; display only."
+    },
+    "showOperatorMean": {
+      "help": "Whether the mean of the repeat measurements per part and operator is drawn as a short tick. On by default; display only."
+    },
+    "gageInfo": {
+      "help": "The header above the chart, each line under its key (name, date, reporter, tolerance, misc) as free text; left empty, the line is omitted. It is written as a whole object with all five keys. No effect on the computation.",
+      "name": {
+        "help": "Name of the gage for the header above the chart. Free text with no effect on the computation; left empty, the line is omitted."
+      },
+      "date": {
+        "help": "Date of the study for the header, as free text in any format. No effect on the computation; left empty, the line is omitted."
+      },
+      "reporter": {
+        "help": "Who prepared the study, for the header. Free text with no effect on the computation; left empty, the line is omitted."
+      },
+      "tolerance": {
+        "help": "Tolerance of the feature for the header, as free text. It is only a label and enters no computation; left empty, the line is omitted."
+      },
+      "misc": {
+        "help": "Further notes for the header, as free text. No effect on the computation; left empty, the line is omitted."
+      }
+    },
+    "runStripEdits": {
+      "help": "The settings from the chart editor per strip, under the strip's number from 0 (title, axis titles, font sizes, background, legend, reference lines); empty while nothing has been changed. They belong to the number, not to the parts in the strip: when the number of strips changes, a setting stays on the strip with the same number. Point size and stroke width from the editor are not stored."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example sheet this module was loaded from; empty if it does not come from an example."
+    },
+    "columns": {
+      "help": "The raw values of the part, operator and measurement column in row order. Empty without a part or measurement column or when a chosen column has been deleted."
+    },
+    "analysis": {
+      "help": "The grouping of the measurements: one panel per part, within it one series per operator with its mean, plus the grand mean, the smallest and largest measurement and the notices. Empty without input."
+    },
+    "runStrips": {
+      "help": "Per strip the configuration of the gage run chart with at most as many parts as Parts per row allows; all with the same vertical axis and reference line. Empty without usable measurements."
+    },
+    "result": {
+      "help": "The computed result, each figure described individually under keys; null without part and measurement column, with a deleted column or without usable measurements."
+    },
+    "points": {
+      "help": "One row per measurement in panel order: { part, operator, value }, part and operator as text; empty without a result. read({ fields: ['points'] }) returns them in full."
+    },
+    "activeParams": {
+      "help": "The parameter fields instance.set accepts in the current state: always refValue, partsPerRow, connectWithin, showOperatorMean and gageInfo."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields instance.set accepts in the current state: part, operator, measurement."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Number of usable measurements: rows with a part label and a finite number in the measurement column. Each one is a point in the chart.",
+      "droppedRows": "Number of discarded rows: an empty part label or no finite number as the measurement, plus every row past the end of the shortest chosen column.",
+      "partCount": "Number of distinct parts with at least one usable measurement; one panel per part in the chart.",
+      "operatorCount": "Number of distinct operators in the operator column. 0 without an operator column. With one, an empty operator cell counts as an operator of its own without a name.",
+      "operators": "The operators in order of first appearance in the data. Without an operator column a single entry with an empty name.",
+      "hasOperators": "Whether an operator column is chosen. Without it all repeats of a part count as one series.",
+      "grandMean": "Arithmetic mean of all n usable measurements, equally weighted. It is the default for the reference line as long as no reference value of your own is entered.",
+      "refValue": "Where the reference line actually lies: the entered reference value, without one (null) the grand mean.",
+      "yMin": "Smallest usable measurement. It is the lower end of the vertical axis shared by all strips.",
+      "yMax": "Largest usable measurement. It is the upper end of the vertical axis shared by all strips.",
+      "warnings": "Codes about the data: \"unbalanced\" when not every combination of part and operator occurs or they do not all have the same number of measurements; \"droppedRows\" when at least one row was discarded. Empty when everything fits.",
+      "cellMeans": "One mean for each part and operator that occur together. Order as in the chart: parts sorted numerically when every label is a number, alphabetically otherwise; within them the operators in order of first appearance. Missing combinations have no entry."
+    },
+    "CellMean": {
+      "part": "The part label as it appears in the part column, as text.",
+      "operator": "The operator as it appears in the operator column, as text; empty without an operator column.",
+      "mean": "Arithmetic mean of this operator's repeat measurements on this part; in the chart the short tick when the operator mean is switched on."
+    },
+    "Point": {
+      "part": "The part label as it appears in the part column, as text.",
+      "operator": "The operator as it appears in the operator column, as text; empty without an operator column.",
+      "value": "The measurement of this row; the rows of one part and operator in worksheet order."
+    }
+  }
+}

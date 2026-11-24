@@ -26,8 +26,11 @@ export const MAX_PARTS_PER_ROW = 20;
 /** Vorgabe der Teile je Streifen. */
 export const DEFAULT_PARTS_PER_ROW = 7;
 
-/** Die Schlüssel der Kopfzeile, in Anzeigereihenfolge. */
-export const GAGE_INFO_KEYS = Object.freeze(['name', 'date', 'reporter', 'tolerance', 'misc']);
+/**
+ * Die Schlüssel der Kopfzeile, in Anzeigereihenfolge.
+ * @type {Array<'name'|'date'|'reporter'|'tolerance'|'misc'>}
+ */
+export const GAGE_INFO_KEYS = ['name', 'date', 'reporter', 'tolerance', 'misc'];
 
 /** Die Spaltenfelder in der Reihenfolge der Oberfläche. */
 const COLUMN_SLOTS = Object.freeze(['part', 'operator', 'measurement']);
