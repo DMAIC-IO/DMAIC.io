@@ -318,6 +318,30 @@ export class DataGrid {
   }
 
   /**
+   * Withdraw an automatic `categorical` guess once the entered values clearly
+   * say otherwise. A type switch while typing infers the role from the first
+   * value alone (one distinct value -> categorical), and that guess used to
+   * stick forever. Only this direction is taken: edits never demote a column
+   * to categorical, so a few hand-typed numbers stay continuous. Manual roles
+   * and roles a module assigned are left alone.
+   * @private
+   * @param {Object} col
+   */
+  _reinferAutoRole(col) {
+    if (!col || col.roleManual || col.role !== ROLE.CATEGORICAL) return;
+    const oldRole = col.role;
+    const newRole = inferRole(col);
+    if (newRole === oldRole) return;
+    col.role = newRole;
+    this.emit('column:role-changed', { columnId: col.id, oldRole, newRole, auto: true });
+  }
+
+  /** @private Re-infer the auto roles of all columns (after undo/redo/clear). */
+  _reinferAutoRoles() {
+    for (const col of this.columns) this._reinferAutoRole(col);
+  }
+
+  /**
    * Re-evaluate the role after a storage-type change. Respects `roleManual`
    * as long as the manual role is still valid for the new type; otherwise
    * resets the manual flag and falls back to the heuristic.
@@ -540,6 +564,7 @@ export class DataGrid {
       ? { type: 'cell-edit', columnId, rowIndex, oldValue, newValue, oldFormula, newFormula: null }
       : { type: 'cell-edit', columnId, rowIndex, oldValue, newValue });
     this.metadata.modified = new Date().toISOString();
+    this._reinferAutoRole(col);
     this.emit('cell:changed', { columnId, rowIndex, oldValue, newValue });
   }
 
@@ -601,6 +626,7 @@ export class DataGrid {
     // Like `setCellValue`: without this event the worksheet saved a formula
     // only via the delayed auto-save, and embeddings listening to
     // `cell:changed` (doe-planner preview) never saw it.
+    this._reinferAutoRole(this.getColumn(columnId));
     this.emit('cell:changed', { columnId, rowIndex, oldValue, newValue });
     return { value: newValue, error: error ?? null };
   }
@@ -992,6 +1018,7 @@ export class DataGrid {
         break;
       }
     }
+    this._reinferAutoRoles();
     this.render();
   }
 
@@ -2069,6 +2096,7 @@ export class DataGrid {
     };
     this.history.push(action);
     this.metadata.modified = new Date().toISOString();
+    colIds.forEach(({ colId }) => this._reinferAutoRole(this.getColumn(colId)));
 
     // Update the underlying selection state to cover the new range, then
     // render the body — setSelection only updates classes, but the cell
@@ -2598,6 +2626,7 @@ export class DataGrid {
       this.emit('cell:edit-blocked', { action: 'clear', startCol: c1, endCol: c2 });
     }
     this.history.push({ type: 'clear', startCol: c1, startRow: r1, oldData, oldFormulas });
+    this._reinferAutoRoles();
     this.render();
   }
 
