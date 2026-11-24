@@ -1,0 +1,67 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRef": {
+      "help": "Die Messwertspalte, Beschriftung Werte-Spalte: eine numerische Spalte mit den Werten in zeitlicher Reihenfolge. Gerechnet wird ab 5 Zahlen, die alle größer als 0 sein müssen (Box-Cox); leere und nicht numerische Zellen werden übersprungen, auch Text wie „2,5“. Mit weniger Zahlen bleibt die Ausgabe leer, ein Wert kleiner oder gleich 0 ergibt eine Fehlermeldung. Leer, solange keine gewählt ist; null hebt die Wahl auf. Eine Änderung rechnet neu."
+    },
+    "lambdaMode": {
+      "help": "Wie das λ der Box-Cox-Transformation zustande kommt, Beschriftung λ-Modus: 'auto' (auto (Anderson-Darling)) schätzt es aus den Daten, 'manual' (manuell) nimmt lambdaManual. Beim Schätzen wird aus dem Raster von −3 bis 3 in Schritten von 0,05 das λ gewählt, bei dem die transformierten Werte die kleinste Anderson-Darling-Statistik haben (am nächsten an einer Normalverteilung), gerundet auf 0,01. Ein anderer Wert wird abgelehnt. instance.set wechselt nur den Modus; setLambdaMode übernimmt beim Wechsel auf 'manual' zusätzlich ein λ, so wie die Auswahl der Oberfläche das geschätzte λ übernimmt. Eine Änderung rechnet neu."
+    },
+    "lambdaManual": {
+      "help": "Das λ der Box-Cox-Transformation y = (x^λ − 1)/λ im Modus 'manual', Beschriftung λ; bei |λ| < 10⁻⁸ gilt die Log-Transformation y = ln x. Jede endliche Zahl, voreingestellt 0. Es wirkt nur im Modus 'manual'; im Modus 'auto' bleibt der gespeicherte Wert stehen und rechnet nichts neu, das Feld ist gesperrt und zeigt das geschätzte λ (asyncTasks.analysis.value.result.lambda). Beim Wechsel auf 'manual' übernimmt setLambdaMode das geschätzte λ als Startwert."
+    },
+    "chart": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor der Regelkarte (Titel, Achsentitel, Schriftgrößen, Hintergrund, Bezugslinien, Punktfarbe, -symbol, -größe und -rand der Reihe); leer, solange nichts geändert ist."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "activeParams": {
+      "help": "Die Parameterfelder, die instance.set gerade wirksam schreibt: lambdaMode, im Modus 'manual' zusätzlich lambdaManual."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die instance.set gerade wirksam schreibt: columnRef."
+    }
+  },
+  "actions": {
+    "setLambdaMode": {
+      "help": "Wechselt die Art, λ zu bestimmen, in einem Schritt. Beim Wechsel auf 'manual' wird ein mitgegebenes λ nach lambdaManual übernommen (die Oberfläche gibt das geschätzte λ des letzten Ergebnisses mit); ohne λ bleibt lambdaManual stehen. Beim Wechsel auf 'auto' bleibt lambdaManual unverändert.",
+      "params": {
+        "mode": "Die neue Art: 'auto' oder 'manual'. Ein anderer Wert ist ein Fehler.",
+        "lambda": "Optional: das λ, das beim Wechsel auf 'manual' nach lambdaManual übernommen wird, eine endliche Zahl oder null. Im Modus 'auto' ohne Wirkung.",
+        "command": "Das Kommando als ein Objekt mit mode und optional lambda."
+      }
+    }
+  },
+  "asyncTasks": {
+    "analysis": {
+      "help": "Rechnet die transformierte Einzelwertkarte aus der Messwertspalte und dem λ-Modus; läuft von selbst nach jeder Änderung an Spalte, λ-Modus oder, im Modus 'manual', an lambdaManual und nach Änderungen im Arbeitsblatt (zusammengefasst, 120 ms Verzögerung). Der Wert ist { result, points, error, message }: result das Ergebnis (jede Kennzahl unter keys einzeln beschrieben), points je verwerteter Zahl eine Zeile { transformed, signal } in Datenfolge. Ohne Spalte, bei einer gelöschten Spalte oder mit weniger als 5 Zahlen ist result null, points leer und error null. Ist ein Wert kleiner oder gleich 0, nennt error den Grund 'errPositiveOnly'; scheitert die Rechnung (auch bei nicht endlichen transformierten Werten oder Grenzen), 'errCompute'. message ist dann der Text der Fehlermeldung in der Sprache der Oberfläche, sonst null."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Anzahl der verwerteten Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ein Ergebnis gibt es ab 5 Zahlen, die alle größer als 0 sein müssen. Die Nummern der Signalpunkte zählen diese Zahlen ab 0, nicht die Zeilen des Arbeitsblatts.",
+      "lambda": "Das verwendete λ der Box-Cox-Transformation y = (x^λ − 1)/λ; bei |λ| < 10⁻⁸ ist es die Log-Transformation y = ln x. Im Modus „auto“ ist es das geschätzte λ (kleinste Anderson-Darling-Statistik im Raster von −3 bis 3, Schritt 0,05, gerundet auf 0,01), im Modus „manuell“ das eingetragene. Die Kachel zeigt es mit drei Nachkommastellen und dem Zusatz (auto) oder (manuell).",
+      "lambdaAuto": "Ob das λ aus den Daten geschätzt wurde (wahr) oder von Hand vorgegeben ist (falsch). Die Kachel zeigt es als Zusatz (auto) oder (manuell) hinter dem λ.",
+      "i": "Die Einzelwertkarte auf der transformierten Skala y: Mittellinie, obere und untere Eingriffsgrenze und Streuung σ̂. Das sind die Werte der Spalte „transformiert (y)“ in der Tabelle.",
+      "iOriginal": "Dieselben Grenzen der Einzelwertkarte, zurück auf die Originalskala gerechnet: x = (λ·y + 1)^(1/λ), bei der Log-Transformation x = e^y. Sie liegen nicht symmetrisch um die Mittellinie. Ein Wert fehlt (leer, in der Tabelle „–“), wenn λ·y + 1 ≤ 0 ist, die Rücktransformation dort also nicht definiert ist; das trifft typischerweise die untere Grenze bei λ > 0.",
+      "mr": "Die Karte der gleitenden Spannweiten der transformierten Werte: Mittellinie MR̄ (Mittel der Beträge |yᵢ − yᵢ₋₁| aufeinanderfolgender Werte), obere Eingriffsgrenze 3,267 · MR̄, untere 0. Es gibt sie nur auf der transformierten Skala.",
+      "signals": "Nummern (gezählt ab 0 unter den verwerteten Zahlen) der Punkte, deren transformierter Wert über der UCL oder unter der LCL der Einzelwertkarte liegt. Die Kachel „Signale“ zeigt ihre Anzahl."
+    },
+    "IndividualLimits": {
+      "cl": "Mittellinie der Einzelwertkarte auf der transformierten Skala: der Mittelwert ȳ aller transformierten Werte (Kachel CL (y)). Die Unterzeile der Kachel zeigt die Streuung σ̂.",
+      "ucl": "Obere Eingriffsgrenze (UCL) der Einzelwertkarte auf der transformierten Skala: Mittellinie + 3 · σ̂.",
+      "lcl": "Untere Eingriffsgrenze (LCL) der Einzelwertkarte auf der transformierten Skala: Mittellinie − 3 · σ̂.",
+      "sigma": "Geschätzte Streuung σ̂ der transformierten Werte: MR̄/1,128, mit dem Mittel MR̄ der gleitenden Spannweiten und dem Faktor d₂ = 1,128 für Paare. Die Unterzeile der Kachel CL (y) zeigt sie."
+    },
+    "Limits": {
+      "cl": "Mittellinie der Karte.",
+      "ucl": "Obere Eingriffsgrenze (UCL) der Karte.",
+      "lcl": "Untere Eingriffsgrenze (LCL) der Karte."
+    },
+    "Point": {
+      "transformed": "Der transformierte Wert y einer verwerteten Zahl, in der Reihenfolge der Spalte; so wird er gezeichnet.",
+      "signal": "Wahr, wenn der transformierte Wert über der UCL oder unter der LCL der Einzelwertkarte liegt."
+    }
+  }
+}

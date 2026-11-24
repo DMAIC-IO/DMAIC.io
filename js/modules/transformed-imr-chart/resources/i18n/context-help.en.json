@@ -1,0 +1,67 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRef": {
+      "help": "The measured column, label Values Column: a numeric column with the values in time order. The chart is computed from 5 numbers on, all of which must be greater than 0 (Box-Cox); empty and non-numeric cells are skipped, text such as “2,5” as well. With fewer numbers the output stays empty, a value less than or equal to 0 gives an error message. Empty until one is chosen; null clears the choice. A change recomputes."
+    },
+    "lambdaMode": {
+      "help": "How the λ of the Box-Cox transformation is obtained, label λ mode: 'auto' (auto (Anderson-Darling)) estimates it from the data, 'manual' takes lambdaManual. The estimate picks, from a grid from −3 to 3 in steps of 0.05, the λ at which the transformed values have the smallest Anderson-Darling statistic (closest to a normal distribution), rounded to 0.01. Any other value is rejected. instance.set only switches the mode; setLambdaMode also adopts a λ when switching to 'manual', just as the selection in the interface adopts the estimated λ. A change recomputes."
+    },
+    "lambdaManual": {
+      "help": "The λ of the Box-Cox transformation y = (x^λ − 1)/λ in 'manual' mode, label λ; for |λ| < 10⁻⁸ the log transformation y = ln x applies. Any finite number, default 0. It only takes effect in 'manual' mode; in 'auto' mode the stored value stays as it is and recomputes nothing, the field is disabled and shows the estimated λ (asyncTasks.analysis.value.result.lambda). When switching to 'manual', setLambdaMode adopts the estimated λ as the starting value."
+    },
+    "chart": {
+      "help": "The settings from the chart editor of the control chart (title, axis titles, font sizes, background, reference lines, point color, symbol, size and outline of the series); empty as long as nothing was changed."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was loaded from; empty if it does not come from an example."
+    },
+    "activeParams": {
+      "help": "The parameter fields instance.set currently writes with effect: lambdaMode, and lambdaManual in 'manual' mode."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields instance.set currently writes with effect: columnRef."
+    }
+  },
+  "actions": {
+    "setLambdaMode": {
+      "help": "Switches how λ is obtained, in one step. When switching to 'manual', a given λ is adopted into lambdaManual (the interface passes the estimated λ of the last result); without λ, lambdaManual stays as it is. When switching to 'auto', lambdaManual is left unchanged.",
+      "params": {
+        "mode": "The new way: 'auto' or 'manual'. Any other value is an error.",
+        "lambda": "Optional: the λ adopted into lambdaManual when switching to 'manual', a finite number or null. No effect in 'auto' mode.",
+        "command": "The command as one object with mode and optionally lambda."
+      }
+    }
+  },
+  "asyncTasks": {
+    "analysis": {
+      "help": "Computes the transformed individuals chart from the measured column and the λ mode; runs by itself after every change of the column, the λ mode or, in 'manual' mode, lambdaManual and after changes in the worksheet (batched, 120 ms delay). The value is { result, points, error, message }: result is the result (each figure described individually under keys), points one row { transformed, signal } per usable number in data order. Without a column, with a deleted column or with fewer than 5 numbers result is null, points is empty and error is null. If a value is less than or equal to 0, error gives the reason 'errPositiveOnly'; if the computation fails (also with non-finite transformed values or limits), 'errCompute'. message is then the text of the error message in the language of the interface, otherwise null."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Number of usable numbers in the series; empty and non-numeric cells are already removed. A result exists from 5 numbers on, all of which must be greater than 0. The numbers of the signal points count these numbers from 0, not the worksheet rows.",
+      "lambda": "The λ used for the Box-Cox transformation y = (x^λ − 1)/λ; for |λ| < 10⁻⁸ it is the log transformation y = ln x. In “auto” mode it is the estimated λ (smallest Anderson-Darling statistic on the grid from −3 to 3, step 0.05, rounded to 0.01), in “manual” mode the entered one. The tile shows it with three decimals and the suffix (auto) or (manual).",
+      "lambdaAuto": "Whether λ was estimated from the data (true) or set by hand (false). The tile shows it as the suffix (auto) or (manual) after λ.",
+      "i": "The individuals chart on the transformed scale y: center line, upper and lower control limit and spread σ̂. These are the values of the “transformed (y)” column in the table.",
+      "iOriginal": "The same limits of the individuals chart, converted back to the original scale: x = (λ·y + 1)^(1/λ), for the log transformation x = e^y. They are not symmetric around the center line. A value is missing (empty, “–” in the table) when λ·y + 1 ≤ 0, so the back-transformation is undefined there; typically that hits the lower limit for λ > 0.",
+      "mr": "The moving range chart of the transformed values: center line MR̄ (mean of the absolute differences |yᵢ − yᵢ₋₁| of consecutive values), upper control limit 3.267 · MR̄, lower 0. It exists on the transformed scale only.",
+      "signals": "Numbers (counted from 0 among the usable numbers) of the points whose transformed value lies above the UCL or below the LCL of the individuals chart. The “Signals” tile shows their count."
+    },
+    "IndividualLimits": {
+      "cl": "Center line of the individuals chart on the transformed scale: the mean ȳ of all transformed values (tile CL (y)). The tile's sub-line shows the spread σ̂.",
+      "ucl": "Upper control limit (UCL) of the individuals chart on the transformed scale: center line + 3 · σ̂.",
+      "lcl": "Lower control limit (LCL) of the individuals chart on the transformed scale: center line − 3 · σ̂.",
+      "sigma": "Estimated spread σ̂ of the transformed values: MR̄/1.128, with the mean MR̄ of the moving ranges and the factor d₂ = 1.128 for pairs. The sub-line of the CL (y) tile shows it."
+    },
+    "Limits": {
+      "cl": "Center line of the chart.",
+      "ucl": "Upper control limit (UCL) of the chart.",
+      "lcl": "Lower control limit (LCL) of the chart."
+    },
+    "Point": {
+      "transformed": "The transformed value y of a usable number, in the order of the column; this is what is plotted.",
+      "signal": "True when the transformed value lies above the UCL or below the LCL of the individuals chart."
+    }
+  }
+}

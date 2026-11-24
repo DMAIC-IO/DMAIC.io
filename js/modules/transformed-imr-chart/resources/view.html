@@ -1,0 +1,103 @@
+<div class="timr dmike-split" x-data="transformedImrChart">
+  <!-- data-help-key="" an Picker-Wirt und λ-Feld ist gewollt: die Beschriftungen tragen die Anker fields.columnRef und fields.lambdaManual. -->
+  <div class="timr__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.transformed-imr-chart.fields.columnRef.help" x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker" data-help-key="" x-field="model.columnRef"></div>
+      <span class="field-hint" x-text="t('positiveHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionLambda')"></div>
+    <div class="timr__lambda-row">
+      <div class="field-group">
+        <label data-help-key="modules.transformed-imr-chart.fields.lambdaMode.help" x-text="t('lambdaMode')"></label>
+        <select class="field" data-ref="lambda-mode" @change="lambdaModeChanged($event)">
+          <template x-for="o in lambdaModeOptions" :key="o.value">
+            <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+          </template>
+        </select>
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.transformed-imr-chart.fields.lambdaManual.help" x-text="t('lambdaLabel')"></label>
+        <template x-if="isManualLambda">
+          <input class="field field--num" data-ref="lambda-manual" data-help-key="" x-field="model.lambdaManual">
+        </template>
+        <template x-if="isAutoLambda">
+          <input class="field field--num" data-ref="lambda-manual" disabled :value="lambdaShownText">
+        </template>
+      </div>
+    </div>
+    <span class="field-hint" x-text="t('lambdaHint')"></span>
+
+  </div>
+
+  <div class="timr__output dmike-split__output" x-async-task="analysis">
+    <div data-ref="error-area">
+      <template x-if="errorText">
+        <div class="timr__error" x-text="errorText"></div>
+      </template>
+    </div>
+    <div data-ref="stats-bar">
+      <template x-if="hasResult">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.lambdaText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.transformed-imr-chart.types.Result.lambda" x-text="kpi.lambdaLabel"></div>
+            <div class="dmike-kpi-sub" x-text="t('boxCoxLabel')"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.clText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.transformed-imr-chart.types.IndividualLimits.cl" x-text="t('statClY')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.sigmaText"></div>
+          </div>
+          <div class="dmike-kpi" :class="kpi.signalsClass">
+            <div class="dmike-kpi-value" x-text="kpi.signals"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.transformed-imr-chart.types.Result.signals" x-text="t('statSignals')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.signalsSub"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-if="hasResult">
+        <div class="timr__chart-section">
+          <div class="timr__chart-header">
+            <span class="timr__chart-title" x-text="chartTitle"></span>
+            <span class="timr__badge" :class="badge.cls">
+              <template x-if="badge.stable">
+                <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true"></span>
+              </template>
+              <template x-if="badge.unstable">
+                <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true"></span>
+              </template>
+              <span x-text="badge.text"></span>
+            </span>
+          </div>
+          <div class="timr__plot-wrap" data-ref="plot" x-widget="control-chart" x-widget-config="plot" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="limits-wrap">
+      <template x-if="hasResult">
+        <table class="dmike-table timr__limits-table">
+          <thead><tr>
+            <th x-text="t('thLimit')"></th>
+            <th><span data-help-key="modules.transformed-imr-chart.types.Result.i" x-text="t('thTransformed')"></span></th>
+            <th><span data-help-key="modules.transformed-imr-chart.types.Result.iOriginal" x-text="t('thOriginal')"></span></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="(r, i) in limitRows" :key="i">
+              <tr>
+                <td x-text="r.label"></td>
+                <td x-text="r.transformed"></td>
+                <td x-text="r.original"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </template>
+    </div>
+  </div>
+</div>

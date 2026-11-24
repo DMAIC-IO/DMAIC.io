@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Box-Cox-transformierte I-MR",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Klassische Shewhart-Karten setzen näherungsweise Normalverteilung voraus. Bei rechtsschiefen Daten (Zeit, Kosten, Defektraten) werden die Grenzen verzerrt: zu viele Falsch-Alarme oben, zu wenige unten. Das Modul bringt die Daten via Box-Cox auf die normale Skala, rechnet dort I-MR und transformiert die Grenzen für die Anzeige zurück auf die Originalskala."
+        },
+        {
+          "type": "definition",
+          "term": "Box-Cox-Transform",
+          "content": "y = (xᵏ − 1) / λ für λ ≠ 0, y = ln(x) für λ = 0. λ wird per Anderson-Darling-Optimierung gesucht (Gitter [-3, 3], Schritt 0,05) oder manuell gesetzt."
+        },
+        {
+          "type": "definition",
+          "term": "Karte und Grenzen",
+          "content": "Die Karte plottet auf der transformierten Skala — dort sind UCL/LCL und Zonen statistisch sinnvoll. Die Tabelle zeigt Grenzen auf beiden Skalen, damit Operatoren Grenzwerte in den Originaleinheiten ablesen können."
+        },
+        {
+          "type": "paragraph",
+          "content": "Voraussetzung: alle Werte müssen strikt positiv sein. Bei null oder negativen Werten benötigt man eine Verschiebung (z. B. x + |min| + 1) oder eine andere Transform-Familie (Yeo-Johnson, Log+1)."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Auto-λ ohne Plausibilitätsprüfung",
+          "content": "Die Anderson-Darling-Suche findet immer ein Minimum — auch wenn die Daten gar nicht durch Box-Cox normalisierbar sind. Vorher Verteilung anschauen ({{term:histogramm|Histogramm}}, P-P-Plot)."
+        },
+        {
+          "type": "definition",
+          "term": "Rück-Transformation lügt nicht",
+          "content": "Die zurückgerechneten Grenzen sind nicht symmetrisch um die {{term:mittellinie|Mittellinie}} — das ist korrekt: rechtsschiefe Originaldaten erlauben mehr Spielraum nach oben als nach unten. Wer das anders erwartet, hat die Verteilung nicht verstanden."
+        },
+        {
+          "type": "definition",
+          "term": "λ ändert sich mit jedem neuen Punkt",
+          "content": "Im Live-Modus passt sich λ an neue Daten an. Für Phase-II-Monitoring λ einfrieren (manueller Modus mit dem Phase-I-λ)."
+        }
+      ]
+    }
+  }
+}

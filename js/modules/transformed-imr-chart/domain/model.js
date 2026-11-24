@@ -12,7 +12,7 @@ import { defineModel, command, text, number, oneOf, columnRef } from '../../../c
 import controlChart from '../../../widgets/control-chart/schema.js';
 import { from0 } from './migrations.js';
 
-/** Die Arten, λ zu bestimmen: aus den Daten geschätzt oder von Hand gesetzt. */
+/** Die Arten, λ zu bestimmen: aus den Daten geschätzt oder von Hand gesetzt (gleich dem Literal im Schema). */
 export const LAMBDA_MODES = Object.freeze(['auto', 'manual']);
 
 export const State = defineModel({
@@ -20,7 +20,7 @@ export const State = defineModel({
   migrations: { '0→1.0': from0 },
   fields: {
     columnRef: columnRef({ types: ['numeric'], minCount: 5 }),
-    lambdaMode: oneOf(LAMBDA_MODES, { default: 'auto' }),
+    lambdaMode: oneOf(['auto', 'manual'], { default: 'auto' }),
     lambdaManual: number({ default: 0 }),
   },
   view: {
@@ -48,7 +48,7 @@ export const State = defineModel({
      * `lambdaManual`; ohne λ bleibt der gespeicherte Wert. Ein Schritt.
      */
     setLambdaMode: command({
-      params: { mode: oneOf(LAMBDA_MODES), lambda: number({ nullable: true, optional: true }) },
+      params: { mode: oneOf(['auto', 'manual']), lambda: number({ nullable: true, optional: true }) },
       run({ mode, lambda }) {
         this.lambdaMode = mode;
         if (mode === 'manual' && lambda != null) this.lambdaManual = lambda;

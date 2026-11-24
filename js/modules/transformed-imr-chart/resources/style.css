@@ -1,0 +1,84 @@
+/* ============================================================
+   Transformierte I-MR-Karte (resources/style.css)
+   BEM: .timr__ prefix
+   ============================================================ */
+
+/* ── Modulfarben (hell und dunkel gleich) ── */
+.timr {
+  --timr-success-rgb: 34 197 94;
+  --timr-error-rgb: 239 68 68;
+}
+
+[data-theme="dark"] .timr {
+  --timr-success-rgb: 34 197 94;
+  --timr-error-rgb: 239 68 68;
+}
+
+.timr__lambda-row {
+  display: grid;
+  grid-template-columns: 1fr 80px;
+  gap: var(--spacing-sm);
+  align-items: end;
+}
+
+.timr__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.timr__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.timr__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.timr__plot-wrap {
+  height: 320px;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Wirt. */
+.timr__plot-wrap > .widget-root {
+  min-height: inherit;
+}
+
+.timr__badge {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+.timr__badge--stable   { background: rgb(var(--timr-success-rgb) / 12%); color: var(--color-success); }
+.timr__badge--unstable { background: rgb(var(--timr-error-rgb) / 12%); color: var(--color-error); }
+
+.timr__error {
+  padding: var(--spacing-md);
+  background: rgb(var(--timr-error-rgb) / 8%);
+  border-left: 3px solid var(--color-error);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  border-radius: 2px;
+}
+
+.timr__limits-table {
+  font-size: var(--font-size-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.timr__limits-table th,
+.timr__limits-table td { text-align: right; }
+
+.timr__limits-table td:first-child,
+.timr__limits-table th:first-child { text-align: left; }
