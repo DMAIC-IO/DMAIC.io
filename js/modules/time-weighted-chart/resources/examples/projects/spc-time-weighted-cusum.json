@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "chartTypeId": "cusum",
   "columnRef": {
     "instanceId": "__source__",
@@ -6,7 +9,15 @@
     "columnId": "c-wert"
   },
   "baselineCount": 30,
-  "kSigma": 0.5,
-  "hSigma": 4,
+  "params": {
+    "ewma": {
+      "lambda": 0.2,
+      "L": 3
+    },
+    "cusum": {
+      "kSigma": 0.5,
+      "hSigma": 4
+    }
+  },
   "sourceWorksheetFile": "worksheets/spc-time-weighted-drift.json"
 }

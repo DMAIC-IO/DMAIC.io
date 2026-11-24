@@ -347,18 +347,6 @@ export default [
     },
   },
   {
-    id: 'time-weighted-chart',
-    phase: 'control',
-    group: 'charts',
-    allowedPhases: ['control'],
-    load: () => import('./time-weighted-chart/time-weighted-chart.js'),
-    cycles: {
-      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
-      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
-      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
-    },
-  },
-  {
     id: 'rare-event-chart',
     phase: 'control',
     group: 'charts',

@@ -842,55 +842,6 @@
       ]
     },
     {
-      "id": "spc-time-weighted-ewma",
-      "type": "project",
-      "title": {
-        "de": "EWMA-Karte: kleiner Drift",
-        "en": "EWMA chart: small drift"
-      },
-      "description": {
-        "de": "60 Beobachtungen: Mittelwert 30 Punkte bei μ=10, dann Verschiebung auf μ=10,1 (≈ 1σ). EWMA mit λ=0,2 erkennt den Drift, eine Shewhart-I-Karte nicht.",
-        "en": "60 observations: mean stays at μ=10 for the first 30 points, then shifts to μ=10.1 (≈ 1σ). EWMA with λ=0.2 detects the drift; a Shewhart I-chart misses it."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=703",
-      "license": "public-domain",
-      "file": "projects/spc-time-weighted-ewma.json",
-      "format": "json",
-      "modules": [
-        "time-weighted-chart"
-      ],
-      "tags": [
-        "spc",
-        "ewma",
-        "cusum",
-        "drift"
-      ]
-    },
-    {
-      "id": "spc-time-weighted-cusum",
-      "type": "project",
-      "title": {
-        "de": "CUSUM-Karte: kleiner Drift",
-        "en": "CUSUM chart: small drift"
-      },
-      "description": {
-        "de": "Dieselben 60 Beobachtungen wie im EWMA-Beispiel: 30 Punkte bei μ=10, danach eine Verschiebung auf μ=10,1. Die CUSUM-Karte (k=0,5σ, h=4σ; Referenzphase: die ersten 30 Punkte) summiert die kleinen Abweichungen und schlägt ab Punkt 37 an, obwohl kein Einzelwert die Shewhart-Grenzen verlässt.",
-        "en": "The same 60 observations as in the EWMA example: 30 points at μ=10, then a shift to μ=10.1. The CUSUM chart (k=0.5σ, h=4σ; baseline: first 30 points) accumulates the small deviations and signals from point 37, although no single value leaves the Shewhart limits."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=703 (Arbeitsblatt wie spc-time-weighted-ewma)",
-      "license": "public-domain",
-      "file": "projects/spc-time-weighted-cusum.json",
-      "format": "json",
-      "modules": [
-        "time-weighted-chart"
-      ],
-      "tags": [
-        "spc",
-        "cusum",
-        "drift"
-      ]
-    },
-    {
       "id": "spc-transformed-imr",
       "type": "project",
       "title": {

@@ -160,6 +160,11 @@
     "description": "VoC-Fragebogen erstellen, als HTML verschicken, Antworten einlesen und auswerten",
     "whenToUse": "Wenn Kunden oder Stakeholder schriftlich befragt werden sollen: Fragebogen entwerfen, je Empfänger als HTML-Datei verschicken, die Antwortdateien einlesen und auswerten — ohne Server, die Daten bleiben im Projekt."
   },
+  "time-weighted-chart": {
+    "name": "Regelkarte (zeitgewichtet)",
+    "description": "EWMA und CUSUM für kleine, schleichende Verschiebungen",
+    "whenToUse": "Kleine, anhaltende Verschiebungen früher erkennen als mit einer Shewhart-Karte: EWMA gewichtet die jüngsten Werte, CUSUM summiert die Abweichungen vom Ziel auf."
+  },
   "transformed-imr-chart": {
     "name": "Regelkarte (Box-Cox-transformiert)",
     "description": "I-MR mit Box-Cox-Transformation für nicht-normale Daten",

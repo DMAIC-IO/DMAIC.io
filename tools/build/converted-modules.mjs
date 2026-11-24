@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { RELEASED_MODULES } from './agent-release.mjs';
 
 /** @type {readonly string[]} sortiert */
-export const CONVERTED_MODULES = Object.freeze(['attribute-control-chart', 'bar', 'boxplot', 'chart-suggestion', 'contour-plot', 'data-import', 'distribution-fit', 'dmaic-calendar', 'doe-planner', 'gage-run-chart', 'heatmap', 'histogram', 'hypothesis-test', 'individual-value-plot', 'ishikawa', 'morphological-box', 'mosaic', 'msa-typ2', 'msa-typ5', 'multi-vari', 'multivariate-control-chart', 'opportunity-flowchart', 'outlier-test', 'pareto', 'pie-chart', 'probability-plot', 'process-capability', 'project-charter', 'resampling', 'run-chart', 'sipoc', 'survey-builder', 'transformed-imr-chart', 'triz-function-analysis', 'worksheet', 'xy-plot']);
+export const CONVERTED_MODULES = Object.freeze(['attribute-control-chart', 'bar', 'boxplot', 'chart-suggestion', 'contour-plot', 'data-import', 'distribution-fit', 'dmaic-calendar', 'doe-planner', 'gage-run-chart', 'heatmap', 'histogram', 'hypothesis-test', 'individual-value-plot', 'ishikawa', 'morphological-box', 'mosaic', 'msa-typ2', 'msa-typ5', 'multi-vari', 'multivariate-control-chart', 'opportunity-flowchart', 'outlier-test', 'pareto', 'pie-chart', 'probability-plot', 'process-capability', 'project-charter', 'resampling', 'run-chart', 'sipoc', 'survey-builder', 'time-weighted-chart', 'transformed-imr-chart', 'triz-function-analysis', 'worksheet', 'xy-plot']);
 
 const NEW_FORM_MARKERS = ['module.js', 'domain/model.js'];
 

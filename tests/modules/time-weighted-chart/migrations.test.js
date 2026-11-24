@@ -1,7 +1,7 @@
 /**
  * Zeitgewichtete Regelkarten: Migration der Altform (domain/migrations.js)
- * samt Beispielen. Die Fälle des alten `fromJSON` stammen aus
- * `tests/modules/time-weighted-chart.test.js`.
+ * samt Beispielen. Die Fälle des alten `fromJSON` stammen aus dem Unit-Test
+ * der Altform.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/time-weighted-chart/domain/model.js';
@@ -37,9 +37,9 @@ const FILE = 'worksheets/spc-time-weighted-drift.json';
 const EXAMPLE_EWMA_OLD = { chartTypeId: 'ewma', columnRef: SRC_REF, lambda: 0.2, L: 3, sourceWorksheetFile: FILE };
 const EXAMPLE_CUSUM_OLD = { chartTypeId: 'cusum', columnRef: SRC_REF, baselineCount: 30, kSigma: 0.5, hSigma: 4, sourceWorksheetFile: FILE };
 
-/** Die Beispiele in der neuen Form (Vorgaben weggelassen). */
-const EXAMPLE_EWMA_NEW = { _schema: { version: '1.0' }, columnRef: SRC_REF };
-const EXAMPLE_CUSUM_NEW = { _schema: { version: '1.0' }, chartTypeId: 'cusum', columnRef: SRC_REF, baselineCount: 30 };
+/** Die Beispiele in der neuen Form (wie `resources/examples/projects/`, `params` vollständig). */
+const EXAMPLE_EWMA_NEW = { _schema: { version: '1.0' }, columnRef: SRC_REF, params: DEFAULT_PARAMS };
+const EXAMPLE_CUSUM_NEW = { _schema: { version: '1.0' }, chartTypeId: 'cusum', columnRef: SRC_REF, baselineCount: 30, params: DEFAULT_PARAMS };
 
 suite('time-weighted-chart: Migration — Altprojekt', () => {
   test('Altfixture: alle Felder übernommen, beide Parametersätze unter params, Diagramme leer', () => {

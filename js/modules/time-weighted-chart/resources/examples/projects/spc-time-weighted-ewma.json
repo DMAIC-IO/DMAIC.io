@@ -1,11 +1,21 @@
 {
-  "chartTypeId": "ewma",
+  "_schema": {
+    "version": "1.0"
+  },
   "columnRef": {
     "instanceId": "__source__",
     "sheetId": "sheet-spc-drift",
     "columnId": "c-wert"
   },
-  "lambda": 0.2,
-  "L": 3,
+  "params": {
+    "ewma": {
+      "lambda": 0.2,
+      "L": 3
+    },
+    "cusum": {
+      "kSigma": 0.5,
+      "hSigma": 4
+    }
+  },
   "sourceWorksheetFile": "worksheets/spc-time-weighted-drift.json"
 }

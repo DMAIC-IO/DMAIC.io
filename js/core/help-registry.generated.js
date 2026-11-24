@@ -29,17 +29,16 @@ import h26 from '../modules/rest-api/rest-api-help.js';
 import h27 from '../modules/sample-size/sample-size-help.js';
 import h28 from '../modules/short-run-chart/short-run-chart-help.js';
 import h29 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h30 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
-import h31 from '../modules/todo/todo-help.js';
-import h32 from '../modules/triz-9-windows/triz-9-windows-help.js';
-import h33 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
-import h34 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h35 from '../modules/triz-ifr/triz-ifr-help.js';
-import h36 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h37 from '../modules/triz-resources/triz-resources-help.js';
-import h38 from '../modules/triz-sufield/triz-sufield-help.js';
-import h39 from '../modules/unit-converter/unit-converter-help.js';
-import h40 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h30 from '../modules/todo/todo-help.js';
+import h31 from '../modules/triz-9-windows/triz-9-windows-help.js';
+import h32 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
+import h33 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
+import h34 from '../modules/triz-ifr/triz-ifr-help.js';
+import h35 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h36 from '../modules/triz-resources/triz-resources-help.js';
+import h37 from '../modules/triz-sufield/triz-sufield-help.js';
+import h38 from '../modules/unit-converter/unit-converter-help.js';
+import h39 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -72,15 +71,14 @@ export const HELP = {
   "sample-size": h27,
   "short-run-chart": h28,
   "stakeholder-analysis": h29,
-  "time-weighted-chart": h30,
-  "todo": h31,
-  "triz-9-windows": h32,
-  "triz-contradiction-matrix": h33,
-  "triz-evolution-trends": h34,
-  "triz-ifr": h35,
-  "triz-physical-contradiction": h36,
-  "triz-resources": h37,
-  "triz-sufield": h38,
-  "unit-converter": h39,
-  "voc-ctx-tree": h40,
+  "todo": h30,
+  "triz-9-windows": h31,
+  "triz-contradiction-matrix": h32,
+  "triz-evolution-trends": h33,
+  "triz-ifr": h34,
+  "triz-physical-contradiction": h35,
+  "triz-resources": h36,
+  "triz-sufield": h37,
+  "unit-converter": h38,
+  "voc-ctx-tree": h39,
 };

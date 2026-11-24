@@ -160,6 +160,11 @@
     "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",
     "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project."
   },
+  "time-weighted-chart": {
+    "name": "Control Chart (Time-Weighted)",
+    "description": "EWMA and CUSUM for small persistent shifts",
+    "whenToUse": "Detect small, persistent shifts earlier than a Shewhart chart: EWMA weights recent values, CUSUM accumulates deviations from the target."
+  },
   "transformed-imr-chart": {
     "name": "Control Chart (Box-Cox transformed)",
     "description": "I-MR with Box-Cox transform for non-normal data",
