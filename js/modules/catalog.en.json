@@ -155,6 +155,11 @@
     "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",
     "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project."
   },
+  "transformed-imr-chart": {
+    "name": "Control Chart (Box-Cox transformed)",
+    "description": "I-MR with Box-Cox transform for non-normal data",
+    "whenToUse": "Control-chart skewed, strictly positive data: a Box-Cox transformation makes them near-normal before I-MR limits are computed."
+  },
   "triz-function-analysis": {
     "name": "Function Analysis (TRIZ)",
     "description": "Components, interactions and function model – the starting point for the other TRIZ tools",

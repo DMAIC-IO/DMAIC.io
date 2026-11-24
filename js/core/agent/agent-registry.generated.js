@@ -19817,6 +19817,7 @@ export const AGENT_REGISTRY = {
   "transformed-imr-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -19826,203 +19827,96 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setColumn": {
+      "setLambdaMode": {
+        "target": "model",
         "params": [
           {
-            "name": "slot",
-            "type": "'value'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<void>",
-        "help": "Die Messreihe wählen und neu rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'lambdaMode'|'lambdaManual'",
-            "optional": false,
-            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen.",
-        "keysOf": "Params",
+        "returns": "void",
+        "help": "",
+        "keysOf": "setLambdaMode",
+        "keysHelp": "actions.setLambdaMode.params",
         "keys": {
-          "lambdaMode": {
+          "mode": {
             "type": "'auto'|'manual'",
-            "help": "λ schätzen oder vorgeben"
+            "help": ""
           },
-          "lambdaManual": {
-            "type": "number",
-            "help": "vorgegebenes λ, nur im Modus manual",
+          "lambda": {
+            "type": "number|null",
+            "help": "",
             "optional": true
           }
         }
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit der aktuellen Spalte und λ-Einstellung neu rechnen."
       }
     },
     "fields": {
       "columnRef": {
-        "type": "object|null",
-        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:5"
+        ]
       },
       "lambdaMode": {
-        "type": "string",
-        "help": "`'auto'` (estimated from the data) or `'manual'`",
-        "bulk": false,
-        "derived": true
+        "type": "'auto'|'manual'",
+        "help": "",
+        "bulk": false
       },
       "lambdaManual": {
         "type": "number",
-        "help": "the Box-Cox λ used in manual mode; in auto mode it mirrors the estimated λ after each computation",
+        "help": "",
+        "bulk": false
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state (`lambdaManual` only in manual mode)",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
+      "asyncTasks": {
         "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "why nothing was computed (non-positive values, computation error), or ''",
-        "bulk": false,
-        "derived": true
-      },
-      "result": {
-        "type": "Result|null",
-        "help": "das gerechnete Ergebnis; null, solange nichts gerechnet ist",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "Result",
-        "keys": {
-          "n": {
-            "type": "number",
-            "help": "verwertete Werte"
-          },
-          "lambda": {
-            "type": "number|null",
-            "help": "verwendetes λ"
-          },
-          "lambdaAuto": {
-            "type": "boolean",
-            "help": "λ geschätzt"
-          },
-          "i": {
-            "type": "IndividualLimits",
-            "help": "Einzelwertkarte, transformiert",
-            "keysOf": "IndividualLimits",
-            "keys": {
-              "cl": {
-                "type": "number|null",
-                "help": "Mittellinie"
-              },
-              "ucl": {
-                "type": "number|null",
-                "help": "obere Eingriffsgrenze"
-              },
-              "lcl": {
-                "type": "number|null",
-                "help": "untere Eingriffsgrenze"
-              },
-              "sigma": {
-                "type": "number|null",
-                "help": "Streuung"
-              }
-            }
-          },
-          "mr": {
-            "type": "Limits",
-            "help": "Karte der gleitenden Spannweiten, transformiert",
-            "keysOf": "Limits",
-            "keys": {
-              "cl": {
-                "type": "number|null",
-                "help": "Mittellinie"
-              },
-              "ucl": {
-                "type": "number|null",
-                "help": "obere Eingriffsgrenze"
-              },
-              "lcl": {
-                "type": "number|null",
-                "help": "untere Eingriffsgrenze"
-              }
-            }
-          },
-          "iOriginal": {
-            "type": "Limits",
-            "help": "Einzelwertkarte, zurücktransformiert",
-            "keysOf": "Limits",
-            "keys": {
-              "cl": {
-                "type": "number|null",
-                "help": "Mittellinie"
-              },
-              "ucl": {
-                "type": "number|null",
-                "help": "obere Eingriffsgrenze"
-              },
-              "lcl": {
-                "type": "number|null",
-                "help": "untere Eingriffsgrenze"
-              }
-            }
-          },
-          "signals": {
-            "type": "number[]",
-            "help": "Signalpunkte der Einzelwertkarte"
-          }
-        }
-      },
-      "points": {
-        "type": "object[]",
-        "help": "one row per value: `{ transformed, signal }`",
-        "bulk": true,
-        "bulkKind": "table",
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "analysis",
+        "auto": true,
+        "params": []
+      }
+    ],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "columnRef",
+      "lambdaMode",
+      "lambdaManual"
+    ],
+    "invariants": []
   },
   "triz-9-windows": {
     "tagged": true,

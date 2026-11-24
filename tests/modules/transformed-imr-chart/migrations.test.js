@@ -21,7 +21,7 @@ const LEGACY = {
   exampleWorksheetId: null,
 };
 
-/** Das Beispiel `spc-transformed-imr` in der Altform (`examples/projects/spc-transformed-imr.json`). */
+/** Das Beispiel `spc-transformed-imr` in der Altform (Stand vor der Umstellung). */
 const EXAMPLE_OLD = {
   columnRef: { instanceId: '__source__', sheetId: 'sheet-spc-trans', columnId: 'c-standzeit' },
   lambdaMode: 'auto',

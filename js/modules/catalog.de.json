@@ -155,6 +155,11 @@
     "description": "VoC-Fragebogen erstellen, als HTML verschicken, Antworten einlesen und auswerten",
     "whenToUse": "Wenn Kunden oder Stakeholder schriftlich befragt werden sollen: Fragebogen entwerfen, je Empfänger als HTML-Datei verschicken, die Antwortdateien einlesen und auswerten — ohne Server, die Daten bleiben im Projekt."
   },
+  "transformed-imr-chart": {
+    "name": "Regelkarte (Box-Cox-transformiert)",
+    "description": "I-MR mit Box-Cox-Transformation für nicht-normale Daten",
+    "whenToUse": "Schiefe, streng positive Daten in einer Regelkarte überwachen: eine Box-Cox-Transformation macht sie annähernd normal, bevor die I-MR-Grenzen gerechnet werden."
+  },
   "triz-function-analysis": {
     "name": "Funktionsanalyse (TRIZ)",
     "description": "Komponenten, Interaktionen und Funktionsmodell – Ausgangspunkt für die übrigen TRIZ-Werkzeuge",

@@ -4,7 +4,6 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
 import { State, LAMBDA_MODES } from '../../../js/modules/transformed-imr-chart/domain/model.js';
-import { LAMBDA_MODES as LEGACY_LAMBDA_MODES } from '../../../js/modules/transformed-imr-chart/transformed-imr-chart-model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { setFields } from '../../../js/core/model.js';
 import controlChart from '../../../js/widgets/control-chart/schema.js';
@@ -26,9 +25,8 @@ suite('transformed-imr-chart: Model — Schema und Vorgaben', () => {
     assertEqual(c.nullable, true);
   });
 
-  test('LAMBDA_MODES gleich dem Schema-Literal und der Konstante der Altform', () => {
+  test('LAMBDA_MODES gleich dem Schema-Literal', () => {
     assertDeepEqual([...State.schema.fields.lambdaMode.values], [...LAMBDA_MODES]);
-    assertDeepEqual([...LAMBDA_MODES], [...LEGACY_LAMBDA_MODES]);
     assertDeepEqual([...State.schema.commands.setLambdaMode.params.mode.values], [...LAMBDA_MODES]);
   });
 

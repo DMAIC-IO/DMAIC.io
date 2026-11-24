@@ -395,18 +395,6 @@ export default [
     },
   },
   {
-    id: 'transformed-imr-chart',
-    phase: 'control',
-    group: 'charts',
-    allowedPhases: ['control'],
-    load: () => import('./transformed-imr-chart/transformed-imr-chart.js'),
-    cycles: {
-      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
-      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
-      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
-    },
-  },
-  {
     id: 'lessons-learned',
     phase: 'control',
     allowedPhases: ['control'],

@@ -1,9 +1,11 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "columnRef": {
     "instanceId": "__source__",
     "sheetId": "sheet-spc-trans",
     "columnId": "c-standzeit"
   },
-  "lambdaMode": "auto",
   "sourceWorksheetFile": "worksheets/spc-transformed-lognormal.json"
 }
