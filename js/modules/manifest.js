@@ -347,18 +347,6 @@ export default [
     },
   },
   {
-    id: 'rare-event-chart',
-    phase: 'control',
-    group: 'charts',
-    allowedPhases: ['control'],
-    load: () => import('./rare-event-chart/rare-event-chart.js'),
-    cycles: {
-      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
-      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
-      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
-    },
-  },
-  {
     id: 'short-run-chart',
     phase: 'control',
     group: 'charts',

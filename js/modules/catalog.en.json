@@ -140,6 +140,11 @@
     "description": "Project mandate: problem statement and measurable goals",
     "whenToUse": "At the start of a project, to record the problem, measurable goals and the project organisation — the basis every later phase refers to."
   },
+  "rare-event-chart": {
+    "name": "Control Chart (Rare Events)",
+    "description": "g and t charts for rare events",
+    "whenToUse": "Monitor rare events: the g chart counts opportunities between events, the t chart the time between events."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",

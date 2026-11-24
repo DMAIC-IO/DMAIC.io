@@ -15870,6 +15870,7 @@ export const AGENT_REGISTRY = {
   "rare-event-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -15879,95 +15880,32 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Die Ereignisreihe wählen und neu rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'chartTypeId'",
-            "optional": false,
-            "help": "welche Option"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen.",
-        "keysOf": "Params",
-        "keys": {
-          "chartTypeId": {
-            "type": "'g'|'t'",
-            "help": "Kartentyp"
-          }
-        }
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit dem aktuellen Kartentyp und den Spaltenwerten neu rechnen."
       }
     },
     "fields": {
       "chartTypeId": {
-        "type": "string",
-        "help": "`'g'` (opportunities between events) or `'t'` (time between events)",
-        "bulk": false,
-        "derived": true
+        "type": "'g'|'t'",
+        "help": "",
+        "bulk": false
       },
       "columnRef": {
-        "type": "object|null",
-        "help": "the event column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null without column or with fewer than 2 usable values",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -16031,12 +15969,45 @@ export const AGENT_REGISTRY = {
       },
       "points": {
         "type": "object[]",
-        "help": "one row per plotted point: `{ value, signal }`, value on the plotted scale, null where the t chart drops a non-positive value",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
+        "derived": true,
+        "keysOf": "Point",
+        "keys": {
+          "value": {
+            "type": "number|null",
+            "help": "Wert auf der gezeichneten Skala; an den Lücken der t-Karte ohne Wert"
+          },
+          "signal": {
+            "type": "boolean",
+            "help": "außerhalb der Grenzen"
+          }
+        }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "chartTypeId",
+      "columnRef"
+    ],
+    "invariants": []
   },
   "regression": {
     "tagged": true,

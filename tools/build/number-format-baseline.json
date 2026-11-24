@@ -128,9 +128,6 @@
   "js/modules/random-generator/random-generator.js": {
     "count": 6
   },
-  "js/modules/rare-event-chart/rare-event-chart.js": {
-    "count": 1
-  },
   "js/modules/regression/regression-model.js": {
     "count": 1
   },

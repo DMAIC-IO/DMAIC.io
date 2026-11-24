@@ -1,7 +1,7 @@
 /**
  * Regelkarte seltener Ereignisse: Migration der Altform
  * (domain/migrations.js) samt Beispiel. Die Fälle des alten `fromJSON`
- * stammen aus dem Unit-Test der Altform (`tests/modules/rare-event-chart.test.js`).
+ * stammen aus dem Unit-Test der Altform.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/rare-event-chart/domain/model.js';

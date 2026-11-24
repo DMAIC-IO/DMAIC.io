@@ -90,7 +90,6 @@ const SKIP = new Set([
   'core/chart/contour-type.test.js',
   'core/chart/control-chart.test.js',
   'core/chart/chart-margins.test.js',
-  'core/chart/chart-module-base.test.js',
   'core/chart/cumulative-cost.test.js',
   'core/chart/gage-run-chart.test.js',
   'core/chart/gantt.test.js',

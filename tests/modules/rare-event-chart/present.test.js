@@ -1,8 +1,8 @@
 /**
  * Regelkarte seltener Ereignisse: der Presenter (viewmodel/present.js) —
  * KPI-Leiste, Abzeichen, Kopfzeile und Diagrammkonfiguration. Die englischen
- * Literale gleichen der Altform (Altprojekt, E2E „Legacy project“ aus Task 0;
- * Sonden (g) und (h) der Spec).
+ * Literale gleichen der Altform (Altprojekt, E2E „Legacy project“ am Altmodul;
+ * Randfälle mit Überlauf und Typwechsel mit gewählter Spalte).
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { fmt, kpiOf, badgeOf, chartTitleOf, chartConfig } from '../../../js/modules/rare-event-chart/viewmodel/present.js';

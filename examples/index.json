@@ -793,31 +793,6 @@
       ]
     },
     {
-      "id": "spc-rare-event-t-chart",
-      "type": "project",
-      "title": {
-        "de": "t-Chart: Tage zwischen seltenen Ereignissen",
-        "en": "t-Chart: days between rare events"
-      },
-      "description": {
-        "de": "25 Intervalle aus Exponential(μ=35 Tage). Bei Beobachtungen 16–18 verdoppelt sich die Rate (μ=12) — t-Karte zeigt einen sichtbaren Wechsel.",
-        "en": "25 intervals from Exponential(μ=35 days). At observations 16–18 the rate doubles (μ=12) — t-chart shows a visible shift."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=704",
-      "license": "public-domain",
-      "file": "projects/spc-rare-event-t-chart.json",
-      "format": "json",
-      "modules": [
-        "rare-event-chart"
-      ],
-      "tags": [
-        "spc",
-        "rare-event",
-        "t-chart",
-        "exponential"
-      ]
-    },
-    {
       "id": "spc-short-run-zmr",
       "type": "project",
       "title": {

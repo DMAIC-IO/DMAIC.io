@@ -140,6 +140,11 @@
     "description": "Projektauftrag: Problembeschreibung und messbare Ziele",
     "whenToUse": "Zu Beginn eines Projekts, um Problem, messbare Ziele und die Projektorganisation festzuhalten — die Grundlage, auf die sich alle späteren Phasen beziehen."
   },
+  "rare-event-chart": {
+    "name": "Regelkarte (seltene Ereignisse)",
+    "description": "g- und t-Karten für seltene Ereignisse",
+    "whenToUse": "Seltene Ereignisse überwachen: die g-Karte zählt die Gelegenheiten zwischen Ereignissen, die t-Karte die Zeit zwischen Ereignissen."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",

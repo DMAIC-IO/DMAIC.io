@@ -2,8 +2,8 @@
  * Regelkarte seltener Ereignisse: die Rechnung (domain/analyze.js) gegen die
  * Altrechnung. Die Literale haben die Form von `read().result` des Altmoduls
  * (`_agentResult`) und sind mit der unveränderten Engine gerechnet: das
- * Altprojekt (t-Karte mit zwei Lücken; KPIs wie im E2E „Legacy project“ aus
- * Task 0), das Beispiel `spc-rare-event-t-chart` (§1 der Spec) und die
+ * Altprojekt (t-Karte mit zwei Lücken; KPIs wie im E2E „Legacy project“ am
+ * Altmodul), das Beispiel `spc-rare-event-t-chart` und die
  * CSV-Spalte „Counts“ (g) aus `test_data_rare_event.csv`.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertAlmostEqual } from '../../test-utils.js';
@@ -220,7 +220,7 @@ suite('rare-event-chart: analyze', () => {
     assertDeepEqual(value, { status: 'error', reason: 'errCompute' });
   });
 
-  test('t-Karte mit einem Wert um 1e308: gezeichnet endlich, UCL der Originalskala null (kein Fehler, §3)', () => {
+  test('t-Karte mit einem Wert um 1e308: gezeichnet endlich, UCL der Originalskala null (kein Fehler)', () => {
     const a = analyzeWith(computeTChart, inputsOf([10, 20, 1e308, 15, 30], model({ chartTypeId: 't' })));
     assertEqual(a.status, 'ok');
     const r = resultOf(a);
@@ -229,7 +229,7 @@ suite('rare-event-chart: analyze', () => {
     assertTrue(Object.values(r.plotted).every(Number.isFinite));
   });
 
-  test('Ränder aus Sonde (g): g nur Nullen, t mit genau zwei positiven Werten', () => {
+  test('Ränder: g nur Nullen, t mit genau zwei positiven Werten', () => {
     const z = analyzeWith(computeGChart, inputsOf([0, 0, 0, 0, 0], model()));
     assertDeepEqual(resultOf(z), {
       chartType: 'g', n: 5, cl: 0, ucl: 0, lcl: 0, sigma: 0, transformed: false,
@@ -347,7 +347,7 @@ suite('rare-event-chart: resultOf gleich der Altform', () => {
     assertDeepEqual(resultOf(run(COUNTS_MODEL)), COUNTS_RESULT);
   });
 
-  test('Literale aus Task 0 (KPIs drei Stellen, Diagramm-Beschriftung)', () => {
+  test('Literale der Altform (KPIs drei Stellen, Diagramm-Beschriftung)', () => {
     const l = resultOf(run(LEGACY_MODEL));
     assertDeepEqual([l.cl, l.sigma, l.ucl, l.lcl].map((v) => v.toFixed(3)), ['33.546', '0.871', '395.417', '0.000']);
     assertDeepEqual([l.plotted.ucl.toFixed(3), l.plotted.cl.toFixed(3), l.plotted.lcl.toPrecision(3)], ['5.265', '2.653', '0.0416']);
