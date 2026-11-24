@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Run Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein {{term:run-chart|Run Chart}} zeigt eine Datenreihe in zeitlicher Reihenfolge und prüft, ob die Reihenfolge zufällig ist. Anders als bei einer {{term:regelkarte|Regelkarte}} werden keine {{term:regelgrenze|Eingriffsgrenzen}} berechnet — nur eine Medianlinie. Dafür laufen vier formale Lauftests, die typische Nicht-Zufalls-Muster aufdecken."
+        },
+        {
+          "type": "definition",
+          "term": "Medianlinie",
+          "content": "Der {{term:median|Median}} der Werte. Bei zufällig schwankenden Daten liegt etwa die Hälfte der Punkte oberhalb, die andere Hälfte unterhalb. Punkte genau auf dem Median zählen in den Tests als unterhalb (wie bei Minitab)."
+        },
+        {
+          "type": "definition",
+          "term": "Run um den Median",
+          "content": "Eine zusammenhängende Folge von Punkten, die alle auf derselben Seite des Medians liegen. Bei rein zufälligen Daten ist die erwartete Anzahl Runs aus der Anzahl Punkte über/unter dem Median berechenbar."
+        },
+        {
+          "type": "definition",
+          "term": "Run aufwärts/abwärts",
+          "content": "Eine Folge fortlaufend steigender oder fortlaufend fallender Werte. Zufällige Reihen produzieren typischerweise viele kurze Wechsel — extrem wenige (lange monotone Strecken) oder extrem viele (Zickzack) sind verdächtig."
+        },
+        {
+          "type": "paragraph",
+          "content": "Run Charts werden in der Measure-Phase eingesetzt, um sich einen ersten Eindruck zu verschaffen, bevor eine Regelkarte aufgesetzt wird. Sie sind weniger formal als Shewhart-Karten, weil sie keine Streuungsannahme benötigen — der Median funktioniert auch bei nicht-normalverteilten Daten."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Die vier Lauftests",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Clustering — zu wenige Runs um den Median (Punkte „klumpen\" auf einer Seite). Hinweis auf Niveauverschiebung oder Mischpopulation.",
+            "Mischungen — zu viele Runs um den Median (Punkte wechseln zu oft die Seite). Hinweis auf zwei überlagerte Quellen, etwa zwei Maschinen.",
+            "Trends — zu wenige Runs aufwärts/abwärts (lange monotone Strecken). Hinweis auf Drift, Verschleiß, Aufwärm-/Abkühleffekte.",
+            "Oszillation — zu viele Runs aufwärts/abwärts (Zickzack). Hinweis auf systematische Hin-und-Her-Verstellung, etwa Übersteuerung im Regler."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Jeder Test liefert einen p-Wert. Wenn p < α (Standard 0,05), ist das Muster signifikant — die Hypothese „rein zufällige Reihenfolge\" wird abgelehnt. Mehr als ein gleichzeitig flag-gender Test deutet meist auf eine echte Sonderursache hin."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Lesen und Reagieren",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Zuerst die Form des Charts ansehen — Trends, Zyklen, Sprünge sind oft mit bloßem Auge erkennbar.",
+            "Dann die p-Werte prüfen. Ein einzelner kleiner p-Wert kann Zufall sein (multiple Vergleiche!), zwei oder mehr deuten klar auf Struktur hin.",
+            "Bei signifikanten Mustern: Ursache suchen, bevor eine Regelkarte aufgebaut wird. {{term:sonderursache|Sonderursachen}} verzerren die Baseline.",
+            "Wenn alle Tests grün sind und das Bild zufällig aussieht: Daten eignen sich für eine {{term:regelkarte|Regelkarte}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}, …)."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Run Chart als Regelkarten-Ersatz",
+          "content": "Ein Run Chart zeigt Muster, aber keine Eingriffsgrenzen. Er ersetzt keine Regelkarte für laufende Überwachung — nur deren Voranalyse."
+        },
+        {
+          "type": "definition",
+          "term": "Datenreihenfolge unklar",
+          "content": "Lauftests setzen voraus, dass die Reihenfolge der Werte der zeitlichen Erfassung entspricht. Sortierte oder umgruppierte Daten liefern Müll-Ergebnisse."
+        },
+        {
+          "type": "definition",
+          "term": "Zu wenige Datenpunkte",
+          "content": "Mit weniger als ~10 Punkten haben die Lauftests fast keine Aussagekraft. Mindestens 15–25 Punkte für sinnvolle p-Werte; bei kleinen Stichproben die Tests nur grob interpretieren."
+        },
+        {
+          "type": "definition",
+          "term": "Multiple Vergleiche",
+          "content": "Vier Tests gleichzeitig erhöhen die Falsch-Alarm-Rate. Ein einzelnes p < 0,05 ist nicht stark; signifikant wird das Bild erst, wenn mehrere Tests gleichzeitig anschlagen oder ein Test sehr klein ist."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-imr-shift",
+    "columnId": "c-value"
+  },
+  "sourceWorksheetFile": "shared/worksheets/spc-imr-shift.json"
+}

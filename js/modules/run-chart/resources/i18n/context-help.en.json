@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRef": {
+      "help": "The measured column: a numeric column with the values in time order, label Values Column. A result needs at least 3 numbers; empty and non-numeric cells are skipped, text such as “2,5” too. With fewer numbers the output stays empty. Empty while none is chosen; null clears the choice. A change recomputes."
+    },
+    "alpha": {
+      "help": "The significance level α of the four runs tests, label Significance Level α: greater than 0 and less than 1, default 0.05. A test is flagged when its p-value is below α; the smaller α, the more rarely a test is flagged. A value outside this range is rejected. A change re-evaluates the tests."
+    },
+    "chart": {
+      "help": "The settings from the chart editor of the run chart (title, axis titles, font sizes, background, legend, reference lines); empty while nothing has been changed. Point colour, symbol, size and outline from the editor are not saved."
+    },
+    "values": {
+      "help": "The numbers of the measured column in their order; empty and non-numeric cells are skipped. Empty while no column is chosen or readable."
+    },
+    "analysis": {
+      "help": "The computation over these numbers: median, runs about the median, runs up and down and the p-values of the four runs tests, not yet evaluated against α. Empty without a column or with fewer than 3 numbers."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was loaded from; empty if it does not come from an example."
+    },
+    "result": {
+      "help": "The computed result, evaluated against α, each figure described individually under keys; null without a column, with a deleted column or with fewer than 3 numbers."
+    },
+    "points": {
+      "help": "One row per plotted value in data order: { value }; empty without a result. read({ fields: ['points'] }) returns them in full."
+    },
+    "activeParams": {
+      "help": "The parameter fields instance.set accepts in the current state: always alpha."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields instance.set accepts in the current state: columnRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Number of usable numbers in the series; empty and non-numeric cells are already filtered out. A result exists from 3 numbers.",
+      "median": "Median of the series: the middle value of the numbers sorted ascending, for an even count the mean of the two middle ones. It is the center line of the run chart and splits the points into above and below. The tile sub-line shows n.",
+      "runsAboutMedian": "Runs about the median: number of uninterrupted sequences of points on the same side of the median; values exactly on the median count as “below”. For a random series 2·m₁·m₂/N + 1 runs are expected (m₁ points above, m₂ below, N all). Too few runs point to clustering, too many to mixtures. The tile sub-line also shows the runs up and down.",
+      "runsUpDown": "Runs up and down: number of uninterrupted sequences of rising or falling steps between consecutive points; ties are skipped. With n as the number of steps without a tie plus 1, a random series is expected to have (2n − 1)/3 runs with variance (16n − 29)/90. Too few runs point to trends, too many to oscillation.",
+      "flagged": "Number of tests, 0 to 4, whose p-value is below α. 0 means: no sign of a non-random cause. From 1 there is a sign of clustering, mixtures, trends or oscillation. The tile sub-line shows α.",
+      "tests": "The four runs tests in fixed order: clustering, mixtures, trends, oscillation. Each entry has the test, its p-value, the number of counted runs and the verdict."
+    },
+    "RunTest": {
+      "id": "Which test: clustering (too few runs about the median), mixtures (too many runs about the median), trends (too few runs up and down), oscillation (too many runs up and down).",
+      "p": "p-value of the test from the normal approximation of the runs: z = (runs − expected)/√variance. Clustering and trends: Φ(z); mixtures and oscillation: 1 − Φ(z). With spread 0, p = 1.",
+      "observed": "Number of counted runs the test is based on: for clustering and mixtures the runs about the median, for trends and oscillation the runs up and down.",
+      "flagged": "True when the p-value is below α; the test is then flagged."
+    },
+    "Point": {
+      "value": "The plotted value, in column order; non-numeric cells are skipped."
+    }
+  }
+}

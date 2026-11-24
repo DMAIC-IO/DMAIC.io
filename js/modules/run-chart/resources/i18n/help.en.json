@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Run Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A {{term:run-chart|run chart}} shows a data series in time order and tests whether that order looks random. Unlike a {{term:regelkarte|control chart}} it has no {{term:regelgrenze|control limits}} — only a {{term:median|median}} line. Four formal runs tests detect typical non-random patterns."
+        },
+        {
+          "type": "definition",
+          "term": "Median line",
+          "content": "The median of the values. With random variation about half the points fall above, half below. Points exactly on the median count as below in the tests (as in Minitab)."
+        },
+        {
+          "type": "definition",
+          "term": "Run about the median",
+          "content": "A consecutive sequence of points all on the same side of the median. For purely random data the expected number of such runs follows from the counts above/below."
+        },
+        {
+          "type": "definition",
+          "term": "Run up/down",
+          "content": "A sequence of consecutively increasing or decreasing values. Random series typically produce many short changes — extremely few (long monotone streaks) or extremely many (zigzag) are suspicious."
+        },
+        {
+          "type": "paragraph",
+          "content": "Run charts are used in the Measure phase to get a first feel for the process before setting up a control chart. They are less formal than Shewhart charts because they need no spread assumption — the median works for non-normal data too."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "The Four Runs Tests",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Clustering — too few runs about the median (points cluster on one side). Indicates a level shift or mixed population.",
+            "Mixtures — too many runs about the median (points cross too often). Indicates two superimposed sources, e.g. two machines.",
+            "Trends — too few runs up/down (long monotone runs). Indicates drift, wear, warm-up/cool-down effects.",
+            "Oscillation — too many runs up/down (zigzag). Indicates systematic over-correction, e.g. controller overshoot."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Each test produces a p-value. If p < α (default 0.05), the pattern is significant — the hypothesis of pure random order is rejected. More than one simultaneously-flagged test usually points to a real special cause."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Reading and Reacting",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "First inspect the shape — trends, cycles, jumps are often visible by eye.",
+            "Then check the p-values. A single small p can be chance (multiple comparisons!), two or more clearly indicate structure.",
+            "If patterns are significant: investigate the cause before setting up a control chart. {{term:sonderursache|Special causes}} will bias the baseline.",
+            "If all tests pass and the picture looks random: data is ready for a {{term:regelkarte|control chart}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}, …)."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Run chart as a control chart substitute",
+          "content": "A run chart shows patterns but no control limits. It does not replace a control chart for ongoing monitoring — only the pre-analysis."
+        },
+        {
+          "type": "definition",
+          "term": "Unclear data order",
+          "content": "Runs tests assume the order of values matches the time of collection. Sorted or regrouped data produces garbage results."
+        },
+        {
+          "type": "definition",
+          "term": "Too few data points",
+          "content": "With fewer than ~10 points the runs tests carry almost no power. At least 15–25 points for meaningful p-values; on small samples interpret roughly."
+        },
+        {
+          "type": "definition",
+          "term": "Multiple comparisons",
+          "content": "Four simultaneous tests inflate the false-alarm rate. A single p < 0.05 is weak evidence; the picture becomes significant when several tests fire at once or one is very small."
+        }
+      ]
+    }
+  }
+}

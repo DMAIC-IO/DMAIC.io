@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRef": {
+      "help": "Die Messwertspalte: eine numerische Spalte mit den Werten in zeitlicher Reihenfolge, Beschriftung Werte-Spalte. Gerechnet wird ab 3 Zahlen; leere und nicht numerische Zellen werden übersprungen, auch Text wie „2,5“. Mit weniger Zahlen bleibt die Ausgabe leer. Leer, solange keine gewählt ist; null hebt die Wahl auf. Eine Änderung rechnet neu."
+    },
+    "alpha": {
+      "help": "Das Signifikanzniveau α der vier Lauftests, Beschriftung Signifikanzniveau α: größer als 0 und kleiner als 1, voreingestellt 0,05. Ein Test schlägt an, wenn sein p-Wert kleiner als α ist; je kleiner α, desto seltener schlägt ein Test an. Ein Wert außerhalb dieses Bereichs wird abgelehnt. Eine Änderung bewertet die Tests neu."
+    },
+    "chart": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor des Verlaufsdiagramms (Titel, Achsentitel, Schriftgrößen, Hintergrund, Legende, Bezugslinien); leer, solange nichts geändert ist. Punktfarbe, -symbol, -größe und -rand aus dem Editor werden nicht gespeichert."
+    },
+    "values": {
+      "help": "Die Zahlen der Messwertspalte in ihrer Reihenfolge; leere und nicht numerische Zellen sind übersprungen. Leer, solange keine Spalte gewählt oder lesbar ist."
+    },
+    "analysis": {
+      "help": "Die Rechnung über diese Zahlen: Median, Runs um den Median, Runs ↑/↓ und die p-Werte der vier Lauftests, noch ohne Bewertung gegen α. Leer ohne Spalte oder mit weniger als 3 Zahlen."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, bewertet gegen α, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte, bei einer gelöschten Spalte oder mit weniger als 3 Zahlen."
+    },
+    "points": {
+      "help": "Je gezeichnetem Wert eine Zeile in Datenreihenfolge: { value }; leer ohne Ergebnis. read({ fields: ['points'] }) liefert sie vollständig."
+    },
+    "activeParams": {
+      "help": "Die Parameterfelder, die instance.set im aktuellen Zustand annimmt: immer alpha."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die instance.set im aktuellen Zustand annimmt: columnRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Anzahl der verwertbaren Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ab 3 Zahlen gibt es ein Ergebnis.",
+      "median": "Median der Reihe: der mittlere Wert der aufsteigend sortierten Zahlen, bei gerader Anzahl der Mittelwert der beiden mittleren. Er ist die Mittellinie des Verlaufsdiagramms und teilt die Punkte in oberhalb und unterhalb. Die Unterzeile der Kachel zeigt n.",
+      "runsAboutMedian": "Runs um den Median: Anzahl der ununterbrochenen Folgen von Punkten auf derselben Seite des Medians; Werte genau auf dem Median zählen zu „unter“. Bei einer zufälligen Reihe erwartet man 2·m₁·m₂/N + 1 Runs (m₁ Punkte darüber, m₂ darunter, N alle). Zu wenige Runs deuten auf Clustering, zu viele auf Mischungen. Die Unterzeile der Kachel („Runs ↑/↓“) zeigt zusätzlich die Runs auf und ab.",
+      "runsUpDown": "Runs ↑/↓: Anzahl der ununterbrochenen Folgen steigender oder fallender Schritte zwischen aufeinanderfolgenden Punkten; Gleichstände werden übersprungen. Mit n als Zahl der Schritte ohne Gleichstand plus 1 erwartet man bei einer zufälligen Reihe (2n − 1)/3 Runs mit der Varianz (16n − 29)/90. Zu wenige Runs deuten auf Trends, zu viele auf Oszillation.",
+      "flagged": "Anzahl der Tests von 0 bis 4, deren p-Wert kleiner als α ist. 0 heißt: kein Hinweis auf eine nicht zufällige Ursache. Ab 1 gibt es einen Hinweis auf Clustering, Mischungen, Trends oder Oszillation. Die Unterzeile der Kachel zeigt α.",
+      "tests": "Die vier Lauftests in fester Reihenfolge: Clustering, Mischungen, Trends, Oszillation. Je Test stehen Test, p-Wert, Zahl der gezählten Runs und Urteil."
+    },
+    "RunTest": {
+      "id": "Welcher Test: clustering (zu wenige Runs um den Median), mixtures (zu viele Runs um den Median), trends (zu wenige Runs ↑/↓), oscillation (zu viele Runs ↑/↓).",
+      "p": "p-Wert des Tests aus der Normalnäherung der Runs: z = (Runs − Erwartung)/√Varianz. Clustering und Trends: Φ(z); Mischungen und Oszillation: 1 − Φ(z). Bei Streuung 0 ist p = 1.",
+      "observed": "Zahl der gezählten Runs, auf denen der Test beruht: bei Clustering und Mischungen die Runs um den Median, bei Trends und Oszillation die Runs ↑/↓.",
+      "flagged": "Wahr, wenn der p-Wert kleiner als α ist; der Test schlägt dann an."
+    },
+    "Point": {
+      "value": "Der gezeichnete Wert, in der Reihenfolge der Spalte; nicht numerische Zellen sind übersprungen."
+    }
+  }
+}
