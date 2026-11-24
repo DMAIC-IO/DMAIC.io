@@ -1,0 +1,375 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau einer Regelkarte",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Eine {{term:regelkarte|Regelkarte}} (Control Chart, SPC-Karte) zeigt den zeitlichen Verlauf eines Prozesskennwerts zusammen mit statistischen Grenzen. Sie unterscheidet zufällige Streuung ({{term:zufallsursache|Zufallsursachen}}, Prozess „im Griff“) von systematischen Abweichungen (Sonderursachen) und ist das Standardwerkzeug der Control-Phase, um einen verbesserten Prozess dauerhaft zu überwachen."
+        },
+        {
+          "type": "definition",
+          "term": "Mittellinie (CL)",
+          "content": "Die {{term:mittellinie|Mittellinie CL}} ist der {{term:mittelwert|Mittelwert}} der Baseline-Punkte: der Einzelwerte, der Untergruppen-Mittelwerte oder, auf der Streuungskarte, der Spannweiten bzw. Standardabweichungen. Sie repräsentiert das aktuelle Prozessniveau."
+        },
+        {
+          "type": "definition",
+          "term": "UCL und LCL (±3σ)",
+          "content": "Die {{term:regelgrenze|UCL und LCL}} sind die obere und untere Eingriffsgrenze, im Abstand von 3 σ̂ von der Mittellinie. σ̂ ist die aus den Daten geschätzte Streuung innerhalb der Untergruppen (bei Einzelwerten aus den gleitenden Spannweiten), nicht die {{term:standardabweichung|Standardabweichung}} aller Werte. Innerhalb dieser Grenzen gelten Abweichungen als zufällig; Werte außerhalb deuten auf eine Sonderursache hin."
+        },
+        {
+          "type": "definition",
+          "term": "Zonen A, B, C",
+          "content": "Der Bereich zwischen Mittellinie und Grenzen wird in drei {{term:sigma-zonen|Zonen}} zu je einem σ̂ unterteilt: C bis 1σ, B von 1σ bis 2σ, A von 2σ bis 3σ. {{term:nelson-regeln|Western-Electric- und Nelson-Regeln}} nutzen diese Zonen, um nicht-zufällige Muster zu erkennen."
+        },
+        {
+          "type": "definition",
+          "term": "Sonderursache (special cause)",
+          "content": "Eine {{term:sonderursache|Sonderursache}} ist ein Einfluss außerhalb der normalen Prozessstreuung, zum Beispiel ein Werkzeugbruch, ein neuer Operator, ein Materialwechsel. Sie muss identifiziert und beseitigt werden, bevor der Prozess weiterläuft."
+        },
+        {
+          "type": "definition",
+          "term": "Kartentypen",
+          "content": "Dieses Modul rechnet {{term:i-mr-chart|I-MR}} für Einzelwerte sowie {{term:xbar-r-chart|X̄-R}} und X̄-S für {{term:subgruppe|Untergruppen}}. Für Anteile (defekt/nicht defekt) gibt es die {{term:p-chart|p- und np-Karte}}, für Zählwerte (Fehler pro Einheit) die {{term:c-chart|c- und u-Karte}}, beide im Modul Regelkarte (attributiv). Die Wahl hängt von Datentyp und Untergruppen ab."
+        },
+        {
+          "type": "paragraph",
+          "content": "Regelkarten verhindern, dass Prozesse unbemerkt driften. Sie sind kein Qualitätsurteil, sondern ein Frühwarnsystem: sie zeigen, dass etwas passiert, bevor die Spezifikation verletzt wird."
+        }
+      ]
+    },
+    "chartTypes": {
+      "title": "I-MR, X̄-R und X̄-S",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Jeder Kartentyp besteht aus zwei Teilkarten: oben die Lage (Einzelwerte oder Mittelwerte), unten die Streuung (gleitende {{term:spannweite|Spannweite}}, Spannweite oder Standardabweichung). Die Grenzen werden aus der Baseline gerechnet; die Konstanten hängen von der Stichprobengröße n ab (Abschnitt Konstanten)."
+        },
+        {
+          "type": "definition",
+          "term": "I-MR (Einzelwerte, n = 1)",
+          "content": "Gleitende Spannweite MRᵢ = |xᵢ − xᵢ₋₁| aufeinanderfolgender Werte. Einzelwertkarte: CL = x̄, UCL/LCL = x̄ ± 3 · MR̄/d₂ = x̄ ± 2,660 · MR̄ mit d₂ = 1,128, σ̂ = MR̄/1,128. MR-Karte: CL = MR̄, UCL = D₄ · MR̄ = 3,267 · MR̄, LCL = 0. Für Messungen, die einzeln anfallen (Chargen, Tageswerte, teure Prüfungen)."
+        },
+        {
+          "type": "definition",
+          "term": "X̄-R (Mittelwert und Spannweite, n = 2 bis 10)",
+          "content": "Je n aufeinanderfolgende Werte bilden eine Untergruppe mit Mittelwert x̄ⱼ und Spannweite Rⱼ = max − min. X̄-Karte: CL = x̄̄, UCL/LCL = x̄̄ ± A₂ · R̄, σ̂ = R̄/(d₂ · √n). R-Karte: CL = R̄, UCL = D₄ · R̄, LCL = D₃ · R̄. Die Spannweite ist einfach zu rechnen, verliert aber bei größerem n an Wirksamkeit."
+        },
+        {
+          "type": "definition",
+          "term": "X̄-S (Mittelwert und Standardabweichung, n = 2 bis 25)",
+          "content": "Wie X̄-R, aber mit der Standardabweichung sⱼ jeder Untergruppe (Teiler n − 1). X̄-Karte: CL = x̄̄, UCL/LCL = x̄̄ ± A₃ · S̄, σ̂ = S̄/(c₄ · √n). S-Karte: CL = S̄, UCL = B₄ · S̄, LCL = B₃ · S̄. Ab etwa n = 10 die bessere Wahl, weil S alle Werte der Untergruppe nutzt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Untergruppen entstehen aus aufeinanderfolgenden Werten der Spalte; Werte am Ende, die keine volle Untergruppe füllen, bleiben unberücksichtigt. Eine Untergruppe sollte unter möglichst gleichen Bedingungen entstehen (kurz hintereinander, gleiche Maschine), damit ihre Streuung die kurzfristige Prozessstreuung zeigt."
+        }
+      ]
+    },
+    "constants": {
+      "title": "Konstanten",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Faktoren der Grenzen hängen nur von n ab und stammen aus den üblichen Tabellen für Regelkarten {{ref:montgomery-sqc-6|(Montgomery)}}. Es gilt A₂ = 3/(d₂ · √n) und A₃ = 3/(c₄ · √n); D₃, D₄, B₃ und B₄ legen die Grenzen der Streuungskarte auf ±3σ der Spannweite bzw. Standardabweichung, nach unten bei 0 begrenzt. Das Modul rechnet bis n = 25 mit denselben Tabellen; hier die Werte bis n = 10."
+        },
+        {
+          "type": "table",
+          "headers": [
+            "n",
+            "d₂",
+            "D₃",
+            "D₄",
+            "A₂",
+            "c₄",
+            "A₃",
+            "B₃",
+            "B₄"
+          ],
+          "rows": [
+            [
+              "2",
+              "1,128",
+              "0",
+              "3,267",
+              "1,880",
+              "0,7979",
+              "2,659",
+              "0",
+              "3,267"
+            ],
+            [
+              "3",
+              "1,693",
+              "0",
+              "2,574",
+              "1,023",
+              "0,8862",
+              "1,954",
+              "0",
+              "2,568"
+            ],
+            [
+              "4",
+              "2,059",
+              "0",
+              "2,282",
+              "0,729",
+              "0,9213",
+              "1,628",
+              "0",
+              "2,266"
+            ],
+            [
+              "5",
+              "2,326",
+              "0",
+              "2,114",
+              "0,577",
+              "0,9400",
+              "1,427",
+              "0",
+              "2,089"
+            ],
+            [
+              "6",
+              "2,534",
+              "0",
+              "2,004",
+              "0,483",
+              "0,9515",
+              "1,287",
+              "0,030",
+              "1,970"
+            ],
+            [
+              "7",
+              "2,704",
+              "0,076",
+              "1,924",
+              "0,419",
+              "0,9594",
+              "1,182",
+              "0,118",
+              "1,882"
+            ],
+            [
+              "8",
+              "2,847",
+              "0,136",
+              "1,864",
+              "0,373",
+              "0,9650",
+              "1,099",
+              "0,185",
+              "1,815"
+            ],
+            [
+              "9",
+              "2,970",
+              "0,184",
+              "1,816",
+              "0,337",
+              "0,9693",
+              "1,032",
+              "0,239",
+              "1,761"
+            ],
+            [
+              "10",
+              "3,078",
+              "0,223",
+              "1,777",
+              "0,308",
+              "0,9727",
+              "0,975",
+              "0,284",
+              "1,716"
+            ]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "D₃ ist bis n = 6 gleich 0, B₃ bis n = 5: Bei kleinen Untergruppen hat die Streuungskarte keine untere Grenze, eine auffällig kleine Streuung lässt sich dort mit Regel 1 nicht erkennen."
+        }
+      ]
+    },
+    "stages": {
+      "title": "Stages — mehrere Baselines",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Wenn ein Prozess durch eine bekannte Veränderung neu eingestellt wurde (Werkzeugwechsel, neue Charge, Materialwechsel, Maschinen-Override), liefern globale Grenzen ein verzerrtes Bild: sie mischen die alten und neuen Streuungen. Mit Stages werden für jeden Abschnitt eigene Mittellinie und Eingriffsgrenzen berechnet."
+        },
+        {
+          "type": "definition",
+          "term": "Eingabe",
+          "content": "Im Feld „Stage-Grenzen“ die Nummer des letzten Punkts jeder Stage eintragen, mit Komma getrennt. Beispiel: „12, 25“ bei 30 Punkten ergibt drei Stages: 1–12, 13–25, 26–30. Grenzen, die nicht innerhalb der Reihe liegen, zählen nicht. Bei X̄-R und X̄-S zählen die Einzelwerte; die Grenze sollte ein Vielfaches der Untergruppengröße sein, sonst zählt die geteilte Untergruppe zur vorigen Stage (die Karte weist darauf hin)."
+        },
+        {
+          "type": "definition",
+          "term": "Wirkung",
+          "content": "Die Karte zeigt treppenförmige Mittellinie und Grenzen, mit gestrichelten vertikalen Trennlinien an jedem Stage-Wechsel. Jede Stage wird an ihren eigenen Grenzen gemessen: Die Nelson-Tests laufen je Stage, Läufe (zum Beispiel Test 2) beginnen an jeder Stage-Grenze neu, auf beiden Karten. Die gleitende Spannweite über eine Stage-Grenze hinweg wird nicht gezeichnet. Kennzahlen und Cp/Cpk beziehen sich auf die letzte Stage, also den Prozess, wie er jetzt läuft."
+        },
+        {
+          "type": "paragraph",
+          "content": "Stages ersetzen den Baseline-Count nicht, sie sind ein anderer Mechanismus. Setze entweder einen Baseline-Count (klassisch Phase I/II) oder Stage-Grenzen (mehrere stabile Abschnitte). Die Stages-Eingabe übersteuert den Baseline-Count, sobald sie gesetzt ist. Mit mehreren Stages wirken Ausschlüsse nicht, und Grenzen lassen sich nicht einfrieren."
+        }
+      ]
+    },
+    "phase1and2": {
+      "title": "Phase I / II und Annotationen",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der klassische SPC-Workflow trennt zwei Phasen: Phase I sammelt Vorlaufdaten, identifiziert Sonderursachen und schließt sie aus, bis die Baseline „stabil“ ist. Phase II hält die so ermittelten Grenzen fest und prüft neue Datenpunkte gegen sie."
+        },
+        {
+          "type": "definition",
+          "term": "Baseline (Phase I)",
+          "content": "Die Baseline-Anzahl legt fest, aus wie vielen Werten vom Anfang der Reihe die Grenzen gerechnet werden; leer heißt alle Werte. Die Regeln prüfen trotzdem alle Punkte, so werden die Werte nach der Baseline schon an den Grenzen der Baseline gemessen. Bei X̄-Karten wird auf ganze Untergruppen aufgerundet; eine Zahl über der Zahl der Werte bedeutet alle Werte."
+        },
+        {
+          "type": "definition",
+          "term": "Annotationen (Phase I)",
+          "content": "Klick auf eine Regelverletzung in der Tabelle öffnet einen Dialog: Ursache als Freitext eintragen und den Punkt optional aus der Grenzen-Berechnung ausschließen. Ausgeschlossene Punkte erscheinen als graues ✕: sie stehen weiterhin im Chart, beeinflussen aber Mittellinie, UCL und LCL nicht mehr. Bei I-MR fallen dabei auch die beiden gleitenden Spannweiten mit diesem Punkt aus MR̄. Die Grenzen passen sich nach jedem Ausschluss sofort an. Mit mehreren Stages und bei eingefrorenen Grenzen wirkt ein Ausschluss nicht. Der Löschknopf im Dialog entfernt die Annotation nach einer Rückfrage."
+        },
+        {
+          "type": "definition",
+          "term": "Phase II — Grenzen einfrieren",
+          "content": "Mit „Grenzen einfrieren“ werden die aktuellen Grenzen beider Teilkarten gespeichert. Anschließend hinzukommende Daten werden gegen diese festen Grenzen geprüft, ohne dass UCL und LCL sich verändern. Über „Auftauen“ lässt sich der Live-Modus wieder einschalten. Die Grenzen gehören zur Spalte, aus der sie berechnet wurden: wählen Sie eine andere Spalte, werden sie verworfen. Sie gelten außerdem nur beim Kartentyp und bei der Stichprobengröße, mit denen sie eingefroren wurden."
+        },
+        {
+          "type": "paragraph",
+          "content": "Phase II funktioniert nur ohne Stages: bei Multi-Stage-Karten gibt es bereits je Stage eigene Grenzen, ein zusätzliches Einfrieren wäre doppelte Buchführung."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Kartentyp anhand Datentyp und Untergruppierung wählen: Einzelwerte → I-MR, Untergruppen bis 10 → X̄-R, größere Untergruppen → X̄-S.",
+            "Genügend Vorlaufdaten sammeln, typischerweise 20–25 Untergruppen oder 100+ Einzelwerte.",
+            "Mittellinie und Grenzen aus den Vorlaufdaten berechnen (Phase I).",
+            "Zuerst die Streuungskarte prüfen: Ist sie nicht stabil, sind auch die Grenzen der Lagekarte nicht verlässlich, weil sie aus der mittleren Streuung entstehen.",
+            "Auf Ausreißer und Muster prüfen, Sonderursachen aus der Phase I ausschließen und Grenzen neu berechnen.",
+            "Laufende Überwachung aufnehmen (Phase II): jeder neue Punkt wird an den festen Grenzen geprüft.",
+            "Bei Regelverletzung die Ursache suchen, dokumentieren und abstellen.",
+            "Grenzen nur neu berechnen, wenn der Prozess nachweislich und absichtlich verändert wurde."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Regeln für Sonderursachen ({{term:nelson-regeln|Nelson}})",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "{{term:nelson-regel-1|Regel 1}}: 1 Punkt außerhalb der 3σ-Grenzen — deutlich außer Kontrolle.",
+            "{{term:nelson-regel-2|Regel 2}}: 9 Punkte in Folge auf derselben Seite der Mittellinie — Niveauverschiebung.",
+            "{{term:nelson-regel-3|Regel 3}}: 6 Punkte in Folge steigend oder fallend — Trend.",
+            "{{term:nelson-regel-4|Regel 4}}: 14 Punkte in Folge abwechselnd steigend und fallend — systematisches Wechselmuster, etwa zwei Maschinen im Wechsel.",
+            "{{term:nelson-regel-5|Regel 5}}: 2 von 3 Punkten jenseits 2σ (Zone A) auf derselben Seite — Nähe zur Grenze häufiger als erwartet.",
+            "{{term:nelson-regel-6|Regel 6}}: 4 von 5 Punkten jenseits 1σ (Zone B oder A) auf derselben Seite — kleine Verschiebung des Niveaus.",
+            "{{term:nelson-regel-7|Regel 7}}: 15 Punkte in Folge innerhalb 1σ (Zone C) beiderseits — weniger Streuung als die Grenzen erwarten lassen, oft Untergruppen aus gemischten Strömen oder zu weit gerechnete Grenzen.",
+            "{{term:nelson-regel-8|Regel 8}}: 8 Punkte in Folge jenseits 1σ auf beiden Seiten, keiner in Zone C — Mischung zweier Niveaus, etwa zwei Lieferanten oder Schichten."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "σ ist dabei das σ̂ der jeweiligen Teilkarte. Geprüft wird die Einzelwert- bzw. X̄-Karte mit allen angehakten Regeln; ihre Verletzungen stehen in der Tabelle und in der Kennzahl Verletzungen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Auf der MR-, R- und S-Karte gelten nur die Regeln 1–4 (wie in Minitab); ihre Verletzungen zeigt nur das Abzeichen dieser Karte. Die Streuungsgröße ist schief verteilt; Zonen aus (UCL − Mittellinie)/3 hätten dort keine definierte Fehlalarm-Rate."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Regeln sind Hinweise, nicht Urteile. Jede Verletzung sollte zur Ursachenrecherche führen, nicht automatisch zum Alarm. Zu viele aktivierte Regeln erzeugen Fehlalarme."
+        },
+        {
+          "type": "paragraph",
+          "content": "Voreingestellt ist wie in Minitab nur Regel 1. Bei 25 Punkten eines stabilen Prozesses meldet sie in etwa 7 % der Fälle fälschlich eine Sonderursache, die Regeln 1–6 zusammen in etwa 24 %. Weitere Regeln gezielt zuschalten — beim Festlegen der Grenzen empfiehlt Minitab die Regeln 1, 2 und 7."
+        }
+      ]
+    },
+    "capability": {
+      "title": "Prozessfähigkeit (Cp, Cpk)",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Mit OSG und USG ({{term:spezifikationsgrenzen|Spezifikationsgrenzen}}) rechnet das Modul die {{term:prozessfaehigkeit|Prozessfähigkeit}} aus der Mittellinie und der Streuung innerhalb der ersten Teilkarte."
+        },
+        {
+          "type": "definition",
+          "term": "Formeln",
+          "content": "{{term:cp|Cp}} = (OSG − USG)/(6σ), Cpu = (OSG − x̄)/(3σ), Cpl = (x̄ − USG)/(3σ), {{term:cpk|Cpk}} = min(Cpu, Cpl); mit nur einer Grenze ist Cpk deren Wert, Cp gibt es dann nicht. x̄ ist die Mittellinie der ersten Teilkarte."
+        },
+        {
+          "type": "definition",
+          "term": "Welches σ",
+          "content": "σ ist die Streuung innerhalb: bei I-MR MR̄/d₂, bei X̄-R R̄/d₂, bei X̄-S S̄/c₄. Bei den X̄-Karten wird σ̂ der Mittelwerte dazu mit √n auf die Einzelwerte zurückgerechnet. Mit Stages gelten Mittellinie und σ der letzten Stage, mit eingefrorenen Grenzen die eingefrorenen Werte. Ist σ̂ = 0, gibt es keine Fähigkeit."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Kennzahl Cpk ist ab 1,33 grün (fähig), ab 1,0 gelb (bedingt fähig), darunter rot. Cp und Cpk mit der Streuung innerhalb zeigen, was der Prozess kurzfristig kann; die Gesamtstreuung über alle Werte ({{term:ppk|Ppk}}) rechnet das Modul Prozessfähigkeit. Fähigkeitskennzahlen sind nur bei einem stabilen Prozess aussagekräftig: erst die Karte stabilisieren, dann Cpk lesen."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Spezifikationsgrenzen statt Regelgrenzen",
+          "content": "{{term:spezifikationsgrenzen|USL/LSL}} kommen vom Kunden, {{term:regelgrenze|UCL/LCL}} aus den Prozessdaten. Beides zu vermischen (Spezgrenzen in die Karte zu zeichnen und als Eingriffsgrenzen zu behandeln) ist einer der häufigsten SPC-Fehler. Bei X̄-Karten stehen die Spezifikationslinien neben Mittelwerten, die enger streuen als die Einzelwerte: ein Mittelwert innerhalb der Spezifikation heißt nicht, dass alle Einzelwerte darin liegen."
+        },
+        {
+          "type": "definition",
+          "term": "Falscher Kartentyp",
+          "content": "Einen I-MR-Chart auf Anteilsdaten oder eine p-Karte auf Einzelmessungen anzuwenden liefert unsinnige Grenzen. Datentyp und Teilgruppenstruktur müssen zum Kartentyp passen."
+        },
+        {
+          "type": "definition",
+          "term": "Zu wenige Vorlaufdaten",
+          "content": "Mit 5 Teilgruppen werden die Grenzen instabil und ändern sich ständig. Mindestens 20–25 Teilgruppen sind nötig, um eine tragfähige Baseline zu bekommen."
+        },
+        {
+          "type": "definition",
+          "term": "Zu viele Regeln aktiviert",
+          "content": "Jede zusätzliche Regel erhöht die Fehlalarm-Rate. Wer alle {{term:nelson-regeln|Nelson-Regeln}} aktiviert, hat im Durchschnitt alle paar Datenpunkte einen „Treffer“ und nimmt die Karte dann nicht mehr ernst."
+        },
+        {
+          "type": "definition",
+          "term": "Grenzen nach jeder Änderung neu berechnen",
+          "content": "Wer bei jeder Verletzung die Grenzen nachzieht, sieht den Drift nie. Grenzen nur anpassen, wenn es einen dokumentierten Grund gibt (neuer Prozess, neues Equipment)."
+        },
+        {
+          "type": "definition",
+          "term": "Ausschluss bei X̄-Karten trifft eine andere Untergruppe",
+          "content": "Bei X̄-R und X̄-S nimmt der Dialog die Nummer der angeklickten Untergruppe, die Rechnung liest sie aber als Nummer eines Einzelwerts und schließt die Untergruppe aus, die diesen Einzelwert enthält. Beispiel mit n = 5: Ein Ausschluss an Untergruppe #3 nimmt Untergruppe #1 aus den Grenzen (sie enthält den dritten Einzelwert), das graue ✕ steht dort; Untergruppe #3 bleibt in der Rechnung. Vor einem Ausschluss in einer X̄-Karte deshalb prüfen, wo das ✕ erscheint, und die Grenzen vergleichen."
+        },
+        {
+          "type": "definition",
+          "term": "Abzeichen „eingefroren“ ohne Wirkung",
+          "content": "Das Abzeichen Phase II und der Knopf folgen allein den gespeicherten Grenzen. Nach einem Wechsel von Kartentyp oder Stichprobengröße oder mit Stages steht weiter „Phase II (eingefroren)“, gerechnet wird aber live mit neuen Grenzen. Zurückgewechselt gelten die eingefrorenen Grenzen wieder. Wer wirklich neu anfangen will, taut die Grenzen vor dem Wechsel auf."
+        },
+        {
+          "type": "definition",
+          "term": "Dashboard-Kachel rechnet anders als das Modul",
+          "content": "Die Kachel im Dashboard rechnet ohne Stages, ohne ausgeschlossene Punkte und ohne eingefrorene Grenzen, prüft die Regeln über die ganze Reihe und rechnet Cpk über alle Werte. Mit Stages, Ausschlüssen oder Phase II zeigt sie deshalb andere Mittellinie, Grenzen, Verletzungen und Cpk als das Modul. Maßgeblich ist das Modul; die Kachel ist eine Übersicht."
+        },
+        {
+          "type": "definition",
+          "term": "Karte ohne Reaktion",
+          "content": "Eine Regelkarte ohne zugeordnete Reaktionsprozedur ist Dekoration. Pro Regelverletzung muss klar sein: wer schaut hin, wer entscheidet, wer dokumentiert."
+        }
+      ]
+    }
+  }
+}
