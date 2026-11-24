@@ -126,5 +126,9 @@
   "1.9.2": {
     "de": "Prozent- und Währungsspalten im XY-Plot, korrigierte Spaltenrolle im Datenblatt",
     "en": "Percent and currency columns in the XY plot, corrected column role in the worksheet"
+  },
+  "1.9.3": {
+    "de": "Feste Bezüge mit $ in Formeln, Legenden-Abschnitt im Diagramm-Editor",
+    "en": "Absolute references with $ in formulas, legend section in the chart editor"
   }
 }
