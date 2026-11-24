@@ -32,7 +32,7 @@ export default {
           {
             type: 'definition',
             term: 'Formeln',
-            content: 'Zellen, die mit „=" beginnen, sind Formeln (z. B. =A1+B1, =MEAN(A:A)). Die Berechnung erfolgt sofort und wird beim Öffnen automatisch aktualisiert.',
+            content: 'Zellen, die mit „=" beginnen, sind Formeln (z. B. =C1[1]+C2[1] für Zeile 1 der Spalten C1 und C2, =AVG(C1) für den Mittelwert der Spalte C1). Die Berechnung erfolgt sofort und wird beim Öffnen automatisch aktualisiert.',
           },
           {
             type: 'definition',
@@ -66,7 +66,7 @@ export default {
           {
             type: 'definition',
             term: 'Formulas',
-            content: 'Cells starting with "=" are formulas (e.g. =A1+B1, =MEAN(A:A)). They are evaluated immediately and recalculated automatically when the worksheet is reopened.',
+            content: 'Cells starting with "=" are formulas (e.g. =C1[1]+C2[1] for row 1 of columns C1 and C2, =AVG(C1) for the mean of column C1). They are evaluated immediately and recalculated automatically when the worksheet is reopened.',
           },
           {
             type: 'definition',
