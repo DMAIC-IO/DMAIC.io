@@ -56,7 +56,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],
   'transformed-imr-chart': [
-    { match: "t('thLimit')", reason: 'Spalte der Zeilennamen OEG, Mittellinie, UEG; die Sätze stehen an den beiden Wertspalten', count: 1 },
+    { match: "t('thLimit')", reason: 'Spalte der Zeilennamen UCL, CL, LCL; die Sätze stehen an den beiden Wertspalten', count: 1 },
   ],
   'msa-typ4': [
     { match: 'name="msa4-norm"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },

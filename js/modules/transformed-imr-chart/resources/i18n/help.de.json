@@ -11,7 +11,7 @@
         {
           "type": "definition",
           "term": "Box-Cox-Transform",
-          "content": "y = (xᵏ − 1) / λ für λ ≠ 0, y = ln(x) für λ = 0. λ wird per Anderson-Darling-Optimierung gesucht (Gitter [-3, 3], Schritt 0,05) oder manuell gesetzt."
+          "content": "y = (x^λ − 1) / λ für λ ≠ 0, y = ln(x) für λ = 0. λ wird per Anderson-Darling-Optimierung gesucht (Gitter [-3, 3], Schritt 0,05) oder manuell gesetzt."
         },
         {
           "type": "definition",
