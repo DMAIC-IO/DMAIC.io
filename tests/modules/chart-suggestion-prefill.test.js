@@ -51,6 +51,7 @@ suite('chart-suggestion domain — buildPrefill', () => {
       y: { instanceId: 'ws', sheetId: 's', columnId: 'b' },
       group: null,
       size: null,
+      errorBars: { mode: 'none' },
     }]);
   });
 

@@ -4,6 +4,7 @@
 import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
 import { sourceColumns } from '../../../core/source-columns.js';
 import { buildBubble } from './bubble.js';
+import { buildErrorBars } from './error-bars.js';
 
 export { sourceColumns };
 
@@ -20,9 +21,10 @@ const isNum = (v) => typeof v === 'number' && !Number.isNaN(v);
  * @param {number[]} y
  * @param {{ sizes: number[], rawSizes: number[], label: string }|null} bubble
  * @param {{ showMarkers: boolean, showLines: boolean }} model
+ * @param {object|null} [errorBars] Konfiguration `series.errorBars` oder `null`
  * @returns {Record<string, any>}
  */
-function makeSeries(idx, name, x, y, bubble, model) {
+function makeSeries(idx, name, x, y, bubble, model, errorBars = null) {
   const s = {
     name,
     color: CHART_COLORS[idx % CHART_COLORS.length],
@@ -40,6 +42,7 @@ function makeSeries(idx, name, x, y, bubble, model) {
     s.sizeValues = bubble.rawSizes;
     s.sizeLabel = bubble.label;
   }
+  if (errorBars) s.errorBars = errorBars;
   return s;
 }
 
@@ -76,13 +79,14 @@ function uniqueNames(items) {
 /**
  * Reihen je Datensatz (mit Gruppenspalte eine je Stufe, mindestens zwei Punkte)
  * mit eindeutigen Namen, dann die Einstellungen alter Stände je Index.
- * Unvollständige Datensätze entfallen.
- * @param {{ datasets: { x: object|null, y: object|null, group: object|null, size: object|null }[], showMarkers: boolean, showLines: boolean, legacySeries: readonly (object|undefined)[] }} model
+ * Unvollständige Datensätze entfallen. Je Punkt wird die Quellzeile
+ * mitgeführt: daran hängen die Fehlerbalken der Reihe (`errorBars`).
+ * @param {{ datasets: { x: object|null, y: object|null, group: object|null, size: object|null, errorBars?: any }[], showMarkers: boolean, showLines: boolean, legacySeries: readonly (object|undefined)[] }} model
  * @param {Read} read
  * @returns {{ series: Record<string, any>[], xRef: object|null } | { error: 'errTooFew'|'errNoGroupLevels', params: Record<string, any> }}
  */
 export function buildSeries(model, read) {
-  /** @type {{ name: string, xName: string, x: number[], y: number[], bubble: { sizes: number[], rawSizes: number[], label: string }|null }[]} */
+  /** @type {{ name: string, xName: string, x: number[], y: number[], bubble: { sizes: number[], rawSizes: number[], label: string }|null, errorBars: object|null }[]} */
   const items = [];
   let xRef = null;
 
@@ -102,7 +106,7 @@ export function buildSeries(model, read) {
       sVals ? sVals.length : Infinity,
     );
 
-    /** @type {Map<string, { level: any, x: number[], y: number[], sizes: number[]|null }>} */
+    /** @type {Map<string, { level: any, x: number[], y: number[], rows: number[], sizes: number[]|null }>} */
     const buckets = new Map();
     for (let r = 0; r < len; r++) {
       const vx = xVals[r];
@@ -120,22 +124,26 @@ export function buildSeries(model, read) {
       }
       let b = buckets.get(key);
       if (!b) {
-        b = { level: gVals ? gVals[r] : null, x: [], y: [], sizes: sVals ? [] : null };
+        b = { level: gVals ? gVals[r] : null, x: [], y: [], rows: [], sizes: sVals ? [] : null };
         buckets.set(key, b);
       }
       b.x.push(vx);
       b.y.push(vy);
+      b.rows.push(r);
       if (sVals) b.sizes?.push(sVals[r]);
     }
 
     if (gVals && buckets.size === 0) return { error: 'errNoGroupLevels', params: { n: i + 1 } };
-    if (!gVals && !buckets.has('')) buckets.set('', { level: null, x: [], y: [], sizes: sVals ? [] : null });
+    if (!gVals && !buckets.has('')) buckets.set('', { level: null, x: [], y: [], rows: [], sizes: sVals ? [] : null });
 
     let any = false;
     for (const b of buckets.values()) {
       if (b.x.length < 2) continue;
       const name = gVals ? `${yName} — ${String(b.level)}` : yName;
-      items.push({ name, xName, x: b.x, y: b.y, bubble: b.sizes ? buildBubble(b.sizes, sName) : null });
+      items.push({
+        name, xName, x: b.x, y: b.y, bubble: b.sizes ? buildBubble(b.sizes, sName) : null,
+        errorBars: buildErrorBars(ds.errorBars, b.rows, read),
+      });
       if (!xRef) xRef = ds.x;
       any = true;
     }
@@ -143,7 +151,7 @@ export function buildSeries(model, read) {
   }
   const names = uniqueNames(items);
   const series = items.map((it, idx) => ({
-    ...makeSeries(idx, names[idx], it.x, it.y, it.bubble, model),
+    ...makeSeries(idx, names[idx], it.x, it.y, it.bubble, model, it.errorBars),
     ...(model.legacySeries[idx] ?? {}),
   }));
   return { series, xRef };

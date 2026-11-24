@@ -15,6 +15,9 @@ export default chartWidget({
     sizes: list(number({ nullable: true }), opt), sizeValues: list(number(), opt), sizeLabel: text(opt),
     errorBars: object({
       show: boolean(),
+      xMode: oneOf(['none', 'absolute', 'relative', 'percent'], opt),
+      xPlus: list(number({ nullable: true }), opt),
+      xMinus: list(number({ nullable: true }), opt),
       yMode: oneOf(['none', 'absolute', 'relative', 'percent'], opt),
       yPlus: list(number({ nullable: true }), opt),
       yMinus: list(number({ nullable: true }), opt),

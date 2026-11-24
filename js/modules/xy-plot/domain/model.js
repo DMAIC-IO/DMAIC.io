@@ -1,19 +1,21 @@
 /**
  * D.Mike — XY-Plot: Model.
  *
- * Gespeichert werden die Datensätze (je Zeile X, Y, Gruppe, Größe). Ansicht:
+ * Gespeichert werden die Datensätze (je Zeile X, Y, Gruppe, Größe und die
+ * Fehlerbalken der Reihe, `domain/error-bars.js`). Ansicht:
  * Linien- und Markerschalter, Statistik und Konfidenzniveau, die
  * Editor-Einstellungen des Diagramms und die Reihen-Einstellungen alter
  * Stände. Die Kennzahlen liefert die Ableitung `stats` aus Model und
  * Arbeitsblatt.
  */
-import { defineModel, command, list, object, text, number, boolean, columnRef, datasets } from '../../../core/model.js';
+import { defineModel, command, list, object, text, number, boolean, columnRef, datasets, index } from '../../../core/model.js';
 import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
 import { computeSeriesStats } from '../../../core/stats-panel.js';
 import { applyEdits } from '../../../core/chart-edits.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
 import { buildSeries, statsInput, sourceColumns } from './series.js';
-import { from0 } from './migrations.js';
+import { from0, from10 } from './migrations.js';
+import { ErrorBarsSpec, NUMBER_TYPES } from './error-bars.js';
 
 /**
  * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
@@ -51,19 +53,16 @@ import { from0 } from './migrations.js';
 
 const opt = { optional: true };
 
-/** Spaltentypen mit reinen Zahlen: Prozent und Währung sind ebenfalls Zahlen. */
-const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
-
 export const State = defineModel({
-  version: '1.0',
-  migrations: { '0→1.0': from0 },
+  version: '1.1',
+  migrations: { '0→1.1': from0, '1.0→1.1': from10 },
   fields: {
     datasets: datasets({
       x: columnRef({ types: NUMBER_TYPES, minCount: 1, required: true }),
       y: columnRef({ types: NUMBER_TYPES, minCount: 1, required: true }),
       group: columnRef({ group: true }),
       size: columnRef({ types: NUMBER_TYPES, minCount: 1 }),
-    }, { multi: true, colors: CHART_COLORS }),
+    }, { multi: true, colors: CHART_COLORS, extension: object({ errorBars: ErrorBarsSpec }) }),
   },
   view: {
     showLines: boolean({ default: false }),
@@ -102,6 +101,13 @@ export const State = defineModel({
     clearLegacySeries: command({
       params: {},
       run() { this.legacySeries = []; },
+    }),
+    /** Die Fehlerbalken einer Reihe ersetzen (ganze Spezifikation; ein Moduswechsel leert). */
+    setErrorBars: command({
+      params: { index: index('datasets', { existing: true }), spec: ErrorBarsSpec },
+      run({ index: at, spec }) {
+        this.datasets = this.datasets.map((d, i) => (i === at ? { ...d, errorBars: spec } : d));
+      },
     }),
   },
 });

@@ -3,7 +3,7 @@
 
 /**
  * @typedef {object} StateFields
- * @property {Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, size: { instanceId: string, sheetId?: string, columnId: string }|null }>} datasets
+ * @property {Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, size: { instanceId: string, sheetId?: string, columnId: string }|null, errorBars: { mode: 'none' }|{ mode: 'constant', constant?: { xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null } }|{ mode: 'columns', columns?: { xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null } } }>} datasets
  */
 
 /**
@@ -22,9 +22,16 @@
  */
 
 /**
+ * @typedef {object} SetErrorBarsCommand
+ * @property {number} index
+ * @property {{ mode: 'none' }|{ mode: 'constant', constant?: { xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null } }|{ mode: 'columns', columns?: { xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null } }} spec
+ */
+
+/**
  * @typedef {StateFields & StateView & {
  *   clearLegacySeries(cmd: ClearLegacySeriesCommand): void,
- *   execute(cmd: ({ type: 'clearLegacySeries' } & ClearLegacySeriesCommand)): unknown,
+ *   setErrorBars(cmd: SetErrorBarsCommand): void,
+ *   execute(cmd: ({ type: 'clearLegacySeries' } & ClearLegacySeriesCommand) | ({ type: 'setErrorBars' } & SetErrorBarsCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,

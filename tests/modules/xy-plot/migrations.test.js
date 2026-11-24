@@ -1,26 +1,27 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/xy-plot/domain/model.js';
-import { from0, legacySeriesFrom } from '../../../js/modules/xy-plot/domain/migrations.js';
+import { from0, from10, legacySeriesFrom, errorBarsFrom } from '../../../js/modules/xy-plot/domain/migrations.js';
 import { loadModel } from '../../../js/core/initial-model.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
-const empty = { x: null, y: null, group: null, size: null };
+const NONE = { mode: 'none' };
+const empty = { x: null, y: null, group: null, size: null, errorBars: NONE };
 
 suite('xy-plot: Migration', () => {
   test('v2 datasets → Slots x/y/group/size', () => {
     const out = from0({ datasets: [{ xRef: ref('a'), yRef: ref('b'), groupRef: ref('g'), sizeRef: ref('s') }] });
-    assertDeepEqual(out.datasets, [{ x: ref('a'), y: ref('b'), group: ref('g'), size: ref('s') }]);
+    assertDeepEqual(out.datasets, [{ x: ref('a'), y: ref('b'), group: ref('g'), size: ref('s'), errorBars: NONE }]);
   });
   test('v1 colRefX + seriesRefs → eine Zeile je Y mit gleichem X', () => {
     const out = from0({ colRefX: ref('x'), seriesRefs: [ref('a'), ref('b')] });
     assertDeepEqual(out.datasets, [
-      { x: ref('x'), y: ref('a'), group: null, size: null },
-      { x: ref('x'), y: ref('b'), group: null, size: null },
+      { x: ref('x'), y: ref('a'), group: null, size: null, errorBars: NONE },
+      { x: ref('x'), y: ref('b'), group: null, size: null, errorBars: NONE },
     ]);
   });
   test('Prefill-Form ohne sizeRef und ohne _schema: size null', () => {
     const m = loadModel(State, { datasets: [{ xRef: ref('a'), yRef: ref('b'), groupRef: null }] });
-    assertDeepEqual(m.datasets, [{ x: ref('a'), y: ref('b'), group: null, size: null }]);
+    assertDeepEqual(m.datasets, [{ x: ref('a'), y: ref('b'), group: null, size: null, errorBars: NONE }]);
   });
   test('leere Liste → eine leere Zeile', () => {
     assertDeepEqual(from0({ datasets: [] }).datasets, [empty]);
@@ -29,7 +30,7 @@ suite('xy-plot: Migration', () => {
   });
   test('kaputter Bezug → null, übrige Felder bleiben', () => {
     const out = from0({ datasets: [{ xRef: { instanceId: 'w', columnId: 'c' }, yRef: ref('b'), groupRef: 'kaputt', sizeRef: { instanceId: '', sheetId: 's', columnId: 'c' } }, null] });
-    assertDeepEqual(out.datasets, [{ x: null, y: ref('b'), group: null, size: null }, empty]);
+    assertDeepEqual(out.datasets, [{ x: null, y: ref('b'), group: null, size: null, errorBars: NONE }, empty]);
   });
   test('refLines (gültig, kaputt) und bgColor → chart', () => {
     const line = { dir: 'h', value: 3, label: 'Soll', dash: 'dash', color: 'red' };
@@ -83,5 +84,45 @@ suite('xy-plot: Migration', () => {
       assertDeepEqual(m.legacySeries, [{ name: 'N', connectLine: { show: true, color: 'red', dash: 'solid', width: 2 } }]);
       assertDeepEqual(m.chart.refLines, [{ dir: 'v', value: 1 }]);
     } finally { console.warn = warn; }
+  });
+});
+
+suite('xy-plot: Migration der Fehlerbalken (1.9.x → 1.1)', () => {
+  // Stand der Altform 1.9.x (ohne _schema), wie ihn xy-plot-model.js geschrieben hat.
+  const STATE_19 = {
+    datasets: [
+      { xRef: ref('x'), yRef: ref('y'), groupRef: null, sizeRef: null,
+        errorBars: { mode: 'constant', xPlus: null, xMinus: 0.5, yPlus: 2, yMinus: -1 } },
+      { xRef: ref('x'), yRef: ref('y'), groupRef: null, sizeRef: null,
+        errorBars: { mode: 'columns', xPlus: null, xMinus: null, yPlus: ref('e'), yMinus: { instanceId: '', sheetId: 's', columnId: 'f' } } },
+      { xRef: ref('x'), yRef: ref('y'), groupRef: null, sizeRef: null },
+      { xRef: ref('x'), yRef: ref('y'), groupRef: null, sizeRef: null, errorBars: { mode: 'band', yPlus: 1 } },
+      { xRef: ref('x'), yRef: ref('y'), groupRef: null, sizeRef: null,
+        errorBars: { mode: 'constant', xPlus: NaN, xMinus: '3', yPlus: ref('e'), yMinus: Infinity } },
+    ],
+    showLines: false, showMarkers: true, showStats: true, confLevel: 95,
+  };
+
+  test('1.9.x-Stand: verschachtelte Form, Unpassendes fehlt, negativer Betrag bleibt', () => {
+    const m = loadModel(State, STATE_19);
+    assertDeepEqual(m.datasets.map((d) => d.errorBars), [
+      { mode: 'constant', constant: { xMinus: 0.5, yPlus: 2, yMinus: -1 } },
+      { mode: 'columns', columns: { yPlus: ref('e') } },
+      NONE,
+      NONE,
+      { mode: 'constant', constant: {} },
+    ]);
+  });
+
+  test('errorBarsFrom: none und Unbekanntes', () => {
+    assertDeepEqual(errorBarsFrom(null), NONE);
+    assertDeepEqual(errorBarsFrom({ mode: 'none', yPlus: 3 }), NONE);
+    assertDeepEqual(errorBarsFrom({ mode: 'columns', yPlus: 3 }), { mode: 'columns', columns: {} });
+  });
+
+  test("'1.0→1.1' setzt none in jede Zeile", () => {
+    assertDeepEqual(from10({ datasets: [{ x: null, y: null, group: null, size: null }] }).datasets[0].errorBars, NONE);
+    const m = loadModel(State, { _schema: { name: 'xy-plot', version: '1.0' }, datasets: [{ x: ref('a'), y: ref('b'), group: null, size: null }] });
+    assertDeepEqual(m.datasets, [{ x: ref('a'), y: ref('b'), group: null, size: null, errorBars: NONE }]);
   });
 });

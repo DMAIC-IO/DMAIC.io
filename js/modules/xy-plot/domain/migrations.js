@@ -4,6 +4,7 @@
 import { checkValue } from '../../../core/model.js';
 import { columnRefFromJSON } from '../../../core/chart/chart-data-prep.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
+import { ERROR_BAR_KEYS } from './error-bars.js';
 
 /** Form der Diagrammfelder und einer Reihe (mit `name`). */
 const CHART_SHAPE = /** @type {Record<string, any>} */ (scatterChart.edits().shape);
@@ -77,18 +78,47 @@ export function legacySeriesFrom(old) {
 }
 
 /**
- * Eine Zeile der Datensätze aus der Altform `{ xRef, yRef, groupRef, sizeRef }`.
- * @param {any} d
- * @returns {{ x: object|null, y: object|null, group: object|null, size: object|null }}
+ * Fehlerbalken der Altform 1.9 (`{ mode, xPlus, xMinus, yPlus, yMinus }`, flach)
+ * in der verschachtelten Form. Wie `errorBarsFromJSON` der Altform: ein
+ * unbekannter Modus wird `none`; bei `constant` gelten nur endliche Zahlen,
+ * bei `columns` nur gültige Bezüge. Unpassende Werte fehlen.
+ * @param {unknown} d
+ * @returns {Record<string, any>}
  */
-function rowFrom(d) {
-  if (!d || typeof d !== 'object') return { x: null, y: null, group: null, size: null };
-  return { x: refOrNull(d.xRef), y: refOrNull(d.yRef), group: refOrNull(d.groupRef), size: refOrNull(d.sizeRef) };
+export function errorBarsFrom(d) {
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return { mode: 'none' };
+  const o = /** @type {Record<string, unknown>} */ (d);
+  if (o.mode !== 'constant' && o.mode !== 'columns') return { mode: 'none' };
+  /** @type {Record<string, any>} */
+  const values = {};
+  for (const key of ERROR_BAR_KEYS) {
+    const v = o[key];
+    if (o.mode === 'constant') {
+      if (typeof v === 'number' && Number.isFinite(v)) values[key] = v;
+    } else {
+      const r = refOrNull(v);
+      if (r) values[key] = r;
+    }
+  }
+  return { mode: o.mode, [o.mode]: values };
 }
 
 /**
- * '0→1.0': Altstände ohne `_schema` (v2 mit `datasets`, v1 mit `colRefX` und
- * `seriesRefs`). Referenzlinien, -flächen und Hintergrund wandern in `chart`,
+ * Eine Zeile der Datensätze aus der Altform `{ xRef, yRef, groupRef, sizeRef, errorBars? }`.
+ * @param {any} d
+ * @returns {{ x: object|null, y: object|null, group: object|null, size: object|null, errorBars: Record<string, any> }}
+ */
+function rowFrom(d) {
+  if (!d || typeof d !== 'object') return { x: null, y: null, group: null, size: null, errorBars: { mode: 'none' } };
+  return {
+    x: refOrNull(d.xRef), y: refOrNull(d.yRef), group: refOrNull(d.groupRef), size: refOrNull(d.sizeRef),
+    errorBars: errorBarsFrom(d.errorBars),
+  };
+}
+
+/**
+ * '0→1.1': Altstände ohne `_schema` (v2 mit `datasets` samt Fehlerbalken aus
+ * 1.9, v1 mit `colRefX` und `seriesRefs`). Referenzlinien, -flächen und Hintergrund wandern in `chart`,
  * Reihen-Einstellungen (`seriesOverrides`) je Index in `legacySeries`.
  * @param {Record<string, any>} json
  * @returns {Record<string, any>}
@@ -100,9 +130,9 @@ export function from0(json) {
   if (Array.isArray(json.datasets)) rows = json.datasets.map(rowFrom);
   else if (json.colRefX && Array.isArray(json.seriesRefs)) {
     const x = refOrNull(json.colRefX);
-    rows = json.seriesRefs.map((y) => ({ x, y: refOrNull(y), group: null, size: null }));
+    rows = json.seriesRefs.map((y) => ({ x, y: refOrNull(y), group: null, size: null, errorBars: { mode: 'none' } }));
   }
-  if (rows) out.datasets = rows.length > 0 ? rows : [{ x: null, y: null, group: null, size: null }];
+  if (rows) out.datasets = rows.length > 0 ? rows : [{ x: null, y: null, group: null, size: null, errorBars: { mode: 'none' } }];
 
   out.showLines = typeof json.showLines === 'boolean' ? json.showLines : false;
   out.showMarkers = typeof json.showMarkers === 'boolean' ? json.showMarkers : true;
@@ -122,4 +152,18 @@ export function from0(json) {
   const legacy = legacySeriesFrom(json.seriesOverrides);
   if (legacy.length > 0) out.legacySeries = legacy;
   return out;
+}
+
+/**
+ * '1.0→1.1': jede Zeile bekommt `errorBars: { mode: 'none' }`.
+ * @param {Record<string, any>} json
+ * @returns {Record<string, any>}
+ */
+export function from10(json) {
+  if (!Array.isArray(json.datasets)) return json;
+  return {
+    ...json,
+    datasets: json.datasets.map((d) => (d && typeof d === 'object' && !Array.isArray(d) && d.errorBars === undefined
+      ? { ...d, errorBars: { mode: 'none' } } : d)),
+  };
 }

@@ -38,7 +38,7 @@ suite('xy-plot: Model — Schema', () => {
   test('Slots nullbar, Vorgabe eine leere Zeile, Farben der Reihen', () => {
     const slots = State.schema.fields.datasets.slots;
     for (const k of Object.keys(slots)) assertEqual(slots[k].nullable, true, k);
-    assertDeepEqual(new State().datasets, [{ x: null, y: null, group: null, size: null }]);
+    assertDeepEqual(new State().datasets, [{ x: null, y: null, group: null, size: null, errorBars: { mode: 'none' } }]);
     assertDeepEqual([...State.schema.fields.datasets.colors], [...CHART_COLORS]);
   });
   test('Vorgaben im view-Block', () => {
