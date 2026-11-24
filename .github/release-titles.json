@@ -122,5 +122,9 @@
   "1.9.1": {
     "de": "Beispiel mit Fehlerbalken im XY-Plot",
     "en": "Error bar example in the XY plot"
+  },
+  "1.9.2": {
+    "de": "Prozent- und Währungsspalten im XY-Plot, korrigierte Spaltenrolle im Datenblatt",
+    "en": "Percent and currency columns in the XY plot, corrected column role in the worksheet"
   }
 }
