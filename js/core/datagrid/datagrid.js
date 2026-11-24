@@ -1690,6 +1690,9 @@ export class DataGrid {
   }
 
   _onBodyMouseDown(e) {
+    // A click inside the open inline editor belongs to the input: let the
+    // browser place the caret instead of committing and toggling the cell.
+    if (this.editorEl && this.editorEl.contains(e.target)) return;
     if (e.target.classList.contains('datagrid__row-header')) {
       const rowIdx = parseInt(e.target.dataset.rowIdx);
       if (!isNaN(rowIdx)) {
