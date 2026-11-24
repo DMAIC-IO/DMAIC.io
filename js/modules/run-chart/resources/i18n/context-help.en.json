@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "columnRef": {
-      "help": "The measured column: a numeric column with the values in time order, label Values Column. A result needs at least 3 numbers; empty and non-numeric cells are skipped, text such as “2,5” too. With fewer numbers the output stays empty. Empty while none is chosen; null clears the choice. A change recomputes."
+      "help": "The measured column: a numeric column with the values in time order, label Values Column. A result needs at least 3 numbers; empty and non-numeric cells are skipped, text such as “2,5” too. With fewer numbers the output stays empty. Empty while none is chosen; an empty value clears the choice. A change recomputes."
     },
     "alpha": {
       "help": "The significance level α of the four runs tests, label Significance Level α: greater than 0 and less than 1, default 0.05. A test is flagged when its p-value is below α; the smaller α, the more rarely a test is flagged. A value outside this range is rejected. A change re-evaluates the tests."

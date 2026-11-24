@@ -11,6 +11,7 @@ import { State as BarState } from '../../js/modules/bar/domain/model.js';
 import { State as HeatmapState } from '../../js/modules/heatmap/domain/model.js';
 import { State as BoxplotState } from '../../js/modules/boxplot/domain/model.js';
 import { State as ProbabilityPlotState } from '../../js/modules/probability-plot/domain/model.js';
+import { State as RunChartState } from '../../js/modules/run-chart/domain/model.js';
 
 function col(id, role, values, name) {
   return { id, name: name || id, role, type: role === 'date' ? 'date' : (role === 'continuous' ? 'numeric' : 'text'), values, roleConfirmed: false };
@@ -100,8 +101,15 @@ suite('chart-suggestion domain — buildPrefill', () => {
     assertEqual(m.aggregation, 'mean');
   });
 
-  test('run-chart → columnRef; die probability-plot-Vorbelegung lädt über die Migration als Zeile valueRef/groupRef', () => {
-    assertEqual(buildPrefill('run-chart', [cont(10, 'a')], 'ws', 's').state.columnRef.columnId, 'a');
+  test('run-chart: die Vorbelegung lädt über die Migration als columnRef mit Vorgabe-α', () => {
+    const p = buildPrefill('run-chart', [cont(10, 'a')], 'ws', 's');
+    assertEqual(p.target, 'run-chart');
+    const m = RunChartState.fromJSON(p.state);
+    assertDeepEqual(JSON.parse(JSON.stringify(m.columnRef)), { instanceId: 'ws', sheetId: 's', columnId: 'a' });
+    assertEqual(m.alpha, 0.05);
+  });
+
+  test('die probability-plot-Vorbelegung lädt über die Migration als Zeile valueRef/groupRef', () => {
     const p = buildPrefill('probability-plot', [cont(10, 'a')], 'ws', 's');
     assertEqual(p.target, 'probability-plot');
     const m = ProbabilityPlotState.fromJSON(p.state);

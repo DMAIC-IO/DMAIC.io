@@ -23,12 +23,6 @@
 export default [
   // ─── Daten-Bereich (cycle-independent) ────────────────────────
   {
-    id: 'run-chart',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./run-chart/run-chart.js'),
-  },
-  {
     id: 'rest-api',
     phase: 'data',
     group: 'collect',

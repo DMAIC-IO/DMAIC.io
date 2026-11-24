@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "columnRef": {
-      "help": "Die Messwertspalte: eine numerische Spalte mit den Werten in zeitlicher Reihenfolge, Beschriftung Werte-Spalte. Gerechnet wird ab 3 Zahlen; leere und nicht numerische Zellen werden übersprungen, auch Text wie „2,5“. Mit weniger Zahlen bleibt die Ausgabe leer. Leer, solange keine gewählt ist; null hebt die Wahl auf. Eine Änderung rechnet neu."
+      "help": "Die Messwertspalte: eine numerische Spalte mit den Werten in zeitlicher Reihenfolge, Beschriftung Werte-Spalte. Gerechnet wird ab 3 Zahlen; leere und nicht numerische Zellen werden übersprungen, auch Text wie „2,5“. Mit weniger Zahlen bleibt die Ausgabe leer. Leer, solange keine gewählt ist; ein leerer Wert hebt die Wahl auf. Eine Änderung rechnet neu."
     },
     "alpha": {
       "help": "Das Signifikanzniveau α der vier Lauftests, Beschriftung Signifikanzniveau α: größer als 0 und kleiner als 1, voreingestellt 0,05. Ein Test schlägt an, wenn sein p-Wert kleiner als α ist; je kleiner α, desto seltener schlägt ein Test an. Ein Wert außerhalb dieses Bereichs wird abgelehnt. Eine Änderung bewertet die Tests neu."

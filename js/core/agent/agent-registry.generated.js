@@ -17373,6 +17373,7 @@ export const AGENT_REGISTRY = {
   "run-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -17382,95 +17383,32 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Die Messreihe wählen und neu rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'alpha'",
-            "optional": false,
-            "help": "welche Option"
-          },
-          {
-            "name": "value",
-            "type": "number",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen.",
-        "keysOf": "Params",
-        "keys": {
-          "alpha": {
-            "type": "number",
-            "help": "Signifikanzniveau der vier Lauftests"
-          }
-        }
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit der gewählten Spalte und α neu rechnen."
       }
     },
     "fields": {
       "columnRef": {
-        "type": "object|null",
-        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
       },
       "alpha": {
         "type": "number",
-        "help": "significance level of the four runs tests, 0 < alpha < 1",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null without column or with fewer than 3 numbers",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -17522,12 +17460,41 @@ export const AGENT_REGISTRY = {
       },
       "points": {
         "type": "object[]",
-        "help": "one row per plotted value in data order: `{ value }`",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
+        "derived": true,
+        "keysOf": "Point",
+        "keys": {
+          "value": {
+            "type": "number|null",
+            "help": "der gezeichnete Wert"
+          }
+        }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "columnRef",
+      "alpha"
+    ],
+    "invariants": []
   },
   "sample-size": {
     "tagged": true,

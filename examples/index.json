@@ -867,30 +867,6 @@
       ]
     },
     {
-      "id": "spc-run-chart-shift",
-      "type": "project",
-      "title": {
-        "de": "Run-Chart mit Shift",
-        "en": "Run-Chart with shift"
-      },
-      "description": {
-        "de": "I-MR-Datensatz: Beobachtungen 1–29 stabil bei μ=10, ab Beobachtung 30 Sprung auf μ=10,18. Westerm-Electric- / Nelson-Regeln markieren den Shift.",
-        "en": "I-MR series: observations 1–29 stable at μ=10, from obs. 30 shift to μ=10.18. Western Electric / Nelson rules flag the shift."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=502",
-      "license": "public-domain",
-      "file": "projects/spc-run-chart-shift.json",
-      "format": "json",
-      "modules": [
-        "run-chart"
-      ],
-      "tags": [
-        "spc",
-        "run-chart",
-        "shift"
-      ]
-    },
-    {
       "id": "spc-short-run-zmr",
       "type": "project",
       "title": {
