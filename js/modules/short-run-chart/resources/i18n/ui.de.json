@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Regelkarte (Kurzläufer Z-MR)",
+  "description": "Standardisierte I-MR über mehrere Teile mit unterschiedlichen Targets",
+  "whenToUse": "Kurze Serien mit Teilen unterschiedlicher Sollwerte in einer Regelkarte überwachen: jeder Wert wird innerhalb seines Teils standardisiert und in einer Z-MR-Karte gezeichnet.",
+  "sectionData": "Datenquelle",
+  "valuesColumn": "Messwerte-Spalte",
+  "groupsColumn": "Teile-/Gruppen-Spalte",
+  "groupsHint": "Identifiziert das Teil je Messwert. Pro Teil werden Mittelwert und σ̂ separat berechnet.",
+  "chartTitle_z": "Z-Karte — {col}",
+  "chartTitle_mr": "MR-Karte (z) — {col}",
+  "xLabelSample": "Beobachtung",
+  "yLabel_z": "z",
+  "yLabel_mrZ": "MR (z)",
+  "stable": "STABIL",
+  "unstable": "{count} Signale",
+  "statGroups": "Teile",
+  "statTotal": "{total} Messwerte",
+  "statMrBarZ": "MR̄ (z)",
+  "statUclMr": "UCL_MR {v}",
+  "statSignals": "Signale",
+  "statOf": "von {total} Datenpunkten",
+  "thGroup": "Teil",
+  "thCount": "n",
+  "thMean": "x̄",
+  "thSigma": "σ̂",
+  "thMrBar": "MR̄",
+  "warningSkipped": "{count} Messwert(e) konnten nicht standardisiert werden (Teil hat zu wenige Punkte für σ̂ — als z=0 dargestellt).",
+  "errCompute": "Berechnung fehlgeschlagen.",
+  "invariants": {
+    "chartKeys": "Einstellungen gibt es nur für die Z-Karte und die MR-Karte."
+  }
+}

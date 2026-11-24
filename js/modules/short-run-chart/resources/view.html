@@ -1,0 +1,91 @@
+<div class="src dmike-split" x-data="shortRunChart">
+  <!-- data-help-key="" an den Picker-Wirten ist gewollt: die Beschriftungen tragen die Anker fields.*. -->
+  <div class="src__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.short-run-chart.fields.valuesRef.help" x-text="t('valuesColumn')"></label>
+      <div data-ref="val-picker" data-help-key="" x-field="model.valuesRef"></div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.short-run-chart.fields.groupsRef.help" x-text="t('groupsColumn')"></label>
+      <div data-ref="grp-picker" data-help-key="" x-field="model.groupsRef"></div>
+      <span class="field-hint" x-text="t('groupsHint')"></span>
+    </div>
+
+  </div>
+
+  <div class="src__output dmike-split__output">
+    <div data-ref="warning-area">
+      <template x-if="warningText">
+        <div class="src__warning" x-text="warningText"></div>
+      </template>
+    </div>
+    <div data-ref="stats-bar">
+      <template x-if="hasResult">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.groups"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.short-run-chart.types.Result.groups" x-text="t('statGroups')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.totalText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.mrBarText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.short-run-chart.types.Result.mr" x-text="t('statMrBarZ')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.uclMrText"></div>
+          </div>
+          <div class="dmike-kpi" :class="kpi.signalsClass">
+            <div class="dmike-kpi-value" x-text="kpi.signals"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.short-run-chart.types.Result.signalsZ" x-text="t('statSignals')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.ofText"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="error-area">
+      <template x-if="errorText">
+        <div class="src__error" x-text="errorText"></div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, key) in chartViews" :key="key">
+        <div class="src__chart-section">
+          <div class="src__chart-header">
+            <span class="src__chart-title" x-text="cv.title"></span>
+            <span class="src__badge" :class="cv.badge.cls">
+              <span class="icon icon--sm icon--text" :data-icon="cv.badge.icon" aria-hidden="true"></span>
+              <span x-text="cv.badge.text"></span>
+            </span>
+          </div>
+          <div class="src__plot-wrap" :data-chart-host="key" x-widget="control-chart" x-widget-config="cv.config" x-widget-value="model.charts[key]" x-widget-legacy-edit-key="cv.legacyEditKey"></div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="groups-wrap">
+      <template x-if="hasResult">
+        <table class="dmike-table src__groups-table">
+          <thead><tr>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.group" x-text="t('thGroup')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.count" x-text="t('thCount')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.mean" x-text="t('thMean')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.sigma" x-text="t('thSigma')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.mrBar" x-text="t('thMrBar')"></span></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="(g, i) in groupRows" :key="i">
+              <tr>
+                <td x-text="g.group"></td>
+                <td x-text="g.count"></td>
+                <td x-text="g.mean"></td>
+                <td x-text="g.sigma"></td>
+                <td x-text="g.mrBar"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </template>
+    </div>
+  </div>
+</div>

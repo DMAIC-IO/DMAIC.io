@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Control Chart (Short-Run Z-MR)",
+  "description": "Standardised I-MR across parts with different targets",
+  "whenToUse": "Control-chart short production runs that mix parts with different targets: each value is standardised within its part and plotted on one Z-MR chart.",
+  "sectionData": "Data Source",
+  "valuesColumn": "Values Column",
+  "groupsColumn": "Part / Group Column",
+  "groupsHint": "Identifies the part for each measurement. Mean and σ̂ are computed separately per part.",
+  "chartTitle_z": "Z chart — {col}",
+  "chartTitle_mr": "MR chart (z) — {col}",
+  "xLabelSample": "Observation",
+  "yLabel_z": "z",
+  "yLabel_mrZ": "MR (z)",
+  "stable": "STABLE",
+  "unstable": "{count} signals",
+  "statGroups": "Parts",
+  "statTotal": "{total} values",
+  "statMrBarZ": "MR̄ (z)",
+  "statUclMr": "UCL_MR {v}",
+  "statSignals": "Signals",
+  "statOf": "of {total} data points",
+  "thGroup": "Part",
+  "thCount": "n",
+  "thMean": "x̄",
+  "thSigma": "σ̂",
+  "thMrBar": "MR̄",
+  "warningSkipped": "{count} value(s) could not be standardised (part has too few points for σ̂ — shown as z=0).",
+  "errCompute": "Computation failed.",
+  "invariants": {
+    "chartKeys": "Settings exist only for the Z chart and the MR chart."
+  }
+}
