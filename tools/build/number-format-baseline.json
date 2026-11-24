@@ -68,12 +68,6 @@
     "count": 3,
     "reason": "Neue Faktorstufen beim Re-Zentrieren einer EVOP-Phase werden auf vier Nachkommastellen gerundet und als Text im Plan gespeichert (Modellwert, keine Anzeige), wie bisher"
   },
-  "js/modules/gage-run-chart/gage-run-chart.html": {
-    "count": 1
-  },
-  "js/modules/gage-run-chart/gage-run-chart.js": {
-    "count": 1
-  },
   "js/modules/glm-regression/glm-regression.js": {
     "count": 11
   },

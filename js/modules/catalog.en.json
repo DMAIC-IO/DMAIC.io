@@ -45,6 +45,11 @@
     "description": "Design of Experiments: Full Factorial, Fractional, Plackett-Burman, CCD, Box-Behnken, Taguchi",
     "whenToUse": "When the effect of several factors on one or more responses is to be studied in a planned experiment: full or fractional factorial, Plackett-Burman, response surface (CCD, Box-Behnken), Taguchi or optimal (D, A, G), also as an EVOP project over several phases. Which design type fits is settled beforehand in the DoE advisor (doe-advisor)."
   },
+  "gage-run-chart": {
+    "name": "Gage Run Chart",
+    "description": "Plots every single measurement grouped by part and appraiser against a common reference line — reveals appraiser bias and unusual parts.",
+    "whenToUse": "Look at a measurement system study before computing statistics: every measurement per part and operator, against a reference line."
+  },
   "heatmap": {
     "name": "Heatmap",
     "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",

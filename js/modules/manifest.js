@@ -150,17 +150,6 @@ export default [
     },
   },
   {
-    id: 'gage-run-chart',
-    phase: 'measure',
-    group: 'msa',
-    load: () => import('./gage-run-chart/gage-run-chart.js'),
-    cycles: {
-      dmaic:  { phase: 'measure' },
-      dmadv:  { phase: 'measure' },
-      eightd: { phase: 'problem' },
-    },
-  },
-  {
     id: 'msa-typ1',
     phase: 'measure',
     group: 'msa',

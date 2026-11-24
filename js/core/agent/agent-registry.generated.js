@@ -6018,6 +6018,7 @@ export const AGENT_REGISTRY = {
   "gage-run-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -6027,157 +6028,67 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Messwerte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'part'|'operator'|'measurement'",
-            "optional": false,
-            "help": "die Rolle"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Spalte einer Rolle zuweisen und neu rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'refValue'|'partsPerRow'|'connectWithin'|'showOperatorMean'|'gageInfo.name'|'gageInfo.date'|'gageInfo.reporter'|'gageInfo.tolerance'|'gageInfo.misc'",
-            "optional": false,
-            "help": "welcher Parameter"
-          },
-          {
-            "name": "value",
-            "type": "string|number|boolean",
-            "optional": false,
-            "help": "der Wert; Wertebereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Option setzen; alles außer der Kopfzeile rechnet neu.",
-        "keysOf": "Params",
-        "keys": {
-          "refValue": {
-            "type": "string",
-            "help": "Bezugslinie, leer für das Gesamtmittel"
-          },
-          "partsPerRow": {
-            "type": "number",
-            "help": "Teile je Streifen"
-          },
-          "connectWithin": {
-            "type": "boolean",
-            "help": "Punkte je Teil verbinden"
-          },
-          "showOperatorMean": {
-            "type": "boolean",
-            "help": "Prüfermittel zeigen"
-          },
-          "gageInfo.name": {
-            "type": "string",
-            "help": "Messmittel"
-          },
-          "gageInfo.date": {
-            "type": "string",
-            "help": "Datum"
-          },
-          "gageInfo.reporter": {
-            "type": "string",
-            "help": "Bearbeiter"
-          },
-          "gageInfo.tolerance": {
-            "type": "string",
-            "help": "Toleranz"
-          },
-          "gageInfo.misc": {
-            "type": "string",
-            "help": "Sonstiges"
-          }
-        }
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
       }
     },
     "fields": {
-      "columnRefs": {
-        "type": "object",
-        "help": "per slot (`part`, `operator`, `measurement`) the column `{ instanceId, sheetId, columnId }`, or null",
+      "part": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "operator": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "measurement": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric,binary,percent,currency"
+        ]
       },
       "refValue": {
-        "type": "string",
-        "help": "the reference line as entered; '' uses the grand mean",
-        "bulk": false,
-        "derived": true
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
       "partsPerRow": {
         "type": "number",
-        "help": "parts per strip, 1 to 20",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "connectWithin": {
         "type": "boolean",
-        "help": "join the repeats of one operator within a part",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "showOperatorMean": {
         "type": "boolean",
-        "help": "mark each operator's mean within a part",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "gageInfo": {
-        "type": "object",
-        "help": "the header lines `{ name, date, reporter, tolerance, misc }` as text",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "why nothing was computed, or ''",
-        "bulk": false,
-        "derived": true
+        "type": "Record<'name'|'date'|'reporter'|'tolerance'|'misc', string>",
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null without part and measurement column or usable rows",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -6196,11 +6107,11 @@ export const AGENT_REGISTRY = {
           },
           "operatorCount": {
             "type": "number",
-            "help": "Prüfer"
+            "help": "Prüfer (0 ohne Prüferspalte)"
           },
           "operators": {
             "type": "string[]",
-            "help": "Prüfer in Reihenfolge"
+            "help": "Prüfer in Reihenfolge des ersten Auftretens"
           },
           "hasOperators": {
             "type": "boolean",
@@ -6224,7 +6135,7 @@ export const AGENT_REGISTRY = {
           },
           "warnings": {
             "type": "string[]",
-            "help": "Hinweise"
+            "help": "Hinweise (`unbalanced`, `droppedRows`)"
           },
           "cellMeans": {
             "type": "CellMean[]",
@@ -6237,7 +6148,7 @@ export const AGENT_REGISTRY = {
               },
               "operator": {
                 "type": "string",
-                "help": "Prüfer"
+                "help": "Prüfer ('' ohne Prüferspalte)"
               },
               "mean": {
                 "type": "number|null",
@@ -6249,12 +6160,55 @@ export const AGENT_REGISTRY = {
       },
       "points": {
         "type": "object[]",
-        "help": "one row per measurement in panel order: `{ part, operator, value }` (part and operator as text)",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
+        "derived": true,
+        "keysOf": "Point",
+        "keys": {
+          "part": {
+            "type": "string",
+            "help": "Teil"
+          },
+          "operator": {
+            "type": "string",
+            "help": "Prüfer ('' ohne Prüferspalte)"
+          },
+          "value": {
+            "type": "number|null",
+            "help": "Messwert"
+          }
+        }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "runStripEdits"
+    ],
+    "settable": [
+      "part",
+      "operator",
+      "measurement",
+      "refValue",
+      "partsPerRow",
+      "connectWithin",
+      "showOperatorMean",
+      "gageInfo"
+    ],
+    "invariants": []
   },
   "glm-regression": {
     "tagged": true,

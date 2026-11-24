@@ -2,16 +2,16 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "part": {
-      "help": "Die Spalte mit der Prüfeinheit je Messwert, Beschriftung Prüfeinheit (Pflicht). Jede Spalte ist wählbar; jede Teilbezeichnung wird ein Feld im Diagramm. Leer, solange keine gewählt ist; null hebt die Wahl auf. Ohne Teile- oder Messwertspalte bleibt die Ausgabe leer. Eine Änderung rechnet neu."
+      "help": "Die Spalte mit der Prüfeinheit je Messwert, Beschriftung Prüfeinheit (Pflicht). Jede Spalte ist wählbar; jede Teilbezeichnung wird ein Feld im Diagramm. Leer, solange keine gewählt ist; ein leerer Wert hebt die Wahl auf. Ohne Teile- oder Messwertspalte bleibt die Ausgabe leer. Eine Änderung rechnet neu."
     },
     "operator": {
-      "help": "Die Spalte mit dem Prüfer je Messwert, Beschriftung Prüfer (optional). Jede Spalte ist wählbar. Ohne sie zählen alle Wiederholungen eines Teils als eine Reihe; null hebt die Wahl auf. Ist die gewählte Spalte gelöscht, bleibt die Ausgabe leer, statt ohne Prüfer zu rechnen. Eine Änderung rechnet neu."
+      "help": "Die Spalte mit dem Prüfer je Messwert, Beschriftung Prüfer (optional). Jede Spalte ist wählbar. Ohne sie zählen alle Wiederholungen eines Teils als eine Reihe; ein leerer Wert hebt die Wahl auf. Ist die gewählte Spalte gelöscht, bleibt die Ausgabe leer, statt ohne Prüfer zu rechnen. Eine Änderung rechnet neu."
     },
     "measurement": {
-      "help": "Die Spalte mit den Messwerten, Beschriftung Messwert (Pflicht): eine numerische, binäre (0/1 bei attributiven Studien), Prozent- oder Währungsspalte. Zeilen ohne endlichen Zahlenwert werden übersprungen und als Hinweis gezählt. Leer, solange keine gewählt ist; null hebt die Wahl auf. Eine Änderung rechnet neu."
+      "help": "Die Spalte mit den Messwerten, Beschriftung Messwert (Pflicht): eine numerische, binäre (0/1 bei attributiven Studien), Prozent- oder Währungsspalte. Zeilen ohne endlichen Zahlenwert werden übersprungen und als Hinweis gezählt. Leer, solange keine gewählt ist; ein leerer Wert hebt die Wahl auf. Eine Änderung rechnet neu."
     },
     "refValue": {
-      "help": "Lage der waagrechten Bezugslinie in allen Streifen, Beschriftung Referenzwert: eine Zahl, oder null für das Gesamtmittel aller Messwerte (voreingestellt). Im Feld mit Dezimalkomma oder Dezimalpunkt eingegeben; ein leeres Feld nimmt das Gesamtmittel, nicht als Zahl lesbarer Text wird abgelehnt. Eine Änderung verschiebt nur die Linie, die Gruppierung bleibt."
+      "help": "Lage der waagrechten Bezugslinie in allen Streifen, Beschriftung Referenzwert: eine Zahl, oder leer für das Gesamtmittel aller Messwerte (voreingestellt). Im Feld mit Dezimalkomma oder Dezimalpunkt eingegeben; ein leeres Feld nimmt das Gesamtmittel, nicht als Zahl lesbarer Text wird abgelehnt. Eine Änderung verschiebt nur die Linie, die Gruppierung bleibt."
     },
     "partsPerRow": {
       "help": "Wie viele Teile nebeneinander in einem Streifen stehen, Beschriftung Prüfeinheiten je Zeile: eine ganze Zahl von 1 bis 20, voreingestellt 7. Ein Wert außerhalb wird abgelehnt. Mehr Teile ergeben weitere Streifen untereinander, alle mit derselben senkrechten Achse."
@@ -77,7 +77,7 @@
       "operators": "Die Prüfer in der Reihenfolge ihres ersten Auftretens in den Daten. Ohne Prüferspalte ein einziger Eintrag mit leerem Namen.",
       "hasOperators": "Ob eine Prüferspalte gewählt ist. Ohne sie zählen alle Wiederholungen eines Teils als eine Reihe.",
       "grandMean": "Arithmetisches Mittel aller n verwertbaren Messwerte, gleich gewichtet. Es ist die Vorgabe für die Bezugslinie, solange kein eigener Referenzwert eingegeben ist.",
-      "refValue": "Wo die Bezugslinie tatsächlich liegt: der eingegebene Referenzwert, ohne eigenen Wert (null) das Gesamtmittel.",
+      "refValue": "Wo die Bezugslinie tatsächlich liegt: der eingegebene Referenzwert, ohne eigenen Wert das Gesamtmittel.",
       "yMin": "Kleinster verwertbarer Messwert. Er ist die Untergrenze der gemeinsamen senkrechten Achse aller Streifen.",
       "yMax": "Größter verwertbarer Messwert. Er ist die Obergrenze der gemeinsamen senkrechten Achse aller Streifen.",
       "warnings": "Hinweiscodes zur Datenlage: „unbalanced“, wenn nicht jede Kombination aus Teil und Prüfer vorkommt oder nicht alle gleich viele Messwerte haben; „droppedRows“, wenn mindestens eine Zeile verworfen wurde. Leer, wenn alles passt.",
