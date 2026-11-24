@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRefs": {
+      "help": "The numeric columns monitored together, label Variable Columns: numeric columns of a data collection, one observation per row. A result needs at least two columns and more complete rows than columns; a row counts only if every chosen column holds a number there (text such as “2,5” does not count), and for columns of different length the shortest counts. With fewer than two columns or a deleted column the output stays empty. Each column may be chosen only once. An empty list clears the choice. After a change the analysis is recomputed."
+    },
+    "alpha": {
+      "help": "The false-alarm rate α of the T² limit, label False alarm α: the probability that a new point after the baseline lies above the upper limit UCL while the process is stable and the data are normally distributed. For the baseline rows themselves, which are checked as well, this rate does not hold exactly. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) with the F quantile, p variables and m baseline rows. Greater than 0 and less than 1; a value outside is rejected. Preset 0.0027 (3σ equivalent). A smaller α moves UCL further up. After a change the analysis is recomputed."
+    },
+    "baselineCount": {
+      "help": "How many of the first complete rows form the baseline (Phase I) from which mean and covariance are estimated, label Baseline Count. Empty (shown as “all”) means all rows. The value takes effect only if it is greater than the number of variables p; if it is smaller than or equal to p, all rows are silently used. A number larger than the number of rows acts like all. Whole numbers from 1 are allowed, anything else is rejected. After a change the analysis is recomputed."
+    },
+    "chart": {
+      "help": "The settings from the chart editor of the T² chart (title, axis titles, font sizes, background, reference lines, point colour, symbol, size and outline of the series); empty while nothing has been changed."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was loaded from; empty if it does not come from an example."
+    },
+    "analysis": {
+      "help": "The computation over these rows: T² values, center line, upper control limit, baseline mean and covariance and the signal rows, or the reason nothing was computed. Empty with fewer than two columns or when a column cannot be read."
+    },
+    "result": {
+      "help": "The computed result, each figure described individually under keys; null with fewer than 2 variables, with a deleted column, with no more complete rows than variables, or when the computation fails (error and message then give reason and text)."
+    },
+    "points": {
+      "help": "One row per complete data row in data order: { t2, signal }; empty without a result. read({ fields: ['points'] }) returns them in full."
+    },
+    "error": {
+      "help": "Why nothing was computed, as a key: errTooFewRows (no more complete rows than variables), err_singular (covariance matrix singular), err_tooFewObservations, err_tooFewVariables, err_rowLengthMismatch, err_baselineTooSmall (thrown by the computation) or errCompute (computation failed, also for non-finite T² values or limits); null with a result, with fewer than 2 variables or with a deleted column."
+    },
+    "message": {
+      "help": "The text for the reason in error, in the interface language, as the error box shows it; null without a reason."
+    },
+    "activeParams": {
+      "help": "The parameter fields instance.set currently writes effectively: alpha and baselineCount."
+    },
+    "activeMultiSlots": {
+      "help": "The column fields with several references instance.set currently writes effectively: columnRefs."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Number of complete rows, that is rows in which every chosen column holds a number; rows with an empty or non-numeric cell are removed, and for columns of different length the shortest counts. A result exists only if n is greater than p. The numbers of the signal rows count these rows from 0, not the worksheet rows. The sub-line of the Signals tile shows n as “of n data points”.",
+      "p": "Number of variables (columns) monitored together; a result exists from 2 on. Tile “Variables (p)”; its sub-line shows the baseline rows as “m = … baseline”.",
+      "m": "Number of baseline (Phase I) rows that mean and covariance come from: all complete rows, or the first baseline count rows if that is greater than p (at most n). m must be greater than p. It appears in the sub-line of the tile “Variables (p)”.",
+      "cl": "The center line of the T² chart, p(m − 1)/(m − p), as a reference level for the T² values; it is a guide value of the chart, not an exact expectation of T². Missing when the value is not finite.",
+      "ucl": "The upper control limit of the T² chart, UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) with the F quantile. Tile “UCL (T²)” with three decimals; its sub-line shows the α that is set. A point signals when its T² is greater than UCL. Missing when the value is not finite.",
+      "mean": "The mean x̄ of each variable over the baseline rows, in the order of the chosen columns. An entry is missing (empty) when its value is not finite.",
+      "covariance": "The covariance matrix S of the variables from the baseline with m − 1 in the denominator, p rows by p columns (diagonal: variances). T² uses its inverse; if S is singular, for example with columns that determine each other exactly, there is no result. An entry is missing (empty) when its value is not finite.",
+      "signals": "The numbers of the complete rows whose T² is greater than UCL, where T²ᵢ = (xᵢ − x̄)ᵀ S⁻¹ (xᵢ − x̄) measures the distance of row i from the baseline mean vector; all complete rows are checked, including those of the baseline. The numbers count these rows from 0, not the worksheet rows. The tile “Signals” shows their count."
+    },
+    "Point": {
+      "t2": "The T² value of the row, (xᵢ − x̄)ᵀ S⁻¹ (xᵢ − x̄) with the baseline mean and covariance; this is what is plotted. Empty when it is not finite.",
+      "signal": "True when the T² value of the row is greater than the upper control limit UCL."
+    }
+  }
+}

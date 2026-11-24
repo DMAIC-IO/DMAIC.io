@@ -1,0 +1,76 @@
+<div class="mvcc dmike-split" x-data="multivariateControlChart">
+  <!-- data-help-key="" an Picker-Wirt und Zahlenfeldern ist gewollt: die Beschriftungen tragen die Anker fields.columnRefs, fields.baselineCount und fields.alpha. -->
+  <div class="mvcc__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multivariate-control-chart.fields.columnRefs.help" x-text="t('variables')"></label>
+      <div data-ref="col-picker-wrap" data-help-key="" x-field="model.columnRefs"></div>
+      <span class="field-hint" x-text="t('variablesHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multivariate-control-chart.fields.baselineCount.help" x-text="t('baselineCount')"></label>
+      <input class="field field--num" data-ref="baseline-count" data-help-key="" :placeholder="t('baselineAll')" x-field="model.baselineCount">
+      <span class="field-hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionLimit')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multivariate-control-chart.fields.alpha.help" x-text="t('alpha')"></label>
+      <input class="field field--num" data-ref="alpha" data-help-key="" x-field="model.alpha">
+      <span class="field-hint" x-text="t('alphaHint')"></span>
+    </div>
+
+  </div>
+
+  <div class="mvcc__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="hasResult">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.uclText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multivariate-control-chart.types.Result.ucl" x-text="t('kpiUclT2')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.alphaText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.pText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multivariate-control-chart.types.Result.p" x-text="t('statVariables')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.baselineText"></div>
+          </div>
+          <div class="dmike-kpi" :class="kpi.signalsClass">
+            <div class="dmike-kpi-value" x-text="kpi.signals"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multivariate-control-chart.types.Result.signals" x-text="t('statSignals')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.ofText"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="error-area">
+      <template x-if="errorText">
+        <div class="mvcc__error" x-text="errorText"></div>
+      </template>
+    </div>
+    <div data-ref="chart-wrap">
+      <template x-if="hasResult">
+        <div class="mvcc__chart-section">
+          <div class="mvcc__chart-header">
+            <span class="mvcc__chart-title" x-text="chartTitle"></span>
+            <span class="mvcc__badge" :class="badge.cls">
+              <template x-if="badge.stable">
+                <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true"></span>
+              </template>
+              <template x-if="badge.unstable">
+                <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true"></span>
+              </template>
+              <span x-text="badge.text"></span>
+            </span>
+          </div>
+          <div class="mvcc__plot-wrap" data-ref="plot" x-widget="control-chart" x-widget-config="plot" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

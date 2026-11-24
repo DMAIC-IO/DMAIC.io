@@ -1,0 +1,66 @@
+/* ============================================================
+   Multivariate Regelkarte (resources/style.css)
+   BEM: .mvcc__ prefix
+   ============================================================ */
+
+/* ── Modulfarben (hell und dunkel gleich) ── */
+.mvcc {
+  --mvcc-success-rgb: 34 197 94;
+  --mvcc-error-rgb: 239 68 68;
+}
+
+[data-theme="dark"] .mvcc {
+  --mvcc-success-rgb: 34 197 94;
+  --mvcc-error-rgb: 239 68 68;
+}
+
+.mvcc__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.mvcc__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.mvcc__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.mvcc__plot-wrap {
+  height: 380px;
+  min-height: 380px;
+  overflow: hidden;
+}
+
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Wirt. */
+.mvcc__plot-wrap > .widget-root {
+  min-height: inherit;
+}
+
+.mvcc__badge {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+.mvcc__badge--stable   { background: rgb(var(--mvcc-success-rgb) / 12%); color: var(--color-success); }
+.mvcc__badge--unstable { background: rgb(var(--mvcc-error-rgb) / 12%); color: var(--color-error); }
+
+.mvcc__error {
+  padding: var(--spacing-md);
+  background: rgb(var(--mvcc-error-rgb) / 8%);
+  border-left: 3px solid var(--color-error);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  border-radius: 2px;
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRefs": {
+      "help": "Die gemeinsam überwachten Zahlenspalten, Beschriftung Variablen-Spalten: numerische Spalten einer Datensammlung, je Zeile eine Beobachtung. Für ein Ergebnis braucht es mindestens zwei Spalten und mehr vollständige Zeilen als Spalten; eine Zeile zählt nur, wenn jede gewählte Spalte dort eine Zahl hat (Text wie „2,5“ zählt nicht), bei verschieden langen Spalten zählt die kürzeste. Mit weniger als zwei Spalten oder einer gelöschten Spalte bleibt die Ausgabe leer. Jede Spalte darf nur einmal gewählt sein. Eine leere Liste hebt die Wahl auf. Nach einer Änderung wird neu gerechnet."
+    },
+    "alpha": {
+      "help": "Die Fehlalarmrate α der T²-Grenze, Beschriftung Falsch-Alarm α: die Wahrscheinlichkeit, dass ein neuer Punkt nach der Baseline bei stabilem Prozess und normalverteilten Daten über der oberen Grenze UCL liegt. Für die Zeilen der Baseline selbst, die ebenso geprüft werden, gilt diese Rate nicht genau. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil, p Variablen und m Zeilen der Baseline. Größer als 0 und kleiner als 1, ein Wert außerhalb wird abgelehnt. Vorbelegt 0,0027 (3σ-Äquivalent). Ein kleineres α rückt UCL weiter nach oben. Nach einer Änderung wird neu gerechnet."
+    },
+    "baselineCount": {
+      "help": "Wie viele der ersten vollständigen Zeilen die Baseline (Phase I) bilden, aus der Mittelwert und Kovarianz geschätzt werden, Beschriftung Baseline-Anzahl. Leer (Anzeige „alle“) heißt alle Zeilen. Der Wert wirkt nur, wenn er größer als die Zahl der Variablen p ist; ist er kleiner oder gleich p, werden still alle Zeilen genommen. Eine größere Zahl, als Zeilen vorhanden sind, wirkt wie alle. Zulässig sind ganze Zahlen ab 1, anderes wird abgelehnt. Nach einer Änderung wird neu gerechnet."
+    },
+    "chart": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor der T²-Karte (Titel, Achsentitel, Schriftgrößen, Hintergrund, Bezugslinien, Punktfarbe, -symbol, -größe und -rand der Reihe); leer, solange nichts geändert ist."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "analysis": {
+      "help": "Die Rechnung über diese Zeilen: T²-Werte, Mittellinie, obere Eingriffsgrenze, Mittelwert und Kovarianz der Baseline und die Signalzeilen, oder der Grund, warum nicht gerechnet wurde. Leer mit weniger als zwei Spalten oder wenn eine Spalte nicht lesbar ist."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null mit weniger als 2 Variablen, bei einer gelöschten Spalte, mit höchstens so vielen vollständigen Zeilen wie Variablen oder wenn die Rechnung scheitert (dann stehen Grund und Text in error und message)."
+    },
+    "points": {
+      "help": "Je vollständiger Datenzeile eine Zeile in Datenfolge: { t2, signal }; leer ohne Ergebnis. read({ fields: ['points'] }) liefert sie vollständig."
+    },
+    "error": {
+      "help": "Der Grund, warum nicht gerechnet wurde, als Schlüssel: errTooFewRows (nicht mehr vollständige Zeilen als Variablen), err_singular (Kovarianzmatrix singulär), err_tooFewObservations, err_tooFewVariables, err_rowLengthMismatch, err_baselineTooSmall (Würfe der Rechnung) oder errCompute (Rechnung gescheitert, auch bei nicht endlichen T²-Werten oder Grenzen); null mit Ergebnis, mit weniger als 2 Variablen oder bei einer gelöschten Spalte."
+    },
+    "message": {
+      "help": "Der Text zum Grund in error, in der Sprache der Oberfläche, wie ihn der Fehlerkasten zeigt; null ohne Grund."
+    },
+    "activeParams": {
+      "help": "Die Parameterfelder, die instance.set gerade wirksam schreibt: alpha und baselineCount."
+    },
+    "activeMultiSlots": {
+      "help": "Die Spaltenfelder mit mehreren Bezügen, die instance.set gerade wirksam schreibt: columnRefs."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Anzahl der vollständigen Zeilen, also der Zeilen, in denen jede gewählte Spalte eine Zahl hat; Zeilen mit leerer oder nicht numerischer Zelle sind aussortiert, bei Spalten verschiedener Länge zählt die kürzeste. Ein Ergebnis gibt es nur, wenn n größer als p ist. Die Nummern der Signalzeilen zählen diese Zeilen ab 0, nicht die Zeilen des Arbeitsblatts. Die Unterzeile der Kachel Signale zeigt n als „von n Datenpunkten“.",
+      "p": "Anzahl der gemeinsam überwachten Variablen (Spalten); ein Ergebnis gibt es ab 2. Kachel „Variablen (p)“; ihre Unterzeile zeigt die Zeilen der Baseline als „m = … Baseline“.",
+      "m": "Anzahl der Zeilen der Baseline (Phase I), aus denen Mittelwert und Kovarianz stammen: alle vollständigen Zeilen, oder die ersten Zeilen bis zur Baseline-Anzahl, wenn diese größer als p ist (höchstens n). m muss größer als p sein. Sie steht in der Unterzeile der Kachel „Variablen (p)“.",
+      "cl": "Die Mittellinie der T²-Karte, p(m − 1)/(m − p), als Bezugshöhe für die T²-Werte; sie ist eine Richtgröße der Karte, kein exakter Erwartungswert von T². Leer, wenn der Wert nicht endlich ist.",
+      "ucl": "Die obere Eingriffsgrenze der T²-Karte, UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil. Kachel „UCL (T²)“ auf drei Nachkommastellen; ihre Unterzeile zeigt das eingestellte α. Ein Punkt gibt ein Signal, wenn sein T² größer als UCL ist. Leer, wenn der Wert nicht endlich ist.",
+      "mean": "Der Mittelwert x̄ jeder Variablen über die Zeilen der Baseline, in der Reihenfolge der gewählten Spalten. Ein Eintrag fehlt (leer), wenn sein Wert nicht endlich ist.",
+      "covariance": "Die Kovarianzmatrix S der Variablen aus der Baseline mit m − 1 im Nenner, p Zeilen mal p Spalten (Diagonale: Varianzen). T² verwendet ihre Inverse; ist S singulär, etwa bei Spalten, die einander exakt bestimmen, gibt es kein Ergebnis. Ein Eintrag fehlt (leer), wenn sein Wert nicht endlich ist.",
+      "signals": "Die Nummern der vollständigen Zeilen, deren T² größer als UCL ist, wobei T²ᵢ = (xᵢ − x̄)ᵀ S⁻¹ (xᵢ − x̄) den Abstand der Zeile i vom Mittelvektor der Baseline misst; geprüft werden alle vollständigen Zeilen, auch die der Baseline. Die Nummern zählen diese Zeilen ab 0, nicht die Zeilen des Arbeitsblatts. Die Kachel „Signale“ zeigt ihre Anzahl."
+    },
+    "Point": {
+      "t2": "Der T²-Wert der Zeile, (xᵢ − x̄)ᵀ S⁻¹ (xᵢ − x̄) mit Mittelwert und Kovarianz der Baseline; so wird er gezeichnet. Leer, wenn er nicht endlich ist.",
+      "signal": "Wahr, wenn der T²-Wert der Zeile größer als die obere Eingriffsgrenze UCL ist."
+    }
+  }
+}

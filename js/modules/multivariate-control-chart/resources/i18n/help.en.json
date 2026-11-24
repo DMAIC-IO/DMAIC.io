@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Hotelling T² — Multivariate Control Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "When a process has several correlated characteristics (e.g. pressure and temperature, hardness and density), running a separate Shewhart chart on each one is not enough. It misses shifts that only show up in the correlation structure: pressure up, temperature down — each unremarkable individually, together a clear alarm."
+        },
+        {
+          "type": "definition",
+          "term": "T² statistic",
+          "content": "T²ᵢ = (xᵢ − x̄)′ S⁻¹ (xᵢ − x̄). Squared Mahalanobis distance of each observation from the sample {{term:mittelwert|mean}} vector, weighted by the inverse covariance matrix."
+        },
+        {
+          "type": "definition",
+          "term": "Control limit (Phase II, individuals)",
+          "content": "UCL = (p(m+1)(m−1)) / (m²−mp) · F_{α, p, m−p}, where m = baseline sample size, p = number of variables, α = false-alarm probability (typically 0.0027 as the 3σ equivalent)."
+        },
+        {
+          "type": "paragraph",
+          "content": "Benefit: catches correlation breaks that single charts miss. Drawback: an alarm does not say which variable is out of control — follow-up analyses (T² decomposition or parallel single charts) are needed for that."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Highly correlated variables",
+          "content": "If two columns measure essentially the same thing (correlation > 0.99) the covariance matrix becomes singular or near-singular and the inversion fails. Verify each variable is independently informative."
+        },
+        {
+          "type": "definition",
+          "term": "Too small m",
+          "content": "When m ≤ p the covariance matrix is not invertible. Rule of thumb: m should be at least 5×p, better 10×p."
+        },
+        {
+          "type": "definition",
+          "term": "Hard to diagnose",
+          "content": "A T² alarm says \"something in the variable vector is out\". It does not say which variable — or combination — is responsible; that needs contribution decomposition or parallel per-variable Shewhart charts."
+        },
+        {
+          "type": "definition",
+          "term": "α choice",
+          "content": "α = 0.0027 matches the classic 3σ convention. Larger α increases sensitivity but multiplies false alarms — multiplicatively in p."
+        }
+      ]
+    }
+  }
+}
