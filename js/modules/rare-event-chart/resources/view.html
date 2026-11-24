@@ -1,0 +1,72 @@
+<div class="rec dmike-split dmike-split--input-sm" x-data="rareEventChart">
+  <!-- data-help-key="" an Picker-Wirt und Auswahl ist gewollt: die Beschriftungen tragen die Anker fields.*. -->
+  <div class="rec__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.rare-event-chart.fields.chartTypeId.help" x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" data-help-key="" x-field="model.chartTypeId">
+        <template x-for="o in chartTypeOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+      <span class="field-hint" x-text="typeHint"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.rare-event-chart.fields.columnRef.help" x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap" data-help-key="" x-field="model.columnRef"></div>
+      <span class="field-hint" x-text="dataHint"></span>
+    </div>
+
+  </div>
+
+  <div class="rec__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="hasResult">
+        <div>
+          <div class="dmike-kpi-strip">
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="kpi.clText"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.rare-event-chart.types.Result.cl" x-text="t('statCL')"></div>
+              <div class="dmike-kpi-sub" x-text="kpi.sigmaText"></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="kpi.uclText"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.rare-event-chart.types.Result.ucl" x-text="t('statUclLcl')"></div>
+              <div class="dmike-kpi-sub" x-text="kpi.lclText"></div>
+            </div>
+            <div class="dmike-kpi" :class="kpi.signalsClass">
+              <div class="dmike-kpi-value" x-text="kpi.signals"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.rare-event-chart.types.Result.signals" x-text="t('statSignals')"></div>
+              <div class="dmike-kpi-sub" x-text="kpi.ofText"></div>
+            </div>
+          </div>
+          <span class="field-hint" x-show="kpi.transformed" x-text="t('originalScaleNote')"></span>
+        </div>
+      </template>
+    </div>
+
+    <div data-ref="error-area">
+      <template x-if="errorText">
+        <div class="rec__error" x-text="errorText"></div>
+      </template>
+    </div>
+
+    <div data-ref="chart-wrap">
+      <template x-if="hasResult">
+        <div class="rec__chart-section">
+          <div class="rec__chart-header">
+            <span class="rec__chart-title" x-text="chartTitle"></span>
+            <span class="rec__badge" :class="badge.cls">
+              <span class="icon icon--sm icon--text" :data-icon="badge.icon" aria-hidden="true"></span>
+              <span x-text="badge.text"></span>
+            </span>
+          </div>
+          <div class="rec__plot-wrap" data-ref="plot" x-widget="control-chart" x-widget-config="plot" x-widget-value="model.chart" x-widget-legacy-edit-key="legacyEditKey"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
