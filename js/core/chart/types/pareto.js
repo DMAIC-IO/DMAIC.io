@@ -56,9 +56,11 @@ const PARETO_X_LABEL_OFFSET = 88;
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
-/** Right %-axis mirrors the left axis of chart-base.js: tick gap and title inset from the edge */
+/** Right %-axis mirrors the left axis of chart-base.js: tick gap from the axis */
 const TICK_LABEL_GAP = 10;
-const Y_TITLE_INSET = 18;
+
+/** Cumulative-% ticks of the right axis */
+const RIGHT_TICKS = [0, 25, 50, 75, 100];
 
 export default class ParetoChart extends ChartBase {
   /** Base editor keys plus this type's own editor settings. */
@@ -116,6 +118,17 @@ export default class ParetoChart extends ChartBase {
       cumDotStrokeWidth: 1.5,
     };
     super(container, Object.assign(defaults, config), context);
+  }
+
+  /**
+   * Widest cumulative-% tick label of the right axis, in px.
+   * @private
+   * @returns {number}
+   */
+  _rightTickLabelWidth() {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = `${Number(this.config.tickSize) || 11}px ${FONT_MONO}`;
+    return Math.max(...RIGHT_TICKS.map(p => ctx.measureText(formatPct(p / 100, 0, this.locale)).width));
   }
 
   // ── Layout override — wider right margin for %-axis ───────────
@@ -397,7 +410,7 @@ export default class ParetoChart extends ChartBase {
 
       // Right-side Y axis: cumulative % ticks + tick labels
       const tickColor = textSecondary;
-      [0, 25, 50, 75, 100].forEach(pct => {
+      RIGHT_TICKS.forEach(pct => {
         const y = cumScale(pct);
         svgEl('line', {
           x1: plotArea.x + plotArea.w, y1: y,
@@ -414,8 +427,11 @@ export default class ParetoChart extends ChartBase {
         }, svg);
       });
 
-      // Right Y-axis label (rotated)
-      const rLabelX = plotArea.totalW - Y_TITLE_INSET;
+      // Right Y-axis label (rotated): same gap to its tick labels as on the left
+      const rLabelX = Math.min(
+        plotArea.totalW - this._axisTitleMetrics().ascent,
+        plotArea.x + plotArea.w + this._yTitleOffset(this._rightTickLabelWidth()),
+      );
       const rLabelY = plotArea.y + plotArea.h / 2;
       svgText(cfg.rightYLabel || 'Kumulativ %', {
         x: rLabelX,

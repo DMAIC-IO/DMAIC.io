@@ -10,9 +10,15 @@
  *   stacked: false                 — when true, segments stack within a single bar per category
  *   barGap: 4                      — gap in px between bars within a group (grouped mode only)
  *   categoryGap: 0.3               — fraction of category width reserved as spacing (0–0.8)
+ *   numericCategories: 'auto'      — 'auto': categories that are all distinct finite
+ *                                    numbers get a numeric x axis; false: always categorical
  *
  * The category axis runs exactly from the first to the last slot
  * (-0.5 … n-0.5), so the bars fill the plot width.
+ *
+ * Numeric categories ('7', '10', …) sit at their value on a real numeric
+ * x axis instead: reference lines/areas, zoom and the editor axis range work
+ * in data units, and numeric tick labels replace the category labels.
  *
  * Category labels that are wider than their slot wrap onto up to three lines
  * (the bottom margin grows with them); only when the slots get too narrow to
@@ -21,7 +27,7 @@
  * longer than ROTATED_MAX_SHARE of the chart height end in an ellipsis.
  */
 
-import ChartBase, { X_TICKS_BOTTOM, FONT_MAIN } from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM, FONT_MAIN, FONT_MONO, thinTickLabels } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, generateTicks
@@ -92,6 +98,25 @@ export function ellipsizeLabel(text, maxWidth, measure) {
   return `${cut.trimEnd()}…`;
 }
 
+/**
+ * Numeric positions of the categories, or null when they are not all
+ * distinct finite numbers.
+ * @param {Array<string|number>} categories
+ * @returns {number[]|null}
+ */
+export function numericCategoryPositions(categories) {
+  if (!Array.isArray(categories) || !categories.length) return null;
+  const out = [];
+  for (const c of categories) {
+    const str = String(c ?? '').trim();
+    if (!str) return null;
+    const v = Number(str);
+    if (!Number.isFinite(v)) return null;
+    out.push(v);
+  }
+  return new Set(out).size === out.length ? out : null;
+}
+
 export default class BarChart extends ChartBase {
   /**
    * @param {HTMLElement} container
@@ -105,12 +130,45 @@ export default class BarChart extends ChartBase {
       stacked: false,
       barGap: 4,
       categoryGap: 0.3,
+      numericCategories: 'auto',
       yMin: 0,
       showXTicks: false,   // we draw our own category labels
       categoricalX: true,  // suppress the "X-Achse Skala" toggle in the editor
       xExact: true,        // the category axis is not nice-rounded
     };
     super(container, Object.assign(defaults, config), context);
+  }
+
+  /* ── Numeric categories ──────────────────────────────────── */
+
+  /**
+   * Positions of the categories on a numeric x axis, or null when the axis
+   * is categorical.
+   * @private
+   * @returns {number[]|null}
+   */
+  _numericPositions() {
+    if (this.config.numericCategories === false) return null;
+    return numericCategoryPositions(this.config.categories);
+  }
+
+  /**
+   * Width of one category slot in data units: the smallest gap between two
+   * neighbouring positions (1 for a single category).
+   * @private
+   * @param {number[]} positions
+   * @returns {number}
+   */
+  _numericSlot(positions) {
+    const sorted = [...positions].sort((a, b) => a - b);
+    let slot = Infinity;
+    for (let i = 1; i < sorted.length; i++) slot = Math.min(slot, sorted[i] - sorted[i - 1]);
+    return Number.isFinite(slot) ? slot : 1;
+  }
+
+  /** @override — a numeric category axis has a range; the y axis always. */
+  _axisRangeAxes() {
+    return { x: this._numericPositions() !== null, y: true };
   }
 
   /* ── Data Extent ─────────────────────────────────────────── */
@@ -138,6 +196,17 @@ export default class BarChart extends ChartBase {
     }
     if (yMax === 0) yMax = 1;
 
+    const positions = this._numericPositions();
+    if (positions) {
+      const half = this._numericSlot(positions) / 2;
+      return {
+        xMin: Math.min(...positions) - half,
+        xMax: Math.max(...positions) + half,
+        yMin: 0,
+        yMax,
+      };
+    }
+
     return {
       xMin: -0.5,
       xMax: cats.length - 0.5,
@@ -152,7 +221,7 @@ export default class BarChart extends ChartBase {
    */
   _getAxisBounds() {
     const bounds = super._getAxisBounds();
-    if (this._viewState) return bounds;
+    if (this._viewState || this._numericPositions()) return bounds;
     const n = (this.config.categories || []).length;
     if (!n) return bounds;
     return {
@@ -182,7 +251,9 @@ export default class BarChart extends ChartBase {
     const catGap = Math.max(0, Math.min(0.8, this.config.categoryGap));
 
     // Category width in pixels
-    const catWidthPx = Math.abs(xScale(1) - xScale(0));
+    const positions = this._numericPositions();
+    const slot = positions ? this._numericSlot(positions) : 1;
+    const catWidthPx = Math.abs(xScale(slot) - xScale(0));
     const usable = catWidthPx * (1 - catGap);
     const stacked = this.config.stacked === true;
     const barW = stacked
@@ -199,7 +270,7 @@ export default class BarChart extends ChartBase {
     this._barRects = [];
 
     for (let ci = 0; ci < nCats; ci++) {
-      const catCx = xScale(ci);
+      const catCx = xScale(positions ? positions[ci] : ci);
       const groupStartX = catCx - groupWidth / 2;
 
       if (stacked) {
@@ -263,8 +334,37 @@ export default class BarChart extends ChartBase {
         }
       }
 
-      this._drawCategoryLabel(svg, layout, ci, catCx, plotArea.y + plotArea.h + LABEL_OFFSET);
+      if (!positions) this._drawCategoryLabel(svg, layout, ci, catCx, plotArea.y + plotArea.h + LABEL_OFFSET);
     }
+    if (positions) this._drawNumericTicks(svg, xScale, xTick, plotArea, positions);
+  }
+
+  /**
+   * Numeric tick labels below the plot (numeric categories). Integer
+   * categories get integer ticks only. With `showXTicks` on, the base class
+   * draws the ticks instead.
+   * @private
+   */
+  _drawNumericTicks(svg, xScale, xTick, pa, positions) {
+    if (positions.every(Number.isInteger)) {
+      xTick.ticks = xTick.ticks.filter(t => Math.abs(t - Math.round(t)) < 1e-9).map(Math.round);
+    }
+    if (this.config.showXTicks !== false) return;
+    const tickColor = resolveColor('var(--color-text-secondary)');
+    const fontSize = this.config.tickSize || 11;
+    const labels = xTick.ticks.map(v => (typeof this.config.xTickFormat === 'function'
+      ? this.config.xTickFormat(v) : formatNum(v, this.config.xDec, this.locale)));
+    const keep = new Set(thinTickLabels(labels, xTick.ticks.map(v => xScale(v)), { fontSize }));
+    xTick.ticks.forEach((v, i) => {
+      const x = xScale(v);
+      svgEl('line', { x1: x, y1: pa.y + pa.h, x2: x, y2: pa.y + pa.h + 5, stroke: tickColor, 'stroke-width': 1 }, svg);
+      if (!keep.has(i)) return;
+      svgText(labels[i], {
+        x, y: pa.y + pa.h + 18,
+        'text-anchor': 'middle', 'font-size': `${fontSize}px`, fill: tickColor,
+        'font-family': FONT_MONO, class: 'tick-label dmike-bar__tick',
+      }, svg);
+    });
   }
 
   /**
@@ -342,7 +442,19 @@ export default class BarChart extends ChartBase {
     const stacked = this.config.stacked === true;
 
     // Find bar under cursor (in data coords)
-    const ci = Math.round(dataX);
+    const positions = this._numericPositions();
+    let ci;
+    if (positions) {
+      ci = -1;
+      let bestD = Infinity;
+      positions.forEach((p, i) => {
+        const d = Math.abs(p - dataX);
+        if (d < bestD) { bestD = d; ci = i; }
+      });
+      if (bestD > this._numericSlot(positions) / 2) return [];
+    } else {
+      ci = Math.round(dataX);
+    }
     if (ci < 0 || ci >= cats.length) return [];
 
     let best;
@@ -439,6 +551,10 @@ export default class BarChart extends ChartBase {
     const cats = (this.config.categories || []).map(c => String(c ?? ''));
     const fontSize = this.config.tickSize || 11;
     const lineHeight = Math.round(fontSize * 1.25);
+    if (this._numericPositions()) {
+      // numeric ticks are one line, like the base x ticks
+      return { rotated: false, lines: cats.map(() => ['']), lineHeight, slot: 0, widths: [], maxWidth: 0 };
+    }
     const bounds = this._getAxisBounds();
     const exact = this.config.xExact && bounds.xMax > bounds.xMin;
     const tick = exact ? { min: bounds.xMin, max: bounds.xMax } : generateTicks(bounds.xMin, bounds.xMax);

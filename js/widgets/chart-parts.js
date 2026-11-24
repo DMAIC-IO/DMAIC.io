@@ -24,13 +24,23 @@ export const REF_AREA = object({
   label: text(opt), color: text(opt),
 });
 
+/** Achsenbereich aus dem Diagramm-Editor: eine gesetzte Seite legt die Achse fest. */
+export const AXIS_RANGE = object({
+  xMin: number({ ...opt, nullable: true }), xMax: number({ ...opt, nullable: true }),
+  yMin: number({ ...opt, nullable: true }), yMax: number({ ...opt, nullable: true }),
+}, { ...ed, nullable: true });
+
 /** Schlüssel aller Typen (ChartBase). */
 export const BASE = Object.freeze({
   title: text(ed), showTitle: boolean(ed), xLabel: text(ed), yLabel: text(ed),
   showXLabel: boolean(ed), showYLabel: boolean(ed), showLegend: boolean(ed),
   titleSize: number({ ...ed, min: 6, max: 48 }), labelSize: number({ ...ed, min: 6, max: 48 }), tickSize: number({ ...ed, min: 6, max: 48 }),
+  legendSize: number({ ...ed, min: 6, max: 48 }),
   showXTicks: boolean(ed), showYTicks: boolean(ed), bgColor: text({ ...ed, nullable: true }),
   refLines: list(REF_LINE, ed), refAreas: list(REF_AREA, ed),
+  axisRange: AXIS_RANGE,
+  chartWidth: number({ ...ed, nullable: true, min: 100, max: 4000 }), chartHeight: number({ ...ed, nullable: true, min: 100, max: 4000 }),
+  sizeExportOnly: boolean(ed), legendOrder: list(text(), ed),
   xMin: number({ ...opt, nullable: true }), xMax: number({ ...opt, nullable: true }),
   yMin: number({ ...opt, nullable: true }), yMax: number({ ...opt, nullable: true }),
   fileName: text(opt),

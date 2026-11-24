@@ -11,12 +11,12 @@ import {
 
 import { createModebar } from './modebar.js';
 import {
-  edSection, edCheckboxRow, edRangeRow, edSelectRow,
-  edTitleSection, edFontSizeSection, edAxisLabelSection,
-  edAxisTickSection, edRefLinesSection, edRefAreasSection,
+  edSection, edRangeRow, edSelectRow,
+  edTitleSection, edFontSizeSection, edSizeSection, edAxisLabelSection,
+  edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection, edLegendSection,
   openColorPicker, edBgColorSection,
   edColorSwatch, edColorPair, edVisToggle,
-  markerSymbolOptions,
+  markerSymbolOptions, normalizeChartSize,
 } from './chart-editor.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 import { icon } from '../icon.js';
@@ -26,7 +26,7 @@ import { debounce } from '../debounce.js';
 
 /** Font families embedded in SVG for export fidelity */
 export const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
-const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
+export const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
 /** Default margins (every element drawn). */
 export const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
@@ -79,8 +79,9 @@ export default class ChartBase {
    */
   static editorKeys = [
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
-    'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
-    'bgColor', 'refLines', 'refAreas',
+    'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
+    'bgColor', 'refLines', 'refAreas', 'axisRange',
+    'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder',
   ];
 
   /**
@@ -96,8 +97,14 @@ export default class ChartBase {
       showXTicks: true, showYTicks: true, showLegend: true,
       showCrosshair: false,
       xMin: null, xMax: null, yMin: null, yMax: null,
+      // Editor-set axis range `{ xMin?, xMax?, yMin?, yMax? }` — a set side
+      // pins the axis exactly, applied after the module values above.
+      axisRange: null,
+      // Editor-set fixed size in px (100–4000, null = auto per side);
+      // `sizeExportOnly` limits it to the export.
+      chartWidth: null, chartHeight: null, sizeExportOnly: false,
       xDec: null, yDec: null,
-      titleSize: 15, labelSize: 12, tickSize: 11,
+      titleSize: 15, labelSize: 12, tickSize: 11, legendSize: 11,
       markerSize: 8,
       refLines: [], refAreas: [],
     }, config);
@@ -339,17 +346,32 @@ export default class ChartBase {
     // Title section
     inner.appendChild(edTitleSection(cfg, onChange, t, onEdit, auto));
 
-    // Legend toggle
-    if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
-      inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => {
-        cfg.showLegend = v;
-        onEdit('showLegend', v);
-        onUpdate();
-      }, 'showLegend'));
+    // Legend: show toggle and entry order
+    const hasLegend = this._getLegendItems().length > 0 || !!(cfg.refLines && cfg.refLines.length) || !!(cfg.refAreas && cfg.refAreas.length);
+    if (hasLegend) {
+      const show = cfg.showLegend !== false;
+      inner.appendChild(edLegendSection({
+        show,
+        entries: show ? this._legendEntries() : [],
+        onToggle: (v) => {
+          cfg.showLegend = v;
+          onEdit('showLegend', v);
+          onUpdate();
+        },
+        onReorder: (keys) => {
+          cfg.legendOrder = keys;
+          onEdit('legendOrder', keys);
+          onUpdate();
+        },
+      }, t));
     }
 
     // Font sizes
-    inner.appendChild(edFontSizeSection(cfg, onChange, t));
+    // Legend size changes the legend width and so the plot area: onChange re-renders.
+    inner.appendChild(edFontSizeSection(cfg, onChange, t, { legend: hasLegend }));
+
+    // Fixed chart size (px; screen + export, or export only)
+    inner.appendChild(edSizeSection(cfg, onChange, t));
 
     // Axis labels
     inner.appendChild(edAxisLabelSection(cfg, onChange, t, onEdit, auto));
@@ -357,6 +379,14 @@ export default class ChartBase {
     // Axis ticks (suppressed when both axes are categorical)
     const tickSec = edAxisTickSection(cfg, onChange, t, onEdit);
     if (tickSec) inner.appendChild(tickSec);
+
+    // Axis range (x/y min/max); an edit resets the zoom
+    const rangeSec = edAxisRangeSection(cfg, () => {
+      this._viewState = null;
+      onEdit('axisRange', cfg.axisRange);
+      onChange();
+    }, t, this._axisRangeAxes());
+    if (rangeSec) inner.appendChild(rangeSec);
 
     // Background color
     inner.appendChild(edBgColorSection(cfg, (changes) => {
@@ -782,6 +812,15 @@ export default class ChartBase {
     if (this.config.yMin !== null) yMin = this.config.yMin;
     if (this.config.yMax !== null) yMax = this.config.yMax;
 
+    // Editor axis range (wins over the module values; zoom still wins below)
+    // A single side beyond the automatic other side would invert the axis →
+    // that side is ignored (render() applies the same check when pinning).
+    const user = this._userAxisRange();
+    const ux = [user.xMin ?? xMin, user.xMax ?? xMax];
+    const uy = [user.yMin ?? yMin, user.yMax ?? yMax];
+    if (ux[1] > ux[0]) [xMin, xMax] = ux;
+    if (uy[1] > uy[0]) [yMin, yMax] = uy;
+
     // Zoom state
     if (this._viewState) {
       return { ...this._viewState };
@@ -790,15 +829,79 @@ export default class ChartBase {
     return { xMin, xMax, yMin, yMax };
   }
 
+  /**
+   * Axes whose range the editor may set. Categorical axes have no numeric
+   * range; chart types with a transformed or group axis override this.
+   * @protected
+   * @returns {{ x: boolean, y: boolean }}
+   */
+  _axisRangeAxes() {
+    return { x: this.config.categoricalX !== true, y: this.config.categoricalY !== true };
+  }
+
+  /**
+   * The valid sides of `config.axisRange` for the axes that allow it. An axis
+   * whose resulting range is not increasing (against the automatic bounds
+   * when only one side is set, see `_getAxisBounds`) contributes nothing.
+   * @private
+   * @returns {{ xMin?: number, xMax?: number, yMin?: number, yMax?: number }}
+   */
+  _userAxisRange() {
+    const r = this.config.axisRange;
+    if (!r || typeof r !== 'object') return {};
+    const axes = this._axisRangeAxes();
+    const out = {};
+    for (const a of ['x', 'y']) {
+      if (!axes[a]) continue;
+      const lo = Number.isFinite(r[`${a}Min`]) ? r[`${a}Min`] : undefined;
+      const hi = Number.isFinite(r[`${a}Max`]) ? r[`${a}Max`] : undefined;
+      if (lo !== undefined && hi !== undefined && hi <= lo) continue;
+      if (lo !== undefined) out[`${a}Min`] = lo;
+      if (hi !== undefined) out[`${a}Max`] = hi;
+    }
+    return out;
+  }
+
   // ── Plot Area ────────────────────────────────────────────────────
 
   /** @private */
   _getSize() {
+    if (this._sizeOverride) return this._sizeOverride;
     if (!this._svgWrap) return { w: 0, h: 0 };
     const rect = this._svgWrap.getBoundingClientRect();
+    const fixed = this._fixedSize();
     // Round to whole pixels so viewBox matches rendered size exactly —
     // fractional viewBox dimensions cause sub-pixel scaling artifacts
-    return { w: Math.round(rect.width), h: Math.round(rect.height) };
+    return {
+      w: fixed.w ?? Math.round(rect.width),
+      h: fixed.h ?? Math.round(rect.height),
+    };
+  }
+
+  /**
+   * The fixed screen size from the chart editor, normalized. Both sides are
+   * `null` when the size applies to the export only.
+   * @protected
+   * @returns {{ w: number|null, h: number|null }}
+   */
+  _fixedSize() {
+    const cfg = this.config || {};
+    if (cfg.sizeExportOnly) return { w: null, h: null };
+    return { w: normalizeChartSize(cfg.chartWidth), h: normalizeChartSize(cfg.chartHeight) };
+  }
+
+  /**
+   * Pin the svg wrap to the fixed screen size (or release it) and mark the
+   * chart wrap scrollable. Skipped while an export override is active, so
+   * an export-only render never touches the screen layout.
+   * @protected
+   */
+  _applyFixedSize() {
+    if (this._sizeOverride || !this._svgWrap) return;
+    const { w, h } = this._fixedSize();
+    this._svgWrap.style.width = w ? `${w}px` : '';
+    this._svgWrap.style.height = h ? `${h}px` : '';
+    this._svgWrap.parentElement?.classList.toggle('dmike-chart-wrap--fixed', !!(w || h));
   }
 
   /**
@@ -894,6 +997,7 @@ export default class ChartBase {
    * @returns {number} Required left margin in px (the default floor applies only while labels are drawn)
    */
   _measureLeftMargin() {
+    this._yTickLabelW = 0;
     const { labels, mono } = this._getYAxisLabels();
     if (!labels || labels.length === 0) {
       if (this._hasLeftTickLabels()) return DEFAULT_MARGIN.left;
@@ -910,7 +1014,60 @@ export default class ChartBase {
       if (w > maxW) maxW = w;
     }
 
-    return Math.max(DEFAULT_MARGIN.left, Math.ceil(maxW) + Y_LABEL_PAD);
+    this._yTickLabelW = maxW;
+    const base = Math.max(DEFAULT_MARGIN.left, Math.ceil(maxW) + Y_LABEL_PAD);
+    if (this.config.showYLabel === false || !this.config.yLabel) return base;
+    // room for the y title left of the tick labels, at the x-axis distance
+    const { ascent } = this._axisTitleMetrics();
+    return Math.max(base, Math.ceil(this._yTitleOffset() + ascent) + 2);
+  }
+
+  /**
+   * Font box of the axis titles and the tick labels (what the browser lays
+   * the text out in), measured on an offscreen canvas.
+   * @protected
+   * @returns {{ascent:number, descent:number, tickDescent:number}}
+   */
+  _axisTitleMetrics() {
+    const ctx = document.createElement('canvas').getContext('2d');
+    const ls = Number(this.config.labelSize) || 12;
+    const ts = Number(this.config.tickSize) || 11;
+    ctx.font = `600 ${ls}px ${FONT_MAIN}`;
+    const m = ctx.measureText('Ag');
+    ctx.font = `${ts}px ${FONT_MONO}`;
+    const tm = ctx.measureText('0');
+    return {
+      ascent: m.fontBoundingBoxAscent ?? ls * 0.93,
+      descent: m.fontBoundingBoxDescent ?? ls * 0.24,
+      tickDescent: tm.fontBoundingBoxDescent ?? ts * 0.24,
+    };
+  }
+
+  /**
+   * Distance from the plot's left edge to the y title's baseline, chosen so
+   * the gap between tick labels and title equals the one under the x axis
+   * (tick baseline +18, title baseline +46 → 28 px baseline to baseline).
+   * Types with a second, right-hand axis pass that axis' widest tick label.
+   * @protected
+   * @param {number} [tickW] widest tick label in px (default: the left axis)
+   * @returns {number}
+   */
+  _yTitleOffset(tickW = this._yTickLabelW || 0) {
+    const { ascent, descent, tickDescent } = this._axisTitleMetrics();
+    const gap = 28 - tickDescent - ascent;
+    return 10 + tickW + gap + descent;
+  }
+
+  /**
+   * x of the (rotated) y title's baseline: next to the tick labels when the
+   * left margin was measured from them, else the fixed gutter position.
+   * @private
+   * @param {{x:number}} pa plot area
+   * @returns {number}
+   */
+  _yTitleX(pa) {
+    if (!this._yTickLabelW) return 18;
+    return Math.max(this._axisTitleMetrics().ascent, pa.x - this._yTitleOffset());
   }
 
   /** @private */
@@ -955,6 +1112,7 @@ export default class ChartBase {
    * Full re-render. Called on config change, resize, zoom, pan, theme change.
    */
   render() {
+    this._applyFixedSize();
     const size = this._getSize();
     if (size.w <= 0 || size.h <= 0) return;
 
@@ -1023,6 +1181,18 @@ export default class ChartBase {
       yTick.min = bounds.yMin;
       yTick.max = bounds.yMax;
       yTick.ticks = yTick.ticks.filter((t) => t >= bounds.yMin && t <= bounds.yMax);
+    }
+
+    // Editor axis range — a set side is pinned exactly (not while zoomed).
+    if (!this._viewState) {
+      const user = this._userAxisRange();
+      const pin = (tick, lo, hi) => {
+        if (lo !== undefined && lo < tick.max) tick.min = lo;
+        if (hi !== undefined && hi > tick.min) tick.max = hi;
+        tick.ticks = tick.ticks.filter((t) => t >= tick.min - 1e-12 && t <= tick.max + 1e-12);
+      };
+      if (user.xMin !== undefined || user.xMax !== undefined) pin(xTick, user.xMin, user.xMax);
+      if (user.yMin !== undefined || user.yMax !== undefined) pin(yTick, user.yMin, user.yMax);
     }
 
     const xScale = linearScale(xTick.min, xTick.max, pa.x, pa.x + pa.w);
@@ -1135,7 +1305,7 @@ export default class ChartBase {
     // Title
     if (this.config.showTitle !== false && this.config.title) {
       svgText(this.config.title, {
-        x: pa.x + pa.w / 2, y: 26,
+        x: this._titleX(pa, size), y: 26,
         'text-anchor': 'middle', 'font-size': `${this.config.titleSize  }px`, 'font-weight': '700', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);
@@ -1152,11 +1322,12 @@ export default class ChartBase {
 
     // Y Label
     if (this.config.showYLabel !== false && this.config.yLabel) {
+      const yTitleX = this._yTitleX(pa);
       svgText(this.config.yLabel, {
-        x: 18, y: pa.y + pa.h / 2,
+        x: yTitleX, y: pa.y + pa.h / 2,
         'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN,
-        transform: `rotate(-90, 18, ${pa.y + pa.h / 2})`
+        transform: `rotate(-90, ${yTitleX}, ${pa.y + pa.h / 2})`
       }, svg);
     }
 
@@ -1273,7 +1444,7 @@ export default class ChartBase {
       labels.push(l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value);
     });
     (this.config.refAreas || []).forEach(a => {
-      labels.push(a.label || 'Bereich');
+      labels.push(a.label || this._refAreaDefaultLabel());
     });
     return labels;
   }
@@ -1289,7 +1460,7 @@ export default class ChartBase {
     if (labels.length === 0) return LEGEND_WIDTH;
 
     const ctx = document.createElement('canvas').getContext('2d');
-    ctx.font = `11px ${FONT_MAIN}`;
+    ctx.font = `${this._legendFontSize()}px ${FONT_MAIN}`;
 
     let maxW = 0;
     for (const label of labels) {
@@ -1301,25 +1472,98 @@ export default class ChartBase {
     return Math.max(LEGEND_WIDTH, Math.ceil(maxW) + 26);
   }
 
-  /** @private */
-  _drawLegend(svg, pa, size, textColor) {
-    const items = this._getLegendItems();
+  /**
+   * Horizontal centre of the title: over the plot area while the title fits
+   * into the image there, else over the whole image (a long title next to a
+   * wide left margin or legend would otherwise be cut off on one side).
+   * @protected
+   * @param {{x: number, w: number}} pa - plot area
+   * @param {{w: number}} size - image size
+   * @returns {number}
+   */
+  _titleX(pa, size) {
+    const plotCentre = pa.x + pa.w / 2;
+    const ctx = document.createElement('canvas').getContext('2d');
+    const fs = Number(this.config.titleSize) || 15;
+    ctx.font = `700 ${fs}px ${FONT_MAIN}`;
+    const half = ctx.measureText(String(this.config.title)).width / 2;
+    const fits = plotCentre - half >= 0 && plotCentre + half <= size.w;
+    return fits ? plotCentre : size.w / 2;
+  }
 
-    // Add ref line items
+  /**
+   * Legend font size in px (`config.legendSize`, default 11).
+   * @protected
+   * @returns {number}
+   */
+  _legendFontSize() {
+    const v = Number(this.config.legendSize);
+    return Number.isFinite(v) && v > 0 ? v : 11;
+  }
+
+  /**
+   * Default label of an unlabelled reference area, translated.
+   * @protected
+   * @returns {string}
+   */
+  _refAreaDefaultLabel() {
+    const key = 'chart.editor.refAreaDefault';
+    const val = this.context?.i18n?.t(key);
+    return val && val !== key ? val : 'Bereich';
+  }
+
+  /**
+   * All legend entries in display order: the chart type's items, then the
+   * reference lines, then the reference areas, rearranged by
+   * `config.legendOrder` (list of entry keys). Entries the order does not
+   * name follow at the end in their default order.
+   *
+   * Keys: an item's own `key`, else `s:<label>`; `l:<label>` for reference
+   * lines, `a:<label>` for reference areas (`a:` alone when unlabelled, so the
+   * key does not depend on the UI language). Repeated keys get a `#n` suffix.
+   * @protected
+   * @returns {Array<Object>} legend items, each with a `key`
+   */
+  _legendEntries() {
+    const entries = this._getLegendItems().map(it => ({ ...it, key: it.key ?? `s:${it.label}` }));
     (this.config.refLines || []).forEach((l) => {
-      items.push({
+      const label = l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value;
+      entries.push({
         type: 'line', color: resolveColor(l.color), dash: l.dash, width: l.width,
-        label: l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value
+        label, key: `l:${label}`,
       });
     });
-    // Add ref area items
     (this.config.refAreas || []).forEach((a) => {
-      items.push({ type: 'rect', color: resolveColor(a.color), label: a.label || 'Bereich' });
+      const label = a.label || this._refAreaDefaultLabel();
+      entries.push({ type: 'rect', color: resolveColor(a.color), label, key: `a:${a.label || ''}` });
     });
+    const seen = new Map();
+    entries.forEach((e) => {
+      const n = seen.get(e.key) || 0;
+      seen.set(e.key, n + 1);
+      if (n > 0) e.key = `${e.key}#${n + 1}`;
+    });
+    const order = Array.isArray(this.config.legendOrder) ? this.config.legendOrder : [];
+    if (!order.length) return entries;
+    const rank = (e, i) => {
+      const idx = order.indexOf(e.key);
+      return idx >= 0 ? idx : order.length + i;
+    };
+    return entries
+      .map((e, i) => ({ e, r: rank(e, i) }))
+      .sort((x, y) => x.r - y.r)
+      .map(x => x.e);
+  }
+
+  /** @private */
+  _drawLegend(svg, pa, size, textColor) {
+    const items = this._legendEntries();
 
     const lx = pa.x + pa.w + 12;
     const ly = pa.y + 4;
-    const lineH = 22;
+    const fs = this._legendFontSize();
+    // Row height grows with the font; 22 px is the height at the default 11 px.
+    const lineH = Math.max(22, Math.round(fs * 2));
 
     items.forEach((item, i) => {
       const y = ly + i * lineH;
@@ -1343,8 +1587,9 @@ export default class ChartBase {
         }
       }
       svgText(item.label, {
-        x: lx + 20, y: y + 11,
-        'font-size': '11px', fill: textColor,
+        // Vertically centred on the icon (centre at y + 7).
+        x: lx + 20, y: y + 7 + Math.round(fs * 0.36),
+        'font-size': `${fs}px`, fill: textColor,
         'font-family': FONT_MAIN,
         'data-legend-item': ''
       }, svg);
@@ -1367,9 +1612,49 @@ export default class ChartBase {
   /**
    * Export chart as PNG (2× resolution).
    */
+  /**
+   * The export size: the editor's fixed sides (also when they apply to the
+   * export only), auto sides from the measured screen size.
+   * @protected
+   * @returns {{ w: number, h: number }}
+   */
+  _exportSize() {
+    const cfg = this.config || {};
+    const rect = this._svgWrap ? this._svgWrap.getBoundingClientRect() : { width: 0, height: 0 };
+    return {
+      w: normalizeChartSize(cfg.chartWidth) ?? Math.round(rect.width),
+      h: normalizeChartSize(cfg.chartHeight) ?? Math.round(rect.height),
+    };
+  }
+
+  /**
+   * Run `fn` (size read + serialization) at the export size. With an
+   * export-only size the chart renders at that size for the duration of `fn`
+   * and back at its screen size afterwards; the screen layout stays as is.
+   * @protected
+   * @template T
+   * @param {function(): T} fn - must be synchronous
+   * @returns {T}
+   */
+  _withExportSize(fn) {
+    const cfg = this.config || {};
+    const hasSide = normalizeChartSize(cfg.chartWidth) !== null || normalizeChartSize(cfg.chartHeight) !== null;
+    if (!cfg.sizeExportOnly || !hasSide) return fn();
+    this._sizeOverride = this._exportSize();
+    try {
+      this.render();
+      return fn();
+    } finally {
+      this._sizeOverride = null;
+      this.render();
+    }
+  }
+
   async exportPNG() {
-    const size = this._getSize();
-    const svgData = new XMLSerializer().serializeToString(this._svg);
+    const { size, svgData } = this._withExportSize(() => ({
+      size: this._getSize(),
+      svgData: new XMLSerializer().serializeToString(this._svg),
+    }));
     const canvas = document.createElement('canvas');
     const scale = 2;
     canvas.width = size.w * scale;
@@ -1415,7 +1700,7 @@ export default class ChartBase {
    * @returns {string}
    */
   toSVGString() {
-    const clone = this._svg.cloneNode(true);
+    const clone = this._withExportSize(() => this._svg.cloneNode(true));
     // Add background rect
     const bgColor = this.config.bgColor
       ? resolveColor(this.config.bgColor)

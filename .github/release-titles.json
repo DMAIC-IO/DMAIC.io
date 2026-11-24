@@ -98,5 +98,33 @@
   "1.6.4": {
     "de": "DoE-Planer: Vorschau-Tabelle immer sichtbar, Abschnitte klappen einzeln",
     "en": "DoE planner: run preview always visible, sections collapse one at a time"
+  },
+  "1.7.0": {
+    "de": "Achsenbereich (x/y min/max) im Grafik-Editor, echte Zahlenachse für Balkendiagramme mit Zahlenkategorien, Rückfrage vor jedem Löschen",
+    "en": "Axis range (x/y min/max) in the chart editor, a real numeric axis for bar charts with numeric categories, confirmation before every delete"
+  },
+  "1.8.0": {
+    "de": "Feste Diagrammgröße in Pixeln im Grafik-Editor (auch nur für den Export), Schriftgröße der Legende",
+    "en": "Fixed chart size in pixels in the chart editor (optionally for export only), legend font size"
+  },
+  "1.8.1": {
+    "de": "Versionswechsel übernimmt Grafik-Editor-Einstellungen, Modelle und Optimierungen",
+    "en": "Version takeover keeps chart editor settings, models and optimizations"
+  },
+  "1.8.2": {
+    "de": "Einklappbare Abschnitte im Grafik-Editor, frei sortierbare Legende, besser platzierte Titel",
+    "en": "Collapsible chart editor sections, freely ordered legend, better placed titles"
+  },
+  "1.9.0": {
+    "de": "Fehlerbalken im XY-Plot: konstant oder aus Spalten, je Richtung einzeln",
+    "en": "Error bars in the XY plot: constant or from columns, per direction"
+  },
+  "1.9.1": {
+    "de": "Beispiel mit Fehlerbalken im XY-Plot",
+    "en": "Error bar example in the XY plot"
+  },
+  "1.9.2": {
+    "de": "Prozent- und Währungsspalten im XY-Plot, korrigierte Spaltenrolle im Datenblatt",
+    "en": "Percent and currency columns in the XY plot, corrected column role in the worksheet"
   }
 }

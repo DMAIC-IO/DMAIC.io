@@ -227,3 +227,62 @@ suite('DataGrid roles — persistence and migration', () => {
     dispose();
   });
 });
+
+suite('DataGrid roles — re-inference while values are entered', () => {
+  const typeColumn = (grid, colId, values) => values.forEach((v, i) => grid.setCellValue(colId, i, v));
+  const percents = ['0.4%', '3.8%', '7.3%', '8.8%', '8.6%', '7.7%', '6.9%', '6.2%', '5.6%', '4.7%', '4.1%', '3.3%'];
+
+  test('a percent column typed cell by cell becomes continuous once it has many distinct values', () => {
+    const { grid, dispose } = newGrid();
+    const colId = grid.getColumnByIndex(0).id;
+    typeColumn(grid, colId, percents);
+    assertEqual(grid.getColumn(colId).type, 'percent');
+    assertEqual(grid.getColumn(colId).role, ROLE.CONTINUOUS);
+    dispose();
+  });
+
+  test('a few hand-typed numbers stay continuous (edits never demote to categorical)', () => {
+    const { grid, dispose } = newGrid();
+    const colId = grid.getColumnByIndex(0).id;
+    typeColumn(grid, colId, ['10', '20', '10', '20']);
+    assertEqual(grid.getColumn(colId).role, ROLE.CONTINUOUS);
+    dispose();
+  });
+
+  test('an automatic categorical guess is withdrawn past the distinct-value threshold', () => {
+    const { grid, dispose } = newGrid();
+    const col = grid.addColumn({ type: 'numeric', role: ROLE.CATEGORICAL });
+    typeColumn(grid, col.id, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+    assertEqual(grid.getColumn(col.id).role, ROLE.CATEGORICAL);
+    grid.setCellValue(col.id, 10, '11');
+    assertEqual(grid.getColumn(col.id).role, ROLE.CONTINUOUS);
+    dispose();
+  });
+
+  test('a formula result counts as an entered value', () => {
+    const { grid, dispose } = newGrid();
+    const col = grid.addColumn({ type: 'numeric', role: ROLE.CATEGORICAL });
+    typeColumn(grid, col.id, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '1']);
+    assertEqual(grid.getColumn(col.id).role, ROLE.CATEGORICAL);
+    grid.setCellFormula(col.id, 11, '=11');
+    assertEqual(grid.getColumn(col.id).role, ROLE.CONTINUOUS);
+    dispose();
+  });
+
+  test('a manual role stays while values are entered', () => {
+    const { grid, dispose } = newGrid();
+    const colId = grid.getColumnByIndex(0).id;
+    grid.setColumnRole(colId, ROLE.CATEGORICAL);
+    typeColumn(grid, colId, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
+    assertEqual(grid.getColumn(colId).role, ROLE.CATEGORICAL);
+    dispose();
+  });
+
+  test('a role the heuristic never assigns (identifier) stays while values are entered', () => {
+    const { grid, dispose } = newGrid();
+    const col = grid.addColumn({ type: 'numeric', role: ROLE.IDENTIFIER });
+    typeColumn(grid, col.id, ['1', '2', '3']);
+    assertEqual(grid.getColumn(col.id).role, ROLE.IDENTIFIER);
+    dispose();
+  });
+});

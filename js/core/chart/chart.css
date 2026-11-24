@@ -25,6 +25,10 @@
   min-width: 0;
 }
 
+/* Fixed chart size (chart editor): the chart keeps its pixels, the wrap scrolls. */
+.dmike-chart-wrap--fixed { overflow: auto; }
+.dmike-chart-wrap--fixed > .dmike-chart-svg-wrap { flex: none; }
+
 .dmike-chart-svg-wrap {
   width: 100%;
   height: 100%;
@@ -456,6 +460,11 @@
   margin-bottom: var(--spacing-ml);
 }
 
+/* Extra room above every section but the first marks where a new one starts. */
+* + .dmike-chart-ed-section {
+  margin-top: var(--spacing-l);
+}
+
 .dmike-chart-ed-section-title {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
@@ -465,6 +474,102 @@
   margin-bottom: var(--spacing-sm);
   padding-bottom: var(--spacing-s);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+/* Collapsible sections: the title is a button, the body hides while closed */
+button.dmike-chart-ed-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.dmike-chart-ed-section-title:hover {
+  color: var(--color-text-primary);
+}
+
+button.dmike-chart-ed-section-title:focus-visible {
+  outline: var(--border-width) solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.dmike-chart-ed-section-chevron {
+  transition: transform 0.15s;
+  transform: rotate(-90deg);
+}
+
+.dmike-chart-ed-section--collapsible.open > .dmike-chart-ed-section-title .dmike-chart-ed-section-chevron {
+  transform: none;
+}
+
+.dmike-chart-ed-section--collapsible:not(.open) > :not(.dmike-chart-ed-section-title) {
+  display: none;
+}
+
+.dmike-chart-ed-section--collapsible:not(.open) > .dmike-chart-ed-section-title {
+  margin-bottom: 0;
+}
+
+/* Legend order rows */
+.dmike-chart-ed-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.dmike-chart-ed-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  cursor: grab;
+}
+
+.dmike-chart-ed-legend-row.is-dragging {
+  opacity: 0.5;
+}
+
+.dmike-chart-ed-legend-row.is-drop-target {
+  border-color: var(--color-accent);
+}
+
+.dmike-chart-ed-legend-handle {
+  color: var(--color-text-tertiary);
+}
+
+.dmike-chart-ed-legend-swatch {
+  width: 14px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.dmike-chart-ed-legend-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dmike-chart-ed-legend-move:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 /* Editor rows */
@@ -561,6 +666,10 @@
 /* Range slider row — now uses global .dmike-slider-row from components.css */
 
 /* Color swatch */
+.dmike-chart-ed-inline-row input.dmike-chart-ed-input--invalid {
+  border-color: var(--color-error);
+}
+
 .dmike-chart-ed-color-swatch {
   width: 22px;
   height: 22px;

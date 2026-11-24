@@ -97,6 +97,11 @@ export default class IndividualValuePlotChart extends ChartBase {
 
   /* ── Data Extent ─────────────────────────────────────────── */
 
+  /** @override — the x axis holds the groups; only y has a value range. */
+  _axisRangeAxes() {
+    return { x: false, y: true };
+  }
+
   /** @override — vertical: X = group index, Y = data values */
   _getDataExtent() {
     const groups = this.config.groups || [];

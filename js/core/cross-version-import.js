@@ -86,13 +86,21 @@ export async function buildSnapshotFromVersion(versionMM) {
 
   const moduleStatesByProject = await _readModuleStatesFromDB(dbName);
 
+  // Every per-project key LocalAdapter.saveProjectMeta() writes must be read
+  // here — a key left out is silently lost on the takeover (the 1.6 → 1.8
+  // upgrades lost all chart editor settings that way).
   const projects = projectsList.map(proj => {
     const p = `${lsPrefix}p_${proj.id}_`;
-    const projectMeta = _readJSON(`${p}projectMeta`, { name: proj.name });
+    // A project that was never saved has only its registry entry, which
+    // still knows its cycle and timestamps.
+    const projectMeta = _readJSON(`${p}projectMeta`, _metaFromEntry(proj));
     const phases = _readJSON(`${p}phases`, {});
     const phaseAchievement = _readJSON(`${p}phaseAchievement`, {});
     // History was only persisted from v0.3 on — older versions yield {} here.
     const phaseAchievementHistory = _readJSON(`${p}phaseAchievementHistory`, {});
+    const models = _readJSON(`${p}models`, {});
+    const optimizations = _readJSON(`${p}optimizations`, {});
+    const chartEdits = _readJSON(`${p}chartEdits`, {});
     const dashboard = _readJSON(`${p}dashboard`, null);
     const moduleStates = moduleStatesByProject.get(proj.id) || {};
 
@@ -104,6 +112,9 @@ export async function buildSnapshotFromVersion(versionMM) {
       phases,
       phaseAchievement,
       phaseAchievementHistory,
+      models,
+      optimizations,
+      chartEdits,
       dashboard,
       moduleStates,
     };
@@ -134,6 +145,21 @@ function _readJSON(key, fallback) {
   const raw = localStorage.getItem(key);
   if (raw == null) return fallback;
   try { return JSON.parse(raw); } catch { return fallback; }
+}
+
+/**
+ * Project metadata recovered from a registry entry, for projects whose
+ * projectMeta key was never written. Absent fields are left out so the
+ * migration chain and importAllJSON can apply their own defaults.
+ * @param {{name?: string, cycle?: string, created?: string, modified?: string}} entry
+ * @returns {object}
+ */
+function _metaFromEntry(entry) {
+  const meta = { name: entry.name };
+  for (const key of ['cycle', 'created', 'modified']) {
+    if (entry[key]) meta[key] = entry[key];
+  }
+  return meta;
 }
 
 /**

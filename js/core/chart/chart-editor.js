@@ -19,21 +19,169 @@ export { esc };
 import { h } from '../dom.js';
 import { icon } from '../icon.js';
 
+// ── Chart Size ───────────────────────────────────────────────
+
+/** Bounds of a fixed chart side in px (chart editor "Größe"). */
+export const CHART_SIZE_MIN = 100;
+export const CHART_SIZE_MAX = 4000;
+
+/**
+ * Normalize a fixed chart side: empty / non-numeric → `null` (auto),
+ * otherwise rounded and clamped to 100–4000 px.
+ * @param {*} v - raw value (number or input string)
+ * @returns {number|null}
+ */
+export function normalizeChartSize(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(CHART_SIZE_MAX, Math.max(CHART_SIZE_MIN, Math.round(n)));
+}
+
 // ── Low-Level Element Builders ───────────────────────────────
 
 /**
- * Create an editor section with title.
+ * Titles of the collapsible sections the user opened. Module-level, so the
+ * state survives an editor rebuild and lasts until the page reloads.
+ * @type {Set<string>}
+ */
+const _openSections = new Set();
+
+/**
+ * Create an editor section with title. By default the section is
+ * collapsible: it starts closed (unless opened before under the same title)
+ * and a click on the title toggles it.
  * @param {string} title
+ * @param {{ collapsible?: boolean }} [opts] - `collapsible: false` keeps a static, always visible section
  * @returns {HTMLElement}
  */
-export function edSection(title) {
+export function edSection(title, opts = {}) {
   const div = document.createElement('div');
   div.className = 'dmike-chart-ed-section';
-  const titleEl = document.createElement('div');
+  if (opts.collapsible === false) {
+    const titleEl = document.createElement('div');
+    titleEl.className = 'dmike-chart-ed-section-title';
+    titleEl.textContent = title;
+    div.appendChild(titleEl);
+    return div;
+  }
+  div.classList.add('dmike-chart-ed-section--collapsible');
+  const titleEl = document.createElement('button');
+  titleEl.type = 'button';
   titleEl.className = 'dmike-chart-ed-section-title';
-  titleEl.textContent = title;
+  const text = document.createElement('span');
+  text.textContent = title;
+  const chevron = icon('nav.expand-down', { size: 'sm', cls: 'dmike-chart-ed-section-chevron' });
+  titleEl.append(text, chevron);
+  const setOpen = (open) => {
+    div.classList.toggle('open', open);
+    titleEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) _openSections.add(title); else _openSections.delete(title);
+  };
+  setOpen(_openSections.has(title));
+  titleEl.addEventListener('click', () => setOpen(!div.classList.contains('open')));
   div.appendChild(titleEl);
   return div;
+}
+
+/**
+ * Legend section: the show-legend checkbox and — while the legend is shown
+ * and has two or more entries — the entry order, reorderable by drag & drop
+ * and by up/down buttons.
+ * @param {{ show: boolean, entries: Array<{key: string, label: string, color?: string}>,
+ *   onToggle: function(boolean): void, onReorder: function(string[]): void }} opts
+ *   entries in current order; onReorder is called with the new key list
+ * @param {function(string): string} t - editor translation function
+ * @returns {HTMLElement}
+ */
+export function edLegendSection({ show, entries, onToggle, onReorder }, t) {
+  const sec = edSection(t('legend'));
+  sec.dataset.edSection = 'legend';
+  sec.appendChild(edCheckboxRow(t('showLegend'), show, onToggle, 'showLegend'));
+  if (show && entries.length >= 2) sec.appendChild(edLegendOrderList(entries, onReorder, t));
+  return sec;
+}
+
+/**
+ * Legend order block: a caption and one row per legend entry.
+ * @param {Array<{key: string, label: string, color?: string}>} entries - in current order
+ * @param {function(string[]): void} onReorder - called with the new key list
+ * @param {function(string): string} t - editor translation function
+ * @returns {HTMLElement}
+ */
+function edLegendOrderList(entries, onReorder, t) {
+  const sec = document.createElement('div');
+  sec.dataset.edSection = 'legendOrder';
+  const caption = document.createElement('div');
+  caption.className = 'dmike-chart-ed-subsection-title';
+  caption.textContent = t('legendOrder');
+  sec.appendChild(caption);
+  const keys = entries.map(e => e.key);
+  const move = (from, to) => {
+    if (from === to || from < 0 || to < 0 || from >= keys.length || to >= keys.length) return;
+    const next = keys.slice();
+    const [k] = next.splice(from, 1);
+    next.splice(to, 0, k);
+    onReorder(next);
+  };
+  const list = document.createElement('div');
+  list.className = 'dmike-chart-ed-legend-list';
+  let dragFrom = -1;
+  const rows = [];
+  entries.forEach((entry, i) => {
+    const row = document.createElement('div');
+    row.className = 'dmike-chart-ed-legend-row';
+    row.draggable = true;
+    row.dataset.legendKey = entry.key;
+    const handle = icon('action.drag-handle', { size: 'sm', cls: 'dmike-chart-ed-legend-handle' });
+    const swatch = document.createElement('span');
+    swatch.className = 'dmike-chart-ed-legend-swatch';
+    if (entry.color) swatch.style.background = entry.color;
+    const label = document.createElement('span');
+    label.className = 'dmike-chart-ed-legend-label';
+    label.textContent = entry.label;
+    const btn = (dir, iconName, aria, disabled, to) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'dmike-chart-ed-btn-icon dmike-chart-ed-legend-move';
+      b.dataset.move = dir;
+      b.setAttribute('aria-label', aria);
+      b.title = aria;
+      b.disabled = disabled;
+      b.appendChild(icon(iconName, { size: 'sm' }));
+      b.addEventListener('click', () => move(i, to));
+      return b;
+    };
+    row.append(handle, swatch, label,
+      btn('up', 'nav.arrow-up', t('moveUp'), i === 0, i - 1),
+      btn('down', 'nav.arrow-down', t('moveDown'), i === entries.length - 1, i + 1));
+    row.addEventListener('dragstart', (e) => {
+      dragFrom = i;
+      row.classList.add('is-dragging');
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', entry.key); } catch { /* ignore */ }
+    });
+    row.addEventListener('dragover', (e) => {
+      if (dragFrom < 0) return;
+      e.preventDefault();
+      rows.forEach(r => r.classList.toggle('is-drop-target', r === row));
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('is-drop-target'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const from = dragFrom;
+      dragFrom = -1;
+      rows.forEach(r => r.classList.remove('is-drop-target', 'is-dragging'));
+      move(from, i);
+    });
+    row.addEventListener('dragend', () => {
+      dragFrom = -1;
+      rows.forEach(r => r.classList.remove('is-drop-target', 'is-dragging'));
+    });
+    rows.push(row);
+    list.appendChild(row);
+  });
+  sec.appendChild(list);
+  return sec;
 }
 
 /**
@@ -300,19 +448,30 @@ export function edTitleSection(config, onUpdate, t, onEdit, auto = {}) {
   return sec;
 }
 
+/** Bounds of every font size slider (px). */
+const FONT_SIZE_MIN = 6;
+const FONT_SIZE_MAX = 30;
+
 /**
- * Build the font size section: title, axis labels, tick labels.
+ * Build the font size section: title, axis labels, tick labels and — for
+ * charts with a legend — the legend.
  * Mutates config in-place, calls onUpdate() after each change.
- * @param {{ titleSize: number, labelSize: number, tickSize: number }} config - Mutated in-place
+ * @param {{ titleSize: number, labelSize: number, tickSize: number, legendSize?: number }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t
+ * @param {{ legend?: boolean }} [opts] - legend: also offer the legend font size
  * @returns {HTMLElement}
  */
-export function edFontSizeSection(config, onUpdate, t) {
+export function edFontSizeSection(config, onUpdate, t, opts = {}) {
   const sec = edSection(t('fontSizes'));
-  sec.appendChild(edRangeRow(t('titleFontSize'), config.titleSize ?? 15, (v) => { config.titleSize = v; onUpdate(); }, 8, 30, 1));
-  sec.appendChild(edRangeRow(t('labelFontSize'), config.labelSize ?? 12, (v) => { config.labelSize = v; onUpdate(); }, 8, 24, 1));
-  sec.appendChild(edRangeRow(t('tickFontSize'), config.tickSize ?? 11, (v) => { config.tickSize = v; onUpdate(); }, 6, 20, 1));
+  // One shared scale, so equal sizes sit at equal slider positions.
+  const row = (label, value, set) => edRangeRow(label, value, (v) => { set(v); onUpdate(); }, FONT_SIZE_MIN, FONT_SIZE_MAX, 1);
+  sec.appendChild(row(t('titleFontSize'), config.titleSize ?? 15, (v) => { config.titleSize = v; }));
+  sec.appendChild(row(t('labelFontSize'), config.labelSize ?? 12, (v) => { config.labelSize = v; }));
+  sec.appendChild(row(t('tickFontSize'), config.tickSize ?? 11, (v) => { config.tickSize = v; }));
+  if (opts.legend) {
+    sec.appendChild(row(t('legendFontSize'), config.legendSize ?? 11, (v) => { config.legendSize = v; }));
+  }
   return sec;
 }
 
@@ -400,6 +559,115 @@ export function edAxisTickSection(config, onUpdate, t, onEdit) {
   }, key);
   if (config.categoricalX !== true) sec.append(row('showXTicks'), row('showXGrid'));
   if (config.categoricalY !== true) sec.append(row('showYTicks'), row('showYGrid'));
+  return sec;
+}
+
+/**
+ * Build the chart size section: width/height inputs in px (100–4000, empty =
+ * auto) and the "export only" checkbox. A typed value is rounded and clamped,
+ * and the input shows the stored value afterwards.
+ *
+ * @param {{ chartWidth?: number|null, chartHeight?: number|null, sizeExportOnly?: boolean }} config - Mutated in-place
+ * @param {function} onChange - Called after an edit
+ * @param {function} t - Translator for `chart.editor.*` keys
+ * @returns {HTMLElement}
+ */
+export function edSizeSection(config, onChange, t) {
+  const sec = edSection(t('size'));
+  const row = (key) => {
+    const r = document.createElement('div');
+    r.className = 'dmike-chart-ed-inline-row';
+    const lbl = document.createElement('label');
+    lbl.textContent = t(key);
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = String(CHART_SIZE_MIN);
+    inp.max = String(CHART_SIZE_MAX);
+    inp.step = '1';
+    inp.placeholder = t('auto');
+    inp.dataset.chartSize = key;
+    const cur = normalizeChartSize(config[key]);
+    inp.value = cur === null ? '' : String(cur);
+    inp.addEventListener('change', () => {
+      const next = normalizeChartSize(inp.value.trim());
+      config[key] = next;
+      inp.value = next === null ? '' : String(next);
+      onChange();
+    });
+    lbl.addEventListener('click', () => inp.focus());
+    r.append(lbl, inp);
+    return r;
+  };
+  sec.append(row('chartWidth'), row('chartHeight'));
+  sec.appendChild(edCheckboxRow(t('sizeExportOnly'), !!config.sizeExportOnly, (v) => {
+    config.sizeExportOnly = v;
+    onChange();
+  }, 'sizeExportOnly'));
+  return sec;
+}
+
+/**
+ * Build the axis range section: min/max number inputs per axis that allows a
+ * range (`axes`). An empty field means automatic. Every edit replaces
+ * `config.axisRange` with a new object (`null` once all fields are empty).
+ * An axis with min >= max marks both its inputs invalid; ChartBase ignores
+ * that axis until it is fixed.
+ *
+ * @param {{ axisRange?: Object|null }} config - Mutated in-place
+ * @param {function} onChange - Called after `config.axisRange` changed
+ * @param {function} t
+ * @param {{ x: boolean, y: boolean }} axes - Axes that get inputs
+ * @returns {HTMLElement|null} null when no axis allows a range
+ */
+export function edAxisRangeSection(config, onChange, t, axes) {
+  if (!axes || (!axes.x && !axes.y)) return null;
+  const sec = edSection(t('axisRange'));
+  const inputs = {};
+
+  const markInvalid = () => {
+    const r = config.axisRange || {};
+    for (const a of ['x', 'y']) {
+      const lo = r[`${a}Min`], hi = r[`${a}Max`];
+      const bad = Number.isFinite(lo) && Number.isFinite(hi) && hi <= lo;
+      for (const k of [`${a}Min`, `${a}Max`]) {
+        if (!inputs[k]) continue;
+        inputs[k].classList.toggle('dmike-chart-ed-input--invalid', bad);
+        inputs[k].title = bad ? t('axisRangeInvalid') : '';
+      }
+    }
+  };
+
+  const row = (key) => {
+    const r = document.createElement('div');
+    r.className = 'dmike-chart-ed-inline-row';
+    const lbl = document.createElement('label');
+    lbl.textContent = t(key);
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = 'any';
+    inp.placeholder = t('auto');
+    inp.dataset.axisRange = key;
+    const cur = config.axisRange?.[key];
+    inp.value = Number.isFinite(cur) ? String(cur) : '';
+    inp.addEventListener('change', () => {
+      const next = { ...(config.axisRange || {}) };
+      const raw = inp.value.trim();
+      const num = raw === '' ? NaN : Number(raw);
+      if (Number.isFinite(num)) next[key] = num;
+      else { delete next[key]; inp.value = ''; }
+      config.axisRange = Object.keys(next).length ? next : null;
+      markInvalid();
+      onChange();
+    });
+    lbl.addEventListener('click', () => inp.focus());
+    inputs[key] = inp;
+    r.append(lbl, inp);
+    return r;
+  };
+
+  if (axes.x) sec.append(row('xMin'), row('xMax'));
+  if (axes.y) sec.append(row('yMin'), row('yMax'));
+  markInvalid();
   return sec;
 }
 

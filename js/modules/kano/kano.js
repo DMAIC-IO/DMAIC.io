@@ -28,7 +28,6 @@ import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
 import { evaluate, Q_WARN } from '../../engines/kano-engine.js';
 import { kanoScatterConfig } from './kano-chart.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
-import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
 import { treePhaseForCycle } from '../voc-ctx-tree/voc-ctx-tree-phase.js';
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
@@ -838,16 +837,14 @@ export default createModule({
         XLSX.writeFile(wb, 'kano.xlsx');
       },
 
-      /** @returns {SVGElement|null} das gemountete Better/Worse-Diagramm, falls vorhanden */
-      _chartSvg() {
-        return module._container.querySelector('[data-ref="chart"] svg');
-      },
+      // The toolbar export goes through the chart's own export, so the
+      // editor's export-only size applies here as well.
 
       /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
-      exportPNG() { const svg = this._chartSvg(); if (svg) exportSvgAsPNG(svg, 'kano.png'); },
+      exportPNG() { return this._charts[0]?.exportPNG(); },
 
       /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
-      exportSVG() { const svg = this._chartSvg(); if (svg) exportSvgAsFile(svg, 'kano.svg'); },
+      exportSVG() { return this._charts[0]?.exportSVG(); },
 
       // ── Chart ─────────────────────────────────────────────────
 
@@ -881,6 +878,7 @@ export default createModule({
           xLabel: _t('chartX'),
           yLabel: _t('chartY'),
           showLegend: false,
+          fileName: 'kano',
           series,
           refLines,
         });

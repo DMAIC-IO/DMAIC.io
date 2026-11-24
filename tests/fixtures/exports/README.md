@@ -37,6 +37,9 @@ Aktueller Stand:
 | v1.4.0_single_project.json      | 1        | 11              |
 | v1.5.0_single_project.json      | 1        | 11              |
 | v1.6.0_single_project.json      | 1        | 11              |
+| v1.7.0_single_project.json      | 1        | 11              |
+| v1.8.0_single_project.json      | 1        | 11              |
+| v1.9.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -94,6 +97,27 @@ aber den Kurs „Statistik-Grundlagen“, Vertrag 2 der Agentenfläche und
 additive Ergänzungen am Modulzustand; fehlende Felder bekommen beim Laden ihren
 Standardwert. Deshalb gibt es keinen Migrationsschritt `1.5→1.6`, und die
 Fixture ist inhaltsgleich mit der v1.5-Fixture.
+
+Die v1.7-Fixture zieht die 1.7-Linie nach. 1.7 bringt kein neues Modul,
+aber den Achsenbereich im Grafik-Editor (`axisRange` in den Diagramm-
+Einstellungen und im Histogramm) und die generische Löschbestätigung; das
+neue Feld ist additiv und fehlt in älteren Exporten einfach. Deshalb gibt es
+keinen Migrationsschritt `1.6→1.7`, und die Fixture ist inhaltsgleich mit der
+v1.6-Fixture.
+
+Die v1.8-Fixture zieht die 1.8-Linie nach. 1.8 bringt kein neues Modul,
+aber die Legenden-Schriftgröße (`legendSize`) und die feste Diagrammgröße
+(`chartWidth`, `chartHeight`, `sizeExportOnly`) in den Diagramm-Einstellungen
+und im Histogramm; die neuen Felder sind additiv und fehlen in älteren
+Exporten einfach. Deshalb gibt es keinen Migrationsschritt `1.7→1.8`, und die
+Fixture ist inhaltsgleich mit der v1.7-Fixture.
+
+Die v1.9-Fixture zieht die 1.9-Linie nach. 1.9 bringt kein neues Modul,
+aber Fehlerbalken je Datenreihe im XY-Plot (`errorBars` in
+`datasets[]`); das neue Feld ist additiv und fehlt in älteren Exporten
+einfach (das Modell ergänzt `mode: 'none'`). Deshalb gibt es keinen
+Migrationsschritt `1.8→1.9`, und die Fixture ist inhaltsgleich mit der
+v1.8-Fixture.
 
 ## Pflicht beim Release
 

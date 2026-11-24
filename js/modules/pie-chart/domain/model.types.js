@@ -9,7 +9,7 @@
 /**
  * @typedef {object} StateView
  * @property {string|null} exampleWorksheetId
- * @property {{ title?: string, showTitle?: boolean, showLegend?: boolean, showLabels?: boolean, labelMode?: 'percent'|'value'|'name'|'both', labelSize?: number, innerRadius?: number, padAngle?: number, startAngle?: number, explodeDistance?: number, strokeWidth?: number, sortSlices?: 'none'|'asc'|'desc', centerLabel?: string, centerSub?: string, bgColor?: string|null }} chart
+ * @property {{ title?: string, showTitle?: boolean, showLegend?: boolean, showLabels?: boolean, labelMode?: 'percent'|'value'|'name'|'both', labelSize?: number, innerRadius?: number, padAngle?: number, startAngle?: number, explodeDistance?: number, strokeWidth?: number, sortSlices?: 'none'|'asc'|'desc', centerLabel?: string, centerSub?: string, bgColor?: string|null, chartWidth?: number|null, chartHeight?: number|null, sizeExportOnly?: boolean }} chart
  */
 
 /**

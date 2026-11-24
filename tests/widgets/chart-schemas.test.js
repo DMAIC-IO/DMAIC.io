@@ -76,12 +76,22 @@ suite('Diagramm-Widgets: Schemas', () => {
     const e = histogramChart.edits();
     assertDeepEqual(defaultOf(e), {});
     assertDeepEqual(histogramChart.editable.base, ['title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel', 'showLegend',
-      'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks', 'bgColor', 'refLines', 'refAreas', 'barGap', 'pareto', 'boxplotStrip']);
+      'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks', 'bgColor', 'refLines', 'refAreas',
+      'axisRange', 'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder', 'barGap', 'pareto', 'boxplotStrip']);
     assertDeepEqual(histogramChart.editable.series, ['fillColor', 'borderColor', 'borderWidth', 'borderStyle', 'pattern', 'patternColor', 'patternSolidity', 'visible', 'showNormalCurve']);
     assertDeepEqual(checkValue(e, 'e', { title: 'X', series: [{ name: 'A', fillColor: 'red' }] }), { title: 'X', series: [{ name: 'A', fillColor: 'red' }] });
     assertThrows(() => checkValue(e, 'e', { binWidth: 2 }), /unknown e key "binWidth"/);
     assertThrows(() => checkValue(e, 'e', { series: [{ fillColor: 'red' }] }), /name/);
     assertTrue(describeType(e).startsWith('{ title?: string'));
+  });
+
+  test('edits(): Legende, Achsenbereich und feste Größe aus dem Diagramm-Editor', () => {
+    const e = histogramChart.edits();
+    const v = { legendSize: 14, axisRange: { yMin: 0, xMax: 40 }, chartWidth: 800, chartHeight: null, sizeExportOnly: true, legendOrder: ['l:LSL', 's:A'] };
+    assertDeepEqual(checkValue(e, 'e', v), v);
+    assertDeepEqual(checkValue(e, 'e', { axisRange: null }), { axisRange: null });
+    assertThrows(() => checkValue(e, 'e', { chartWidth: 50 }), /chartWidth/);
+    assertThrows(() => checkValue(e, 'e', { axisRange: { zMin: 1 } }), /zMin/);
   });
 
   test('Regelkarte: Grenzen als Liste, Indizes als Liste', () => {
@@ -289,7 +299,7 @@ suite('Diagramm-Widgets: Schemas', () => {
   test('Kontur: bearbeitbar ist die Basis ohne Legende, dann die eigenen Schlüssel', () => {
     assertTrue(!contourChart.editable.base.includes('showLegend'));
     assertDeepEqual(contourChart.editable.base, ContourChart.editorKeys.filter((k) => k !== 'showLegend'));
-    assertDeepEqual(contourChart.editable.base.slice(0, 14), ChartBase.editorKeys.filter((k) => k !== 'showLegend'));
+    assertDeepEqual(contourChart.editable.base.slice(0, ChartBase.editorKeys.length - 1), ChartBase.editorKeys.filter((k) => k !== 'showLegend'));
     assertDeepEqual(contourChart.editable.series, []);
   });
 

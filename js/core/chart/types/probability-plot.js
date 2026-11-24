@@ -187,6 +187,11 @@ export default class ProbabilityPlot extends ChartBase {
 
   // ── Data Extent ────────────────────────────────────────────────
 
+  /** @override — the y axis is the transformed probability scale. */
+  _axisRangeAxes() {
+    return { x: true, y: false };
+  }
+
   /** @override */
   _getDataExtent() {
     const series = this._renderableSeries();

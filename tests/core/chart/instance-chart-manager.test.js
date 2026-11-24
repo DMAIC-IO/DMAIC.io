@@ -21,7 +21,7 @@ function fakeChart(config) {
 /** ChartBase.editorKeys (kept literal: the node runner does not load chart classes). */
 const BASE_EDITOR_KEYS = [
   'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
-  'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
+  'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
   'bgColor', 'refLines', 'refAreas',
 ];
 
@@ -286,6 +286,28 @@ suite('EditBoundChartManager', () => {
     c._onLabelEdit('showXGrid', false);
     c._onLabelEdit('bgColor', 'red');
     assertDeepEqual(s.writes, [['histogram', 'showYTicks', true]]);
+  });
+
+  test('tile charts store the legend order and lay it over on create', async () => {
+    const s = boundStore();
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const c = await f.create({}, 'histogram', {});
+    c._onLabelEdit('legendOrder', ['s:B', 's:A']);
+    assertDeepEqual(s.writes, [['histogram', 'legendOrder', ['s:B', 's:A']]]);
+    c.destroy?.();
+    const d = await f.create({}, 'histogram', {});
+    assertDeepEqual(d.config.legendOrder, ['s:B', 's:A']);
+  });
+
+  test('tile charts store the axis range and lay it over on create', async () => {
+    const s = boundStore();
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const c = await f.create({}, 'histogram', {});
+    c._onLabelEdit('axisRange', { yMax: 5 });
+    assertDeepEqual(s.writes, [['histogram', 'axisRange', { yMax: 5 }]]);
+    c.destroy?.();
+    const d = await f.create({}, 'histogram', { axisRange: null });
+    assertDeepEqual(d.config.axisRange, { yMax: 5 });
   });
 
   test('stored edits with unknown keys are ignored on create and update', async () => {

@@ -23149,13 +23149,13 @@ export const AGENT_REGISTRY = {
         "slots": {
           "x": [
             "columnRef",
-            "types:numeric",
+            "types:numeric,currency,percent",
             "minCount:1",
             "required"
           ],
           "y": [
             "columnRef",
-            "types:numeric",
+            "types:numeric,currency,percent",
             "minCount:1",
             "required"
           ],
@@ -23165,7 +23165,7 @@ export const AGENT_REGISTRY = {
           ],
           "size": [
             "columnRef",
-            "types:numeric",
+            "types:numeric,currency,percent",
             "minCount:1"
           ]
         }

@@ -51,15 +51,18 @@ import { from0 } from './migrations.js';
 
 const opt = { optional: true };
 
+/** Spaltentypen mit reinen Zahlen: Prozent und Währung sind ebenfalls Zahlen. */
+const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
+
 export const State = defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
   fields: {
     datasets: datasets({
-      x: columnRef({ types: ['numeric'], minCount: 1, required: true }),
-      y: columnRef({ types: ['numeric'], minCount: 1, required: true }),
+      x: columnRef({ types: NUMBER_TYPES, minCount: 1, required: true }),
+      y: columnRef({ types: NUMBER_TYPES, minCount: 1, required: true }),
       group: columnRef({ group: true }),
-      size: columnRef({ types: ['numeric'], minCount: 1 }),
+      size: columnRef({ types: NUMBER_TYPES, minCount: 1 }),
     }, { multi: true, colors: CHART_COLORS }),
   },
   view: {

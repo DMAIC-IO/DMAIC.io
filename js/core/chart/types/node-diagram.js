@@ -394,6 +394,11 @@ export default class NodeDiagram extends ChartBase {
     return NodeDiagram.contentSize(this.config);
   }
 
+  /** @override — a diagram has no value axes. */
+  _axisRangeAxes() {
+    return { x: false, y: false };
+  }
+
   _getDataExtent() {
     const b = contentBox(this.config);
     return { xMin: b.x, xMax: b.x + b.w, yMin: b.y, yMax: b.y + b.h };

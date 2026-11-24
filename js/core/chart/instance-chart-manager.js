@@ -23,7 +23,7 @@ import { nonReactive } from '../non-reactive.js';
 export const LABEL_EDIT_KEYS = ['title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel'];
 
 /** Extra keys persisted for dashboard tile charts (see ChartManager.forTile). */
-export const TILE_EDIT_KEYS = ['showXTicks', 'showYTicks', 'showLegend'];
+export const TILE_EDIT_KEYS = ['showXTicks', 'showYTicks', 'showLegend', 'axisRange', 'legendOrder'];
 
 /** Keys the editor reports one by one through `_onLabelEdit`. */
 const REPORTED_KEYS = new Set([...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS]);

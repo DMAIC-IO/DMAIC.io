@@ -882,7 +882,7 @@ export default createModule({
         if (!panel) return;
         panel.replaceChildren();
         const tk = _t;
-        const section = edSection(tk('settings'));
+        const section = edSection(tk('settings'), { collapsible: false });
 
         const colorKeys = [
           { key: 'voc',  label: tk('colorVoc'),  tip: tk('colorVocTip') },

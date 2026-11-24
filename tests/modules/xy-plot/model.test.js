@@ -12,11 +12,13 @@ import { pickShown, diffEdits } from '../../../js/widgets/chart-edits.js';
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
 
 /** Die Slots des alten Pickers (Altmodul), als Literal festgehalten. */
+// Prozent und Währung sind Zahlen (wie im alten Picker seit 1.9.2).
+const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
 const OLD_SLOTS = [
-  { key: 'x', types: ['numeric'], minCount: 1, required: true },
-  { key: 'y', types: ['numeric'], minCount: 1, required: true },
+  { key: 'x', types: NUMBER_TYPES, minCount: 1, required: true },
+  { key: 'y', types: NUMBER_TYPES, minCount: 1, required: true },
   { key: 'group', group: true },
-  { key: 'size', types: ['numeric'], minCount: 1 },
+  { key: 'size', types: NUMBER_TYPES, minCount: 1 },
 ];
 
 /** @param {any} s @returns {Record<string, any>} */

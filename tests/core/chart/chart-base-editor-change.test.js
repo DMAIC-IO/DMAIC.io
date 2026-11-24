@@ -140,8 +140,34 @@ suite('ChartBase — editor changes reach _onEditorChange', () => {
   test('editorKeys of the base class hold the base list', () => {
     assertDeepEqual(ChartBase.editorKeys, [
       'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
-      'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
-      'bgColor', 'refLines', 'refAreas',
+      'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
+      'bgColor', 'refLines', 'refAreas', 'axisRange',
+      'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder',
     ]);
+  });
+  test('legend text uses config.legendSize', () => {
+    const m = mount({ s: { name: 'A', visible: true }, legendSize: 17 });
+    const txt = m.host.querySelector('[data-legend-item]');
+    assertEqual(txt.getAttribute('font-size'), '17px');
+    m.chart.destroy(); m.host.remove();
+  });
+  test('all font size sliders share one scale', () => {
+    const m = mount({ s: { name: 'A', visible: true } });
+    const ranges = ['titleFontSize', 'labelFontSize', 'tickFontSize', 'legendFontSize']
+      .map((l) => { const i = slider(m.inner, l); return `${i.min}-${i.max}`; });
+    assertDeepEqual(ranges, ['6-30', '6-30', '6-30', '6-30']);
+    m.chart.destroy(); m.host.remove();
+  });
+  test('font size section offers a legend slider that sets legendSize', () => {
+    const m = mount({ s: { name: 'A', visible: true } });
+    const row = [...m.inner.querySelectorAll('.dmike-slider-row')]
+      .find(r => r.querySelector('label')?.textContent === 'legendFontSize');
+    assertTrue(!!row, 'legend slider row present');
+    const slider = row.querySelector('input[type="range"]');
+    slider.value = '15';
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+    assertEqual(m.chart.config.legendSize, 15);
+    assertEqual(m.host.querySelector('[data-legend-item]').getAttribute('font-size'), '15px');
+    m.chart.destroy(); m.host.remove();
   });
 });
