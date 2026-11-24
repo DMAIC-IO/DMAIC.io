@@ -17,7 +17,7 @@
       "help": "The id of the example worksheet this module was loaded from; empty if it does not come from an example."
     },
     "analysis": {
-      "help": "The computation over these rows: T² values, center line, upper control limit, baseline mean and covariance and the signal rows, or the reason nothing was computed. Empty with fewer than two columns or when a column cannot be read."
+      "help": "The computation over the complete rows of the chosen columns: T² values, center line, upper control limit, baseline mean and covariance and the signal rows, or the reason nothing was computed. Empty with fewer than two columns or when a column cannot be read."
     },
     "result": {
       "help": "The computed result, each figure described individually under keys; null with fewer than 2 variables, with a deleted column, with no more complete rows than variables, or when the computation fails (error and message then give reason and text)."

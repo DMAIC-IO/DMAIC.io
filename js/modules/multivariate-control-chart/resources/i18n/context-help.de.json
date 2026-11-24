@@ -17,7 +17,7 @@
       "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
     },
     "analysis": {
-      "help": "Die Rechnung über diese Zeilen: T²-Werte, Mittellinie, obere Eingriffsgrenze, Mittelwert und Kovarianz der Baseline und die Signalzeilen, oder der Grund, warum nicht gerechnet wurde. Leer mit weniger als zwei Spalten oder wenn eine Spalte nicht lesbar ist."
+      "help": "Die Rechnung über die vollständigen Zeilen der gewählten Spalten: T²-Werte, Mittellinie, obere Eingriffsgrenze, Mittelwert und Kovarianz der Baseline und die Signalzeilen, oder der Grund, warum nicht gerechnet wurde. Leer mit weniger als zwei Spalten oder wenn eine Spalte nicht lesbar ist."
     },
     "result": {
       "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null mit weniger als 2 Variablen, bei einer gelöschten Spalte, mit höchstens so vielen vollständigen Zeilen wie Variablen oder wenn die Rechnung scheitert (dann stehen Grund und Text in error und message)."
