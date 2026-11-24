@@ -793,31 +793,6 @@
       ]
     },
     {
-      "id": "spc-multivariate-t2",
-      "type": "project",
-      "title": {
-        "de": "Hotelling T²: bivariate Korrelation",
-        "en": "Hotelling T²: bivariate correlation"
-      },
-      "description": {
-        "de": "40 bivariate Beobachtungen mit ρ ≈ 0,85. Beobachtungen 30 und 31 sind multivariate-Outlier (auf den Marginalen plausibel, joint vom Korrelationsellipsoid abweichend).",
-        "en": "40 bivariate observations with ρ ≈ 0.85. Observations 30 and 31 are multivariate outliers — plausible on each margin but joint deviates from the correlation ellipse."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=705",
-      "license": "public-domain",
-      "file": "projects/spc-multivariate-t2.json",
-      "format": "json",
-      "modules": [
-        "multivariate-control-chart"
-      ],
-      "tags": [
-        "spc",
-        "multivariate",
-        "t-squared",
-        "hotelling"
-      ]
-    },
-    {
       "id": "spc-rare-event-t-chart",
       "type": "project",
       "title": {

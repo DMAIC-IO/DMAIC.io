@@ -100,6 +100,11 @@
     "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",
     "whenToUse": "When the spread of a measured characteristic must be traced to its sources: stages every single measurement by two to four factors (for example shift, cavity, part) and splits the variance into components, nested or crossed, by ANOVA or REML; needs one numeric measurement column and two factor columns."
   },
+  "multivariate-control-chart": {
+    "name": "Multivariate Control Chart (Hotelling T²)",
+    "description": "Hotelling T² for correlated characteristics",
+    "whenToUse": "Monitor several correlated characteristics together: Hotelling T² flags rows whose combination is unusual even when each value alone is in control."
+  },
   "opportunity-flowchart": {
     "name": "Opportunity Flowchart",
     "description": "Two-column flow: value-added steps versus rework",

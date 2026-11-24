@@ -111,12 +111,6 @@
   "js/modules/msa-typ6/msa-typ6.js": {
     "count": 2
   },
-  "js/modules/multivariate-control-chart/multivariate-control-chart.html": {
-    "count": 2
-  },
-  "js/modules/multivariate-control-chart/multivariate-control-chart.js": {
-    "count": 1
-  },
   "js/modules/pairwise-comparison/pairwise-comparison.js": {
     "count": 3
   },

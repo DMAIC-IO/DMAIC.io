@@ -12901,6 +12901,7 @@ export const AGENT_REGISTRY = {
   "multivariate-control-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -12910,111 +12911,37 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumns": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'variables'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `variables`"
-          },
-          {
-            "name": "refs",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }[]",
-            "optional": false,
-            "help": "die Spaltenbezüge wählbarer Spalten (mindestens 2 für ein Ergebnis); [] leert"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Die Variablen wählen und neu rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'alpha'|'baselineCount'",
-            "optional": false,
-            "help": "welche Option"
-          },
-          {
-            "name": "value",
-            "type": "string|number|null",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen.",
-        "keysOf": "Params",
-        "keys": {
-          "alpha": {
-            "type": "number",
-            "help": "Fehlalarmrate der T²-Grenze"
-          },
-          "baselineCount": {
-            "type": "number",
-            "help": "Zeilen der Phase I, leer für alle"
-          }
-        }
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
       }
     },
     "fields": {
       "columnRefs": {
-        "type": "object[]",
-        "help": "the variable columns (slot `variables`), each `{ instanceId, sheetId, columnId }`",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:3"
+        ]
       },
       "alpha": {
         "type": "number",
-        "help": "false-alarm rate of the T² limit, 0 < alpha < 1",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "baselineCount": {
         "type": "number|null",
-        "help": "rows used to estimate mean and covariance (Phase I), or null for all rows; used only when greater than the number of variables",
-        "bulk": false,
-        "derived": true
-      },
-      "activeMultiSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumns` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumns` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "why nothing was computed (too few complete rows, computation error), or ''",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result (see `Result`); signals are indices of the complete rows used, not worksheet rows; null with fewer than 2 variables, with no more complete rows than variables, or on error",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -13055,12 +12982,60 @@ export const AGENT_REGISTRY = {
       },
       "points": {
         "type": "object[]",
-        "help": "one row per complete data row: `{ t2, signal }`",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
+        "derived": true,
+        "keysOf": "Point",
+        "keys": {
+          "t2": {
+            "type": "number|null",
+            "help": "der T²-Wert der Zeile"
+          },
+          "signal": {
+            "type": "boolean",
+            "help": "über der oberen Eingriffsgrenze"
+          }
+        }
+      },
+      "error": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "message": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeMultiSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "columnRefs",
+      "alpha",
+      "baselineCount"
+    ],
+    "invariants": [
+      "uniqueColumnRefs"
+    ]
   },
   "opportunity-flowchart": {
     "tagged": true,
