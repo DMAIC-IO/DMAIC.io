@@ -6992,7 +6992,7 @@
           "help": "Die Fehlerbalken einer Datenreihe festlegen: keine, konstante Beträge in +x, −x, +y und −y oder je Richtung eine Spalte mit dem Fehler jedes Punkts. Ein Wechsel des Modus leert alle vier Werte; nicht angegebene Richtungen bleiben ohne Balken.",
           "params": {
             "index": "Die Nummer der Datenreihe, 0-basiert, wie in read().datasets.",
-            "spec": "Ein Objekt { mode, xPlus, xMinus, yPlus, yMinus }: 'mode' ist 'none', 'constant' oder 'columns'. Bei 'constant' ist jede Richtung eine Zahl, bei 'columns' ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.y; fehlende Richtungen sind null."
+            "spec": "Ein Objekt { mode, xPlus, xMinus, yPlus, yMinus }: 'mode' ist 'none', 'constant', 'columns' oder 'columnsAbsolute'. Bei 'constant' ist jede Richtung eine Zahl, bei 'columns' (Abstände vom Punkt) und 'columnsAbsolute' (Endpunkte der Balken) ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.y; fehlende Richtungen sind null."
           }
         }
       },
@@ -7019,11 +7019,11 @@
           "errorBars": "Die Fehlerbalken der Reihe: Modus und je Richtung ein Betrag oder eine Spalte. Ohne Angabe zeigt die Reihe keine Fehlerbalken."
         },
         "ErrorBars": {
-          "mode": "Wie die Fehler angegeben sind: 'none' (keine Balken), 'constant' (ein fester Betrag je Richtung) oder 'columns' (je Richtung eine Spalte mit einem Wert pro Punkt).",
-          "xPlus": "Der Fehler nach rechts (+x): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung.",
-          "xMinus": "Der Fehler nach links (−x): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung.",
-          "yPlus": "Der Fehler nach oben (+y): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung.",
-          "yMinus": "Der Fehler nach unten (−y): ein Betrag oder eine Spalte, je nach Modus. Leer heißt kein Balken in diese Richtung."
+          "mode": "Wie die Fehler angegeben sind: 'none' (keine Balken), 'constant' (ein fester Betrag je Richtung), 'columns' (je Richtung eine Spalte mit dem Abstand vom Punkt) oder 'columnsAbsolute' (je Richtung eine Spalte mit dem Endpunkt des Balkens, etwa 95 und 110 um den Wert 100).",
+          "xPlus": "Der Fehler nach rechts (+x): ein Betrag oder eine Spalte, je nach Modus — bei „Spalten (absolut)“ der Endpunkt des Balkens. Leer heißt kein Balken in diese Richtung.",
+          "xMinus": "Der Fehler nach links (−x): ein Betrag oder eine Spalte, je nach Modus — bei „Spalten (absolut)“ der Endpunkt des Balkens. Leer heißt kein Balken in diese Richtung.",
+          "yPlus": "Der Fehler nach oben (+y): ein Betrag oder eine Spalte, je nach Modus — bei „Spalten (absolut)“ der Endpunkt des Balkens. Leer heißt kein Balken in diese Richtung.",
+          "yMinus": "Der Fehler nach unten (−y): ein Betrag oder eine Spalte, je nach Modus — bei „Spalten (absolut)“ der Endpunkt des Balkens. Leer heißt kein Balken in diese Richtung."
         }
       },
       "sectionData": "Datenquelle",
@@ -7061,7 +7061,8 @@
       "errorBars": "Fehlerbalken",
       "ebModeNone": "keine",
       "ebModeConstant": "konstant",
-      "ebModeColumns": "Spalten",
+      "ebModeColumns": "Spalten (relativ)",
+      "ebModeColumnsAbsolute": "Spalten (absolut)",
       "ebNoColumn": "—"
     },
     "pie-chart": {

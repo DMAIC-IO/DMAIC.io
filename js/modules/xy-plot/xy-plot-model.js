@@ -15,7 +15,17 @@
 import { columnRefFromJSON } from '../../core/chart/chart-data-prep.js';
 
 /** Error bar modes a dataset can use. */
-export const ERROR_BAR_MODES = ['none', 'constant', 'columns'];
+export const ERROR_BAR_MODES = ['none', 'constant', 'columns', 'columnsAbsolute'];
+
+/**
+ * Whether a mode reads one worksheet column per direction: 'columns' holds
+ * distances from the point, 'columnsAbsolute' the bar end points.
+ * @param {string} mode
+ * @returns {boolean}
+ */
+export function isColumnMode(mode) {
+  return mode === 'columns' || mode === 'columnsAbsolute';
+}
 
 /** The four error directions, in display order. */
 export const ERROR_BAR_KEYS = ['xPlus', 'xMinus', 'yPlus', 'yMinus'];
@@ -25,7 +35,7 @@ export const ERROR_BAR_FIELD_ORDER = ['xMinus', 'xPlus', 'yMinus', 'yPlus'];
 
 /**
  * @typedef {object} ErrorBarsSpec
- * @property {'none'|'constant'|'columns'} mode
+ * @property {'none'|'constant'|'columns'|'columnsAbsolute'} mode
  * @property {number|object|null} xPlus  - constant distance or column ref
  * @property {number|object|null} xMinus
  * @property {number|object|null} yPlus
@@ -34,7 +44,7 @@ export const ERROR_BAR_FIELD_ORDER = ['xMinus', 'xPlus', 'yMinus', 'yPlus'];
 
 /**
  * Error bar spec with all four directions unset.
- * @param {'none'|'constant'|'columns'} [mode='none']
+ * @param {'none'|'constant'|'columns'|'columnsAbsolute'} [mode='none']
  * @returns {ErrorBarsSpec}
  */
 export function emptyErrorBars(mode = 'none') {
@@ -57,7 +67,7 @@ export function errorBarsFromJSON(d) {
     const v = d[key];
     if (d.mode === 'constant') {
       out[key] = (typeof v === 'number' && Number.isFinite(v)) ? v : null;
-    } else if (d.mode === 'columns') {
+    } else if (isColumnMode(d.mode)) {
       out[key] = columnRefFromJSON(v);
     }
   }
@@ -86,7 +96,7 @@ function toErrorValue(v) {
  * @returns {object|null} null when no point gets any bar
  */
 export function buildErrorBars(spec, rows, errValues) {
-  if (!spec || (spec.mode !== 'constant' && spec.mode !== 'columns')) return null;
+  if (!spec || (spec.mode !== 'constant' && !isColumnMode(spec.mode))) return null;
   const values = errValues || {};
   const arrays = {};
   for (const key of ERROR_BAR_KEYS) {
@@ -104,10 +114,11 @@ export function buildErrorBars(spec, rows, errValues) {
   const hasY = arrays.yPlus !== null || arrays.yMinus !== null;
   if (!hasX && !hasY) return null;
   const fill = (arr) => arr || rows.map(() => null);
+  const kind = spec.mode === 'columnsAbsolute' ? 'absolute' : 'relative';
   return {
     show: true,
-    xMode: hasX ? 'relative' : 'none',
-    yMode: hasY ? 'relative' : 'none',
+    xMode: hasX ? kind : 'none',
+    yMode: hasY ? kind : 'none',
     xPlus: hasX ? fill(arrays.xPlus) : null,
     xMinus: hasX ? fill(arrays.xMinus) : null,
     yPlus: hasY ? fill(arrays.yPlus) : null,

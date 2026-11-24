@@ -145,13 +145,18 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Spalten',
-            content: 'Je Richtung eine Worksheet-Spalte mit einem Betrag pro Zeile — etwa die Standardabweichung oder die halbe Breite eines Konfidenzintervalls je Messpunkt.',
+            term: 'Spalten (relativ)',
+            content: 'Je Richtung eine Worksheet-Spalte mit dem Abstand vom Punkt pro Zeile — etwa die Standardabweichung oder die halbe Breite eines Konfidenzintervalls je Messpunkt. Beispiel: Wert 100, Balken von 95 bis 110 → −Y = 5, +Y = 10.',
+          },
+          {
+            type: 'definition',
+            term: 'Spalten (absolut)',
+            content: 'Je Richtung eine Worksheet-Spalte mit dem Endpunkt des Balkens pro Zeile — etwa die Unter- und Obergrenze eines Konfidenzintervalls. Beispiel: Wert 100, Balken von 95 bis 110 → −Y = 95, +Y = 110.',
           },
           {
             type: 'list',
             items: [
-              'Die Werte sind Abstände vom Punkt, keine Endpunkte. Ein negativer Wert wird als sein Betrag gelesen.',
+              'Bei „Spalten (relativ)“ und „Konstant“ sind die Werte Abstände vom Punkt; ein negativer Wert wird als sein Betrag gelesen (−5 und 5 ergeben denselben Balken). Bei „Spalten (absolut)“ sind sie Koordinaten auf der Achse.',
               'Ein leeres Feld oder eine leere bzw. nicht-numerische Zelle bedeutet: kein Balken in dieser Richtung. Der Punkt selbst bleibt immer sichtbar.',
               'Für symmetrische Balken dieselbe Spalte (oder denselben Betrag) bei + und − eintragen.',
               'Mit Gruppierung (G) trägt jede Gruppe die Fehler genau ihrer eigenen Zeilen; übersprungene Zeilen (ungültiges X, Y oder Größe) nehmen ihre Fehler mit.',
@@ -173,13 +178,18 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Columns',
-            content: 'One worksheet column per direction holding an amount per row — for example the standard deviation or the half-width of a confidence interval at each point.',
+            term: 'Columns (relative)',
+            content: 'One worksheet column per direction holding the distance from the point per row — for example the standard deviation or the half-width of a confidence interval at each point. Example: value 100, bar from 95 to 110 → −Y = 5, +Y = 10.',
+          },
+          {
+            type: 'definition',
+            term: 'Columns (absolute)',
+            content: 'One worksheet column per direction holding the end point of the bar per row — for example the lower and upper limit of a confidence interval. Example: value 100, bar from 95 to 110 → −Y = 95, +Y = 110.',
           },
           {
             type: 'list',
             items: [
-              'Values are distances from the point, not end points. A negative value is read as its absolute value.',
+              'With “Columns (relative)” and “Constant” the values are distances from the point; a negative value is read as its absolute value (−5 and 5 give the same bar). With “Columns (absolute)” they are coordinates on the axis.',
               'An empty field or an empty or non-numeric cell means: no bar in that direction. The point itself always stays visible.',
               'For symmetric bars enter the same column (or the same amount) for + and −.',
               'With grouping (G) each group carries the errors of exactly its own rows; skipped rows (invalid X, Y or size) take their errors with them.',

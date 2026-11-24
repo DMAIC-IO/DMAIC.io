@@ -33,7 +33,7 @@ import { keyToRef, refToKey } from '../../ui/column-picker.js';
 import Alpine from '@alpinejs/csp';
 import {
   State, ERROR_BAR_MODES, ERROR_BAR_KEYS, ERROR_BAR_FIELD_ORDER,
-  emptyErrorBars, errorBarsFromJSON, buildErrorBars,
+  emptyErrorBars, errorBarsFromJSON, buildErrorBars, isColumnMode,
 } from './xy-plot-model.js';
 import {
   edCheckboxRow, edSelectRow,
@@ -49,7 +49,10 @@ import { h } from '../../core/dom.js';
 /** Labels of the four error directions — math symbols, the same in every language. */
 const ERROR_BAR_LABELS = { xPlus: '+X', xMinus: '−X', yPlus: '+Y', yMinus: '−Y' };
 /** i18n key (under `modules.xy-plot.`) of each error bar mode's option. */
-const ERROR_BAR_MODE_LABELS = { none: 'ebModeNone', constant: 'ebModeConstant', columns: 'ebModeColumns' };
+const ERROR_BAR_MODE_LABELS = {
+  none: 'ebModeNone', constant: 'ebModeConstant',
+  columns: 'ebModeColumns', columnsAbsolute: 'ebModeColumnsAbsolute',
+};
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
@@ -84,7 +87,7 @@ const COLUMN_SLOTS = ['x', 'y', 'group', 'size'];
  * Die Fehlerbalken einer Datenreihe. Sätze unter `types.ErrorBars.<key>`.
  *
  * @typedef {object} ErrorBars
- * @property {string} mode  'none', 'constant' oder 'columns'
+ * @property {string} mode  'none', 'constant', 'columns' (Abstände) oder 'columnsAbsolute' (Endpunkte)
  * @property {number|object|null} xPlus  Fehler nach +x: Zahl (constant) oder Spaltenbezug (columns)
  * @property {number|object|null} xMinus  Fehler nach −x
  * @property {number|object|null} yPlus  Fehler nach +y
@@ -233,7 +236,7 @@ const mod = createModule({
        * @agent
        * @param {number} index die Reihe, 0-basiert (read().datasets)
        * @param {object} spec `{ mode, xPlus?, xMinus?, yPlus?, yMinus? }`; mode 'none',
-       *   'constant' (Zahlen) oder 'columns' (Spalten aus read().pickableColumns.y); fehlend = null
+       *   'constant' (Zahlen), 'columns' oder 'columnsAbsolute' (Spalten aus read().pickableColumns.y); fehlend = null
        * @returns {void}
        * @throws {Error} wenn index, mode, eine Zahl oder eine Spalte ungültig ist
        */
@@ -391,7 +394,7 @@ const mod = createModule({
         if (eb.mode === 'none') return;
 
         const ySlot = DATASET_SLOTS.find(s => s.key === 'y');
-        const columns = eb.mode === 'columns'
+        const columns = isColumnMode(eb.mode)
           ? discoverColumns(module._context.stateManager, slotFilter(ySlot))
           : [];
         const fields = h('div', { class: 'xyplot__eb-fields' });
@@ -536,7 +539,7 @@ const mod = createModule({
           const sizeName = ds.sizeRef ? this._getColumnName(ds.sizeRef) : '';
           const errSpec = ds.errorBars;
           const errValues = {};
-          if (errSpec?.mode === 'columns') {
+          if (isColumnMode(errSpec?.mode)) {
             for (const key of ERROR_BAR_KEYS) {
               if (!errSpec[key]) continue;
               const vals = this._getColumnValues(errSpec[key]);

@@ -23149,7 +23149,7 @@ export const AGENT_REGISTRY = {
             "name": "spec",
             "type": "object",
             "optional": false,
-            "help": "`{ mode, xPlus?, xMinus?, yPlus?, yMinus? }`; mode 'none', 'constant' (Zahlen) oder 'columns' (Spalten aus read().pickableColumns.y); fehlend = null"
+            "help": "`{ mode, xPlus?, xMinus?, yPlus?, yMinus? }`; mode 'none', 'constant' (Zahlen), 'columns' oder 'columnsAbsolute' (Spalten aus read().pickableColumns.y); fehlend = null"
           }
         ],
         "returns": "void",
@@ -23187,7 +23187,7 @@ export const AGENT_REGISTRY = {
             "keys": {
               "mode": {
                 "type": "string",
-                "help": "'none', 'constant' oder 'columns'"
+                "help": "'none', 'constant', 'columns' (Abstände) oder 'columnsAbsolute' (Endpunkte)"
               },
               "xPlus": {
                 "type": "number|object|null",

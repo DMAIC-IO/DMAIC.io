@@ -6988,7 +6988,7 @@
           "help": "Set the error bars of one data row: none, constant amounts in +x, −x, +y and −y, or one column per direction holding the error of each point. Changing the mode clears all four values; directions left out get no bar.",
           "params": {
             "index": "The number of the data row, 0-based, as in read().datasets.",
-            "spec": "An object { mode, xPlus, xMinus, yPlus, yMinus }: 'mode' is 'none', 'constant' or 'columns'. With 'constant' each direction is a number, with 'columns' a column reference { instanceId, sheetId, columnId } from read().pickableColumns.y; missing directions are null."
+            "spec": "An object { mode, xPlus, xMinus, yPlus, yMinus }: 'mode' is 'none', 'constant', 'columns' or 'columnsAbsolute'. With 'constant' each direction is a number, with 'columns' (distances from the point) and 'columnsAbsolute' (bar end points) a column reference { instanceId, sheetId, columnId } from read().pickableColumns.y; missing directions are null."
           }
         }
       },
@@ -7015,11 +7015,11 @@
           "errorBars": "The error bars of the row: the mode and, per direction, an amount or a column. Without them the row shows no error bars."
         },
         "ErrorBars": {
-          "mode": "How the errors are given: 'none' (no bars), 'constant' (one fixed amount per direction) or 'columns' (one column per direction with a value per point).",
-          "xPlus": "The error to the right (+x): an amount or a column, depending on the mode. Empty means no bar in this direction.",
-          "xMinus": "The error to the left (−x): an amount or a column, depending on the mode. Empty means no bar in this direction.",
-          "yPlus": "The error upwards (+y): an amount or a column, depending on the mode. Empty means no bar in this direction.",
-          "yMinus": "The error downwards (−y): an amount or a column, depending on the mode. Empty means no bar in this direction."
+          "mode": "How the errors are given: 'none' (no bars), 'constant' (one fixed amount per direction), 'columns' (one column per direction with the distance from the point) or 'columnsAbsolute' (one column per direction with the bar's end point, e.g. 95 and 110 around the value 100).",
+          "xPlus": "The error to the right (+x): an amount or a column, depending on the mode — with “columns (absolute)” the bar's end point. Empty means no bar in this direction.",
+          "xMinus": "The error to the left (−x): an amount or a column, depending on the mode — with “columns (absolute)” the bar's end point. Empty means no bar in this direction.",
+          "yPlus": "The error upwards (+y): an amount or a column, depending on the mode — with “columns (absolute)” the bar's end point. Empty means no bar in this direction.",
+          "yMinus": "The error downwards (−y): an amount or a column, depending on the mode — with “columns (absolute)” the bar's end point. Empty means no bar in this direction."
         }
       },
       "sectionData": "Data Source",
@@ -7057,7 +7057,8 @@
       "errorBars": "Error bars",
       "ebModeNone": "none",
       "ebModeConstant": "constant",
-      "ebModeColumns": "columns",
+      "ebModeColumns": "columns (relative)",
+      "ebModeColumnsAbsolute": "columns (absolute)",
       "ebNoColumn": "—"
     },
     "pie-chart": {

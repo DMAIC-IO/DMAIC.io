@@ -312,7 +312,7 @@ suite('XY-Plot Model — buildBubble', () => {
 
 suite('XY-Plot Model — error bars', () => {
   test('exports modes and keys', () => {
-    assertDeepEqual(ERROR_BAR_MODES, ['none', 'constant', 'columns']);
+    assertDeepEqual(ERROR_BAR_MODES, ['none', 'constant', 'columns', 'columnsAbsolute']);
     assertDeepEqual(ERROR_BAR_KEYS, ['xPlus', 'xMinus', 'yPlus', 'yMinus']);
   });
 
@@ -400,6 +400,29 @@ suite('XY-Plot Model — error bars', () => {
   test('all-empty column gives no bars', () => {
     assertEqual(buildErrorBars({ mode: 'columns', xPlus: null, xMinus: null, yPlus: REF('e'), yMinus: null },
       [0, 1], { yPlus: ['', null] }), null);
+  });
+
+  test('fromJSON keeps column refs in columnsAbsolute mode', () => {
+    const eb = errorBarsFromJSON({ mode: 'columnsAbsolute', yPlus: REF('hi'), yMinus: 3 });
+    assertEqual(eb.mode, 'columnsAbsolute');
+    assertDeepEqual(eb.yPlus, REF('hi'));
+    assertEqual(eb.yMinus, null);
+  });
+
+  test('buildErrorBars columns mode gives relative distances', () => {
+    const eb = buildErrorBars({ mode: 'columns', xPlus: null, xMinus: null, yPlus: REF('e'), yMinus: REF('f') },
+      [0], { yPlus: [10], yMinus: [5] });
+    assertEqual(eb.yMode, 'relative');
+  });
+
+  test('buildErrorBars columnsAbsolute gives end points', () => {
+    const eb = buildErrorBars({ mode: 'columnsAbsolute', xPlus: null, xMinus: REF('lo'), yPlus: REF('hi'), yMinus: REF('lo') },
+      [0, 1], { yPlus: [110, 120], yMinus: [95, 90], xMinus: [1, 2] });
+    assertEqual(eb.yMode, 'absolute');
+    assertEqual(eb.xMode, 'absolute');
+    assertDeepEqual(eb.yPlus, [110, 120]);
+    assertDeepEqual(eb.yMinus, [95, 90]);
+    assertDeepEqual(eb.xPlus, [null, null]);
   });
 
   test('buildErrorBars mode none returns null', () => {
