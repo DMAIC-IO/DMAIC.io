@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "spc-short-run-zmr",
+      "type": "project",
+      "title": {
+        "de": "Short-Run Z-MR-Karte",
+        "en": "Short-Run Z-MR chart"
+      },
+      "description": {
+        "de": "Drei kurze Setups mit unterschiedlichen Mittelwerten (10, 25, 7,5), je 8 Messungen. Nach Nominal-Zentrierung gemeinsam vergleichbar (σ ≈ 0,05).",
+        "en": "Three short setups with different means (10, 25, 7.5), 8 measurements each. After nominal centering they form one comparable process (σ ≈ 0.05)."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=706",
+      "license": "public-domain",
+      "file": "projects/spc-short-run-zmr.json",
+      "format": "json",
+      "tags": [
+        "spc",
+        "short-run",
+        "z-mr"
+      ]
+    }
+  ]
+}

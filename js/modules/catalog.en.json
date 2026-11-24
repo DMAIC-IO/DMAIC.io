@@ -155,6 +155,11 @@
     "description": "Median run chart with four runs tests",
     "whenToUse": "Look at a series over time for non-random patterns — clustering, mixtures, trends, oscillation — before building control limits."
   },
+  "short-run-chart": {
+    "name": "Control Chart (Short-Run Z-MR)",
+    "description": "Standardised I-MR across parts with different targets",
+    "whenToUse": "Control-chart short production runs that mix parts with different targets: each value is standardised within its part and plotted on one Z-MR chart."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer diagram",

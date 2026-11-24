@@ -47,8 +47,8 @@ import { dirname, resolve as resolvePath } from 'node:path';
 
 /**
  * Obergrenze der Spread-Verschachtelung. Ein Mixin, das ein Mixin spreizt,
- * das ein Mixin spreizt, ist real (chart-module-base → chart-editor); zwölf
- * Ebenen sind weit jenseits des Bestands und halten einen pathologischen Fall
+ * das ein Mixin spreizt, kommt vor (ein geteilter Helfer, der seinerseits
+ * einen Helfer spreizt); zwölf Ebenen sind weit jenseits des Bestands und halten einen pathologischen Fall
  * trotzdem an. Der Pfadschutz fängt echte Zyklen, die Tiefe fängt Ketten,
  * die zwar nicht kreisen, aber unbegrenzt wachsen.
  *
@@ -60,8 +60,8 @@ const MAX_SPREAD_DEPTH = 12;
 /**
  * Ein Auflöser mit Parse-Zwischenspeicher für genau einen Lauf.
  *
- * Der Zwischenspeicher ist nicht Kosmetik: `chart-module-base.js` hängt an elf
- * Modulen und würde sonst elfmal geparst. Er muss dafür LAUFWEIT sein — ein
+ * Der Zwischenspeicher ist nicht Kosmetik: eine geteilte Helferdatei, die
+ * mehrere Module importieren, würde sonst je Modul neu geparst. Er muss dafür LAUFWEIT sein — ein
  * Auflöser je Modul hätte denselben Effekt nicht. `collectAgentData` legt
  * deshalb genau einen an.
  *

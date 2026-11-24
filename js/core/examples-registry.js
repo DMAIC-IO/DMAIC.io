@@ -611,52 +611,6 @@ export async function loadExampleViaWorksheet(module, payload, options) {
 }
 
 /**
- * Build a placeholder-rewrite function that swaps the `instanceId` on a fixed
- * set of single-ref fields. Each named field on `data` whose ref has the
- * `oldId` placeholder is replaced immutably with `{ ...ref, instanceId: newId }`.
- *
- * Returned function signature: `(data, oldId, newId) => data` (mutates and
- * returns the same `data` object, matching prior per-module behaviour) — the
- * `rewriteRefs` form both example loaders take.
- *
- * @param {string[]} fields — ref field names to rewrite (e.g. ['xRef','yRef','gRef'])
- * @returns {(data: object, oldId: string, newId: string) => object}
- */
-export function rewriteRefFields(fields) {
-  return (data, oldId, newId) => {
-    for (const field of fields) {
-      const r = data[field];
-      if (r && r.instanceId === oldId) {
-        data[field] = { ...r, instanceId: newId };
-      }
-    }
-    return data;
-  };
-}
-
-/**
- * Build a placeholder-rewrite function for a single array-valued ref field.
- * Maps over the array, replacing the `instanceId` on every element whose ref
- * carries the `oldId` placeholder (immutably per element via `{ ...r, … }`).
- *
- * Returned function signature: `(data, oldId, newId) => data`.
- *
- * @param {string} field — array ref field name (e.g. 'colRefs')
- * @returns {(data: object, oldId: string, newId: string) => object}
- */
-export function rewriteRefArray(field) {
-  return (data, oldId, newId) => {
-    const arr = data[field];
-    if (Array.isArray(arr)) {
-      data[field] = arr.map((r) => (r && r.instanceId === oldId)
-        ? { ...r, instanceId: newId }
-        : r);
-    }
-    return data;
-  };
-}
-
-/**
  * Wartet auf das lesbare Arbeitsblatt (`whenWorksheetReadable`) und prüft
  * danach, ob dieser Ladevorgang noch der jüngste des Moduls ist. Ein zweites
  * Laden (Doppelklick) während des Wartens hat den Stand übernommen: das hier
@@ -707,7 +661,8 @@ async function whenWorksheetReadable(ctx, instanceId) {
  * directly without provisioning — matching prior behaviour.
  *
  * The only per-module variation is which ref fields carry `__source__`; that is
- * supplied via `rewriteRefs` (see {@link rewriteRefFields} / {@link rewriteRefArray}).
+ * supplied via `rewriteRefs`: a function `(data, oldId, newId) => data` that
+ * swaps the placeholder on those fields.
  *
  * @param {object} mod — module instance (provides `_context`, `getState`, `setState`).
  *   `mod._context` must expose `i18n`, `stateManager`, `instanceId`; may expose

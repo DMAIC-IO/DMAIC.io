@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "valuesRef": {
     "instanceId": "__source__",
     "sheetId": "sheet-spc-short",

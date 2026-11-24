@@ -155,6 +155,11 @@
     "description": "Lauf-Diagramm mit Median und vier Lauftests",
     "whenToUse": "Eine Reihe über die Zeit auf nicht zufällige Muster prüfen — Häufung, Mischung, Trend, Oszillation —, bevor Eingriffsgrenzen gebildet werden."
   },
+  "short-run-chart": {
+    "name": "Regelkarte (Kurzläufer Z-MR)",
+    "description": "Standardisierte I-MR über mehrere Teile mit unterschiedlichen Targets",
+    "whenToUse": "Kurze Serien mit Teilen unterschiedlicher Sollwerte in einer Regelkarte überwachen: jeder Wert wird innerhalb seines Teils standardisiert und in einer Z-MR-Karte gezeichnet."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer Diagramm",

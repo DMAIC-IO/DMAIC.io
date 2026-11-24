@@ -25,7 +25,7 @@
   "thMean": "x̄",
   "thSigma": "σ̂",
   "thMrBar": "MR̄",
-  "warningSkipped": "{count} value(s) could not be standardised (part has too few points for σ̂ — shown as z=0).",
+  "warningSkipped": "{count} value(s) could not be standardised (part without spread: a single value or all values equal — shown as z=0).",
   "errCompute": "Computation failed.",
   "invariants": {
     "chartKeys": "Settings exist only for the Z chart and the MR chart."

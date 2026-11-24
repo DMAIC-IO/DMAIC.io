@@ -114,7 +114,7 @@ export const CREATING_VOID_EXEMPT = new Set(['attribute-test.addRow', 'attribute
 export async function collectAgentData(appDir, { baseline = loadWriteBaseline(), converted = CONVERTED_MODULES } = {}) {
   const root = join(appDir, MODULES_DIR);
   // EIN Auflöser für den ganzen Lauf: nur so trägt sein Parse-Zwischenspeicher
-  // über Modulgrenzen (`chart-module-base.js` hängt an elf Modulen).
+  // über Modulgrenzen (geteilte Helferdateien hängen an mehreren Modulen).
   const resolver = createResolver(appDir);
   const modules = {};
   // Neben den Einträgen, nicht darin: die Registry serialisiert den ganzen Eintrag.

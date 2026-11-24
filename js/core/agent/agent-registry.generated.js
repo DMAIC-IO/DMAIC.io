@@ -17595,6 +17595,7 @@ export const AGENT_REGISTRY = {
   "short-run-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -17604,70 +17605,37 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'values'|'groups'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Spalte einem Slot zuweisen und neu rechnen."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
       }
     },
     "fields": {
       "valuesRef": {
-        "type": "object|null",
-        "help": "the measured column (slot `values`), `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:4"
+        ]
       },
       "groupsRef": {
-        "type": "object|null",
-        "help": "the part/group column (slot `groups`), or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
-      "warningMsg": {
-        "type": "string",
-        "help": "the notice about groups that were skipped, or ''",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric,text",
+          "minCount:4"
+        ]
       },
       "result": {
-        "type": "Result|null",
-        "help": "das gerechnete Ergebnis; null bei weniger als 4 verwertbaren Paaren",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -17678,32 +17646,32 @@ export const AGENT_REGISTRY = {
           },
           "skipped": {
             "type": "number",
-            "help": "Werte aus Gruppen ohne Streuung"
+            "help": "Werte aus Teilen ohne Streuung"
           },
           "groups": {
             "type": "GroupStats[]",
-            "help": "je Gruppe, in Reihenfolge des Auftretens",
+            "help": "je Teil, in Reihenfolge des Auftretens",
             "keysOf": "GroupStats",
             "keys": {
               "group": {
                 "type": "string",
-                "help": "Gruppe"
+                "help": "Teil (immer Text, auch bei Zahlen)"
               },
               "count": {
                 "type": "number",
-                "help": "Werte der Gruppe"
+                "help": "Werte des Teils"
               },
               "mean": {
                 "type": "number|null",
-                "help": "Mittelwert der Gruppe"
+                "help": "Mittelwert des Teils"
               },
               "sigma": {
                 "type": "number|null",
-                "help": "geschätzte Streuung der Gruppe"
+                "help": "geschätzte Streuung des Teils"
               },
               "mrBar": {
                 "type": "number|null",
-                "help": "mittlere gleitende Spannweite der Gruppe"
+                "help": "mittlere gleitende Spannweite des Teils"
               }
             }
           },
@@ -17757,12 +17725,55 @@ export const AGENT_REGISTRY = {
       },
       "points": {
         "type": "object[]",
-        "help": "one row per usable value: `{ z, mr, signalZ, signalMR }`",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
+        "derived": true,
+        "keysOf": "Point",
+        "keys": {
+          "z": {
+            "type": "number|null",
+            "help": "standardisierter Wert"
+          },
+          "mr": {
+            "type": "number|null",
+            "help": "gleitende Spannweite der z-Werte; in der ersten Zeile ohne Wert"
+          },
+          "signalZ": {
+            "type": "boolean",
+            "help": "Signal der z-Karte"
+          },
+          "signalMR": {
+            "type": "boolean",
+            "help": "Signal der MR-Karte"
+          }
+        }
+      },
+      "warningMsg": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "charts"
+    ],
+    "settable": [
+      "valuesRef",
+      "groupsRef"
+    ],
+    "invariants": [
+      "chartKeys"
+    ]
   },
   "sipoc": {
     "tagged": true,
