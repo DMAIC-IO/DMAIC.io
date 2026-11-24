@@ -1,0 +1,180 @@
+<section class="control-chart dmike-split" x-data="controlChart">
+  <!-- data-help-key="" am Picker-Wirt ist gewollt: die Beschriftung trägt den Anker fields.columnRef. -->
+  <div class="control-chart__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.control-chart.fields.chartTypeId.help" x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" @change="chartTypeChanged($event)">
+        <template x-for="o in chartTypes" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+
+    <div class="field-group" data-ref="subgroup-row" x-show="showSubgroup">
+      <label data-help-key="modules.control-chart.fields.subgroupSize.help" x-text="t('subgroupSize')"></label>
+      <input class="field field--num" data-ref="subgroup-size" x-field="model.subgroupSize">
+      <span class="control-chart__field-error" data-ref="subgroup-error" x-text="fieldError('model.subgroupSize')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.control-chart.fields.columnRef.help" x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap" data-help-key="" x-field="model.columnRef"></div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.control-chart.fields.baselineCount.help" x-text="t('baselineCount')"></label>
+      <input class="field field--num" data-ref="baseline-count" :placeholder="t('baselineAll')" x-field="model.baselineCount">
+      <span class="field-hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionStages')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.control-chart.fields.stagesText.help" x-text="t('stagesLabel')"></label>
+      <input type="text" class="field" data-ref="stages" :placeholder="t('stagesPlaceholder')" x-model.lazy="model.stagesText">
+      <span class="field-hint" x-text="t('stagesHint')"></span>
+      <span class="field-hint field-hint--warn" data-ref="stages-warning" x-show="stagesWarning" x-text="stagesWarning"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionPhase2')"></div>
+    <div class="control-chart__phase2">
+      <div class="control-chart__phase2-status">
+        <span class="control-chart__phase2-badge" :class="phase2Badge.cls">
+          <span class="icon icon--sm icon--text" :data-icon="phase2Badge.icon" aria-hidden="true"></span>
+          <span x-text="phase2Badge.text"></span>
+        </span>
+      </div>
+      <button type="button" class="btn btn--small" :class="phase2Button.cls" data-ref="phase2-toggle"
+        x-command="setPhase2" :data-arg-enabled="phase2Target" x-text="phase2Button.text"></button>
+      <span class="field-hint" x-text="t('phase2Hint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSpec')"></div>
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.control-chart.fields.lsl.help" x-text="t('lsl')"></label>
+        <input class="field field--num" data-ref="lsl" placeholder="—" x-field="model.lsl">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.control-chart.fields.usl.help" x-text="t('usl')"></label>
+        <input class="field field--num" data-ref="usl" placeholder="—" x-field="model.usl">
+      </div>
+    </div>
+    <span class="field-hint" x-text="t('specHint')"></span>
+
+    <div class="dmike-split__section-title control-chart__collapsible" data-ref="nelson-toggle"
+      :class="nelsonToggleClass" @click="toggleNelson()">
+      <span data-help-key="modules.control-chart.fields.enabledRules.help" x-text="t('sectionNelson')"></span>
+      <span class="control-chart__chevron icon icon--sm" :data-icon="nelsonChevron" aria-hidden="true"></span>
+    </div>
+    <div class="field-checks" data-ref="nelson-panel" :class="nelsonPanelClass">
+      <template x-for="rule in nelsonRules" :key="rule.id">
+        <label class="field-check">
+          <input type="checkbox" :data-rule="rule.id" :checked="ruleOn(rule)" @change="ruleChanged(rule, $event)">
+          <span>
+            <strong x-text="ruleShort(rule)"></strong><br>
+            <span class="field-check__desc" x-text="ruleDesc(rule)"></span>
+          </span>
+        </label>
+      </template>
+      <span class="field-hint" data-ref="secondary-rules-hint" x-text="t('secondaryRulesHint')"></span>
+    </div>
+
+  </div>
+
+  <div class="control-chart__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="hasResult">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.cl"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.control-chart.types.SubchartLimits.cl"><span x-text="t('statCL')"></span><template x-if="kpi.stageHint"><span class="field-hint" x-text="kpi.stageHint"></span></template></div>
+            <div class="dmike-kpi-sub" x-text="kpi.sigmaText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.ucl"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.control-chart.types.SubchartLimits.ucl"><span x-text="t('statLimits')"></span></div>
+            <div class="dmike-kpi-sub" x-text="kpi.lcl"></div>
+          </div>
+          <div class="dmike-kpi" :class="kpi.violationsClass">
+            <div class="dmike-kpi-value" x-text="kpi.violations"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.control-chart.types.Result.signals"><span x-text="t('statViolations')"></span></div>
+            <div class="dmike-kpi-sub" x-text="kpi.ofText"></div>
+          </div>
+          <template x-if="kpi.cpk">
+            <div class="dmike-kpi" :class="kpi.cpkClass">
+              <div class="dmike-kpi-value" x-text="kpi.cpk"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.control-chart.types.Capability.cpk"><span x-text="t('statCpk')"></span></div>
+              <div class="dmike-kpi-sub" x-text="kpi.cpText"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div data-ref="error-area">
+      <template x-if="errorText">
+        <div class="control-chart__error" x-text="errorText"></div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, key) in chartViews" :key="key">
+        <div class="control-chart__chart-section">
+          <div class="control-chart__chart-header">
+            <span class="control-chart__chart-title" x-text="cv.title"></span>
+            <span class="control-chart__badge" :class="cv.badge.cls">
+              <span class="icon icon--sm icon--text" :data-icon="cv.badge.icon" aria-hidden="true"></span>
+              <span x-text="cv.badge.text"></span>
+            </span>
+          </div>
+          <div class="control-chart__plot-wrap" :data-chart-host="key" x-widget="control-chart" x-widget-config="cv.config" x-widget-value="model.charts[key]" x-widget-legacy-edit-key="cv.legacyEditKey"></div>
+        </div>
+      </template>
+    </div>
+    <template x-if="showNoViolations">
+      <div class="control-chart__no-violations" x-text="t('noViolations')"></div>
+    </template>
+    <div data-ref="violations-wrap">
+      <template x-if="showViolations">
+        <div class="control-chart__violations-panel">
+          <div class="control-chart__violations-header" x-text="violationsHeader"></div>
+          <div class="control-chart__violations-list">
+            <template x-for="(r, i) in violationRows" :key="i">
+              <div class="control-chart__violation-row" :data-violation-index="r.index" role="button" tabindex="0"
+                @click="openAnnotation(r)" @keydown="onViolationKey(r, $event)">
+                <span class="control-chart__v-idx" x-text="r.idx"></span>
+                <span class="control-chart__v-rule" x-text="r.rule"></span>
+                <span class="control-chart__v-desc" x-text="r.desc"></span>
+                <template x-if="r.hasAnn">
+                  <span class="control-chart__v-ann" :data-excluded="r.annExcluded ? '1' : false" x-text="r.annText"></span>
+                </template>
+                <template x-if="!r.hasAnn">
+                  <span class="control-chart__v-add" x-text="t('annotationAdd')"></span>
+                </template>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Anmerkungsformular: hier versteckt, beim Öffnen an den Dialog verliehen. -->
+  <div class="control-chart__modal-forms" hidden>
+    <form class="control-chart__ann-form" x-ref="annForm" x-command-form="setAnnotation">
+      <div class="field-group">
+        <label data-help-key="modules.control-chart.actions.setAnnotation.params.comment" x-text="t('annotationComment')"></label>
+        <textarea class="field" data-ref="ann-comment" rows="3" data-help-key=""
+          :placeholder="t('annotationPlaceholder')" x-param="comment"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-check" data-help-key="modules.control-chart.actions.setAnnotation.params.excluded" data-help-anchor="box">
+          <input type="checkbox" data-ref="ann-excluded" data-help-key="" x-param="excluded">
+          <span x-text="t('annotationExclude')"></span>
+        </label>
+        <span class="field-hint" x-text="t('annotationExcludeHint')"></span>
+      </div>
+    </form>
+  </div>
+</section>
