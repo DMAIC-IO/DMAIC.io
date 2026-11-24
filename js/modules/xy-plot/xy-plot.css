@@ -54,9 +54,11 @@
   min-width: 0;
 }
 
+/* One field per row: the side panel is narrow, and column names in the
+   pickers stay readable only at full width. */
 .xyplot__eb-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--spacing-xs);
   margin-top: var(--spacing-xs);
 }
