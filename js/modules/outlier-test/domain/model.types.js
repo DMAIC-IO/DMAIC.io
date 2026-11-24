@@ -12,11 +12,11 @@
  * @property {number} modZThreshold
  * @property {number|null} esdMaxOutliers
  * @property {Array<'grubbs'|'dixon-q'|'generalized-esd'|'tukey-iqr'|'hampel'|'z-score'|'modified-z'>} enabled
+ * @property {'all'|'grubbs'|'dixon-q'|'generalized-esd'|'tukey-iqr'|'hampel'|'z-score'|'modified-z'} chartMethod
  */
 
 /**
  * @typedef {object} StateView
- * @property {'all'|'grubbs'|'dixon-q'|'generalized-esd'|'tukey-iqr'|'hampel'|'z-score'|'modified-z'} chartMethod
  * @property {string|null} exampleWorksheetId
  * @property {{ title?: string, showTitle?: boolean, xLabel?: string, yLabel?: string, showXLabel?: boolean, showYLabel?: boolean, showLegend?: boolean, titleSize?: number, labelSize?: number, tickSize?: number, showXTicks?: boolean, showYTicks?: boolean, bgColor?: string|null, refLines?: Array<{ dir: 'h'|'v', value: number, label?: string, showLabel?: boolean, dash?: 'solid'|'dash'|'dot'|'dashdot'|'longdash', width?: number, color?: string }>, refAreas?: Array<{ dir: 'x'|'y', min: number, max: number, label?: string, color?: string }>, showMean?: boolean, showMedian?: boolean, connectMeans?: boolean, showOverallMean?: boolean, jitter?: number, pointSymbol?: string, pointSize?: number, pointColors?: Array<string|null> }} chart
  */

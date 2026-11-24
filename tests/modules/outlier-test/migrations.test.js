@@ -184,6 +184,11 @@ suite('outlier-test: Migration — chartMethod', () => {
     assertEqual(load({ chartMethod: 'hampel' }).chartMethod, 'hampel');
   });
 
+  test('landet im Inhaltsfeld: abweichende Wahl zählt als Inhalt', () => {
+    assertEqual(load({ chartMethod: 'hampel' }).hasContent(), true);
+    assertEqual(load({ chartMethod: 'all' }).hasContent(), false);
+  });
+
   test('ein Verfahren, das nicht aktiv ist, bleibt gespeichert (Heilung beim Lesen)', () => {
     assertEqual(load({ chartMethod: 'dixon-q', enabled: ['grubbs'] }).chartMethod, 'dixon-q');
   });

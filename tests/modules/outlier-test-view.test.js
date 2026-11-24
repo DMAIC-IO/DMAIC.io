@@ -10,6 +10,7 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-u
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/outlier-test/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/outlier-test/domain/model.js';
+import { setFields } from '../../js/core/model.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
@@ -212,6 +213,21 @@ suite('outlier-test: Viewmodel im Browser', () => {
     await settle();
     assertEqual(vm.model.chartMethod, 'grubbs');
     assertEqual(vm.chartMethodShown, 'all');
+  });
+
+  test('Diagrammwahl über setFields (instance.set): Knopfgruppe zeigt sie, gespeichert; Unbekanntes abgelehnt', async () => {
+    const h = await mount(stored());
+    const vm = h.vm();
+    setFields(vm.model, { chartMethod: 'tukey-iqr' });
+    await settle();
+    assertEqual(vm.chartMethodShown, 'tukey-iqr');
+    const active = [...h.container.querySelectorAll('.outliertest__chart-method-btn.btn--active')].map((b) => b.dataset.chartMethod);
+    assertDeepEqual(active, ['tukey-iqr']);
+    assertEqual(h.states[INST].chartMethod, 'tukey-iqr');
+    let err = null;
+    try { setFields(vm.model, { chartMethod: 'nope' }); } catch (e) { err = e; }
+    assertTrue(err instanceof Error, 'abgelehnt');
+    assertEqual(vm.model.chartMethod, 'tukey-iqr');
   });
 
   test('Kästchen: an und aus über toggleMethod, ein Rückgängig-Schritt je Änderung, feste Reihenfolge', async () => {

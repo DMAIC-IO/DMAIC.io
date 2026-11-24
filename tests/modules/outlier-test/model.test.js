@@ -33,7 +33,7 @@ suite('outlier-test: Model — Schema und Vorgaben', () => {
     const f = State.schema.fields;
     assertDeepEqual([...f.enabled.item.values], [...ALL_METHODS]);
     assertDeepEqual([...f.side.values], [...VALID_SIDES]);
-    assertDeepEqual([...State.schema.view.chartMethod.values], ['all', ...ALL_METHODS]);
+    assertDeepEqual([...State.schema.fields.chartMethod.values], ['all', ...ALL_METHODS]);
     assertDeepEqual([...State.schema.commands.toggleMethod.params.method.values], [...ALL_METHODS]);
     assertDeepEqual(plain(new State(CTX).enabled), [...ALL_METHODS]);
     assertEqual(f.enabled.sorted ?? false, false, 'ohne sorted');
@@ -69,13 +69,27 @@ suite('outlier-test: Model — Schema und Vorgaben', () => {
     assertEqual(new State({ ...CTX, confidenceLevel: 99.995 }).alpha, 0.0001);
   });
 
-  test('hasContent: Spalte oder ein abweichender Parameter zählt, Ansichtsfelder nicht', () => {
+  test('hasContent: Spalte, ein abweichender Parameter oder die Diagrammwahl zählt, Ansichtsfelder nicht', () => {
     const a = new State(CTX); a.colRef = ref('d');
     assertEqual(a.hasContent(), true);
     const b = new State(CTX); b.tukeyFactor = 2;
     assertEqual(b.hasContent(), true);
-    const c = new State(CTX); c.chartMethod = 'grubbs'; c.exampleWorksheetId = 'x';
-    assertEqual(c.hasContent(), false);
+    const c = new State(CTX); c.chartMethod = 'grubbs';
+    assertEqual(c.hasContent(), true);
+    const d = new State(CTX); d.exampleWorksheetId = 'x';
+    assertEqual(d.hasContent(), false);
+  });
+
+  test('chartMethod ist Inhaltsfeld: setFields nimmt es an, lehnt Unbekanntes ab, toJSON trägt es', () => {
+    assert(Object.hasOwn(State.schema.fields, 'chartMethod'), 'Inhaltsfeld');
+    assertEqual(Object.hasOwn(State.schema.view, 'chartMethod'), false, 'kein Ansichtsfeld');
+    const m = new State(CTX);
+    assertDeepEqual(setFields(m, { chartMethod: 'hampel' }), { chartMethod: 'hampel' });
+    assertEqual(m.chartMethod, 'hampel');
+    assertThrows(() => setFields(m, { chartMethod: 'nope' }));
+    assertEqual(m.chartMethod, 'hampel', 'Ablehnung schreibt nichts');
+    assertEqual(m.toJSON().chartMethod, 'hampel');
+    assertEqual(State.fromJSON(m.toJSON(), { context: CTX }).chartMethod, 'hampel');
   });
 
   test('Bereiche: außerhalb wird abgelehnt, Ränder angenommen', () => {

@@ -13516,6 +13516,11 @@ export const AGENT_REGISTRY = {
           "unique"
         ]
       },
+      "chartMethod": {
+        "type": "'all'|'grubbs'|'dixon-q'|'generalized-esd'|'tukey-iqr'|'hampel'|'z-score'|'modified-z'",
+        "help": "",
+        "bulk": false
+      },
       "result": {
         "type": "object|null",
         "help": "",
@@ -13543,7 +13548,6 @@ export const AGENT_REGISTRY = {
     },
     "asyncTasks": [],
     "viewFields": [
-      "chartMethod",
       "exampleWorksheetId",
       "chart"
     ],
@@ -13556,7 +13560,8 @@ export const AGENT_REGISTRY = {
       "zThreshold",
       "modZThreshold",
       "esdMaxOutliers",
-      "enabled"
+      "enabled",
+      "chartMethod"
     ],
     "invariants": [
       "enabledNotEmpty"

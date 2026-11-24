@@ -1,8 +1,9 @@
 /**
  * D.Mike — Ausreißertest: Model.
  *
- * Gespeichert werden die Messwertspalte, die acht Parameter der Verfahren und
- * die aktiven Verfahren. Ansicht: das hervorgehobene Verfahren des Diagramms,
+ * Gespeichert werden die Messwertspalte, die acht Parameter der Verfahren,
+ * die aktiven Verfahren und das hervorgehobene Verfahren des Diagramms
+ * (`chartMethod`, beim Lesen geheilt über `effectiveChartMethod`). Ansicht:
  * die Editor-Einstellungen des Diagramms und das Beispielblatt. Das Ergebnis
  * liefert die Ableitung `result` aus Model und Arbeitsblatt.
  */
@@ -33,9 +34,9 @@ export const State = defineModel({
       unique: true,
       default: ['grubbs', 'dixon-q', 'generalized-esd', 'tukey-iqr', 'hampel', 'z-score', 'modified-z'],
     }),
+    chartMethod: oneOf(['all', 'grubbs', 'dixon-q', 'generalized-esd', 'tukey-iqr', 'hampel', 'z-score', 'modified-z']),
   },
   view: {
-    chartMethod: oneOf(['all', 'grubbs', 'dixon-q', 'generalized-esd', 'tukey-iqr', 'hampel', 'z-score', 'modified-z']),
     exampleWorksheetId: text({ nullable: true }),
     chart: individualValuePlotChart.edits(),
   },
