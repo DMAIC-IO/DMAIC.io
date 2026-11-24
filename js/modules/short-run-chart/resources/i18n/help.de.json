@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Z-MR — standardisierte I-MR-Karte für kurze Serien",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "In Werkstätten und im Werkzeugbau werden viele verschiedene Teile in kleinen Stückzahlen gefertigt. Eine klassische {{term:i-mr-chart|I-MR-Karte}} braucht 20 bis 25 Punkte je Teil, die bei kurzen Serien nicht zusammenkommen. Die Z-MR-Karte umgeht das, indem sie jeden Wert innerhalb seines Teils standardisiert; alle Teile landen dann auf einer gemeinsamen Karte."
+        },
+        {
+          "type": "definition",
+          "term": "Standardisierung",
+          "content": "Je Teil j werden der {{term:mittelwert|Mittelwert}} x̄_j und die Streuung σ̂_j = MR̄_j/d₂ geschätzt, mit der mittleren gleitenden Spannweite MR̄_j aufeinanderfolgender Werte des Teils und d₂ = 1,128. Jeder Messwert wird zu z_ij = (x_ij − x̄_j)/σ̂_j. Bei stabilem Prozess sind die z-Werte annähernd standardnormalverteilt."
+        },
+        {
+          "type": "definition",
+          "term": "Eingriffsgrenzen",
+          "content": "Z-Karte: CL = 0, UCL = +3, LCL = −3. MR-Karte der z-Werte, mit MR_i = |z_i − z_(i−1)|: CL = MR̄_z, UCL = D₄·MR̄_z = 3,267·MR̄_z, LCL = 0. Ein Punkt strikt außerhalb der {{term:regelgrenze|Grenzen}} ist ein Signal; die Kachel Signale zählt die Signale beider Karten zusammen. Lauf- und Trendregeln prüft das Modul nicht."
+        },
+        {
+          "type": "paragraph",
+          "content": "Vorteil: eine Karte für viele Teile und durchgehende Überwachung über Auftragswechsel hinweg. Nachteil: Die Karte zeigt keine Originaleinheiten mehr; abgelesen wird in Vielfachen der Streuung des jeweiligen Teils. Trennlinien in beiden Karten markieren die Wechsel zwischen den Teilen."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu wenige Punkte je Teil",
+          "content": "Mit ein oder zwei Werten je Teil ist σ̂_j unzuverlässig. Faustregel: mindestens 5 Punkte je Teil, bevor die Standardisierung sinnvoll wird. Teile ohne Streuung (ein einziger Wert oder lauter gleiche Werte, σ̂_j = 0) lassen sich nicht standardisieren: Ihre Werte gehen mit z = 0 ein, die Warnung über den Karten nennt ihre Zahl."
+        },
+        {
+          "type": "definition",
+          "term": "Teile ohne Streuung in der MR-Karte",
+          "content": "Die mit z = 0 eingesetzten Werte zählen in der MR-Karte mit: Sie bilden gleitende Spannweiten zu ihren Nachbarn und gehen in MR̄_z und damit in die Grenzen ein. Viele solche Werte verschieben die Grenzen der MR-Karte. Solche Teile besser weglassen oder erst mit mehr Werten aufnehmen."
+        },
+        {
+          "type": "definition",
+          "term": "Reihenfolge im Arbeitsblatt",
+          "content": "Die Karte zeichnet die Werte in der Reihenfolge der Zeilen, und auch MR̄_j eines Teils folgt dieser Reihenfolge. Die Zeilen müssen deshalb der tatsächlichen Fertigungsreihenfolge entsprechen, sonst sind σ̂_j verfälscht und Trends innerhalb eines Teils unsichtbar."
+        },
+        {
+          "type": "definition",
+          "term": "Teile, die wiederkommen",
+          "content": "Ein Teil, das an mehreren Stellen der Reihe vorkommt (zum Beispiel A, B, A), wird als ein Teil gerechnet: ein Mittelwert, ein σ̂ und eine Zeile in der Tabelle. Die Trennlinien liegen dann nach den Stückzahlen der Teile in der Reihenfolge ihres ersten Auftretens, nicht an den Zeilen, an denen das Teil wechselt; bei A×4, B×4, A×4 steht eine Linie nach Punkt 8, die nach Punkt 4 fehlt. Wer je Serie getrennt rechnen und richtige Linien sehen will, benennt die Serien eigens (zum Beispiel A-1 und A-2)."
+        },
+        {
+          "type": "definition",
+          "term": "Bezug ist der Mittelwert des Teils, nicht der Sollwert",
+          "content": "Das Modul zentriert nicht auf einen Nennwert, sondern auf den Mittelwert der eigenen Werte jedes Teils, und teilt durch dessen eigenes σ̂. Liegt ein ganzes Teil neben seinem Sollwert, zeigt die Karte das nicht; sie meldet nur Abweichungen innerhalb eines Teils. Die Beschreibung des mitgelieferten Beispiels spricht von Nominal-Zentrierung und σ ≈ 0,05; gerechnet wird aber je Teil mit eigenem Mittelwert und σ̂ (dort etwa 0,024, 0,040 und 0,075). Die Z-Karte des Beispiels zeigt ein Signal an Beobachtung 8."
+        },
+        {
+          "type": "definition",
+          "term": "Unterschiedliche Streuung der Teile",
+          "content": "Die Karte bewertet jede Abweichung relativ zur Streuung ihres Teils. Eine Verschiebung gleicher Größe in Originaleinheiten ergibt bei einem Teil mit kleiner Streuung einen großen, bei einem Teil mit großer Streuung einen kleinen Ausschlag in z. Für die Ursachensuche die Tabelle mit σ̂ je Teil ansehen."
+        }
+      ]
+    }
+  }
+}

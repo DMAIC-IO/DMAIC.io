@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "valuesRef": {
+      "help": "Die Spalte mit den Messwerten in zeitlicher Reihenfolge, Beschriftung Messwerte-Spalte. Verwertet werden nur Zahlen; leere Zellen und Text, auch Text wie „2,5“, werden übersprungen. Gerechnet wird ab 4 verwertbaren Paaren aus Messwert und Teil; mit weniger Paaren oder bei einer gelöschten Spalte bleibt die Ausgabe leer. Leer, solange keine gewählt ist; ohne Spalte gibt es keine Karte, ein leerer Wert hebt die Wahl auf. Eine Änderung der Spalte oder ihrer Werte rechnet neu."
+    },
+    "groupsRef": {
+      "help": "Die Spalte mit dem Teil oder der Gruppe je Messwert, Beschriftung Teile-/Gruppen-Spalte, als Zahl oder Text. Messwert und Teil werden zeilenweise gepaart, bis zur kürzeren der beiden Spalten; Zeilen ohne Teil zählen nicht. Je Teil werden Mittelwert und σ̂ getrennt geschätzt, auch wenn das Teil an mehreren Stellen der Reihe vorkommt. Die Reihenfolge der Zeilen ist die Reihenfolge der Karte. Leer, solange keine gewählt ist; ohne Spalte gibt es keine Karte, ein leerer Wert hebt die Wahl auf. Eine Änderung der Spalte oder ihrer Werte rechnet neu."
+    },
+    "charts": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor je Teilkarte, unter z (Z-Karte) und mr (MR-Karte): Titel, Achsentitel, Schriftgrößen, Hintergrund, Bezugslinien, Punktfarbe, -symbol, -größe und -rand der Reihe. Eine Teilkarte ohne Änderung hat keinen Eintrag; andere Schlüssel werden abgelehnt."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "analysis": {
+      "help": "Die Rechnung zum Stand beider Spalten: die Zahl der verwerteten Paare und die Werte der Engine (z-Werte, gleitende Spannweiten der z-Werte, Kennzahlen je Teil, Grenzen und Signalpunkte beider Karten), oder der Grund errCompute, wenn die Rechnung scheitert oder nicht endliche Werte liefert. Leer ohne eine der Spalten, bei einer gelöschten Spalte und mit weniger als 4 verwertbaren Paaren."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; leer ohne eine der Spalten, bei einer gelöschten Spalte, mit weniger als 4 verwertbaren Paaren aus Messwert und Teil oder wenn die Rechnung scheitert (die Oberfläche zeigt dann „Berechnung fehlgeschlagen.“)."
+    },
+    "points": {
+      "help": "Je verwertetem Paar eine Zeile in Datenfolge mit dem z-Wert, der gleitenden Spannweite der z-Werte (in der ersten Zeile ohne Wert) und je einer Angabe, ob der Punkt auf der Z-Karte und auf der MR-Karte ein Signal ist. Leer ohne Ergebnis. read({ fields: ['points'] }) liefert sie vollständig."
+    },
+    "warningMsg": {
+      "help": "Der Hinweis über den Karten, wie ihn die Oberfläche zeigt: Messwerte aus Teilen ohne Streuung (ein einziger Wert oder lauter gleiche Werte, σ̂ = 0) konnten nicht standardisiert werden und gehen mit z = 0 in beide Karten ein. Leer, wenn es solche Werte nicht gibt oder kein Ergebnis vorliegt."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die gerade wirksam beschrieben werden: valuesRef und groupsRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Anzahl der verwerteten Paare aus Messwert und Teil; Zeilen mit leerem oder nicht numerischem Messwert oder leerem Teil sind schon aussortiert. Ein Ergebnis gibt es ab 4 Paaren. Die Nummern der Signalpunkte zählen diese Paare ab 0, nicht die Zeilen des Arbeitsblatts. Die Unterzeilen der Kacheln Teile und Signale nennen diese Zahl.",
+      "skipped": "Anzahl der Messwerte, die nicht standardisiert werden konnten, weil ihr Teil keine Streuung hat (σ̂ = 0: ein einziger Wert oder lauter gleiche Werte). Sie werden mit z = 0 gezeichnet und gehen so auch in die gleitenden Spannweiten und die Grenzen der MR-Karte ein; die Oberfläche warnt davor.",
+      "groups": "Die Kennzahlen je Teil, in der Reihenfolge, in der die Teile erstmals vorkommen; es ist die Tabelle unter den Karten. Die Kachel Teile zeigt ihre Anzahl, die Unterzeile die Zahl der Messwerte.",
+      "z": "Die Grenzen der Z-Karte: Mittellinie 0, obere Grenze +3, untere −3. Jeder Wert wird innerhalb seines Teils zu z = (x − x̄)/σ̂ standardisiert, mit dem Mittelwert x̄ und der Streuung σ̂ des Teils; bei stabilem Prozess ist z dann annähernd standardnormalverteilt.",
+      "mr": "Die Grenzen der MR-Karte der z-Werte: Mittellinie MR̄ (Mittel der Beträge |zᵢ − zᵢ₋₁| aufeinanderfolgender Werte, auch über einen Teilewechsel hinweg), obere Grenze 3,267 · MR̄, untere 0. Die Kachel MR̄ (z) zeigt die Mittellinie, die Unterzeile die obere Grenze (UCL_MR).",
+      "signalsZ": "Nummern (gezählt ab 0 unter den verwerteten Paaren) der Punkte, deren z-Wert strikt über +3 oder unter −3 liegt. Die Kachel Signale zählt diese und die Signale der MR-Karte zusammen, ihre Unterzeile nennt die Zahl der Datenpunkte.",
+      "signalsMR": "Nummern (gezählt ab 0 unter den verwerteten Paaren, ab dem zweiten Punkt) der Punkte, deren gleitende Spannweite der z-Werte strikt über der oberen Grenze der MR-Karte (UCL_MR) liegt."
+    },
+    "GroupStats": {
+      "group": "Das Teil oder die Gruppe, wie es in der Teile-/Gruppen-Spalte steht, als Text. Kommt ein Teil an mehreren Stellen der Reihe vor, steht es hier einmal mit allen seinen Werten.",
+      "count": "Anzahl der Messwerte dieses Teils (n).",
+      "mean": "Mittelwert x̄ der Messwerte dieses Teils; er ist der Bezugspunkt der Standardisierung z = (x − x̄)/σ̂. Ein Sollwert geht nicht ein.",
+      "sigma": "Geschätzte Streuung σ̂ innerhalb des Teils: MR̄ des Teils geteilt durch 1,128 (d₂ für Paare). Hat das Teil nur einen Wert oder sind alle seine Werte gleich, ist sie 0 und seine Werte werden mit z = 0 gezeichnet.",
+      "mrBar": "Mittel MR̄ der Beträge |xᵢ − xᵢ₋₁| aufeinanderfolgender Messwerte innerhalb dieses Teils, in der Reihenfolge der Zeilen; aus ihr entsteht σ̂."
+    },
+    "Limits": {
+      "cl": "Mittellinie der Karte.",
+      "ucl": "Obere Eingriffsgrenze (UCL) der Karte.",
+      "lcl": "Untere Eingriffsgrenze (LCL) der Karte."
+    },
+    "Point": {
+      "z": "Der standardisierte Wert z = (x − x̄)/σ̂ mit Mittelwert und σ̂ seines Teils; 0 bei Teilen ohne Streuung.",
+      "mr": "Die gleitende Spannweite |zᵢ − zᵢ₋₁| zum vorigen Paar, auch über einen Teilewechsel hinweg; in der ersten Zeile ohne Wert.",
+      "signalZ": "Wahr, wenn der z-Wert strikt über +3 oder unter −3 liegt.",
+      "signalMR": "Wahr, wenn die gleitende Spannweite strikt über der oberen Grenze der MR-Karte liegt."
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Z-MR — standardised I-MR chart for short runs",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "In workshops and tooling environments many different parts are produced in small batches. A classic {{term:i-mr-chart|I-MR chart}} needs 20 to 25 points per part, which short runs do not provide. The Z-MR chart works around this by standardising each value within its part; all parts then share one chart."
+        },
+        {
+          "type": "definition",
+          "term": "Standardisation",
+          "content": "For each part j the {{term:mittelwert|mean}} x̄_j and the spread σ̂_j = MR̄_j/d₂ are estimated, with the average moving range MR̄_j of consecutive values of the part and d₂ = 1.128. Each measurement becomes z_ij = (x_ij − x̄_j)/σ̂_j. For a stable process the z values are approximately standard normal."
+        },
+        {
+          "type": "definition",
+          "term": "Control limits",
+          "content": "Z chart: CL = 0, UCL = +3, LCL = −3. MR chart of the z values, with MR_i = |z_i − z_(i−1)|: CL = MR̄_z, UCL = D₄·MR̄_z = 3.267·MR̄_z, LCL = 0. A point strictly outside the {{term:regelgrenze|limits}} is a signal; the Signals tile counts the signals of both charts together. The module does not check run or trend rules."
+        },
+        {
+          "type": "paragraph",
+          "content": "Pros: one chart for many parts and continuous monitoring across job changes. Cons: the chart no longer shows original units; it is read in multiples of the spread of the respective part. Dividing lines in both charts mark the changes between parts."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Too few points per part",
+          "content": "With one or two values per part σ̂_j is unreliable. Rule of thumb: at least 5 points per part before standardisation becomes meaningful. Parts without spread (a single value or all values equal, σ̂_j = 0) cannot be standardised: their values enter at z = 0, and the notice above the charts states their number."
+        },
+        {
+          "type": "definition",
+          "term": "Parts without spread in the MR chart",
+          "content": "The values set to z = 0 count in the MR chart: they form moving ranges with their neighbours and enter MR̄_z and thus the limits. Many such values shift the limits of the MR chart. Better leave such parts out or include them only once they have more values."
+        },
+        {
+          "type": "definition",
+          "term": "Worksheet order",
+          "content": "The chart plots the values in row order, and the MR̄_j of a part follows this order as well. The rows must therefore match the actual production order; otherwise σ̂_j is distorted and trends within a part are invisible."
+        },
+        {
+          "type": "definition",
+          "term": "Parts that recur",
+          "content": "A part that occurs at several places in the series (for example A, B, A) is computed as one part: one mean, one σ̂ and one row in the table. The dividing lines are then placed by the counts of the parts in the order of their first occurrence, not at the rows where the part changes; with A×4, B×4, A×4 there is a line after point 8, the one after point 4 is missing. To compute each run separately and see correct lines, name the runs separately (for example A-1 and A-2)."
+        },
+        {
+          "type": "definition",
+          "term": "The reference is the part mean, not the nominal value",
+          "content": "The module does not center on a nominal value but on the mean of each part's own values, and divides by that part's own σ̂. If a whole part sits off its nominal value, the chart does not show it; it only reports deviations within a part. The description of the bundled example speaks of nominal centering and σ ≈ 0.05; the computation, however, uses each part's own mean and σ̂ (there about 0.024, 0.040 and 0.075). The Z chart of the example shows a signal at observation 8."
+        },
+        {
+          "type": "definition",
+          "term": "Different spread between parts",
+          "content": "The chart judges each deviation relative to the spread of its part. A shift of the same size in original units gives a large excursion in z for a part with small spread and a small one for a part with large spread. For root-cause analysis, look at the table of σ̂ per part."
+        }
+      ]
+    }
+  }
+}

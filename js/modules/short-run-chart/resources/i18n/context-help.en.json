@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "valuesRef": {
+      "help": "The column with the measurements in time order, label Values Column. Only numbers are used; empty cells and text, including text such as “2,5”, are skipped. The chart is computed from 4 usable pairs of measurement and part on; with fewer pairs or with a deleted column the output stays empty. Empty until one is chosen; without a column there is no chart, an empty value clears the choice. A change of the column or its values recomputes."
+    },
+    "groupsRef": {
+      "help": "The column with the part or group of each measurement, label Part / Group Column, as numbers or text. Measurement and part are paired row by row, up to the shorter of the two columns; rows without a part do not count. Mean and σ̂ are estimated separately per part, even when the part occurs at several places in the series. The order of the rows is the order of the chart. Empty until one is chosen; without a column there is no chart, an empty value clears the choice. A change of the column or its values recomputes."
+    },
+    "charts": {
+      "help": "The settings from the chart editor per sub-chart, under z (Z chart) and mr (MR chart): title, axis titles, font sizes, background, reference lines, point color, symbol, size and outline of the series. A sub-chart without changes has no entry; other keys are rejected."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example sheet this module was loaded from; empty when it does not come from an example."
+    },
+    "analysis": {
+      "help": "The computation for the current state of both columns: the number of usable pairs and the values from the engine (z values, moving ranges of the z values, figures per part, limits and signal points of both charts), or the reason errCompute when the computation fails or yields non-finite values. Empty without one of the columns, with a deleted column and with fewer than 4 usable pairs."
+    },
+    "result": {
+      "help": "The computed result, each figure described individually under keys; empty without one of the columns, with a deleted column, with fewer than 4 usable pairs of measurement and part or when the computation fails (the interface then shows “Computation failed.”)."
+    },
+    "points": {
+      "help": "One row per usable pair in data order with the z value, the moving range of the z values (without a value in the first row) and one flag each telling whether the point is a signal on the Z chart and on the MR chart. Empty without a result. read({ fields: ['points'] }) returns them in full."
+    },
+    "warningMsg": {
+      "help": "The notice above the charts, as the interface shows it: measurements from parts without spread (a single value or all values equal, σ̂ = 0) could not be standardised and enter both charts at z = 0. Empty when there are no such values or there is no result."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields that are currently in effect: valuesRef and groupsRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Number of usable pairs of measurement and part; rows with an empty or non-numeric measurement or an empty part are already removed. A result exists from 4 pairs on. The numbers of the signal points count these pairs from 0, not the worksheet rows. The sub-lines of the Parts and Signals tiles show this number.",
+      "skipped": "Number of measurements that could not be standardised because their part has no spread (σ̂ = 0: a single value or all values equal). They are drawn at z = 0 and so also enter the moving ranges and the limits of the MR chart; the interface warns about it.",
+      "groups": "The figures per part, in the order in which the parts first occur; this is the table below the charts. The Parts tile shows their count, its sub-line the number of measurements.",
+      "z": "The limits of the Z chart: center line 0, upper limit +3, lower −3. Each value is standardised within its part to z = (x − x̄)/σ̂, with the mean x̄ and spread σ̂ of the part; for a stable process z is then approximately standard normal.",
+      "mr": "The limits of the MR chart of the z values: center line MR̄ (mean of the absolute differences |zᵢ − zᵢ₋₁| of consecutive values, also across a change of part), upper limit 3.267 · MR̄, lower 0. The MR̄ (z) tile shows the center line, its sub-line the upper limit (UCL_MR).",
+      "signalsZ": "Numbers (counted from 0 among the usable pairs) of the points whose z value lies strictly above +3 or below −3. The Signals tile counts these together with the signals of the MR chart, its sub-line shows the number of data points.",
+      "signalsMR": "Numbers (counted from 0 among the usable pairs, from the second point on) of the points whose moving range of the z values lies strictly above the upper limit of the MR chart (UCL_MR)."
+    },
+    "GroupStats": {
+      "group": "The part or group as it appears in the part/group column, as text. When a part occurs at several places in the series, it appears here once with all its values.",
+      "count": "Number of measurements of this part (n).",
+      "mean": "Mean x̄ of this part's measurements; it is the reference of the standardisation z = (x − x̄)/σ̂. A nominal value does not enter.",
+      "sigma": "Estimated spread σ̂ within the part: MR̄ of the part divided by 1.128 (d₂ for pairs). If the part has only one value or all its values are equal it is 0 and its values are drawn at z = 0.",
+      "mrBar": "Mean MR̄ of the absolute differences |xᵢ − xᵢ₋₁| of consecutive measurements within this part, in row order; σ̂ is derived from it."
+    },
+    "Limits": {
+      "cl": "Center line of the chart.",
+      "ucl": "Upper control limit (UCL) of the chart.",
+      "lcl": "Lower control limit (LCL) of the chart."
+    },
+    "Point": {
+      "z": "The standardised value z = (x − x̄)/σ̂ with the mean and σ̂ of its part; 0 for parts without spread.",
+      "mr": "The moving range |zᵢ − zᵢ₋₁| to the previous pair, also across a change of part; without a value in the first row.",
+      "signalZ": "True when the z value lies strictly above +3 or below −3.",
+      "signalMR": "True when the moving range lies strictly above the upper limit of the MR chart."
+    }
+  }
+}
