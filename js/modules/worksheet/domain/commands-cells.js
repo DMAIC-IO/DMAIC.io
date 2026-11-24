@@ -299,6 +299,18 @@ function switchType(st, row, detected, raw) {
 }
 
 /**
+ * Eine automatische Rolle `categorical` zurücknehmen, sobald die eingegebenen
+ * Werte etwas anderes sagen (wie `DataGrid._reinferAutoRole`): ein Typwechsel
+ * beim Tippen leitet die Rolle aus dem ersten Wert ab (ein Wert → kategorial),
+ * und das blieb sonst stehen. Nur diese Richtung; manuelle Rollen bleiben.
+ * @param {Work} st
+ */
+function withdrawAutoCategorical(st) {
+  if (st.roleManual || st.role !== 'categorical') return;
+  st.role = inferRole(st);
+}
+
+/**
  * Ein Eingabewert in eine Zelle, mit Typerkennung wie `DataGrid.setCellValue`.
  * @param {Work} st @param {number} row @param {any} value
  */
@@ -446,6 +458,7 @@ export const cellCommands = {
         values: work, nonNull: work.reduce((n, v) => n + (v != null ? 1 : 0), 0),
       };
       values.forEach((v, k) => enterValue(st, startRow + k, v));
+      withdrawAutoCategorical(st);
       /** @type {ColumnChange} */ const entry = { index: ci };
       if (st.type !== head.type || JSON.stringify(st.format) !== JSON.stringify(head.format)
         || st.role !== head.role || st.roleManual !== head.roleManual) {

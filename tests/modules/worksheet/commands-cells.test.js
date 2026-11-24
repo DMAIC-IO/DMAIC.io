@@ -120,6 +120,23 @@ suite('worksheet: setCells', () => {
     assertDeepEqual(values(w, 0), ['1', '2', 'abc']);
   });
 
+  test('Prozent Zelle für Zelle getippt: die automatische Rolle categorical weicht, sobald die Werte widersprechen', () => {
+    const vals = ['0.4%', '3.8%', '7.3%', '8.8%', '8.6%', '7.7%', '6.9%', '6.2%', '5.6%',
+      '4.7%', '4.1%', '3.8%', '3.3%', '3.0%', '2.7%', '2.3%', '2.2%', '2.0%', '1.8%'];
+    const w = setup({ rowCount: vals.length });
+    w.m.setCells({ sheetId: 's1', columnId: 'b', startRow: 0, values: [vals[0]] });
+    assertEqual(sheet(w).columns[1].type, 'percent');
+    assertEqual(sheet(w).columns[1].role, 'categorical');
+    vals.slice(1).forEach((v, i) => w.m.setCells({ sheetId: 's1', columnId: 'b', startRow: i + 1, values: [v] }));
+    assertEqual(sheet(w).columns[1].role, 'continuous');
+  });
+
+  test('eine manuelle Rolle categorical bleibt beim Tippen', () => {
+    const w = setup({ heads: [col('a', { shortName: 'C1', role: 'categorical', roleManual: true })], rowCount: 10 });
+    w.m.setCells({ sheetId: 's1', columnId: 'a', startRow: 0, values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] });
+    assertEqual(sheet(w).columns[0].role, 'categorical');
+  });
+
   test('Währung in eine Zahlenspalte: Typ currency mit zwei Dezimalen', () => {
     const w = setup();
     roundTrip(w, { type: 'setCells', sheetId: 's1', columnId: 'a', startRow: 0, values: ['3 €'] });
