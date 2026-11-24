@@ -1,10 +1,12 @@
 /**
  * Datensatz-Picker als Widget: Slots, Filter, `multi` und Farben aus der
  * Beschreibung des gebundenen Feldes; Texte nach Feldnamen mit Rückfall auf
- * die gemeinsamen Texte des Pickers.
+ * die gemeinsamen Texte des Pickers. Eine Erweiterung (`datasets(…, { extension })`)
+ * zeichnet `extension.js` je Zeile aus dem Schema.
  */
 import { DatasetPicker } from '../../ui/dataset-picker.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
+import { rowExtension } from './extension.js';
 
 /** @param {string} slot @returns {string} gemeinsamer Text, z. B. valueRef → ui.datasetPicker.slotV */
 const sharedKey = (slot) => `ui.datasetPicker.slot${slot[0].toUpperCase()}`;
@@ -31,8 +33,14 @@ export function mount(root, { value, services, effect }) {
     ...(s.group ? { group: true } : {}),
     helpKey: `${base}.${key}.help`,
   }));
+  const ext = spec.extension
+    ? rowExtension(spec.extension, {
+      base, t: (k) => i18n.t(k), has, stateManager: services.stateManager, noColumn: i18n.t('ui.datasetPicker.extNoColumn'),
+    })
+    : null;
   const picker = new DatasetPicker(root, services, {
     slots, multi: spec.multi, colors: spec.colors ? [...spec.colors] : CHART_COLORS, addHelpKey: `${base}.help`,
+    ...(ext ? { rowExtension: ext } : {}),
     onChange: (rows) => { if (!value.set(rows)) picker.value = value.get(); },
   });
   effect(() => picker.syncValue(value.get()));

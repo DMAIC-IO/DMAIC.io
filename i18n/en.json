@@ -1245,7 +1245,8 @@
       "slotG2": "2nd grouping — sub-groups within G1",
       "slotG3": "3rd grouping — sub-groups within G2",
       "slotZ": "Z axis (response variable)",
-      "slotS": "Size (bubble diameter, numeric)"
+      "slotS": "Size (bubble diameter, numeric)",
+      "extNoColumn": "—"
     },
     "datagrid": {
       "renameColumn": "Rename column",

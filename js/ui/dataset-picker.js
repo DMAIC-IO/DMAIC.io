@@ -46,16 +46,18 @@
  *   helpKey   — Kontexthilfe-Schlüssel der Beschriftung (Alt-Taste), z. B. `modules.<id>.actions.setColumn.help`; ohne ihn kein Fragezeichen
  *
  * Row extension (optional, `options.rowExtension`):
- *   key    — Row property the extension owns (kept on every row)
- *   empty  — () => value for a new row
+ *   keys   — Row properties the extension owns (kept on every row)
+ *   empty  — () => `{ <key>: value }` for a new row
  *   render — (container, value, update, rowIdx) => void; called once per row
- *            into a `div.ds-picker__extension` after the slots. `update(next)`
- *            stores the value, fires onChange and re-renders;
- *            `update(next, { render: false })` skips the re-render, so a
- *            value edit keeps focus and the click that ended it.
+ *            into a `div.ds-picker__extension` after the slots. `value` holds
+ *            the extension keys of the row; `update(next)` merges them in,
+ *            fires onChange and re-renders; `update(next, { render: false })`
+ *            skips the re-render, so a value edit keeps focus and the click
+ *            that ended it. Das Widget `dataset-picker` baut sie aus
+ *            `datasets(…, { extension })` (`widgets/dataset-picker/extension.js`).
  *
  * Returned datasets:  [{ x: ref|null, y: ref|null, group: ref|null }, ...]
- * plus `[rowExtension.key]: value` per row when a row extension is set.
+ * plus every `rowExtension.keys` entry per row when a row extension is set.
  * In single mode the array always has length 1.
  */
 
@@ -90,7 +92,7 @@ export class DatasetPicker {
    * @param {function} [options.onChange] — Called with datasets array
    * @param {string[]} [options.colors] — Optional per-dataset color indicators
    * @param {string} [options.addHelpKey] — Kontexthilfe-Schlüssel für den Knopf „Datensatz hinzufügen“ (z. B. `modules.<id>.fields.datasets.help`, wie es das Widget `dataset-picker` übergibt)
-   * @param {{ key: string, empty: function(): any, render: function(HTMLElement, any, function(any, {render?: boolean}=): void, number): void }} [options.rowExtension]
+   * @param {{ keys: string[], empty: function(): Object, render: function(HTMLElement, Object, function(Object, {render?: boolean}=): void, number): void }} [options.rowExtension]
    *   — An extra per-row value with its own controls (see file header)
    */
   constructor(container, context, options) {
@@ -140,7 +142,7 @@ export class DatasetPicker {
       for (const slot of this._slots) {
         obj[slot.key] = ds[slot.key] || null;
       }
-      if (this._ext) obj[this._ext.key] = ds[this._ext.key] ?? this._ext.empty();
+      if (this._ext) for (const k of this._ext.keys) if (ds[k] !== undefined && ds[k] !== null) obj[k] = ds[k];
       return obj;
     });
     if (this._datasets.length === 0) this._datasets.push(this._emptyDataset());
@@ -154,7 +156,11 @@ export class DatasetPicker {
    */
   syncValue(rows) {
     const list = Array.isArray(rows) ? rows : (rows ? [rows] : []);
-    const key = (arr) => JSON.stringify(arr.map((ds) => this._slots.map((s) => ds?.[s.key] || null)));
+    const extKeys = this._ext ? this._ext.keys : [];
+    const key = (arr) => JSON.stringify(arr.map((ds) => [
+      ...this._slots.map((s) => ds?.[s.key] || null),
+      ...extKeys.map((k) => ds?.[k] ?? null),
+    ]));
     if (key(list) === key(this._datasets)) return;
     if (isPickerFocused(this._container)) return;
     this.value = rows;
@@ -181,7 +187,7 @@ export class DatasetPicker {
   _emptyDataset() {
     const ds = {};
     for (const slot of this._slots) ds[slot.key] = null;
-    if (this._ext) ds[this._ext.key] = this._ext.empty();
+    if (this._ext) Object.assign(ds, this._ext.empty());
     return ds;
   }
 
@@ -256,11 +262,11 @@ export class DatasetPicker {
     if (this._ext) {
       const extEl = h('div', { class: 'ds-picker__extension', 'data-ds': idx });
       const update = (next, opts) => {
-        this._datasets[idx][this._ext.key] = next;
+        Object.assign(this._datasets[idx], next);
         this._fireChange();
         if (opts?.render !== false) this._render();
       };
-      this._ext.render(extEl, ds[this._ext.key], update, idx);
+      this._ext.render(extEl, Object.fromEntries(this._ext.keys.map((k) => [k, ds[k]])), update, idx);
       item.append(extEl);
     }
 

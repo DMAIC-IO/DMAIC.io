@@ -450,3 +450,19 @@ test('countHelpCoverage zählt die Aktionen, Parameter und Schlüssel eines umge
   assert.deepEqual(out.keys, { total: 1, covered: 1 });
   assert.deepEqual(out.fields, { total: 1, covered: 1 });
 });
+
+test('typedefHelpSuffixes: Erweiterung von datasets mit Satz unter fields.<feld>.<pfad>.help', async () => {
+  const { defineModel, datasets, object, oneOf, number, columnRef } = await import('../../js/core/model.js');
+  const { schemaAgentEntry } = await import('../../js/core/agent/agent-schema.js');
+  const ext = object({
+    mode: oneOf(['none', 'constant']),
+    constant: object({ yPlus: number({ optional: true }) }, { optional: true }),
+  }, { variantKey: 'mode' });
+  const M = defineModel({ fields: { datasets: datasets({ x: columnRef() }, { extension: object({ errorBars: ext }) }) } });
+  assert.deepEqual(typedefHelpSuffixes({ fields: schemaAgentEntry(M).fields }), [
+    'fields.datasets.errorBars.constant.help', 'fields.datasets.errorBars.constant.yPlus.help',
+    'fields.datasets.errorBars.help', 'fields.datasets.errorBars.mode.help',
+  ]);
+  const P = defineModel({ fields: { datasets: datasets({ x: columnRef() }) } });
+  assert.deepEqual(typedefHelpSuffixes({ fields: schemaAgentEntry(P).fields }), []);
+});

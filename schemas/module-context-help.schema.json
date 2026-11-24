@@ -87,7 +87,11 @@
     "fieldDeepHelp": {
       "type": "object",
       "required": ["help"],
-      "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } },
+      "properties": {
+        "help": { "$ref": "common.schema.json#/$defs/text" },
+        "label": { "$ref": "common.schema.json#/$defs/text" },
+        "values": { "type": "object", "additionalProperties": { "$ref": "common.schema.json#/$defs/text" } }
+      },
       "additionalProperties": { "$ref": "#/$defs/fieldDeepHelp" }
     },
     "action": {

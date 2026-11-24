@@ -6,7 +6,7 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-u
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
-import { defineModel, datasets, columnRef } from '../../js/core/model.js';
+import { defineModel, datasets, columnRef, object, oneOf, number } from '../../js/core/model.js';
 import { mount as mountColumnPicker } from '../../js/widgets/column-picker/mount.js';
 import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
@@ -165,5 +165,170 @@ suite('Widget dataset-picker und column-picker — maxCount', () => {
     assertEqual(count({ kind: 'columnRef', types: ['numeric'], minCount: 0 }), 2);
     assertEqual(count({ kind: 'columnRef', types: ['numeric'], minCount: 0, maxCount: 2 }), 0);
     assertEqual(count({ kind: 'columnRef', types: ['numeric'], minCount: 0, maxCount: 3 }), 2);
+  });
+});
+
+const EB_KEYS = ['xPlus', 'xMinus', 'yPlus', 'yMinus'];
+const Bars = object({
+  mode: oneOf(['none', 'constant', 'columns']),
+  constant: object(Object.fromEntries(EB_KEYS.map((k) => [k, number({ nullable: true, optional: true })])), { optional: true }),
+  columns: object(Object.fromEntries(EB_KEYS.map((k) => [k, columnRef({ types: ['numeric'], minCount: 1, optional: true })])), { optional: true }),
+}, { variantKey: 'mode' });
+const Ext = defineModel({ fields: { datasets: datasets(Slots, { multi: true, extension: object({ errorBars: Bars }) }) } });
+const EXT_TEXTS = (() => {
+  const base = 'modules.demo.fields.datasets.errorBars';
+  const t = { [`${base}.label`]: 'Fehlerbalken', [`${base}.help`]: 'h', [`${base}.mode.help`]: 'h' };
+  for (const m of ['none', 'constant', 'columns']) t[`${base}.mode.values.${m}`] = `m-${m}`;
+  for (const v of ['constant', 'columns']) {
+    t[`${base}.${v}.help`] = 'h';
+    EB_KEYS.forEach((k, i) => { t[`${base}.${v}.${k}.label`] = ['+X', '−X', '+Y', '−Y'][i]; t[`${base}.${v}.${k}.help`] = 'h'; });
+  }
+  t['ui.datasetPicker.extNoColumn'] = '—';
+  return t;
+})();
+const ext = (host, path, row = 0) => host.querySelector(`.ds-picker__extension[data-ds="${row}"] [data-ds-ext="${path}"]`);
+const setMode = (host, mode, row = 0) => {
+  const sel = ext(host, 'errorBars.mode', row);
+  sel.value = mode;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+};
+
+suite('Widget dataset-picker — Erweiterung aus dem Schema', () => {
+  test('ohne Erweiterung kein Abschnitt, Zeilen nur mit Slots', async () => {
+    const { host, model } = await mountPicker(Multi);
+    assertEqual(host.querySelector('.ds-picker__extension'), null);
+    assertDeepEqual(Object.keys(model().datasets[0]), ['valueRef', 'groupRef']);
+    host.remove();
+  });
+
+  test('Modus none: Wähler mit Titel, keine Felder', async () => {
+    const { host } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    const sel = ext(host, 'errorBars.mode');
+    assertTrue(sel !== null);
+    assertDeepEqual([...sel.options].map((o) => o.textContent), ['m-none', 'm-constant', 'm-columns']);
+    assertEqual(host.querySelector('.ds-picker__ext-title').textContent, 'Fehlerbalken');
+    assertEqual(host.querySelectorAll('.ds-picker__ext-field').length, 0);
+    host.remove();
+  });
+
+  test('constant: vier Zahlfelder; columns: vier gefilterte Spaltenwähler', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    setMode(host, 'constant');
+    await flush();
+    assertDeepEqual(model().datasets[0].errorBars, { mode: 'constant', constant: {} });
+    const inputs = [...host.querySelectorAll('input[data-ds-ext^="errorBars.constant."]')];
+    assertEqual(inputs.length, 4);
+    assertDeepEqual([...host.querySelectorAll('.ds-picker__ext-label')].map((l) => l.textContent), ['+X', '−X', '+Y', '−Y']);
+    setMode(host, 'columns');
+    await flush();
+    assertDeepEqual(model().datasets[0].errorBars, { mode: 'columns', columns: {} });
+    const sel = ext(host, 'errorBars.columns.yPlus');
+    // Platzhalter plus die zwei numerischen Spalten (Textspalte C3 fehlt).
+    assertDeepEqual([...sel.options].map((o) => o.textContent.trim()), ['—', 'C1', 'C2']);
+    host.remove();
+  });
+
+  test('Moduswechsel leert die Werte', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    model().datasets = [{ valueRef: null, groupRef: null, errorBars: { mode: 'constant', constant: { yPlus: 2 } } }];
+    await flush();
+    assertEqual(ext(host, 'errorBars.constant.yPlus').value, '2');
+    setMode(host, 'columns');
+    await flush();
+    setMode(host, 'constant');
+    await flush();
+    assertDeepEqual(model().datasets[0].errorBars, { mode: 'constant', constant: {} });
+    assertEqual(ext(host, 'errorBars.constant.yPlus').value, '');
+    host.remove();
+  });
+
+  test('Werteingabe schreibt ohne neu zu zeichnen, Fokus bleibt; leer wird null', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    setMode(host, 'constant');
+    await flush();
+    const input = ext(host, 'errorBars.constant.yPlus');
+    input.focus();
+    input.value = '1.5';
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+    assertDeepEqual(model().datasets[0].errorBars, { mode: 'constant', constant: { yPlus: 1.5 } });
+    assertTrue(ext(host, 'errorBars.constant.yPlus') === input, 'nicht neu gezeichnet');
+    assertTrue(document.activeElement === input, 'Fokus bleibt');
+    const minus = ext(host, 'errorBars.constant.yMinus');
+    minus.value = '0.5';
+    minus.dispatchEvent(new Event('change', { bubbles: true }));
+    input.value = '';
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+    assertDeepEqual(model().datasets[0].errorBars, { mode: 'constant', constant: { yPlus: null, yMinus: 0.5 } });
+    input.blur();
+    host.remove();
+  });
+
+  test('Spaltenwahl landet im Model', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    setMode(host, 'columns');
+    await flush();
+    choose(ext(host, 'errorBars.columns.yMinus'), 'b');
+    await flush();
+    assertDeepEqual(model().datasets[0].errorBars, { mode: 'columns', columns: { yMinus: ref('b') } });
+    host.remove();
+  });
+
+  test('gelöschte Spalte: Auswahl zeigt den Platzhalter, Bezug bleibt', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    model().datasets = [{ valueRef: null, groupRef: null, errorBars: { mode: 'columns', columns: { yPlus: ref('weg') } } }];
+    await flush();
+    assertEqual(ext(host, 'errorBars.columns.yPlus').value, '');
+    assertDeepEqual(model().datasets[0].errorBars.columns.yPlus, ref('weg'));
+    host.remove();
+  });
+
+  test('Agentenänderung nur an errorBars erscheint im Wähler', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    model().datasets = [{ valueRef: null, groupRef: null, errorBars: { mode: 'constant', constant: { yPlus: 3 } } }];
+    await flush();
+    assertEqual(ext(host, 'errorBars.mode').value, 'constant');
+    assertEqual(ext(host, 'errorBars.constant.yPlus').value, '3');
+    host.remove();
+  });
+
+  test('jedes label trägt data-help-key, und der Schlüssel existiert', async () => {
+    const { host } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    for (const mode of ['constant', 'columns']) {
+      setMode(host, mode);
+      await flush();
+      const labels = [...host.querySelectorAll('.ds-picker__extension label')];
+      assertEqual(labels.length, 5);
+      for (const l of labels) {
+        const key = l.getAttribute('data-help-key');
+        assertTrue(!!key && key in EXT_TEXTS, String(key));
+      }
+    }
+    host.remove();
+  });
+
+  test('ohne label fällt die Beschriftung auf den Schlüsselnamen zurück', async () => {
+    const { host } = await mountPicker(Ext);
+    setMode(host, 'constant');
+    await flush();
+    assertDeepEqual([...host.querySelectorAll('.ds-picker__ext-label')].map((l) => l.textContent), EB_KEYS);
+    host.remove();
+  });
+
+  test('Hinzufügen setzt die Vorgabe; Entfernen nimmt die Erweiterung der Zeile mit', async () => {
+    const { host, model } = await mountPicker(Ext, { texts: EXT_TEXTS });
+    model().datasets = [
+      { valueRef: null, groupRef: null, errorBars: { mode: 'constant', constant: { yPlus: 1 } } },
+      { valueRef: null, groupRef: null, errorBars: { mode: 'constant', constant: { yPlus: 2 } } },
+    ];
+    await flush();
+    host.querySelector('[data-action="add-dataset"]').click();
+    await flush();
+    assertDeepEqual(model().datasets[2].errorBars, { mode: 'none' });
+    host.querySelector('[data-action="remove-dataset"][data-ds-idx="0"]').click();
+    await flush();
+    assertDeepEqual(model().datasets.map((d) => d.errorBars), [{ mode: 'constant', constant: { yPlus: 2 } }, { mode: 'none' }]);
+    host.remove();
   });
 });

@@ -10,7 +10,6 @@ import {
 } from '../../js/core/model.js';
 import { schemaAgentEntry } from '../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../js/core/agent/agent-catalog.js';
-import { typedefHelpSuffixes } from '../../tools/build/agent-report.mjs';
 
 const KEYS = ['xPlus', 'xMinus', 'yPlus', 'yMinus'];
 const amount = number({ nullable: true, optional: true });
@@ -185,15 +184,6 @@ suite('datasets({ extension }) — Agentenfläche', () => {
     assertEqual(Object.hasOwn(f, 'extension'), false);
     assertEqual(Object.hasOwn(f, 'keys'), false);
     assertEqual(Object.hasOwn(f, 'keysOf'), false);
-  });
-
-  test('agent:report zählt Satz je Schlüssel unter fields.<feld>.<pfad>.help', () => {
-    const suffixes = typedefHelpSuffixes({ fields: schemaAgentEntry(M).fields });
-    for (const k of ['fields.datasets.errorBars.help', 'fields.datasets.errorBars.mode.help',
-      'fields.datasets.errorBars.constant.yPlus.help', 'fields.datasets.errorBars.columns.xMinus.help']) {
-      assertTrue(suffixes.includes(k), k);
-    }
-    assertDeepEqual(typedefHelpSuffixes({ fields: schemaAgentEntry(P).fields }), []);
   });
 
   test('describe liefert extension und den Schlüsselbaum mit Hilfe', async () => {

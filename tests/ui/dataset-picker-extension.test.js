@@ -40,11 +40,11 @@ function recordingExtension() {
   return {
     calls,
     ext: {
-      key: 'extra',
-      empty: () => ({ v: 0 }),
+      keys: ['extra'],
+      empty: () => ({ extra: { v: 0 } }),
       render(container, value, update, rowIdx) {
         calls.push({ container, value, update, rowIdx });
-        container.textContent = `v=${value.v}`;
+        container.textContent = `v=${value.extra.v}`;
       },
     },
   };
@@ -78,7 +78,7 @@ suite('DatasetPicker — row extension', () => {
     const seen = [];
     const p = mount({ multi: true, slots: [{ key: 'x', label: 'X' }], rowExtension: ext,
       onChange: (rows) => seen.push(rows) });
-    calls[calls.length - 1].update({ v: 7 });
+    calls[calls.length - 1].update({ extra: { v: 7 } });
     assertDeepEqual(p.value[0].extra, { v: 7 });
     assertEqual(seen.length, 1);
     assertDeepEqual(seen[0][0].extra, { v: 7 });
@@ -93,6 +93,15 @@ suite('DatasetPicker — row extension', () => {
     host.querySelector('[data-action="remove-dataset"][data-ds-idx="0"]').click();
     assertEqual(p.value.length, 1);
     assertDeepEqual(p.value[0].extra, { v: 'B' });
+    p.destroy();
+  });
+
+  test('syncValue: eine Änderung nur an der Erweiterung zeichnet neu', () => {
+    const { ext } = recordingExtension();
+    const p = mount({ multi: true, slots: [{ key: 'x', label: 'X' }], rowExtension: ext });
+    p.syncValue([{ x: null, extra: { v: 5 } }]);
+    assertDeepEqual(p.value[0].extra, { v: 5 });
+    assertEqual(host.querySelector('.ds-picker__extension').textContent, 'v=5');
     p.destroy();
   });
 

@@ -1245,7 +1245,8 @@
       "slotG2": "2. Gruppierung — Untergruppen innerhalb von G1",
       "slotG3": "3. Gruppierung — Untergruppen innerhalb von G2",
       "slotZ": "Z-Achse (Antwortvariable)",
-      "slotS": "Größe (Blasen-Durchmesser, numerisch)"
+      "slotS": "Größe (Blasen-Durchmesser, numerisch)",
+      "extNoColumn": "—"
     },
     "datagrid": {
       "renameColumn": "Spalte umbenennen",

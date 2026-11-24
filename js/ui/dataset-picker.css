@@ -136,3 +136,62 @@
   color: var(--color-accent);
   border-color: var(--color-accent);
 }
+
+/* Erweiterung je Zeile (datasets(…, { extension }), widgets/dataset-picker/extension.js) */
+.ds-picker__ext-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.ds-picker__ext-title {
+  flex-shrink: 0;
+}
+
+.ds-picker__ext-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.ds-picker__ext-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.ds-picker__ext-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.ds-picker__ext-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  min-width: 20px;
+  flex-shrink: 0;
+}
+
+.ds-picker__ext-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.ds-picker__ext-select,
+.ds-picker__ext-input {
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
