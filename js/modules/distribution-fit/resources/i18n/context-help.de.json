@@ -1,0 +1,80 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columnRef": {
+      "help": "Die Messwertspalte als { instanceId, sheetId, columnId }: eine numerische Spalte. Gerechnet wird mit mindestens 5 Zahlen; leere und nichtnumerische Zellen werden übersprungen, mit weniger Zahlen bleibt die Auswertung leer. Gesetzt über instance.set mit dem Spaltenbezug einer wählbaren Spalte (siehe describe); null hebt die Wahl auf. Eine Änderung rechnet neu."
+    },
+    "dataType": {
+      "help": "Wie die Spalte behandelt wird, Beschriftung Datentyp: Auto, Kontinuierlich oder Diskret, voreingestellt Auto. Kontinuierlich passt nur die stetigen Verteilungen an (Normal, Log-Normal, Weibull, Exponential, Gamma), Diskret nur Poisson und Binomial. Auto nimmt beide Familien, wenn alle Werte ganzzahlig sind, sonst nur die stetigen. Eine Änderung rechnet neu."
+    },
+    "chart": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor des Histogramms (Titel, Achsentitel, Schriftgrößen, Hintergrund, Legende, Bezugslinien); leer, solange nichts geändert ist. Balken- und Kurvenfarbe sowie die Klassenbildung aus dem Editor werden nicht gespeichert."
+    },
+    "values": {
+      "help": "Die Zahlen der Messwertspalte in ihrer Reihenfolge; leere und nichtnumerische Zellen sind übersprungen. Leer, solange keine Spalte gewählt oder lesbar ist."
+    },
+    "analysis": {
+      "help": "Die Rechnung über diese Zahlen: die angepassten Verteilungen und Normalitätstests, oder der Grund, warum es keine gibt (weniger als 5 Zahlen, keine Streuung). Leer, solange keine Spalte gewählt ist."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "result": {
+      "help": "Die Rangfolge der angepassten Verteilungen samt Kennwerten und Normalitätstests, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte, bei einer gelöschten Spalte, mit weniger als 5 Zahlen oder ohne Streuung."
+    },
+    "activeParams": {
+      "help": "Die Parameterfelder, die instance.set im aktuellen Zustand annimmt: immer dataType."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die instance.set im aktuellen Zustand annimmt: columnRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "stats": "Die Kennwerte der Daten aus dem Abschnitt Deskriptive Statistik: Anzahl, Lage, Streuung und Form, gerechnet auf allen numerischen Werten der Spalte.",
+      "results": "Die angepassten Verteilungen, nach dem p-Wert ihres Gütetests absteigend sortiert; die Spalte # zeigt den Rang, Rang 1 trägt neben dem Namen den Hinweis BEST FIT. Welche Verteilungen angepasst werden, bestimmt der Datentyp; eine Verteilung, für die zu wenige passende Werte vorliegen, fehlt in der Liste.",
+      "normalityTests": "Die vier Normalitätstests Shapiro-Wilk, Anderson-Darling, Jarque-Bera und D'Agostino-Pearson auf denselben Werten, gezeigt in der Normalitäts-Tiefenanalyse; ein Test, der nicht gerechnet werden kann, fehlt. Das Gesamturteil zählt nur gerechnete Tests und wertet p ≥ 0,1 als bestanden und p < 0,05 als abgelehnt.",
+      "_dataType": "Der Datentyp, mit dem diese Rechnung lief, also Auto, Kontinuierlich oder Diskret; eine Kopie der Einstellung zum Zeitpunkt der Rechnung."
+    },
+    "DescStats": {
+      "n": "Zahl der Werte, Kachel n: alle numerischen Zellen der Spalte; leere und nicht numerische Zellen zählen nicht.",
+      "mean": "Arithmetischer Mittelwert x̄ = Σx/n, Kachel Mittelwert. Die Kacheln zeigen vier Nachkommastellen, ab 1.000.000 oder unter 0,0001 (außer 0) im Exponentialformat mit vier Nachkommastellen; ein nicht endlicher Wert erscheint als Strich.",
+      "stdDev": "Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)), Kachel Std.Abw.",
+      "median": "Der mittlere Wert der sortierten Daten, bei gerader Anzahl das Mittel der beiden mittleren; Kachel Median.",
+      "skewness": "Korrigierte Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, Kachel Schiefe: 0 bei symmetrischen Daten, positiv bei langem rechtem Ausläufer, negativ bei langem linkem.",
+      "kurtosis": "Exzess-Kurtosis nach der Stichprobenformel n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)), Kachel Exzess-Kurtosis. Die Normalverteilung hat 0; positiv heißt schwerere Ränder, negativ leichtere.",
+      "min": "Der kleinste Wert der Spalte, Kachel Min.",
+      "max": "Der größte Wert der Spalte, Kachel Max."
+    },
+    "Fit": {
+      "name": "Der Name der Verteilung, Spalte Verteilung: Normal, Log-Normal, Weibull, Exponential, Gamma, Poisson oder Binomial; daneben steht der Hinweis stetig oder diskret.",
+      "type": "Die Familie der Verteilung: cont für stetig, disc für diskret; die Oberfläche zeigt sie als Hinweis stetig beziehungsweise diskret neben dem Namen. Stetige werden mit dem Kolmogorov-Smirnov-Test bewertet, diskrete mit dem χ²-Anpassungstest.",
+      "params": "Die geschätzten Parameter, je Parameter Symbol und Wert; die Spalte Parameter zeigt sie als Symbol=Wert. Normal: μ = x̄ und σ = s aller Werte. Log-Normal: μ_log und σ_log, Mittelwert und Standardabweichung der ln-Werte. Exponential: λ = 1/x̄. Gamma: α = x̄²/s² und β = x̄/s² (Momentenmethode). Weibull: Form k aus der Maximum-Likelihood-Gleichung (Newton-Verfahren, Start 1,2) und Skala λ = (Σxᵏ/n)^(1/k). Log-Normal, Exponential, Gamma und Weibull nutzen nur die positiven Werte und brauchen mindestens 3 davon, Weibull mindestens 5. Poisson: λ = x̄; Binomial: n = größter Wert, p = x̄/n; beide nutzen nur die nicht negativen ganzen Werte und brauchen mindestens 3, Binomial zusätzlich einen größten Wert über 0. Reichen die Werte nicht, fehlt die Verteilung. Der Gütetest läuft dagegen auf allen Werten der Spalte.",
+      "ks": "Der Kolmogorov-Smirnov-Test, nur bei stetigen Verteilungen; bei diskreten fehlt er, dort steht der χ²-Anpassungstest. Die Spalte Test zeigt K-S beziehungsweise χ².",
+      "chi2": "Der χ²-Anpassungstest, nur bei diskreten Verteilungen (Poisson, Binomial); bei stetigen fehlt er, dort steht der Kolmogorov-Smirnov-Test. Die Spalte Test zeigt dafür χ².",
+      "score": "Der p-Wert des Gütetests, bei stetigen Verteilungen der des Kolmogorov-Smirnov-Tests, bei diskreten der des χ²-Tests; nach ihm ist die Rangfolge sortiert. Die Spalte p-Wert zeigt ihn mit vier Nachkommastellen (unter 0,0001 als 0.0000), die Spalte Fit-Qualität als Balken, der ab p = 0,2 voll ist, mit dem Urteil Gut bei p ≥ 0,1, Grenzwertig bei 0,05 ≤ p < 0,1 und Schlecht darunter. Ein großer p-Wert heißt nur, dass keine Abweichung nachweisbar ist, nicht, dass die Verteilung bewiesen passt."
+    },
+    "KsTest": {
+      "D": "Die Kolmogorov-Smirnov-Statistik D: der größte senkrechte Abstand zwischen der empirischen Verteilungsfunktion der Werte und der angepassten Verteilungsfunktion, von 0 bis 1; kleiner ist besser. Die Spalte Statistik zeigt bei stetigen Verteilungen D, bei diskreten den χ²-Wert des Anpassungstests.",
+      "p": "Der p-Wert aus der Kolmogorov-Verteilung, mit z = (√n + 0,12 + 0,11/√n) · D genähert (Stephens) und auf 0 bis 1 begrenzt. Die Parameter stammen aus denselben Daten, und die Rechnung korrigiert das nicht (keine Lilliefors-Korrektur); der p-Wert fällt dadurch eher zu groß aus."
+    },
+    "ChiSquareTest": {
+      "chi2": "Die χ²-Statistik Σ(O − E)²/E über die Klassen k = 0 bis größter Wert + 5 (je ganzer Zahl eine Klasse), mit beobachteter Häufigkeit O und erwarteter Häufigkeit E = n · P(k); Klassen mit E < 1 fallen weg. Die Spalte Statistik zeigt sie bei diskreten Verteilungen.",
+      "df": "Die Freiheitsgrade: Zahl der Klassen mit E ≥ 1 minus 2, mindestens 1. Eine Klasse ist je ein ganzzahliger Wert k von 0 bis zum größten Wert + 5.",
+      "p": "Der p-Wert 1 − F(χ²) der χ²-Verteilung mit df Freiheitsgraden, auf 0 bis 1 begrenzt."
+    },
+    "NormalityTest": {
+      "name": "Der Name des Tests, wie die Karte der Normalitäts-Tiefenanalyse ihn zeigt: Shapiro-Wilk, Anderson-Darling, Jarque-Bera oder D'Agostino-Pearson.",
+      "p": "Der p-Wert des Tests gegen die Nullhypothese Normalverteilung; leer, wenn der Test zu wenige Werte hat. Die Karte urteilt Bestanden bei p ≥ 0,1, Grenzwertig bei 0,05 ≤ p < 0,1 und Abgelehnt darunter.",
+      "W": "Die Shapiro-Wilk-Statistik W (Algorithmus AS R94), nur im Shapiro-Wilk-Eintrag; Werte nahe 1 sprechen für Normalverteilung.",
+      "A2": "Die Anderson-Darling-Statistik A², unkorrigiert, nur im Anderson-Darling-Eintrag. Der p-Wert nutzt das korrigierte A² · (1 + 0,75/n + 2,25/n²) nach D'Agostino und Stephens.",
+      "JB": "Die Jarque-Bera-Statistik n/6 · (S² + K²/4) aus Momentenschiefe S und Exzess K, p-Wert aus χ² mit 2 Freiheitsgraden; nur im Jarque-Bera-Eintrag und erst ab 8 Werten, darunter leer.",
+      "K2": "Die D'Agostino-Pearson-Statistik K², die Summe der quadrierten z-Werte von Schiefe und Wölbung, p-Wert e^(−K²/2) aus χ² mit 2 Freiheitsgraden; nur im D'Agostino-Pearson-Eintrag und erst ab 20 Werten, darunter leer.",
+      "skewness": "Die Schiefe, wie der Test sie rechnet; nur bei Jarque-Bera und D'Agostino-Pearson und nur, wenn der Test gerechnet wurde.",
+      "exKurtosis": "Die Exzess-Kurtosis, wie der Test sie rechnet (Normalverteilung 0); nur bei Jarque-Bera und D'Agostino-Pearson und nur, wenn der Test gerechnet wurde.",
+      "skewZ": "Der z-Wert der Schiefe nach D'Agostino (1970), nur bei D'Agostino-Pearson ab 20 Werten. Bei weniger als 20 Werten ist das Feld vorhanden, aber leer.",
+      "kurtZ": "Der z-Wert der Wölbung nach Anscombe und Glynn (1983), nur bei D'Agostino-Pearson ab 20 Werten. Bei weniger als 20 Werten ist das Feld vorhanden, aber leer.",
+      "tooSmall": "Wahr, wenn der Test zu wenige Werte hatte und nicht gerechnet wurde: Jarque-Bera unter 8, D'Agostino-Pearson unter 20 Werten; die Karte zeigt dann einen Hinweis statt eines Urteils. Sonst fehlt der Eintrag."
+    }
+  }
+}

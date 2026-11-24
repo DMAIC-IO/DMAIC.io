@@ -1,0 +1,164 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Verteilungstests (Distribution Fitting) prüfen, welche statistische Verteilung am besten zu einem gegebenen Datensatz passt. Das Modul testet 7 Verteilungen: Normal, Log-Normal, Weibull, Exponential und Gamma (stetig) sowie Poisson und Binomial (diskret)."
+        },
+        {
+          "type": "heading",
+          "content": "Ablauf"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Datentyp erkennen: Auto-Erkennung (ganzzahlig → diskret, sonst stetig) oder manuelle Wahl",
+            "Parameterschätzung: Maximum-Likelihood / Momentenmethode für jede Verteilung",
+            "Goodness-of-Fit: Kolmogorov-Smirnov (stetige) bzw. Chi²-Anpassungstest (diskrete)",
+            "Ranking nach p-Wert: höchster p-Wert = beste Anpassung",
+            "Normalitäts-Tiefenanalyse: Shapiro-Wilk, Anderson-Darling, Jarque-Bera, D'Agostino-Pearson"
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Getestete Verteilungen"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Verteilung",
+            "Typ",
+            "Parameter",
+            "Typische Anwendung"
+          ],
+          "rows": [
+            [
+              "Normal",
+              "Stetig",
+              "μ, σ",
+              "Maße, Toleranzen, natürliche Variation"
+            ],
+            [
+              "Log-Normal",
+              "Stetig",
+              "μ_log, σ_log",
+              "Zykluszeiten, Einkommen, Partikelgrößen"
+            ],
+            [
+              "Weibull",
+              "Stetig",
+              "k, λ",
+              "Lebensdauer, Ausfallanalyse"
+            ],
+            [
+              "Exponential",
+              "Stetig",
+              "λ",
+              "Wartezeiten, Ausfallraten"
+            ],
+            [
+              "Gamma",
+              "Stetig",
+              "α, β",
+              "Wartezeiten, Aggregierte Poissonprozesse"
+            ],
+            [
+              "Poisson",
+              "Diskret",
+              "λ",
+              "Fehleranzahl, Ereignisse pro Zeiteinheit"
+            ],
+            [
+              "Binomial",
+              "Diskret",
+              "n, p",
+              "Pass/Fail, Ausschussrate"
+            ]
+          ]
+        }
+      ]
+    },
+    "example": {
+      "title": "Beispiel",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein Fertigungsprozess produziert Zykluszeiten in Sekunden. Die Daten zeigen eine Rechtsschiefe — typisch für Log-Normal-Verteilungen."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Datensatz laden (Beispiel: Zykluszeiten)",
+            "Analyse starten → Ranking zeigt Log-Normal als Best Fit",
+            "K-S-Test p-Wert > 0.10 → Verteilung passt gut",
+            "Normalitäts-Tiefenanalyse zeigt, dass Normal abgelehnt wird"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Ergebnis: Für Regelkarten und Fähigkeitsanalysen sollten die Daten log-transformiert werden, bevor Standardmethoden angewendet werden."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "p-Wert-Bewertung"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "p-Wert",
+            "Bewertung",
+            "Empfehlung"
+          ],
+          "rows": [
+            [
+              "≥ 0.10",
+              "Gut",
+              "Verteilung passt — nicht verwerfen"
+            ],
+            [
+              "0.05 – 0.10",
+              "Grenzwertig",
+              "Mit Vorsicht verwenden, größere Stichprobe empfohlen"
+            ],
+            [
+              "< 0.05",
+              "Schlecht",
+              "Verteilung passt nicht — verwerfen"
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Normalitäts-Konsens"
+        },
+        {
+          "type": "paragraph",
+          "content": "Das Modul führt vier spezialisierte Normalitätstests durch und bildet ein Konsens-Urteil. Shapiro-Wilk ist der Goldstandard für kleine Stichproben, Anderson-Darling ist besonders empfindlich in den Verteilungsrändern, Jarque-Bera ist ein asymptotischer Test basierend auf {{term:schiefe|Schiefe}} und {{term:kurtosis|Kurtosis}} (ideal für n > 30), und D'Agostino-Pearson zeigt, warum Normalität scheitert (Schiefe vs. Kurtosis)."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Häufige Fehler",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Zu kleine Stichprobe: GOF-Tests haben geringe Power bei n < 30. Ein nicht-signifikantes Ergebnis bedeutet nicht, dass die Verteilung passt.",
+            "Mehrfachtests: 7 Verteilungen werden parallel getestet — der Best Fit kann zufällig gut aussehen. Immer die fachliche Plausibilität prüfen.",
+            "Datentyp ignorieren: Poisson/Binomial nur für ganzzahlige Zähldaten sinnvoll. Stetige Daten nicht als diskret testen.",
+            "p > 0.05 ≠ Beweis: Ein hoher p-Wert beweist nicht, dass die Verteilung korrekt ist — er sagt nur, dass die Daten nicht dagegen sprechen.",
+            "Ausreißer: Einzelne Extremwerte können die Parameterschätzung stark verzerren. Daten vorher auf Ausreißer prüfen."
+          ]
+        }
+      ]
+    }
+  }
+}

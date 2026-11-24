@@ -1,0 +1,12 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-dist-lognormal",
+    "columnId": "c-zykluszeit"
+  },
+  "dataType": "continuous",
+  "sourceWorksheetFile": "shared/worksheets/distribution-lognormal.json"
+}

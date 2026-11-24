@@ -197,6 +197,7 @@ const SKIP = new Set([
   'modules/boxplot-view.test.js',
   'modules/probability-plot-view.test.js',
   'modules/outlier-test-view.test.js',
+  'modules/distribution-fit-view.test.js',
   'modules/heatmap-view.test.js',
   'modules/process-capability-view.test.js',
   'modules/data-import/viewmodel.test.js',
