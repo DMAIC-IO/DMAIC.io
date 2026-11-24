@@ -101,6 +101,17 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertTrue(controlChart.editable.base.includes('pointColor'));
   });
 
+  test('Regelkarte: values dürfen Lücken haben (null), Grenzlisten nicht', () => {
+    const cfg = { values: [null, 1, null, 2], cl: [1.5], ucl: [3], lcl: [0], sigma: [0.5] };
+    assertDeepEqual(checkValue(controlChart.props.config, 'c', cfg), cfg);
+    for (const bad of ['x', NaN, Infinity]) {
+      assertThrows(() => checkValue(controlChart.props.config, 'c', { values: [1, bad] }), /c\.values\[1\]/);
+    }
+    for (const key of ['cl', 'ucl', 'lcl', 'sigma']) {
+      assertThrows(() => checkValue(controlChart.props.config, 'c', { values: [1], [key]: [null] }), new RegExp(`c\\.${key}\\[0\\]`));
+    }
+  });
+
   test('Streudiagramm und Wahrscheinlichkeitsnetz: Reihen', () => {
     checkValue(scatterChart.props.config, 'c', { series: [{ name: 'R', x: [1], y: [2], color: 'var(--color-chart-3)', markerSize: 4, strokeWidth: 0.75, symbol: 'circle' }], refLines: [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }] });
     checkValue(probabilityPlotChart.props.config, 'c', { series: [{ name: 'R', values: [0.1, -0.2], color: 'var(--color-chart-5)' }] });

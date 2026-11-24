@@ -348,6 +348,15 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('Regelkarte: Lücken (null) in values kommen unverändert beim Typ an', async () => {
+    const cm = fakeManager();
+    const { root } = await host('<div x-widget="control-chart" x-widget-config="ctrl"></div>', {
+      cm, extra: { ctrl: { values: [1, null, 2], cl: [1.5], ucl: [3], lcl: [0], sigma: [0.4] } },
+    });
+    assertDeepEqual(cm.log.created[0].config.values, [1, null, 2]);
+    root.remove();
+  });
+
   test('Balken, Mosaik, Verlauf, Pareto: Typ und Gruppen unverändert durchgereicht', async () => {
     const groups = [{ name: 'B1', values: [1, 2], color: 'var(--color-chart-1)' }];
     const cases = [

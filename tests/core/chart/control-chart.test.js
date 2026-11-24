@@ -91,3 +91,47 @@ suite('Control-chart type — xOffset', () => {
     chart.destroy();
   });
 });
+
+suite('Control-chart type — Lücken (null) in values', () => {
+  /** Stützpunkte der Datenlinie (einziger Pfad mit Strichstärke 1.8). */
+  function linePoints(svg) {
+    const paths = Array.from(svg.querySelectorAll('path[stroke-width="1.8"]'));
+    assertEqual(paths.length, 1, 'genau eine Datenlinie, ohne Unterbrechung');
+    const d = paths[0].getAttribute('d');
+    assertEqual((d.match(/M/g) || []).length, 1, 'ein Teilpfad');
+    return Array.from(d.matchAll(/[ML]([-\d.e]+),([-\d.e]+)/g), (m) => [Number(m[1]), Number(m[2])]);
+  }
+
+  const CASES = [
+    ['Lücke an Index 0 (MR-Form)', [null, 2, 1, 3, 2]],
+    ['Lücke in der Mitte (t-Karte)', [4, 5, null, 6, 5]],
+  ];
+  for (const [name, values] of CASES) {
+    test(name, () => {
+      const { chart, svg } = mount({ values, cl: 4, ucl: 8, lcl: 0, sigma: 1.3 });
+      const nums = values.filter((v) => v !== null);
+      const pts = Array.from(svg.querySelectorAll('circle[r="3"]'));
+      assertEqual(pts.length, nums.length, 'ein Datenpunkt je Zahl');
+      const line = linePoints(svg);
+      assertEqual(line.length, nums.length, 'ein Stützpunkt je Zahl');
+      // x-Lage am Index: Abstand zum Vorgänger in Stichproben-Schritten.
+      const idx = values.map((v, i) => (v === null ? -1 : i)).filter((i) => i >= 0);
+      const step = (line[line.length - 1][0] - line[0][0]) / (idx[idx.length - 1] - idx[0]);
+      for (let k = 0; k < line.length; k++) {
+        const want = line[0][0] + (idx[k] - idx[0]) * step;
+        assertTrue(Math.abs(line[k][0] - want) < 1e-6, `Stützpunkt ${k} bei Stichprobe ${idx[k] + 1}`);
+        assertTrue(Math.abs(Number(pts[k].getAttribute('cx')) - line[k][0]) < 1e-6, `Punkt ${k} auf der Linie`);
+      }
+      const ext = chart._getDataExtent();
+      assertEqual(ext.xMax, values.length + 0.5, 'x-Achse über alle Plätze');
+      assertTrue(Number.isFinite(ext.yMin) && Number.isFinite(ext.yMax), 'y-Bereich ohne null endlich');
+      const gap = values.indexOf(null);
+      assertEqual(chart._findNearby(gap + 1, 0, 1000).every((hit) => hit.px !== gap + 1), true, 'kein Tooltip-Ziel für die Lücke');
+      assertEqual(chart._findNearby(gap + 1, 0, 0.1).length, 0, 'an der Lücke nichts in der Nähe');
+      for (const el of svg.querySelectorAll('*')) {
+        for (const a of el.attributes) assertTrue(!/NaN/.test(a.value), `kein NaN in ${el.tagName}@${a.name}`);
+      }
+      chart.destroy();
+    });
+  }
+});
