@@ -11,7 +11,7 @@ import {
 
 import { createModebar } from './modebar.js';
 import {
-  edSection, edCheckboxRow, edRangeRow, edSelectRow,
+  edSection, edRangeRow, edSelectRow,
   edTitleSection, edFontSizeSection, edSizeSection, edAxisLabelSection,
   edAxisTickSection, edAxisRangeSection, edRefLinesSection, edRefAreasSection, edLegendSection,
   openColorPicker, edBgColorSection,
