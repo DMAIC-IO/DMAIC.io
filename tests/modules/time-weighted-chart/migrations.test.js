@@ -37,7 +37,7 @@ const FILE = 'worksheets/spc-time-weighted-drift.json';
 const EXAMPLE_EWMA_OLD = { chartTypeId: 'ewma', columnRef: SRC_REF, lambda: 0.2, L: 3, sourceWorksheetFile: FILE };
 const EXAMPLE_CUSUM_OLD = { chartTypeId: 'cusum', columnRef: SRC_REF, baselineCount: 30, kSigma: 0.5, hSigma: 4, sourceWorksheetFile: FILE };
 
-/** Die Beispiele in der neuen Form (Spec §8: Vorgaben weggelassen). */
+/** Die Beispiele in der neuen Form (Vorgaben weggelassen). */
 const EXAMPLE_EWMA_NEW = { _schema: { version: '1.0' }, columnRef: SRC_REF };
 const EXAMPLE_CUSUM_NEW = { _schema: { version: '1.0' }, chartTypeId: 'cusum', columnRef: SRC_REF, baselineCount: 30 };
 
