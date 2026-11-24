@@ -14,6 +14,8 @@ import individualValuePlotChart from '../../../widgets/individual-value-plot-cha
 import { ALL_METHODS, PARAM_KEYS, inputValues, analyze, buildResult, chartMethodOptions } from './analyze.js';
 import { from0 } from './migrations.js';
 
+/** @typedef {import('./analyze.js').Result} Result */
+
 export const State = defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
@@ -56,7 +58,7 @@ export const State = defineModel({
      *
      * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
      * @this {import('./model.types.js').StateModel}
-     * @returns {import('./analyze.js').Result|null}
+     * @returns {Result|null}
      */
     result(src) {
       const values = inputValues(this, sourceColumns(src));
