@@ -34,6 +34,11 @@ export default {
             term: 'Formeln',
             content: 'Zellen, die mit „=" beginnen, sind Formeln (z. B. =A1+B1, =MEAN(A:A)). Die Berechnung erfolgt sofort und wird beim Öffnen automatisch aktualisiert.',
           },
+          {
+            type: 'definition',
+            term: 'Feste Bezüge ($)',
+            content: 'Beim Ziehen einer Formel verschieben sich ihre Zellbezüge mit. Ein $ hält einen Teil fest, wie in Excel: C1[$2] behält die Zeile 2, $C1[2] die Spalte C1, $C1[$2] beides. Beispiel: =C1[2]/C2[$1] nach unten ziehen teilt jede Zeile durch denselben Bezugswert in C2, Zeile 1.',
+          },
         ],
       },
       en: {
@@ -62,6 +67,11 @@ export default {
             type: 'definition',
             term: 'Formulas',
             content: 'Cells starting with "=" are formulas (e.g. =A1+B1, =MEAN(A:A)). They are evaluated immediately and recalculated automatically when the worksheet is reopened.',
+          },
+          {
+            type: 'definition',
+            term: 'Absolute references ($)',
+            content: 'When a formula is dragged, its cell references move along. A $ pins a part, as in Excel: C1[$2] keeps row 2, $C1[2] keeps column C1, $C1[$2] keeps both. Example: dragging =C1[2]/C2[$1] down divides every row by the same reference value in C2, row 1.',
           },
         ],
       },

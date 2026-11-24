@@ -21,12 +21,44 @@ export function isFormula(value) {
  */
 export function evaluateFormula(formulaStr, grid) {
   try {
-    const raw = formulaStr.trim().substring(1).trim();
+    const raw = stripAbsoluteMarkers(formulaStr.trim().substring(1).trim());
     if (!raw) return { result: null, error: '#EMPTY' };
     return _evalExpr(raw, grid);
   } catch {
     return { result: null, error: '#ERROR' };
   }
+}
+
+/**
+ * Remove the absolute-reference markers (`$C2[$5]` → `C2[5]`). They only
+ * matter when a formula is filled (see shiftFormulaRefs); for evaluation a
+ * pinned reference is the same cell. A `$` inside a '…' name or a "…" string
+ * literal is kept.
+ * @param {string} expr — formula body without the leading '='
+ * @returns {string}
+ */
+export function stripAbsoluteMarkers(expr) {
+  if (!expr.includes('$')) return expr;
+  let out = '';
+  let quote = null;
+  for (let i = 0; i < expr.length; i++) {
+    const ch = expr[i];
+    if (quote) {
+      out += ch;
+      if (ch === '\\' && quote === "'" && i + 1 < expr.length) out += expr[++i];
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"') { quote = ch; out += ch; continue; }
+    if (ch === '$') {
+      const prev = expr[i - 1] ?? '';
+      const beforeColumn = /^C\d/i.test(expr.slice(i + 1, i + 3)) && !/[A-Za-z\d]/.test(prev);
+      const beforeRow = prev === '[' && /\d/.test(expr[i + 1] ?? '');
+      if (beforeColumn || beforeRow) continue;
+    }
+    out += ch;
+  }
+  return out;
 }
 
 /**
