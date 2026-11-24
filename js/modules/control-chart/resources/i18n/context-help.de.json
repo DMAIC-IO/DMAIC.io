@@ -57,20 +57,23 @@
     "setChartType": {
       "help": "Wechselt den Regelkartentyp und hält die Stichprobengröße im Bereich des neuen Typs: I-MR setzt n = 1, X̄-R begrenzt auf 2 bis 10, X̄-S auf 2 bis 25. So rechnet auch die Auswahl in der Oberfläche. Eingefrorene Grenzen eines anderen Typs bleiben gespeichert, gelten aber erst wieder beim alten Typ.",
       "params": {
-        "chartTypeId": "Der neue Typ: i-mr, xbar-r oder xbar-s. Ein anderer Wert ist ein Fehler."
+        "chartTypeId": "Der neue Typ: i-mr, xbar-r oder xbar-s. Ein anderer Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit chartTypeId."
       }
     },
     "toggleRule": {
       "help": "Hakt eine Nelson-Regel an oder ab; die Liste der angehakten Regeln bleibt ohne Doppelte und aufsteigend.",
       "params": {
         "ruleId": "Die Regel, 1 bis 8 (Bedeutung bei den angehakten Regeln). Ein anderer Wert ist ein Fehler.",
-        "on": "true hakt an, false ab."
+        "on": "true hakt an, false ab.",
+        "command": "Das Kommando als ein Objekt mit ruleId und on."
       }
     },
     "removeAnnotation": {
       "help": "Entfernt die Anmerkung eines Punkts samt Ausschluss; ein ausgeschlossener Punkt geht danach wieder in die Grenzen ein. In der Oberfläche ist es der Löschknopf im Anmerkungsdialog, mit Rückfrage.",
       "params": {
-        "index": "Der Punkt, gezählt ab 0, der eine Anmerkung trägt; ein Punkt ohne Anmerkung ist ein Fehler."
+        "index": "Der Punkt, gezählt ab 0, der eine Anmerkung trägt; ein Punkt ohne Anmerkung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit index."
       }
     },
     "setAnnotation": {
@@ -78,13 +81,15 @@
       "params": {
         "index": "Der Punkt der ersten Teilkarte, gezählt ab 0 (bei X̄-Karten die Untergruppe); er muss im aktuellen Ergebnis vorkommen.",
         "comment": "Kommentar / Ursache zum Punkt, etwa ein Werkzeugbruch in Schicht 3; leer für keinen. Der Punkt wird in der Karte markiert, der Kommentar steht in der Liste der Regelverletzungen.",
-        "excluded": "Punkt aus Grenzen-Berechnung ausschließen: Der Punkt bleibt als graues Kreuz in der Karte, beeinflusst Mittellinie, UCL und LCL aber nicht mehr; bei I-MR fallen auch die beiden gleitenden Spannweiten mit ihm aus MR̄. Danach wird neu gerechnet. Gilt nicht mit mehreren Stages und nicht bei eingefrorenen Grenzen. Bei X̄-Karten fällt die Untergruppe heraus, die den Einzelwert mit dieser Nummer enthält, nicht die angeklickte Untergruppe."
+        "excluded": "Punkt aus Grenzen-Berechnung ausschließen: Der Punkt bleibt als graues Kreuz in der Karte, beeinflusst Mittellinie, UCL und LCL aber nicht mehr; bei I-MR fallen auch die beiden gleitenden Spannweiten mit ihm aus MR̄. Danach wird neu gerechnet. Gilt nicht mit mehreren Stages und nicht bei eingefrorenen Grenzen. Bei X̄-Karten fällt die Untergruppe heraus, die den Einzelwert mit dieser Nummer enthält, nicht die angeklickte Untergruppe.",
+        "command": "Das Kommando als ein Objekt mit index, comment und excluded."
       }
     },
     "setPhase2": {
       "help": "Friert die aktuellen Grenzen beider Teilkarten für die Überwachung in Phase II ein oder taut sie wieder auf. Eingefroren werden alle Punkte, auch neu hinzukommende, an den festen Grenzen gemessen, statt die Grenzen neu zu rechnen. Ohne Ergebnis und mit Stages wird das Einfrieren abgelehnt, mit dem Hinweis der Oberfläche. Ob danach eingefrorene Grenzen gelten, sagt frozen im Ergebnis.",
       "params": {
-        "enabled": "true friert ein, false taut auf und rechnet wieder live."
+        "enabled": "true friert ein, false taut auf und rechnet wieder live.",
+        "command": "Das Kommando als ein Objekt mit enabled."
       }
     }
   },

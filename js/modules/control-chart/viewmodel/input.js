@@ -11,7 +11,7 @@ import { CHART_TYPES, NELSON_RULES } from '../../../engines/control-chart-engine
 /** @typedef {import('../domain/analyze.js').Analysis} Analysis */
 /** @typedef {{ id: number }} Rule */
 
-/** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, { nelsonCollapsed: boolean }>} */
+/** @type {import('./state.types.js').ControlChartViewFn} */
 export function inputView(ctx) {
   /** Globale Texte (Regeln). */
   const gt = (/** @type {string} */ key, /** @type {object} */ params) => ctx.i18n.t(key, params);

@@ -32,15 +32,6 @@
   "js/modules/ce-matrix/ce-matrix.html": {
     "count": 1
   },
-  "js/modules/control-chart/control-chart.html": {
-    "count": 4
-  },
-  "js/modules/control-chart/control-chart.js": {
-    "count": 7
-  },
-  "js/modules/control-chart/control-chart.tile.js": {
-    "count": 3
-  },
   "js/modules/correlation/correlation-model.js": {
     "count": 1
   },

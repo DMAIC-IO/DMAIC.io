@@ -53,8 +53,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],
   'control-chart': [
-    // Altform und neue Form tragen die Kästchen, bis die Altform entfällt.
-    { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 2 },
+    { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],
   'transformed-imr-chart': [
     { match: "t('thLimit')", reason: 'Spalte der Zeilennamen UCL, CL, LCL; die Sätze stehen an den beiden Wertspalten', count: 1 },

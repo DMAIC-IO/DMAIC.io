@@ -193,8 +193,9 @@ function quiet(fn) {
 }
 
 /**
- * Die Beispiele: Arbeitsblatt (Pfad unter `examples/`), Spalte und die
- * Einstellungen der Beispieldatei.
+ * Die Beispiele: Arbeitsblatt (`shared/…` unter `examples/`, sonst unter
+ * `resources/examples/` des Moduls), Spalte und die Einstellungen der
+ * Beispieldatei.
  */
 const EXAMPLES = [
   ['control-chart-xbar-r-stable', 'worksheets/spc-subgroups-stable.json', 'sheet-xbar-r', 'c-diameter',
@@ -227,9 +228,13 @@ async function fetchText(relPath) {
   return res.text();
 }
 
-/** Werte einer Spalte aus einem Arbeitsblatt unter `examples/`. */
+/** Pfad eines Beispiel-Arbeitsblatts: geteilt unter `examples/`, sonst in der Modulablage. */
+const worksheetPath = (file) => (file.startsWith('shared/')
+  ? `../../../examples/${file}` : `../../../js/modules/control-chart/resources/examples/${file}`);
+
+/** Werte einer Spalte aus einem Beispiel-Arbeitsblatt. */
 async function exampleColumn(file, sheetId, columnId) {
-  const ws = JSON.parse(await fetchText(`../../../examples/${file}`));
+  const ws = JSON.parse(await fetchText(worksheetPath(file)));
   return ws.sheets.find((s) => s.id === sheetId).state.columns.find((c) => c.id === columnId).values;
 }
 

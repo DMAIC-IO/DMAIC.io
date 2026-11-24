@@ -25,6 +25,11 @@
     "description": "Antwortflächen z = f(x, y) als Konturdiagramm visualisieren",
     "whenToUse": "Die Antwortfläche eines Zwei-Faktor-Modells als Höhenlinien zeichnen — aus Polynomkoeffizienten oder einer eigenen Formel in x und y —, optional mit Messpunkten."
   },
+  "control-chart": {
+    "name": "Regelkarte",
+    "description": "SPC-Kontrollkarten für Prozesstabilität",
+    "whenToUse": "Einen Prozess über die Zeit mit Shewhart-Grenzen überwachen: I-MR für Einzelwerte, X̄-R oder X̄-S für Untergruppen, mit Nelson-Regeln, Stufen, Anmerkungen und eingefrorenen Grenzen für Phase II."
+  },
   "data-import": {
     "name": "Datenimport",
     "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",

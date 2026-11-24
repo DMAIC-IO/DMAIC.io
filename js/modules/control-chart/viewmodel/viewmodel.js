@@ -22,6 +22,7 @@ import { sourceColumns } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { inputsOf, analyze, freezeLimitsOf, sameColumn } from '../domain/analyze.js';
+import { fromExample } from '../io/example.js';
 import { UiState } from './state.js';
 import { inputView } from './input.js';
 import { outputView } from './output.js';
@@ -41,7 +42,7 @@ const refusal = (t, param, hintKey) => Object.assign(new Error(t(hintKey)), { pa
 /** Zahl der Punkte der ersten Teilkarte; 0 ohne Ergebnis. @param {any} a @returns {number} */
 const pointCount = (a) => (a?.status === 'ok' ? a.fit.subcharts[a.ct.subcharts[0].id].values.length : 0);
 
-/** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, { nelsonCollapsed: boolean }>} */
+/** @type {import('./state.types.js').ControlChartViewFn} */
 function coreView(ctx) {
   /** @type {null|(() => void)} */
   let unwatch = null;
@@ -91,6 +92,7 @@ export default createModule({
   Model: State,
   State: UiState,
   history: true,
+  fromExample,
   commands: {
     setAnnotation: command({
       params: { index: number({ integer: true, min: 0 }), comment: text(), excluded: boolean() },

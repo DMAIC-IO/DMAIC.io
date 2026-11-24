@@ -42,7 +42,5 @@ js/core/chart/chart-editor.js:●:{ value: 'circle',        glyph: '●', label:
 js/core/chart/chart-editor.js:★:{ value: 'star',          glyph: '★', label: 'Star' },
 js/core/cycles/cycles.js:⊞:data:   { id: 'data',   letter: '⊞', i18nKey: 'phases.data',   virtual: true, position: 'l
 js/core/migrations.js:→:const [from, to] = step.split('→');
-js/modules/control-chart/control-chart-help.js:✕:content: 'Click a violation row to open a dialog: record the cause as free text and option
-js/modules/control-chart/control-chart-help.js:✕:content: 'Klick auf eine Regelverletzung in der Tabelle öffnet einen Dialog: Ursache als F
 js/modules/kano/kano-link.js:▸:const SEP = ' ▸ ';
 js/modules/process-map/process-map.js:→:if (ti !== -1) parts.push(`→ ${_t('csvStep')} ${String(ti + 1).padStart(2, '0')}`);

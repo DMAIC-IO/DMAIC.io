@@ -13,7 +13,7 @@ import { kpiOf, chartViewsOf, violationRowsOf } from './present.js';
 /** @typedef {Extract<Analysis, { status: 'ok' }>} Ok */
 /** @typedef {import('./present.js').ViolationRow} ViolationRow */
 
-/** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, { nelsonCollapsed: boolean }>} */
+/** @type {import('./state.types.js').ControlChartViewFn} */
 export function outputView(ctx) {
   /** KPI-Leiste je Rechnung und Sprache. */
   const kpis = new WeakMap();

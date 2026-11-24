@@ -258,8 +258,9 @@ suite('control-chart: Migration — Vorbelegung aus chart-suggestion', () => {
 });
 
 /**
- * Die Beispiele des Moduls: Datei unter `examples/projects/`, Arbeitsblatt
- * (Pfad unter `examples/`), Blatt, Spalte und das Ergebnis der Altform.
+ * Die Beispiele des Moduls: Datei unter `resources/examples/projects/`,
+ * Arbeitsblatt (`shared/…` unter `examples/`, sonst in der Modulablage),
+ * Blatt, Spalte und das Ergebnis der Altform.
  */
 const EXAMPLES = [
   ['control-chart-xbar-r-stable', 'worksheets/spc-subgroups-stable.json', 'sheet-xbar-r', 'c-diameter', XBAR_R_STABLE_RESULT],
@@ -271,8 +272,11 @@ const EXAMPLES = [
   ['control-chart-hubschrauber-flyer', 'shared/worksheets/hubschrauber-flyer.json', 'sheet-hubschrauber-confirmation', 'c-flugzeit', HUBSCHRAUBER_RESULT],
 ];
 
+const OWN = '../../../js/modules/control-chart/resources/examples/';
+
 async function fetchJSON(relPath) {
-  const res = await fetch(new URL(`../../../examples/${relPath}`, import.meta.url), { cache: 'no-cache' });
+  const url = relPath.startsWith('shared/') ? `../../../examples/${relPath}` : `${OWN}${relPath}`;
+  const res = await fetch(new URL(url, import.meta.url), { cache: 'no-cache' });
   assertTrue(res.ok, `could not fetch ${relPath}: HTTP ${res.status}`);
   return res.json();
 }
@@ -280,11 +284,12 @@ async function fetchJSON(relPath) {
 suite('control-chart: Migration — Beispiele', () => {
   for (const [id, file, sheetId, columnId, expected] of EXAMPLES) {
     test(`${id}: lädt ohne Reparatur, gleich der neuen Form, Ergebnis wie die Altform`, async () => {
-      const old = await fetchJSON(`projects/${id}.json`);
-      assertEqual('_schema' in old, false, 'Altform ohne _schema');
-      const { sourceWorksheetFile, ...rest } = old;
+      const shipped = await fetchJSON(`projects/${id}.json`);
+      assertDeepEqual(shipped._schema, { version: '1.0' }, 'ausgeliefert in der neuen Form');
+      const { sourceWorksheetFile, _schema, ...rest } = shipped;
       assertEqual(sourceWorksheetFile, file);
-      const neu = { _schema: { version: '1.0' }, ...rest };
+      const old = { ...rest, sourceWorksheetFile };
+      const neu = { _schema, ...rest };
       assertDeepEqual(plain(State.fromJSON(neu).toJSON()), plain(load(old).toJSON()), 'neue Datei = Altform');
       assertDeepEqual(plain(State.fromJSON(old).toJSON()), plain(load(old).toJSON()), 'ohne Reparatur');
       const ws = await fetchJSON(file);

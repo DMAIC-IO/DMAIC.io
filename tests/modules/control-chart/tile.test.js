@@ -1,14 +1,12 @@
 /**
  * Regelkarte für Variablen: die SPC-Kachel (tile/tile.js) ohne DOM. Prüft
  * die Anzeige-Zahlen gegen die Literale der Altkachel (beide Altprojekte
- * und drei Beispiele, `en` und `de`), den Vergleich mit der Altkachel bei
- * gleichem Stand und gleichen Daten, die Rechnung der Kachel (eigene Rechnung
+ * und drei Beispiele, `en` und `de`), die Rechnung der Kachel (eigene Rechnung
  * ohne Stufen, Ausschlüsse und eingefrorene Grenzen), den Fehlerfall ohne
  * Wurf, gelöschte Spalten, die Einstellungen und `enumerate`.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import tile from '../../../js/modules/control-chart/tile/tile.js';
-import legacyTile from '../../../js/modules/control-chart/control-chart.tile.js';
 import { engineRuns } from '../../../js/modules/control-chart/domain/analyze.js';
 import { readSettings, checkValue } from '../../../js/core/model.js';
 import { Settings } from '../../../js/modules/control-chart/tile/settings.js';
@@ -70,7 +68,10 @@ const LEGACY_SHEETS = {
   ]),
 };
 
-/** Die drei Beispiele mit Kachel-Literalen: Arbeitsblatt unter `examples/`, Blatt, Spalte, Stand. */
+/**
+ * Die drei Beispiele mit Kachel-Literalen: Arbeitsblatt (`shared/…` unter
+ * `examples/`, sonst in der Modulablage), Blatt, Spalte, Stand.
+ */
 const EXAMPLES = [
   ['control-chart-capability', 'worksheets/spc-subgroups-stable.json', 'sheet-xbar-r', 'c-diameter',
     { chartTypeId: 'xbar-r', subgroupSize: 5, usl: 10.25, lsl: 9.75, enabledRules: ALL_RULES }],
@@ -89,7 +90,8 @@ const EXAMPLES = [
 
 /** Stand und stateManager eines Beispiels. */
 async function exampleCase([, file, sheetId, columnId, over]) {
-  const res = await fetch(new URL(`../../../examples/${file}`, import.meta.url), { cache: 'no-cache' });
+  const url = file.startsWith('shared/') ? `../../../examples/${file}` : `../../../js/modules/control-chart/resources/examples/${file}`;
+  const res = await fetch(new URL(url, import.meta.url), { cache: 'no-cache' });
   const ws = await res.json();
   const state = {
     chartTypeId: 'i-mr', subgroupSize: 1, baselineCount: null, stagesText: '', usl: null, lsl: null,
@@ -111,22 +113,12 @@ function shown(vm) {
   };
 }
 
-/** Dieselbe Sicht aus dem viewModel der Altkachel. @param {any} vm */
-function shownLegacy(vm) {
-  return {
-    empty: vm.empty, typeLabel: vm.typeLabel, colName: vm.colName,
-    stats: vm.stats.map((s) => [s.label, s.value]),
-    metrics: vm.metrics.map((m) => [m.modifier, m.value, m.label, m.sub]),
-  };
-}
-
 const settingsOf = (t, over = {}) => resolveSettings(validateSchema(t.settings), over);
 const args = (t, state, sm, lang = 'en', over = {}) => ({
   tileId: 'spc:i', instanceId: 'i', state, settings: settingsOf(t, over), i18n: i18nOf(lang),
   theme: 'light', chartManager: null, stateManager: sm,
 });
 const vmOf = (state, sm, lang, over) => tile.viewModel(args(tile, state, sm, lang, over));
-const legacyVmOf = (state, sm, lang, over) => legacyTile.viewModel(args(legacyTile, state, sm, lang, over));
 
 /** Kachel-Literale (`en`): die Zahlen der Altkachel auf 4 bzw. 3 Stellen. */
 const SHOWN_EN = {
@@ -215,33 +207,6 @@ suite('control-chart Kachel: Zahlen wie die Altkachel', () => {
     assertDeepEqual([vm.cpk.value, vm.cpk.label, vm.cpk.sub], ['2,114', 'Cpk', 'Cp = 2,325']);
   });
 
-  test('gleich der Altkachel: Kopf, Kennwerte, Kennzahlen und Diagramm (beide Altprojekte, drei Beispiele, lastN)', async () => {
-    await prepare();
-    const cases = [
-      ['legacy-project', LEGACY, stateManagerOf(LEGACY_SHEETS)],
-      ['legacy-project-xbar', LEGACY_XBAR, stateManagerOf(LEGACY_SHEETS)],
-    ];
-    for (const ex of EXAMPLES) {
-      const { state, sm } = await exampleCase(ex);
-      cases.push([ex[0], state, sm]);
-    }
-    for (const [id, state, sm] of cases) {
-      for (const over of [{}, { lastN: 10 }]) {
-        const vm = vmOf(state, sm, 'en', over);
-        const old = legacyVmOf(state, sm, 'en', over);
-        assertDeepEqual(shown(vm), shownLegacy(old), id);
-        const { cl, ucl, lcl, sigma, violationIndices, ...rest } = vm.chart;
-        const o = old.chart;
-        assertDeepEqual([cl, ucl, lcl, sigma], [[o.cl], [o.ucl], [o.lcl], [o.sigma]], `${id}: Grenzen als Listen`);
-        // Die Altkachel listet in der Reihenfolge der Regeln, die neue aufsteigend; das Widget nimmt eine Menge.
-        assertDeepEqual(violationIndices, [...o.violationIndices].sort((a, b) => a - b), id);
-        for (const k of ['values', 'baselineEnd', 'xOffset', 'xMin', 'xMax', 'usl', 'lsl', 'showZones', 'xLabel', 'yLabel']) {
-          assertDeepEqual(rest[k], o[k], `${id}: ${k}`);
-        }
-      }
-    }
-  });
-
   test('die Kachel zählt nicht als Rechnung des Moduls', async () => {
     await prepare();
     const n = engineRuns();
@@ -299,7 +264,11 @@ suite('control-chart Kachel: Leer- und Fehlerfälle', () => {
     const values = [10, '2,5', null, 10.2, 9.8, '', 10.1];
     const vm = vmOf(STATE, sm(values));
     assertEqual(vm.chart.values.length, 4);
-    assertDeepEqual(shown(vm), shownLegacy(legacyVmOf(STATE, sm(values))));
+    assertDeepEqual(shown(vm), {
+      empty: null, typeLabel: 'I-MR', colName: 'Messwert',
+      stats: [['CL', '10.0250'], ['UCL', '10.8229'], ['LCL', '9.2271'], ['σ̂', '0.2660']],
+      metrics: [['dashboard-spc__metric--ok', '0', 'dashboard.spcViolations', 'dashboard.spcOf']],
+    });
   });
 
   test('Diagrammkonfiguration erfüllt das Schema des Widgets', async () => {
@@ -323,11 +292,10 @@ suite('control-chart Kachel: Vertrag und Einstellungen', () => {
       { tileId: 'spc:a', instanceId: 'a', title: 'SPC — Linie 2' },
       { tileId: 'spc:b', instanceId: 'b', title: `SPC — ${UI.de.name}` },
     ]);
-    assertDeepEqual(tile.enumerate(ctx), legacyTile.enumerate(ctx), 'gleich der Altkachel');
   });
 
   test('Größe, Präfix und refreshOn (mit Arbeitsblattänderung)', () => {
-    assertDeepEqual(tile.size, legacyTile.size);
+    assertDeepEqual(tile.size, { defaultW: 3, defaultH: 10, minW: 2, minH: 6 });
     assertEqual(tile.titlePrefix, 'SPC');
     assertDeepEqual(tile.refreshOn, ['state:saved', 'resize', 'worksheet:dataChanged']);
     assertEqual(tile.template, 'js/modules/control-chart/resources/tile.html');
@@ -335,7 +303,7 @@ suite('control-chart Kachel: Vertrag und Einstellungen', () => {
 
   test('Einstellungen wie die Altkachel: lastN 0–500 ganzzahlig, showChart; Labels fallen auf dashboard.tileSettings zurück', () => {
     const s = tile.settings;
-    assertDeepEqual(Object.keys(s), Object.keys(legacyTile.settings));
+    assertDeepEqual(Object.keys(s), ['lastN', 'showChart']);
     assertDeepEqual([s.lastN.type, s.lastN.min, s.lastN.max, s.lastN.step, s.lastN.default], ['number', 0, 500, 1, 0]);
     assertDeepEqual([s.showChart.type, s.showChart.default], ['boolean', true]);
     assertDeepEqual(s.lastN.label, ['modules.control-chart.tile.settings.lastN.label', 'dashboard.tileSettings.lastN']);
@@ -347,7 +315,7 @@ suite('control-chart Kachel: Vertrag und Einstellungen', () => {
 
   test('gespeicherte Einstellungen der Altkachel gelten unverändert, Ungültiges fällt auf die Vorgabe', () => {
     assertDeepEqual(readSettings(Settings, { lastN: 30, showChart: false }), { lastN: 30, showChart: false });
-    assertDeepEqual(readSettings(Settings, resolveSettings(validateSchema(legacyTile.settings), { lastN: 12 })), { lastN: 12, showChart: true });
+    assertDeepEqual(readSettings(Settings, { lastN: 12, showChart: true }), { lastN: 12, showChart: true });
     assertDeepEqual(readSettings(Settings, { lastN: 900, showChart: 'ja' }), { lastN: 0, showChart: true });
     assertDeepEqual(readSettings(Settings, undefined), { lastN: 0, showChart: true });
   });

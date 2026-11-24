@@ -2290,6 +2290,7 @@ export const AGENT_REGISTRY = {
   "control-chart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -2299,284 +2300,193 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setColumn": {
+      "setChartType": {
+        "target": "model",
         "params": [
           {
-            "name": "slot",
-            "type": "'value'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<boolean>",
-        "help": "Die Messreihe wählen und neu rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'chartTypeId'|'subgroupSize'|'baselineCount'|'stagesText'|'usl'|'lsl'|'enabledRules'",
-            "optional": false,
-            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number|number[]|null",
-            "optional": false,
-            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen.",
-        "keysOf": "Params",
+        "returns": "void",
+        "help": "",
+        "keysOf": "setChartType",
+        "keysHelp": "actions.setChartType.params",
         "keys": {
           "chartTypeId": {
             "type": "'i-mr'|'xbar-r'|'xbar-s'",
-            "help": "Kartentyp"
+            "help": ""
+          }
+        }
+      },
+      "toggleRule": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "toggleRule",
+        "keysHelp": "actions.toggleRule.params",
+        "keys": {
+          "ruleId": {
+            "type": "1|2|3|4|5|6|7|8",
+            "help": ""
           },
-          "subgroupSize": {
+          "on": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "removeAnnotation": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeAnnotation",
+        "keysHelp": "actions.removeAnnotation.params",
+        "keys": {
+          "index": {
             "type": "number",
-            "help": "Werte je Untergruppe, nur bei X̄-Karten",
-            "optional": true
-          },
-          "baselineCount": {
-            "type": "number",
-            "help": "Werte der Basis, leer für alle"
-          },
-          "stagesText": {
-            "type": "string",
-            "help": "letzter Punkt jeder Stufe"
-          },
-          "usl": {
-            "type": "number",
-            "help": "obere Spezifikationsgrenze, leer für keine"
-          },
-          "lsl": {
-            "type": "number",
-            "help": "untere Spezifikationsgrenze, leer für keine"
-          },
-          "enabledRules": {
-            "type": "number[]",
-            "help": "angehakte Nelson-Regeln 1–8"
+            "help": ""
           }
         }
       },
       "setAnnotation": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "index",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "0-basierter Punkt der ersten Teilkarte (Untergruppe bei X̄-Karten)"
-          },
-          {
-            "name": "comment",
-            "type": "string",
-            "optional": false,
-            "help": "der Kommentar, '' für keinen"
-          },
-          {
-            "name": "excluded",
-            "type": "boolean",
-            "optional": false,
-            "help": "ob der Punkt aus der Grenzberechnung fällt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<void>",
-        "help": "Einen Punkt anmerken oder aus den Grenzen ausschließen; leerer Kommentar und excluded false entfernen die Anmerkung."
+        "returns": "void",
+        "help": "",
+        "keysOf": "setAnnotation",
+        "keysHelp": "actions.setAnnotation.params",
+        "keys": {
+          "index": {
+            "type": "unknown",
+            "help": ""
+          },
+          "comment": {
+            "type": "unknown",
+            "help": ""
+          },
+          "excluded": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       },
       "setPhase2": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "enabled",
-            "type": "boolean",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "true friert ein, false gibt frei"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<boolean>",
-        "help": "Die Grenzen des aktuellen Ergebnisses für Phase II einfrieren oder freigeben."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "Promise<void>",
-        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+        "returns": "void",
+        "help": "",
+        "keysOf": "setPhase2",
+        "keysHelp": "actions.setPhase2.params",
+        "keys": {
+          "enabled": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
-      "columnRef": {
-        "type": "object|null",
-        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
-        "bulk": false,
-        "derived": true
-      },
       "chartTypeId": {
-        "type": "string",
-        "help": "`'i-mr'`, `'xbar-r'` or `'xbar-s'`",
-        "bulk": false,
-        "derived": true
+        "type": "'i-mr'|'xbar-r'|'xbar-s'",
+        "help": "",
+        "bulk": false
       },
       "subgroupSize": {
         "type": "number",
-        "help": "values per subgroup (1 for I-MR; 2–10 X̄-R; 2–25 X̄-S)",
+        "help": "",
+        "bulk": false
+      },
+      "columnRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
       },
       "baselineCount": {
         "type": "number|null",
-        "help": "points used to compute the limits, or null for all",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "stagesText": {
         "type": "string",
-        "help": "the stage boundaries as entered (last point of each stage, e.g. \"12, 25\"), '' for none",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "usl": {
         "type": "number|null",
-        "help": "upper specification limit, or null",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "lsl": {
         "type": "number|null",
-        "help": "lower specification limit, or null",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "enabledRules": {
-        "type": "number[]",
-        "help": "the Nelson rule ids checked, sorted when set",
+        "type": "Array<1|2|3|4|5|6|7|8>",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "unique",
+          "sorted"
+        ]
       },
       "annotations": {
-        "type": "Object<string, Annotation>",
-        "help": "je Punktindex eine Anmerkung; ein ausgeschlossener Punkt fällt aus den Grenzen",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "Annotation",
-        "keys": {
-          "comment": {
-            "type": "string",
-            "help": "Kommentar zum Punkt"
-          },
-          "excluded": {
-            "type": "boolean",
-            "help": "Punkt aus den Grenzen ausgeschlossen"
-          }
-        }
+        "type": "Record<string, { comment: string, excluded: boolean }>",
+        "help": "",
+        "bulk": false
       },
       "frozenLimits": {
-        "type": "FrozenLimits|null",
-        "help": "the limits frozen for Phase II monitoring, or null",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "FrozenLimits",
-        "keys": {
-          "chartTypeId": {
-            "type": "'i-mr'|'xbar-r'|'xbar-s'",
-            "help": "Kartentyp beim Einfrieren"
-          },
-          "subgroupSize": {
-            "type": "number",
-            "help": "Untergruppengröße beim Einfrieren"
-          },
-          "columnRef": {
-            "type": "object",
-            "help": "Spalte beim Einfrieren"
-          },
-          "baselineEnd": {
-            "type": "number",
-            "help": "Einzelwerte der Basis"
-          },
-          "primary": {
-            "type": "SubchartLimits",
-            "help": "Grenzen der ersten Teilkarte",
-            "keysOf": "SubchartLimits",
-            "keys": {
-              "cl": {
-                "type": "number|null",
-                "help": "Mittellinie"
-              },
-              "ucl": {
-                "type": "number|null",
-                "help": "obere Eingriffsgrenze"
-              },
-              "lcl": {
-                "type": "number|null",
-                "help": "untere Eingriffsgrenze"
-              },
-              "sigma": {
-                "type": "number|null",
-                "help": "Streuung der Punkte"
-              }
-            }
-          },
-          "secondary": {
-            "type": "SubchartLimits",
-            "help": "Grenzen der zweiten Teilkarte",
-            "keysOf": "SubchartLimits",
-            "keys": {
-              "cl": {
-                "type": "number|null",
-                "help": "Mittellinie"
-              },
-              "ucl": {
-                "type": "number|null",
-                "help": "obere Eingriffsgrenze"
-              },
-              "lcl": {
-                "type": "number|null",
-                "help": "untere Eingriffsgrenze"
-              },
-              "sigma": {
-                "type": "number|null",
-                "help": "Streuung der Punkte"
-              }
-            }
-          },
-          "excludedIndices": {
-            "type": "number[]",
-            "help": "ausgeschlossene Punkte"
-          }
-        }
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts for the current chart type",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "type": "{ chartTypeId: 'i-mr'|'xbar-r'|'xbar-s', subgroupSize: number, columnRef: { instanceId: string, sheetId?: string, columnId: string }|null, baselineEnd: number|null, primary: { cl: number|null, ucl: number|null, lcl: number|null, sigma: number|null }, secondary: { cl: number|null, ucl: number|null, lcl: number|null, sigma: number|null }, excludedIndices: number[] }|null",
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result (see `Result`); with stages the limits of the last stage (per point in points); null without a column or with fewer than 2 numbers",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -2677,12 +2587,43 @@ export const AGENT_REGISTRY = {
       },
       "points": {
         "type": "object[]",
-        "help": "one row per plotted point (subgroup for X̄ charts): per subchart id its value and limits (`i`, `iCl`, `iUcl`, `iLcl`, `mr`, …) and `signal`",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
         "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "charts"
+    ],
+    "settable": [
+      "chartTypeId",
+      "subgroupSize",
+      "columnRef",
+      "baselineCount",
+      "stagesText",
+      "usl",
+      "lsl",
+      "enabledRules"
+    ],
+    "invariants": [
+      "subgroupRange",
+      "chartKeys"
+    ]
   },
   "correlation": {
     "tagged": true,

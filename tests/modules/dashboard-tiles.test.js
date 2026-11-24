@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { mountTile, waitFor } from './tile-test-utils.js';
-import { MODULES as manifest } from '../../js/modules/catalog.generated.js';
+import { MODULES as manifest, CONVERTED } from '../../js/modules/catalog.generated.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/tile/tile.js';
 import charterTiles from '../../js/modules/project-charter/tile/tile.js';
@@ -79,6 +79,8 @@ function assertPlain(vm) {
 
 suite('dashboard tiles: manifest', () => {
   const withTile = manifest.filter(e => typeof e.loadTile === 'function');
+  /** Kacheldatei eines Moduls: `tile/tile.js` in der neuen Form, sonst `<id>.tile.js`. */
+  const tileFile = (id) => (CONVERTED.includes(id) ? `${id}/tile/tile.js` : `${id}/${id}.tile.js`);
 
   test('modules with a tile declare loadTile', async () => {
     const ids = withTile.map(e => e.id);
@@ -136,11 +138,13 @@ suite('dashboard tiles: manifest', () => {
   test('tile files do not import the module shell directly', async () => {
     const shell = /from\s+['"][^'"]*(template-module|alpine)[^'"]*['"]/i;
     const files = [
-      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${e.id}/${e.id}.tile.js`, import.meta.url) })),
+      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${tileFile(e.id)}`, import.meta.url) })),
       ...HOST_TILES.map(h => ({ name: h.id, url: new URL(`../../js/pages/dashboard/tiles/${h.id}.tile.js`, import.meta.url) })),
     ];
     for (const file of files) {
-      const src = await (await fetch(file.url)).text();
+      const res = await fetch(file.url);
+      assertTrue(res.ok, `${file.name}: tile file ${file.url.pathname}`);
+      const src = await res.text();
       assertTrue(!shell.test(src), `${file.name}.tile.js imports the module shell`);
     }
   });
@@ -148,11 +152,13 @@ suite('dashboard tiles: manifest', () => {
   test('tile files build no HTML imperatively (no h(), no createElement)', async () => {
     const usesH = /import\s*\{[^}]*\bh\b[^}]*\}\s*from\s*['"][^'"]*core\/dom\.js['"]/;
     const files = [
-      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${e.id}/${e.id}.tile.js`, import.meta.url) })),
+      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${tileFile(e.id)}`, import.meta.url) })),
       ...HOST_TILES.map(h => ({ name: h.id, url: new URL(`../../js/pages/dashboard/tiles/${h.id}.tile.js`, import.meta.url) })),
     ];
     for (const file of files) {
-      const src = await (await fetch(file.url)).text();
+      const res = await fetch(file.url);
+      assertTrue(res.ok, `${file.name}: tile file ${file.url.pathname}`);
+      const src = await res.text();
       assertTrue(!usesH.test(src), `${file.name}.tile.js imports h()`);
       assertTrue(!src.includes('createElement('), `${file.name}.tile.js calls createElement`);
     }

@@ -1,10 +1,13 @@
 {
-  "chartTypeId": "xbar-r",
-  "subgroupSize": 5,
+  "_schema": {
+    "version": "1.0"
+  },
+  "chartTypeId": "i-mr",
+  "subgroupSize": 1,
   "columnRef": {
     "instanceId": "__source__",
-    "sheetId": "sheet-xbar-r",
-    "columnId": "c-diameter"
+    "sheetId": "sheet-imr-shift",
+    "columnId": "c-value"
   },
   "baselineCount": null,
   "stagesText": "",
@@ -22,5 +25,5 @@
   ],
   "annotations": {},
   "frozenLimits": null,
-  "sourceWorksheetFile": "worksheets/spc-subgroups-stable.json"
+  "sourceWorksheetFile": "shared/worksheets/spc-imr-shift.json"
 }

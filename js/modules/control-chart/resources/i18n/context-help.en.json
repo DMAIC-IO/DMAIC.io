@@ -57,20 +57,23 @@
     "setChartType": {
       "help": "Switches the control chart type and keeps the subgroup size within the range of the new type: I-MR sets n = 1, X̄-R limits it to 2 to 10, X̄-S to 2 to 25. The selection in the interface works the same way. Frozen limits of a different type stay stored but only apply again with the old type.",
       "params": {
-        "chartTypeId": "The new type: i-mr, xbar-r or xbar-s. Any other value is an error."
+        "chartTypeId": "The new type: i-mr, xbar-r or xbar-s. Any other value is an error.",
+        "command": "The command as one object with chartTypeId."
       }
     },
     "toggleRule": {
       "help": "Checks or unchecks a Nelson rule; the list of checked rules stays free of duplicates and ascending.",
       "params": {
         "ruleId": "The rule, 1 to 8 (meaning given for the checked rules). Any other value is an error.",
-        "on": "true checks, false unchecks."
+        "on": "true checks, false unchecks.",
+        "command": "The command as one object with ruleId and on."
       }
     },
     "removeAnnotation": {
       "help": "Removes the annotation of a point together with its exclusion; an excluded point then enters the limits again. In the interface it is the delete button in the annotation dialog, with a confirmation.",
       "params": {
-        "index": "The point, counted from 0, that carries an annotation; a point without an annotation is an error."
+        "index": "The point, counted from 0, that carries an annotation; a point without an annotation is an error.",
+        "command": "The command as one object with index."
       }
     },
     "setAnnotation": {
@@ -78,13 +81,15 @@
       "params": {
         "index": "The point of the first subchart, counted from 0 (the subgroup for X̄ charts); it must exist in the current result.",
         "comment": "Comment / cause for the point, e.g. a tool break on shift 3; empty for none. The point is marked on the chart and the comment appears in the list of rule violations.",
-        "excluded": "Exclude point from limit computation: the point stays on the chart as a gray cross but no longer influences the center line, UCL and LCL; for I-MR the two moving ranges that involve it also drop out of MR̄. The analysis is then recomputed. Does not apply with multiple stages or when frozen limits are in effect. For X̄ charts the subgroup that contains the individual value with this number drops out, not the clicked subgroup."
+        "excluded": "Exclude point from limit computation: the point stays on the chart as a gray cross but no longer influences the center line, UCL and LCL; for I-MR the two moving ranges that involve it also drop out of MR̄. The analysis is then recomputed. Does not apply with multiple stages or when frozen limits are in effect. For X̄ charts the subgroup that contains the individual value with this number drops out, not the clicked subgroup.",
+        "command": "The command as one object with index, comment and excluded."
       }
     },
     "setPhase2": {
       "help": "Freezes the current limits of both subcharts for Phase II monitoring or thaws them again. While frozen, all points, including new ones, are judged against the fixed limits instead of recomputing them. Without a result and with stages freezing is rejected, with the interface's hint. Whether frozen limits apply afterwards is given by frozen in the result.",
       "params": {
-        "enabled": "true freezes, false thaws and computes live again."
+        "enabled": "true freezes, false thaws and computes live again.",
+        "command": "The command as one object with enabled."
       }
     }
   },

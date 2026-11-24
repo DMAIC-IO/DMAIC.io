@@ -58,7 +58,7 @@ export default createTile({
     }));
   },
 
-  /** @type {import('../../../core/template-tile.js').TileViewFn<Readonly<import('../domain/model.types.js').StateModel>, { lastN: number, showChart: boolean }>} */
+  /** @type {import('./settings.types.js').ControlChartTileViewFn} */
   view(ctx) {
     const lang = () => ctx.i18n.getLanguage();
     /** @param {any} scope @returns {any} die Rechnung der Kachel, wenn sie gelang, sonst null */

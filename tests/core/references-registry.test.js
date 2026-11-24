@@ -3,6 +3,7 @@ import { BOOKS, resolveReferences, MELZER_2019 } from '../../js/core/references-
 import { getModuleReferences, hasModuleReferences } from '../../js/core/references-registry.js';
 import { REFS } from '../../js/core/references-registry.generated.js';
 import attributeControlChartRefs from '../../js/modules/attribute-control-chart/resources/data/references.json' with { type: 'json' };
+import controlChartRefs from '../../js/modules/control-chart/resources/data/references.json' with { type: 'json' };
 import doePlannerRefs from '../../js/modules/doe-planner/resources/data/references.json' with { type: 'json' };
 import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/references.json' with { type: 'json' };
 import msaTyp2Refs from '../../js/modules/msa-typ2/resources/data/references.json' with { type: 'json' };
@@ -12,6 +13,7 @@ import processCapabilityRefs from '../../js/modules/process-capability/resources
 /** Umgestellte Module führen ihre Quellen in resources/data/references.json, nicht in REFS. */
 const JSON_REFS = {
   'attribute-control-chart': resolveReferences(attributeControlChartRefs.references ?? []),
+  'control-chart': resolveReferences(controlChartRefs.references ?? []),
   'doe-planner': resolveReferences(doePlannerRefs.references ?? []),
   'hypothesis-test': resolveReferences(hypothesisTestRefs.references ?? []),
   'msa-typ2': resolveReferences(msaTyp2Refs.references ?? []),

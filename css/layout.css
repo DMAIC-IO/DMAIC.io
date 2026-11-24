@@ -1707,15 +1707,6 @@ body.dev-area-open .dmaic-tiles {
 }
 
 /* SPC / Control Chart on dashboard */
-.dashboard-spc {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  height: 100%;
-  min-height: 0;
-  font-size: var(--font-size-sm, 13px);
-}
-
 .dashboard-spc__header {
   display: flex;
   align-items: center;
@@ -1730,17 +1721,6 @@ body.dev-area-open .dmaic-tiles {
   background: var(--color-bg-tertiary);
   padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 4px;
-}
-
-.dashboard-spc__col {
-  color: var(--color-text-secondary);
-}
-
-.dashboard-spc__plot {
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-bg-secondary);
-  overflow: hidden;
 }
 
 .dashboard-spc__stats {

@@ -334,19 +334,6 @@ export default [
 
   // ─── Control (DMAIC) / Verify (DMADV) ────────────────────────
   {
-    id: 'control-chart',
-    phase: 'control',
-    group: 'charts',
-    allowedPhases: ['control'],
-    load: () => import('./control-chart/control-chart.js'),
-    loadTile: () => import('./control-chart/control-chart.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
-      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
-      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
-    },
-  },
-  {
     id: 'lessons-learned',
     phase: 'control',
     allowedPhases: ['control'],

@@ -1,10 +1,13 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "chartTypeId": "i-mr",
   "subgroupSize": 1,
   "columnRef": {
     "instanceId": "__source__",
-    "sheetId": "sheet-imr-trend",
-    "columnId": "c-value"
+    "sheetId": "sheet-hubschrauber-confirmation",
+    "columnId": "c-flugzeit"
   },
   "baselineCount": null,
   "stagesText": "",
@@ -22,5 +25,5 @@
   ],
   "annotations": {},
   "frozenLimits": null,
-  "sourceWorksheetFile": "worksheets/spc-imr-trend.json"
+  "sourceWorksheetFile": "shared/worksheets/hubschrauber-flyer.json"
 }
