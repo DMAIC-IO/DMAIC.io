@@ -93,8 +93,61 @@ export const map = (key, value, opts) => {
   if (!ok) throw new Error('defineModel: map key must be text(), idOf(path) or number({ integer: true }); allowed: text, idOf, number({ integer: true })');
   return spec('map', { key, value }, opts);
 };
-/** Objekt mit fester Form. @param {Record<string, object>} shape @param {object} [opts] @returns {Readonly<object>} */
-export const object = (shape, opts) => spec('object', { shape: Object.freeze({ ...shape }) }, opts);
+/**
+ * Objekt mit fester Form. `variantKey`: Name eines `oneOf`-Schlüssels der
+ * Form; Schlüssel, die wie einer seiner Werte heißen, sind Varianten. Nur die
+ * Variante des gewählten Werts darf vorkommen, Variantenschlüssel müssen
+ * `optional` sein. Vorgabe: erster Wert und dessen Variante.
+ * @param {Record<string, object>} shape @param {{ variantKey?: string } & object} [opts] @returns {Readonly<object>}
+ */
+export const object = (shape, opts) => {
+  const vk = opts?.variantKey;
+  if (vk !== undefined) {
+    if (shape[vk]?.kind !== 'oneOf') throw new Error(`invalid object variantKey ${vk}; allowed: a key of the shape whose spec is oneOf`);
+    for (const v of shape[vk].values) {
+      if (Object.hasOwn(shape, v) && shape[v].optional !== true) {
+        throw new Error(`invalid object variant ${v} without optional; allowed: optional variants (only the variant of the chosen ${vk} is present)`);
+      }
+    }
+  }
+  return spec('object', { shape: Object.freeze({ ...shape }) }, opts);
+};
+
+/**
+ * Die Varianten eines `object` mit `variantKey`: Werte des `oneOf`, zu denen
+ * es einen gleichnamigen Schlüssel gibt.
+ * @param {any} s @returns {string[]}
+ */
+function variantsOf(s) {
+  const vk = s.variantKey;
+  return vk === undefined ? [] : s.shape[vk].values.filter((v) => Object.hasOwn(s.shape, v)).map(String);
+}
+
+/**
+ * Nur die Variante des gewählten Werts darf vorkommen (`out` ist schon geprüft).
+ * @param {any} s @param {string} name @param {Record<string, any>} out
+ * @throws {Error} bei einer fremden Variante
+ */
+function checkVariant(s, name, out) {
+  if (s.variantKey === undefined) return;
+  const chosen = String(out[s.variantKey]);
+  const own = Object.hasOwn(s.shape, chosen) ? chosen : 'no variant';
+  for (const v of variantsOf(s)) {
+    if (v !== chosen && Object.hasOwn(out, v)) requireForm(`${name} key`, v, false, `${own} (${s.variantKey} ${chosen})`);
+  }
+}
+
+/** Feldarten, die eine Erweiterung von `datasets` tragen darf (das Widget zeichnet genau diese). */
+const EXTENSION_KINDS = Object.freeze(['object', 'oneOf', 'number', 'columnRef']);
+
+/**
+ * Feldarten einer Erweiterung prüfen, rekursiv unter `object`.
+ * @param {any} s @param {string} path
+ */
+function checkExtensionKinds(s, path) {
+  if (!EXTENSION_KINDS.includes(s?.kind)) throw new Error(`invalid datasets extension kind ${s?.kind} at ${path}; allowed: ${EXTENSION_KINDS.join(', ')}`);
+  if (s.kind === 'object') for (const [k, v] of Object.entries(s.shape)) checkExtensionKinds(v, `${path}.${k}`);
+}
 
 /**
  * Kalenderdatum `JJJJ-MM-TT` (echtes Datum). `empty`: auch `''` (kein Datum).
@@ -148,18 +201,42 @@ export const columnRef = ({ types, minCount = 0, maxCount, ...opts } = {}) => {
  * dazu `required` (Zeile ohne diesen Slot ist unvollständig — bleibt aber
  * gültig) und `group` (Platzhalter „keine Gruppierung“, jeder Spaltentyp).
  * `colors`: CSS-Farben je Zeile. Geprüft wird nur die Form.
+ * `extension`: optional ein `object({ … })`, dessen Schlüssel flach neben den
+ * Slots in jeder Zeile stehen (Vorgabe je Schlüssel; zugelassen sind
+ * `object` auch mit `variantKey`, `oneOf`, `number`, `columnRef`).
  * @param {Record<string, object>} slots
- * @param {{ multi?: boolean, colors?: readonly string[]|null } & object} [opts]
+ * @param {{ multi?: boolean, colors?: readonly string[]|null, extension?: object } & object} [opts]
  * @returns {Readonly<object>}
  */
-export const datasets = (slots, { multi = false, colors = null, ...opts } = {}) => {
+export const datasets = (slots, { multi = false, colors = null, extension, ...opts } = {}) => {
   for (const [k, slot] of Object.entries(slots)) {
     if (slot?.nullable === false) throw new Error(`invalid datasets slot ${k} nullable:false; allowed: nullable slots (a new row starts with null in every slot)`);
   }
+  if (extension !== undefined) {
+    if (extension?.kind !== 'object') throw new Error('invalid datasets extension; allowed: object({ … })');
+    for (const [k, v] of Object.entries(extension.shape)) {
+      if (Object.hasOwn(slots, k)) throw new Error(`invalid datasets extension key ${k}; allowed: names other than the slots`);
+      if (v.optional === true) throw new Error(`invalid datasets extension key ${k} optional; allowed: required keys (every row carries every extension key)`);
+      checkExtensionKinds(v, k);
+    }
+  }
   return spec('datasets', {
     slots: Object.freeze({ ...slots }), multi, colors: colors ? Object.freeze([...colors]) : null,
+    ...(extension !== undefined ? { extension } : {}),
   }, opts);
 };
+
+/**
+ * Eine neue Zeile einer Datensatzliste: `null` in jedem Slot, die Vorgabe in
+ * jedem Erweiterungsschlüssel.
+ * @param {any} s datasets-Spec @param {ModelContext} [context] @returns {Record<string, any>}
+ */
+export function emptyDatasetRow(s, context = DEFAULT_CONTEXT) {
+  return {
+    ...Object.fromEntries(Object.keys(s.slots).map((k) => [k, null])),
+    ...Object.fromEntries(Object.entries(s.extension?.shape ?? {}).map(([k, v]) => [k, defaultOf(v, context, k)])),
+  };
+}
 
 /**
  * Bild als Daten-URL (`data:image/<art>;base64,…`). Trägt die Merkmale
@@ -522,15 +599,20 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root =
     case 'phase': return getPhaseIds(context.cycle)[0];
     case 'columnRef': case 'cell': case 'unchecked': return null;
     case 'table': return TableData.empty();
-    case 'datasets': return [Object.fromEntries(Object.keys(s.slots).map((k) => [k, null]))];
+    case 'datasets': return [emptyDatasetRow(s, context)];
     case 'number': case 'index': return 0;
     case 'boolean': return false;
     case 'oneOf': return s.values[0];
     case 'list': return [];
     case 'record': return Object.fromEntries(s.keys.map(k => [k, defaultOf(s.value, context, `${name}.${k}`, root)]));
     case 'map': return {};
-    case 'object': return Object.fromEntries(Object.entries(s.shape)
-      .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v, context, `${name}.${k}`, root)]));
+    case 'object': {
+      const out = Object.fromEntries(Object.entries(s.shape)
+        .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v, context, `${name}.${k}`, root)]));
+      const chosen = s.variantKey === undefined ? undefined : String(out[s.variantKey]);
+      if (chosen !== undefined && variantsOf(s).includes(chosen)) out[chosen] = defaultOf(s.shape[chosen], context, `${name}.${chosen}`, root);
+      return out;
+    }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
 }
@@ -635,6 +717,10 @@ export function checkValue(s, name, value, ctx = {}) {
       for (const k of Object.keys(value)) requireKnownId(`${name} key`, k, keys);
       requireKeys(name, value, keys.map(k => ({ name: k, optional: s.shape[k].optional === true })), 'key');
       const out = {};
+      if (s.variantKey !== undefined) {
+        checkValue(s.shape[s.variantKey], `${name}.${s.variantKey}`, value[s.variantKey], ctx);
+        checkVariant(s, name, value);
+      }
       for (const k of keys) if (Object.hasOwn(value, k)) out[k] = checkValue(s.shape[k], `${name}.${k}`, value[k], ctx);
       return out;
     }
@@ -674,15 +760,21 @@ export function checkValue(s, name, value, ctx = {}) {
     }
     case 'datasets': {
       const slotNames = Object.keys(s.slots);
+      const ext = s.extension?.shape ?? {};
+      const allowed = [...slotNames, ...Object.keys(ext)];
       requireForm(name, value, Array.isArray(value), 'a list of rows');
       requireForm(name, value, value.length >= 1, 'at least one row');
       if (!s.multi) requireForm(name, value, value.length === 1, 'exactly one row');
       return value.map((row, i) => {
         const at = `${name}[${i}]`;
-        requireForm(at, row, isPlainObject(row), `an object with keys ${slotNames.join(', ')}`);
-        for (const k of Object.keys(row)) requireKnownId(`${at} key`, k, slotNames);
-        return Object.fromEntries(slotNames.map((k) => [k,
+        requireForm(at, row, isPlainObject(row), `an object with keys ${allowed.join(', ')}`);
+        for (const k of Object.keys(row)) requireKnownId(`${at} key`, k, allowed);
+        const out = Object.fromEntries(slotNames.map((k) => [k,
           row[k] === null || row[k] === undefined ? null : checkValue(s.slots[k], `${at}.${k}`, row[k], ctx)]));
+        for (const [k, v] of Object.entries(ext)) {
+          out[k] = row[k] === undefined ? defaultOf(v, ctx.context, `${at}.${k}`) : checkValue(v, `${at}.${k}`, row[k], ctx);
+        }
+        return out;
       });
     }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
@@ -754,6 +846,10 @@ function repairValue(s, name, value, ctx, dropped) {
       if (!isPlainObject(value)) return checkValue(s, name, value, ctx);
       for (const k of Object.keys(value)) requireKnownId(`${name} key`, k, keys);
       requireKeys(name, value, keys.map(k => ({ name: k, optional: s.shape[k].optional === true })), 'key');
+      if (s.variantKey !== undefined) {
+        checkValue(s.shape[s.variantKey], `${name}.${s.variantKey}`, value[s.variantKey], ctx);
+        checkVariant(s, name, value);
+      }
       const out = {};
       for (const k of keys) if (Object.hasOwn(value, k)) out[k] = repairValue(s.shape[k], `${name}.${k}`, value[k], ctx, dropped);
       return out;
@@ -838,17 +934,41 @@ export function describeType(s, tableName = 'table') {
     case 'list': { const item = describeType(s.item, tableName); t = item.includes('|') ? `Array<${item}>` : `${item}[]`; break; }
     case 'record': t = `Record<${s.keys.map(literal).join('|')}, ${describeType(s.value, tableName)}>`; break;
     case 'map': t = `Record<string, ${describeType(s.value, tableName)}>`; break;
-    case 'object': t = `{ ${Object.entries(s.shape)
-      .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v, tableName)}`).join(', ')} }`; break;
+    case 'object': t = s.variantKey === undefined ? describeShape(Object.entries(s.shape), tableName) : describeVariants(s, tableName); break;
     case 'table': t = tableName; break;
     case 'cell': t = 'number|string|boolean|null'; break;
     case 'unchecked': t = s.type ?? 'any'; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
-    case 'datasets': t = `Array<{ ${Object.entries(s.slots)
+    case 'datasets': t = `Array<{ ${[...Object.entries(s.slots), ...Object.entries(s.extension?.shape ?? {})]
       .map(([k, v]) => `${k}: ${describeType(v, tableName)}`).join(', ')} }>`; break;
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
   return s.nullable ? `${t}|null` : t;
+}
+
+/**
+ * Eine feste Form als Objekttyp (`{ a: …, b?: … }`).
+ * @param {[string, any][]} entries @param {string} tableName @returns {string}
+ */
+function describeShape(entries, tableName) {
+  return `{ ${entries.map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v, tableName)}`).join(', ')} }`;
+}
+
+/**
+ * Ein `object` mit `variantKey` als Union: je Wert die festen Schlüssel, der
+ * Wert als Literal und, falls vorhanden, seine Variante.
+ * @param {any} s @param {string} tableName @returns {string}
+ */
+function describeVariants(s, tableName) {
+  const vk = s.variantKey;
+  const variants = variantsOf(s);
+  const fixed = Object.entries(s.shape).filter(([k]) => k !== vk && !variants.includes(k));
+  return s.shape[vk].values.map((v) => {
+    /** @type {[string, any][]} */
+    const own = variants.includes(String(v)) ? [[String(v), s.shape[v]]] : [];
+    const rest = describeShape([...fixed, ...own], tableName);
+    return rest === '{  }' ? `{ ${vk}: ${literal(v)} }` : `{ ${vk}: ${literal(v)}, ${rest.slice(2)}`;
+  }).join('|');
 }
 
 /**
@@ -869,7 +989,10 @@ export function rewriteColumnRefs(Model, data, from, to) {
     switch (s.kind) {
       case 'columnRef': return isPlainObject(v) && v.instanceId === from ? { ...v, instanceId: to } : v;
       case 'datasets': return Array.isArray(v) ? v.map((row) => (isPlainObject(row)
-        ? Object.fromEntries(Object.entries(row).map(([k, r]) => [k, s.slots[k] ? walk(s.slots[k], r) : r])) : row)) : v;
+        ? Object.fromEntries(Object.entries(row).map(([k, r]) => {
+          const sub = s.slots[k] ?? s.extension?.shape?.[k];
+          return [k, sub ? walk(sub, r) : r];
+        })) : row)) : v;
       case 'list': return Array.isArray(v) ? v.map((x) => walk(s.item, x)) : v;
       case 'record': return isPlainObject(v)
         ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(s.value, x)])) : v;

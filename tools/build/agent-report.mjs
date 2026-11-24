@@ -141,8 +141,9 @@ export function typedefHelpSuffixes(entry) {
     // Wie `describeKeys` (agent-catalog.js): `keysHelp` (Schema-Kommandos)
     // nennt den Hilfepfad ausdrücklich, sonst `types.<Typedef>`.
     const prefix = node.keysHelp ?? `types.${node.keysOf}`;
+    const suffix = node.keysHelpSuffix ? `.${node.keysHelpSuffix}` : '';
     for (const [key, child] of Object.entries(node.keys)) {
-      out.add(`${prefix}.${key}`);
+      out.add(`${prefix}.${key}${suffix}`);
       walk(child);
     }
   };

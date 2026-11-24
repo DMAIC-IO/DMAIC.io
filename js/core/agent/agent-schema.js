@@ -41,6 +41,44 @@ const slotTokens = (slot) => [...ruleTokens(slot),
   ...(slot.required ? ['required'] : []), ...(slot.group ? ['group'] : [])];
 
 /**
+ * Regeln eines Erweiterungsschlüssels von `datasets`, rekursiv unter
+ * `object`: je Blatt mit Regeln ein Eintrag `<pfad>: <regel>, <regel>`, ein
+ * `object` mit `variantKey` nennt ihn (`variantKey:mode`).
+ * @param {any} spec @param {string} [path] @returns {string[]}
+ */
+function extensionTokens(spec, path = '') {
+  if (spec.kind !== 'object') {
+    const rules = ruleTokens(spec);
+    return rules.length > 0 ? [`${path}: ${rules.join(', ')}`] : [];
+  }
+  return [
+    ...(spec.variantKey !== undefined ? [`${path ? `${path}: ` : ''}variantKey:${spec.variantKey}`] : []),
+    ...Object.entries(spec.shape).flatMap(([k, v]) => extensionTokens(v, path ? `${path}.${k}` : k)),
+  ];
+}
+
+/**
+ * Schlüsselbaum der Erweiterung von `datasets` für `describe`: je Schlüssel
+ * Typ und Satz unter `<prefix>.<schlüssel>.help` (`keysHelpSuffix`),
+ * verschachtelt unter `object`.
+ * @param {Record<string, any>} shape @param {string} prefix Hilfepfad relativ zu `modules.<id>.`
+ * @returns {{ keysOf: string, keysHelp: string, keysHelpSuffix: string, keys: Record<string, object> }}
+ */
+function extensionKeys(shape, prefix) {
+  const keys = {};
+  for (const [k, v] of Object.entries(shape)) {
+    keys[k] = {
+      type: describeType(v),
+      help: '',
+      ...(v.optional === true ? { optional: true } : {}),
+      ...(v.kind === 'columnRef' ? { rules: ruleTokens(v) } : {}),
+      ...(v.kind === 'object' ? extensionKeys(v.shape, `${prefix}.${k}`) : {}),
+    };
+  }
+  return { keysOf: prefix, keysHelp: prefix, keysHelpSuffix: 'help', keys };
+}
+
+/**
  * Die Auslassungspfade eines Feldes, relativ zu seinem Wert: wo `read()` nur
  * `{ $omitted: true, bytes }` liefert. Gefragt wird allein das Merkmal
  * `omitOnRead`, nie die Feldart. `list` → `[]`, `object`/`record` →
@@ -188,6 +226,11 @@ export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {
       ...(omit.length > 0 ? { omit } : {}),
       ...(spec.kind === 'datasets'
         ? { slots: Object.fromEntries(Object.entries(spec.slots).map(([k, v]) => [k, slotTokens(v)])) } : {}),
+      ...(spec.kind === 'datasets' && spec.extension
+        ? {
+          extension: Object.fromEntries(Object.entries(spec.extension.shape).map(([k, v]) => [k, extensionTokens(v)])),
+          ...extensionKeys(spec.extension.shape, `fields.${name}`),
+        } : {}),
     };
   }
   const derived = Object.keys(schema.derived ?? {});

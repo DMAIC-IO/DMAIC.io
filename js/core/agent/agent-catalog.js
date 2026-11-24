@@ -253,6 +253,9 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // Spaltenslots einer Datensatzliste: je Slot die Regeln (`types:numeric`, `required`, …).
       ...(field.slots && typeof field.slots === 'object'
         ? { slots: Object.fromEntries(Object.entries(field.slots).map(([k, v]) => [k, [...v]])) } : {}),
+      // Erweiterungsschlüssel einer Datensatzliste: je Schlüssel die Regeln seiner Blätter.
+      ...(field.extension && typeof field.extension === 'object'
+        ? { extension: Object.fromEntries(Object.entries(field.extension).map(([k, v]) => [k, [...v]])) } : {}),
       // Nur an einem Feld vom Typ einer Typedef (`{Result|null} result`):
       // je Kennzahl Typ und Satz, verschachtelt.
       ...describeKeys(i18n, moduleId, field, cycle),
@@ -322,7 +325,7 @@ function expandRules(rules, cycle) {
  *
  * @param {object} i18n
  * @param {string} moduleId
- * @param {{ keysOf?: string, keysHelp?: string, keys?: Record<string, object> }} node
+ * @param {{ keysOf?: string, keysHelp?: string, keysHelpSuffix?: string, keys?: Record<string, object> }} node
  * @param {string} cycle  Id des aktiven Zyklus (für die Phasenregel)
  * @returns {{ keys: object[] }}
  */
@@ -331,11 +334,13 @@ function describeKeys(i18n, moduleId, node, cycle) {
   // `keysHelp` (Schema-Kommandos, agent-schema.js) nennt den Hilfepfad der
   // Schlüssel ausdrücklich — `actions.<name>.params` statt `types.<Typedef>`.
   const prefix = node.keysHelp ?? `types.${node.keysOf}`;
+  // `keysHelpSuffix` (Erweiterung von `datasets`): der Satz steht unter `<prefix>.<key>.<suffix>`.
+  const suffix = node.keysHelpSuffix ? `.${node.keysHelpSuffix}` : '';
   return {
     keys: Object.entries(node.keys).map(([key, k]) => ({
       name: key,
       type: k.type,
-      help: contextHelp(i18n, moduleId, `${prefix}.${key}`, k.help),
+      help: contextHelp(i18n, moduleId, `${prefix}.${key}${suffix}`, k.help),
       // Immer da, wie `keys`: die Vertragsform nennt es an jedem Schlüssel.
       optional: k.optional === true,
       ...(Array.isArray(k.rules) ? { rules: expandRules(k.rules, cycle) } : {}),
