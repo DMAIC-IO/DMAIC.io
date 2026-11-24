@@ -15,7 +15,7 @@ import { applyEdits } from '../../../core/chart-edits.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
 import { buildSeries, statsInput, sourceColumns } from './series.js';
 import { from0, from10 } from './migrations.js';
-import { ErrorBarsSpec, NUMBER_TYPES } from './error-bars.js';
+import { ERROR_BARS_SHAPE } from './error-bars.js';
 
 /**
  * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
@@ -53,6 +53,9 @@ import { ErrorBarsSpec, NUMBER_TYPES } from './error-bars.js';
 
 const opt = { optional: true };
 
+/** Spaltentypen mit reinen Zahlen: Prozent und Währung sind ebenfalls Zahlen. */
+const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
+
 export const State = defineModel({
   version: '1.1',
   migrations: { '0→1.1': from0, '1.0→1.1': from10 },
@@ -62,7 +65,7 @@ export const State = defineModel({
       y: columnRef({ types: NUMBER_TYPES, minCount: 1, required: true }),
       group: columnRef({ group: true }),
       size: columnRef({ types: NUMBER_TYPES, minCount: 1 }),
-    }, { multi: true, colors: CHART_COLORS, extension: object({ errorBars: ErrorBarsSpec }) }),
+    }, { multi: true, colors: CHART_COLORS, extension: object({ errorBars: object(ERROR_BARS_SHAPE, { variantKey: 'mode' }) }) }),
   },
   view: {
     showLines: boolean({ default: false }),
@@ -104,7 +107,7 @@ export const State = defineModel({
     }),
     /** Die Fehlerbalken einer Reihe ersetzen (ganze Spezifikation; ein Moduswechsel leert). */
     setErrorBars: command({
-      params: { index: index('datasets', { existing: true }), spec: ErrorBarsSpec },
+      params: { index: index('datasets', { existing: true }), spec: object(ERROR_BARS_SHAPE, { variantKey: 'mode' }) },
       run({ index: at, spec }) {
         this.datasets = this.datasets.map((d, i) => (i === at ? { ...d, errorBars: spec } : d));
       },

@@ -138,7 +138,7 @@ async function mount(model, { sheet = SHEET(), chartEdits = {} } = {}) {
 }
 
 /** Zeile der Datensätze mit X/Y-Spalte. */
-const row = (x, y) => ({ x: x === null ? null : ref(x), y: y === null ? null : ref(y), group: null, size: null });
+const row = (x, y, errorBars = { mode: 'none' }) => ({ x: x === null ? null : ref(x), y: y === null ? null : ref(y), group: null, size: null, errorBars });
 
 suite('xy-plot: Viewmodel im Browser', () => {
   test('zwei numerische Spalten: eine Reihe, X-Spaltenname an der Achse, Verbindungslinie im Editor', async () => {
@@ -185,6 +185,39 @@ suite('xy-plot: Viewmodel im Browser', () => {
     assertDeepEqual(JSON.parse(JSON.stringify(vm.model.datasets[0].y)), ref(1));
     assertEqual(vm.hasSeries, false);
     assertEqual(vm.stats, null);
+  });
+
+  test('Fehlerbalken: die Reihe trägt errorBars im Getter scatter', async () => {
+    const h = await mount(stored({ datasets: [row(0, 1, { mode: 'columns', columns: { yPlus: ref(2) } })] }));
+    const eb = h.vm().scatter.series[0].errorBars;
+    assertEqual(eb.yMode, 'relative');
+    assertDeepEqual([...eb.yPlus], [9, 8, 7, 6]);
+    assertEqual(h.shown().series[0].errorBars.yMode, 'relative');
+  });
+
+  test('referenzierte Fehlerspalte gelöscht: Bezug bleibt, kein Balken in diese Richtung, Punkte bleiben', async () => {
+    const sheet = SHEET();
+    sheet.sheets[0].state.columns.splice(2, 1);
+    const h = await mount(stored({ datasets: [row(0, 1, { mode: 'columns', columns: { yPlus: ref(2), yMinus: ref(1) } })] }), { sheet });
+    const vm = h.vm();
+    assertDeepEqual(JSON.parse(JSON.stringify(vm.model.datasets[0].errorBars.columns.yPlus)), ref(2));
+    const s = vm.scatter.series[0];
+    assertEqual(s.x.length, 4);
+    assertTrue(s.errorBars.yPlus.every((v) => v === null));
+    assertDeepEqual([...s.errorBars.yMinus], [2, 4, 5, 8]);
+  });
+
+  test('eine Fehlerbalken-Änderung lässt legacySeries stehen, eine Slot-Änderung leert sie', async () => {
+    const h = await mount(stored({ legacySeries: [{ name: 'Alt' }] }));
+    const vm = h.vm();
+    vm.model.setErrorBars({ index: 0, spec: { mode: 'constant', constant: { yPlus: 1 } } });
+    await settle();
+    assertEqual(vm.model.legacySeries.length, 1);
+    assertEqual(vm.scatter.series[0].name, 'Alt');
+    assertDeepEqual([...vm.scatter.series[0].errorBars.yPlus], [1, 1, 1, 1]);
+    vm.model.datasets = [row(0, 2, { mode: 'constant', constant: { yPlus: 1 } })];
+    await settle();
+    assertEqual(vm.model.legacySeries.length, 0);
   });
 
   test('stats ist die Ableitung des Models', async () => {

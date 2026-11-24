@@ -12,17 +12,28 @@ import { object, oneOf, number, columnRef } from '../../../core/model.js';
 export const ERROR_BAR_KEYS = Object.freeze(['xPlus', 'xMinus', 'yPlus', 'yMinus']);
 
 /** Spaltentypen mit reinen Zahlen: Prozent und Währung sind ebenfalls Zahlen. */
-export const NUMBER_TYPES = Object.freeze(['numeric', 'currency', 'percent']);
+const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
 
-const amount = number({ nullable: true, optional: true });
-const column = columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true });
-
-/** Feldart der Fehlerbalken einer Reihe. */
-export const ErrorBarsSpec = object({
+/**
+ * Form der Fehlerbalken einer Reihe; im Schema `object(ERROR_BARS_SHAPE, { variantKey: 'mode' })`.
+ * Als Form (`<NAME>_SHAPE`) einer Geschwisterdatei darf `domain/model.js` sie
+ * im Schema nennen; darum als Literal ausgeschrieben.
+ */
+export const ERROR_BARS_SHAPE = {
   mode: oneOf(['none', 'constant', 'columns']),
-  constant: object(Object.fromEntries(ERROR_BAR_KEYS.map((k) => [k, amount])), { optional: true }),
-  columns: object(Object.fromEntries(ERROR_BAR_KEYS.map((k) => [k, column])), { optional: true }),
-}, { variantKey: 'mode' });
+  constant: object({
+    xPlus: number({ nullable: true, optional: true }),
+    xMinus: number({ nullable: true, optional: true }),
+    yPlus: number({ nullable: true, optional: true }),
+    yMinus: number({ nullable: true, optional: true }),
+  }, { optional: true }),
+  columns: object({
+    xPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    xMinus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    yPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    yMinus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+  }, { optional: true }),
+};
 
 /**
  * Ein Zellwert als Fehlerbetrag; leer oder nicht numerisch → `null`.

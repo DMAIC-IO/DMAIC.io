@@ -129,6 +129,27 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "xy-plot-hubschrauber-fehlerbalken",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Mittelwerte mit Streuung (XY-Plot, Fehlerbalken)",
+        "en": "Paper Helicopter — Means with Spread (XY Plot, Error Bars)"
+      },
+      "description": {
+        "de": "Mittlere Flugzeit der neun DoE-Einstellungen über den Klammern, je Rotorlänge eine Linie. Die Fehlerbalken kommen aus der Spalte mit der Standardabweichung der beiden Wiederholungen und zeigen, wie unsicher jeder Mittelwert ist — am größten bei 4 cm ohne Klammer.",
+        "en": "Mean flight time of the nine DoE settings over the clips, one line per rotor length. The error bars come from the column holding the standard deviation of the two replicates and show how uncertain each mean is — largest at 4 cm without a clip."
+      },
+      "source": "Qprovement synthetisch, Mittelwerte der DoE-Läufe aus xy-plot-hubschrauber-flyer",
+      "license": "public-domain",
+      "file": "projects/xy-plot-hubschrauber-fehlerbalken.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "error-bars"
+      ]
     }
   ]
 }

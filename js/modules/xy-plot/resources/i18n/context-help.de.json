@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "datasets": {
-      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben.",
+      "help": "Je Datenreihe ihre Spalten und ihre Fehlerbalken, jeder Schlüssel einer Reihe unter keys einzeln beschrieben. instance.set ersetzt die ganze Liste: eine Zeile ohne errorBars bekommt { mode: 'none' }. Wer nur Spalten ändern will, liest die Liste, ändert sie und schreibt sie samt errorBars zurück.",
       "x": {
         "label": "X",
         "title": "Die X-Spalte der Reihe (Slot X), numerisch und Pflicht",
@@ -22,6 +22,56 @@
         "label": "S",
         "title": "Die Spalte der Blasengröße (Slot S), numerisch und optional",
         "help": "Die Spalte der Blasengröße (Slot S), numerisch und optional; sie macht aus den Punkten Blasen, deren Durchmesser den Wert zeigt. Leer, solange keine gewählt ist."
+      },
+      "errorBars": {
+        "label": "Fehlerbalken",
+        "help": "Die Fehlerbalken der Reihe: der Modus und, je nach Modus, unter constant oder columns je Richtung ein Betrag oder eine Spalte. Ohne Angabe zeigt die Reihe keine Fehlerbalken.",
+        "mode": {
+          "help": "Wie die Fehler angegeben sind: 'none' (keine Balken), 'constant' (ein fester Betrag je Richtung) oder 'columns' (je Richtung eine Spalte mit einem Wert pro Punkt). Ein Wechsel des Modus leert alle vier Werte.",
+          "values": {
+            "none": "keine",
+            "constant": "konstant",
+            "columns": "Spalten"
+          }
+        },
+        "constant": {
+          "help": "Die festen Beträge je Richtung, nur im Modus 'constant'. Eine fehlende Richtung oder null heißt kein Balken in diese Richtung; ein negativer Betrag zählt als sein Betrag.",
+          "xPlus": {
+            "label": "+X",
+            "help": "Der Fehler nach rechts (+x): ein Betrag. Leer heißt kein Balken in diese Richtung."
+          },
+          "xMinus": {
+            "label": "−X",
+            "help": "Der Fehler nach links (−x): ein Betrag. Leer heißt kein Balken in diese Richtung."
+          },
+          "yPlus": {
+            "label": "+Y",
+            "help": "Der Fehler nach oben (+y): ein Betrag. Leer heißt kein Balken in diese Richtung."
+          },
+          "yMinus": {
+            "label": "−Y",
+            "help": "Der Fehler nach unten (−y): ein Betrag. Leer heißt kein Balken in diese Richtung."
+          }
+        },
+        "columns": {
+          "help": "Je Richtung eine numerische Spalte mit dem Fehler jedes Punkts, nur im Modus 'columns'. Eine fehlende Richtung heißt kein Balken; eine leere oder nicht numerische Zelle ebenso, der Punkt bleibt.",
+          "xPlus": {
+            "label": "+X",
+            "help": "Der Fehler nach rechts (+x): eine numerische Spalte mit einem Wert pro Punkt. Leer heißt kein Balken in diese Richtung."
+          },
+          "xMinus": {
+            "label": "−X",
+            "help": "Der Fehler nach links (−x): eine numerische Spalte mit einem Wert pro Punkt. Leer heißt kein Balken in diese Richtung."
+          },
+          "yPlus": {
+            "label": "+Y",
+            "help": "Der Fehler nach oben (+y): eine numerische Spalte mit einem Wert pro Punkt. Leer heißt kein Balken in diese Richtung."
+          },
+          "yMinus": {
+            "label": "−Y",
+            "help": "Der Fehler nach unten (−y): eine numerische Spalte mit einem Wert pro Punkt. Leer heißt kein Balken in diese Richtung."
+          }
+        }
       }
     },
     "stats": {
@@ -42,6 +92,14 @@
       "help": "Verwirft die Darstellungseinstellungen aus älteren gespeicherten Ständen. Läuft von selbst, wenn sich die Datenzeilen ändern.",
       "params": {
         "command": "Das Kommando als ein Objekt ohne Parameter."
+      }
+    },
+    "setErrorBars": {
+      "help": "Die Fehlerbalken einer Datenreihe festlegen: keine, konstante Beträge in +x, −x, +y und −y oder je Richtung eine Spalte mit dem Fehler jedes Punkts. Die ganze Angabe wird ersetzt: ein Wechsel des Modus leert alle vier Werte, nicht angegebene Richtungen bleiben ohne Balken.",
+      "params": {
+        "command": "Das Kommando als ein Objekt { index, spec }.",
+        "index": "Die Nummer der Datenreihe, 0-basiert, wie in read().datasets.",
+        "spec": "Die Fehlerbalken in derselben Form wie read().datasets[i].errorBars: { mode: 'none' }, { mode: 'constant', constant: { xPlus?, xMinus?, yPlus?, yMinus? } } mit Zahlen oder { mode: 'columns', columns: { … } } mit Spaltenbezügen { instanceId, sheetId, columnId }. Eine fehlende Richtung heißt kein Balken; nur die Variante des gewählten Modus ist erlaubt."
       }
     }
   }

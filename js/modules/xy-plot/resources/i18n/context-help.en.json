@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "datasets": {
-      "help": "Per data row its columns, each column of a row described individually under keys.",
+      "help": "Per data row its columns and its error bars, each key of a row described under keys. instance.set replaces the whole list: a row without errorBars gets { mode: 'none' }. To change columns only, read the list, change it and write it back including errorBars.",
       "x": {
         "label": "X",
         "title": "The X column of the row (slot X), numeric and required",
@@ -22,6 +22,56 @@
         "label": "S",
         "title": "The bubble size column (slot S), numeric and optional",
         "help": "The bubble size column (slot S), numeric and optional; it turns the points into bubbles whose diameter shows the value. Empty until one is chosen."
+      },
+      "errorBars": {
+        "label": "Error bars",
+        "help": "The error bars of the row: the mode and, depending on the mode, under constant or columns an amount or a column per direction. Without them the row shows no error bars.",
+        "mode": {
+          "help": "How the errors are given: 'none' (no bars), 'constant' (one fixed amount per direction) or 'columns' (one column per direction with a value per point). Changing the mode clears all four values.",
+          "values": {
+            "none": "none",
+            "constant": "constant",
+            "columns": "columns"
+          }
+        },
+        "constant": {
+          "help": "The fixed amounts per direction, only in mode 'constant'. A missing direction or null means no bar in that direction; a negative amount counts as its absolute value.",
+          "xPlus": {
+            "label": "+X",
+            "help": "The error to the right (+x): an amount. Empty means no bar in this direction."
+          },
+          "xMinus": {
+            "label": "−X",
+            "help": "The error to the left (−x): an amount. Empty means no bar in this direction."
+          },
+          "yPlus": {
+            "label": "+Y",
+            "help": "The error upwards (+y): an amount. Empty means no bar in this direction."
+          },
+          "yMinus": {
+            "label": "−Y",
+            "help": "The error downwards (−y): an amount. Empty means no bar in this direction."
+          }
+        },
+        "columns": {
+          "help": "One numeric column per direction holding the error of each point, only in mode 'columns'. A missing direction means no bar; so does an empty or non-numeric cell, the point stays.",
+          "xPlus": {
+            "label": "+X",
+            "help": "The error to the right (+x): a numeric column with a value per point. Empty means no bar in this direction."
+          },
+          "xMinus": {
+            "label": "−X",
+            "help": "The error to the left (−x): a numeric column with a value per point. Empty means no bar in this direction."
+          },
+          "yPlus": {
+            "label": "+Y",
+            "help": "The error upwards (+y): a numeric column with a value per point. Empty means no bar in this direction."
+          },
+          "yMinus": {
+            "label": "−Y",
+            "help": "The error downwards (−y): a numeric column with a value per point. Empty means no bar in this direction."
+          }
+        }
       }
     },
     "stats": {
@@ -42,6 +92,14 @@
       "help": "Discards the display settings from older saved states. Runs by itself when the data rows change.",
       "params": {
         "command": "The command as an object without parameters."
+      }
+    },
+    "setErrorBars": {
+      "help": "Set the error bars of one data row: none, constant amounts in +x, −x, +y and −y, or one column per direction holding the error of each point. The whole spec is replaced: changing the mode clears all four values, directions left out get no bar.",
+      "params": {
+        "command": "The command as one object { index, spec }.",
+        "index": "The number of the data row, 0-based, as in read().datasets.",
+        "spec": "The error bars in the same form as read().datasets[i].errorBars: { mode: 'none' }, { mode: 'constant', constant: { xPlus?, xMinus?, yPlus?, yMinus? } } with numbers or { mode: 'columns', columns: { … } } with column references { instanceId, sheetId, columnId }. A missing direction means no bar; only the variant of the chosen mode is allowed."
       }
     }
   }

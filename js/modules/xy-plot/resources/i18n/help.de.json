@@ -60,6 +60,34 @@
         }
       ]
     },
+    "errorBars": {
+      "title": "Fehlerbalken",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Jeder Datensatz kann eigene Fehlerbalken zeigen. Unter „Fehlerbalken“ in der Datensatz-Zeile wählen Sie den Modus; die Balken erscheinen in der Farbe der Reihe."
+        },
+        {
+          "type": "definition",
+          "term": "Konstant",
+          "content": "Vier feste Beträge: +x, −x, +y und −y. Jeder Punkt der Reihe erhält dieselben Balken — etwa die bekannte Messunsicherheit eines Messmittels."
+        },
+        {
+          "type": "definition",
+          "term": "Spalten",
+          "content": "Je Richtung eine Worksheet-Spalte mit einem Betrag pro Zeile — etwa die Standardabweichung oder die halbe Breite eines Konfidenzintervalls je Messpunkt."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Die Werte sind Abstände vom Punkt, keine Endpunkte. Ein negativer Wert wird als sein Betrag gelesen.",
+            "Ein leeres Feld oder eine leere bzw. nicht-numerische Zelle bedeutet: kein Balken in dieser Richtung. Der Punkt selbst bleibt immer sichtbar.",
+            "Für symmetrische Balken dieselbe Spalte (oder denselben Betrag) bei + und − eintragen.",
+            "Mit Gruppierung (G) trägt jede Gruppe die Fehler genau ihrer eigenen Zeilen; übersprungene Zeilen (ungültiges X, Y oder Größe) nehmen ihre Fehler mit."
+          ]
+        }
+      ]
+    },
     "methodology": {
       "title": "Bedienung",
       "blocks": [

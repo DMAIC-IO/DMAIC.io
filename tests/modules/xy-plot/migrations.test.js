@@ -126,3 +126,25 @@ suite('xy-plot: Migration der Fehlerbalken (1.9.x → 1.1)', () => {
     assertDeepEqual(m.datasets, [{ x: ref('a'), y: ref('b'), group: null, size: null, errorBars: NONE }]);
   });
 });
+
+suite('xy-plot: Beispiel mit Fehlerbalken (Altform aus origin)', () => {
+  // Byte-Fixture: das Beispielprojekt, wie es origin (1.9.x, Altform) ausliefert.
+  const load = async (path) => (await fetch(new URL(path, import.meta.url))).json();
+
+  test('xy-plot-hubschrauber-fehlerbalken (origin 1.9) lädt über 0→1.1 mit Spalten-Fehlerbalken', async () => {
+    const m = loadModel(State, await load('./fixtures/xy-plot-hubschrauber-fehlerbalken-1.9.json'));
+    const sd = { instanceId: '__source__', sheetId: 'sheet-hubschrauber-mittelwerte', columnId: 'c-stdabw' };
+    assertEqual(m.datasets.length, 1);
+    assertDeepEqual(m.datasets[0].errorBars, { mode: 'columns', columns: { yPlus: sd, yMinus: sd } });
+    assertEqual(m.datasets[0].group.columnId, 'c-rotorlaenge');
+    assertEqual(m.showLines, true);
+  });
+
+  test('das ausgelieferte Beispiel in der neuen Form ergibt denselben Stand', async () => {
+    const old = loadModel(State, await load('./fixtures/xy-plot-hubschrauber-fehlerbalken-1.9.json')).toJSON();
+    const now = loadModel(State, await load('../../../js/modules/xy-plot/resources/examples/projects/xy-plot-hubschrauber-fehlerbalken.json')).toJSON();
+    assertDeepEqual(now.datasets, old.datasets);
+    assertEqual(now.showLines, old.showLines);
+    assertEqual(now.showStats, old.showStats);
+  });
+});

@@ -22,7 +22,7 @@ export default createModule({
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     return {
-      /** @noagent Lebenszyklus: andere Datensätze verwerfen die Einstellungen alter Stände. */
+      /** @noagent Lebenszyklus: andere Spalten der Datensätze verwerfen die Einstellungen alter Stände. */
       init() {
         // Geleert wird nur, wenn sich die Datensätze allein ändern. Ändern sich beide
         // zugleich (Rückgängig, Wiederholen, Laden eines Stands), gehören die
@@ -30,8 +30,11 @@ export default createModule({
         // Das Leeren gehört zum Schritt der Änderung an den Datensätzen. Es läuft eine
         // Mikroaufgabe später: erst hält der Verlauf die Änderung selbst als Schritt fest,
         // dann faltet `amend` das Leeren in ihn hinein.
+        // Verglichen werden nur die Slots: eine Änderung allein an den Fehlerbalken
+        // behält die Reihen und damit ihre Einstellungen.
+        const slots = (/** @type {any[]} */ rows) => rows.map((d) => [d.x, d.y, d.group, d.size]);
         this.$watch(
-          () => [JSON.stringify(this.model.datasets), JSON.stringify(this.model.legacySeries)],
+          () => [JSON.stringify(slots(this.model.datasets)), JSON.stringify(this.model.legacySeries)],
           (now, before) => {
             if (now[0] === before[0] || now[1] !== before[1] || this.model.legacySeries.length === 0) return;
             queueMicrotask(() => {
