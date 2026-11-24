@@ -1,0 +1,85 @@
+/* ============================================================
+   Zeitgewichtete Regelkarten (resources/style.css)
+   BEM: .twc__ prefix
+   ============================================================ */
+
+/* ── Modulfarben (hell und dunkel gleich) ── */
+.twc {
+  --twc-success-rgb: 34 197 94;
+  --twc-error-rgb: 239 68 68;
+}
+
+[data-theme="dark"] .twc {
+  --twc-success-rgb: 34 197 94;
+  --twc-error-rgb: 239 68 68;
+}
+
+/* Hülle aus dem <template x-if> des Parameterblocks: `display: contents`
+   lässt Hinweis und Feldraster direkt in der Spalte der Eingabe stehen. */
+.twc__params { display: contents; }
+
+/* ── Diagrammabschnitte ── */
+
+.twc__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.twc__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.twc__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.twc__badge {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+
+.twc__badge--stable   { background: rgb(var(--twc-success-rgb) / 12%); color: var(--color-success); }
+.twc__badge--unstable { background: rgb(var(--twc-error-rgb) / 12%); color: var(--color-error); }
+
+.twc__plot-wrap {
+  height: 320px;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Wirt. */
+.twc__plot-wrap > .widget-root {
+  min-height: inherit;
+}
+
+/* ── Hinweis zu den Parametern ── */
+
+.twc__param-note {
+  background: var(--color-bg-tertiary);
+  border-left: 3px solid var(--color-info);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  border-radius: 2px;
+}
+
+.twc__error {
+  padding: var(--spacing-md);
+  background: rgb(var(--twc-error-rgb) / 8%);
+  border-left: 3px solid var(--color-error);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  border-radius: 2px;
+}

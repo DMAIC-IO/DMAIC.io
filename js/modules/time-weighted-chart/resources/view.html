@@ -1,0 +1,151 @@
+<div class="twc dmike-split" x-data="timeWeightedChart">
+  <!-- data-help-key="" an Picker-Wirt, Auswahlen und Zahlenfeldern ist gewollt: die Beschriftungen tragen die Anker fields.*. -->
+  <div class="twc__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.time-weighted-chart.fields.chartTypeId.help" x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" data-help-key="" x-field="model.chartTypeId">
+        <template x-for="o in chartTypeOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+      <span class="field-hint" x-text="typeHint"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.time-weighted-chart.fields.columnRef.help" x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap" data-help-key="" x-field="model.columnRef"></div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.time-weighted-chart.fields.baselineCount.help" x-text="t('baselineCount')"></label>
+      <input class="field field--num" data-ref="baseline-count" data-help-key="" :placeholder="t('baselineAll')" x-field="model.baselineCount">
+      <span class="field-hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionEstimation')"></div>
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.time-weighted-chart.fields.targetOverride.help" x-text="t('targetOverride')"></label>
+        <input class="field field--num" data-ref="target-override" data-help-key="" :placeholder="t('targetAuto')" x-field="model.targetOverride">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.time-weighted-chart.fields.sigmaOverride.help" x-text="t('sigmaOverride')"></label>
+        <input class="field field--num" data-ref="sigma-override" data-help-key="" :placeholder="t('sigmaAuto')" x-field="model.sigmaOverride">
+      </div>
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.time-weighted-chart.fields.sigmaMethod.help" x-text="t('sigmaMethod')"></label>
+      <select class="field" data-ref="sigma-method" data-help-key="" x-field="model.sigmaMethod">
+        <template x-for="o in sigmaMethodOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+      <span class="field-hint" x-text="t('sigmaMethodHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="sectionParamsLabel"></div>
+
+    <template x-if="shows('params.ewma.lambda')">
+      <div class="twc__params">
+        <div class="twc__param-note" x-text="t('paramNote_ewma')"></div>
+        <div class="field-grid field-grid--2">
+          <div class="field-group">
+            <label data-help-key="modules.time-weighted-chart.fields.params.ewma.lambda.help" x-text="t('lambda')"></label>
+            <input class="field field--num" data-ref="lambda" data-help-key="" x-field="model.params.ewma.lambda">
+          </div>
+          <div class="field-group">
+            <label data-help-key="modules.time-weighted-chart.fields.params.ewma.L.help" x-text="t('L')"></label>
+            <input class="field field--num" data-ref="L" data-help-key="" x-field="model.params.ewma.L">
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="shows('params.cusum.kSigma')">
+      <div class="twc__params">
+        <div class="twc__param-note" x-text="t('paramNote_cusum')"></div>
+        <div class="field-grid field-grid--2">
+          <div class="field-group">
+            <label data-help-key="modules.time-weighted-chart.fields.params.cusum.kSigma.help" x-text="t('kSigma')"></label>
+            <input class="field field--num" data-ref="kSigma" data-help-key="" x-field="model.params.cusum.kSigma">
+          </div>
+          <div class="field-group">
+            <label data-help-key="modules.time-weighted-chart.fields.params.cusum.hSigma.help" x-text="t('hSigma')"></label>
+            <input class="field field--num" data-ref="hSigma" data-help-key="" x-field="model.params.cusum.hSigma">
+          </div>
+        </div>
+      </div>
+    </template>
+
+  </div>
+
+  <div class="twc__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="kpiIs('ewma')">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.targetText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.time-weighted-chart.types.Result.target" x-text="t('statTarget')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.sigmaHatText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.sigmaSteadyText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.time-weighted-chart.types.Result.sigmaSteady" x-text="t('statSigmaSteady')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.lambdaText"></div>
+          </div>
+          <div class="dmike-kpi" :class="kpi.signalsClass">
+            <div class="dmike-kpi-value" x-text="kpi.signals"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.time-weighted-chart.types.Result.signals" x-text="t('statSignals')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.ofText"></div>
+          </div>
+        </div>
+      </template>
+      <template x-if="kpiIs('cusum')">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.targetText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.time-weighted-chart.types.Result.target" x-text="t('statTarget')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.sigmaHatText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="kpi.hText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.time-weighted-chart.types.Result.h" x-text="t('statHLimit')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.kText"></div>
+          </div>
+          <div class="dmike-kpi" :class="kpi.signalsClass">
+            <div class="dmike-kpi-value" x-text="kpi.signals"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.time-weighted-chart.types.Result.signalsHigh" x-text="t('statSignals')"></div>
+            <div class="dmike-kpi-sub" x-text="kpi.ofText"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="error-area">
+      <template x-if="errorText">
+        <div class="twc__error" x-text="errorText"></div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, key) in chartViews" :key="key">
+        <div class="twc__chart-section">
+          <div class="twc__chart-header">
+            <span class="twc__chart-title" x-text="cv.title"></span>
+            <span class="twc__badge" :class="cv.badge.cls">
+              <template x-if="cv.badge.stable">
+                <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true"></span>
+              </template>
+              <template x-if="cv.badge.unstable">
+                <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true"></span>
+              </template>
+              <span x-text="cv.badge.text"></span>
+            </span>
+          </div>
+          <div class="twc__plot-wrap" :data-chart-host="key" x-widget="control-chart" x-widget-config="cv.config" x-widget-value="model.charts[key]" x-widget-legacy-edit-key="cv.legacyEditKey"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
