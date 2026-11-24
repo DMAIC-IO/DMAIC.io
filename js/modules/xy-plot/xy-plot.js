@@ -54,12 +54,15 @@ import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js'
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
+/** Column types that hold plain numbers: percent and currency are stored as numbers too. */
+const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
+
 /** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
 const DATASET_SLOTS = [
-  { key: 'x', types: ['numeric'], minCount: 1, required: true },
-  { key: 'y', types: ['numeric'], minCount: 1, required: true },
+  { key: 'x', types: NUMBER_TYPES, minCount: 1, required: true },
+  { key: 'y', types: NUMBER_TYPES, minCount: 1, required: true },
   { key: 'group', group: true },
-  { key: 'size', types: ['numeric'], minCount: 1 },
+  { key: 'size', types: NUMBER_TYPES, minCount: 1 },
 ];
 
 /** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
