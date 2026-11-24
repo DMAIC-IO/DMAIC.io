@@ -7,6 +7,19 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
+/* ── Modulfarben (hell und dunkel gleich) ── */
+.distfit {
+  --distfit-discrete: #a855f7;
+  --distfit-discrete-rgb: 168 85 247;
+  --distfit-moderate-rgb: 251 191 36;
+}
+
+[data-theme="dark"] .distfit {
+  --distfit-discrete: #a855f7;
+  --distfit-discrete-rgb: 168 85 247;
+  --distfit-moderate-rgb: 251 191 36;
+}
+
 /* Data Type Toggle: use global .btn-group + .btn--segment */
 .distfit__toggle-row .btn--segment {
   font-family: var(--font-family-mono);
@@ -82,7 +95,7 @@
 }
 
 .distfit__tag--cont { background: rgb(var(--color-accent-rgb, 59, 130, 246), 0.15); color: var(--color-accent); }
-.distfit__tag--disc { background: rgb(168 85 247 / 15%); color: #a855f7; }
+.distfit__tag--disc { background: rgb(var(--distfit-discrete-rgb) / 15%); color: var(--distfit-discrete); }
 .distfit__tag--best { background: rgb(var(--color-success-rgb, 52, 211, 153), 0.15); color: var(--color-success); font-weight: 600; }
 
 .distfit__p-cell { font-weight: 600; }
@@ -122,7 +135,7 @@
 }
 
 .distfit__interpret--good { background: rgb(var(--color-success-rgb, 52, 211, 153), 0.08); color: var(--color-success); border: 1px solid rgb(var(--color-success-rgb, 52, 211, 153), 0.15); }
-.distfit__interpret--moderate { background: rgb(251 191 36 / 8%); color: var(--color-warning, #fbbf24); border: 1px solid rgb(251 191 36 / 15%); }
+.distfit__interpret--moderate { background: rgb(var(--distfit-moderate-rgb) / 8%); color: var(--color-warning, #fbbf24); border: 1px solid rgb(var(--distfit-moderate-rgb) / 15%); }
 .distfit__interpret--poor { background: rgb(var(--color-error-rgb, 239, 68, 68), 0.08); color: var(--color-error); border: 1px solid rgb(var(--color-error-rgb, 239, 68, 68), 0.15); }
 
 /* ── Distribution Detail Tiles ── */
@@ -260,7 +273,7 @@
 }
 
 .distfit__ndd-pill--pass { background: rgb(var(--color-success-rgb, 52, 211, 153), 0.15); color: var(--color-success); }
-.distfit__ndd-pill--warn { background: rgb(251 191 36 / 15%); color: var(--color-warning, #fbbf24); }
+.distfit__ndd-pill--warn { background: rgb(var(--distfit-moderate-rgb) / 15%); color: var(--color-warning, #fbbf24); }
 .distfit__ndd-pill--fail { background: rgb(var(--color-error-rgb, 239, 68, 68), 0.15); color: var(--color-error); }
 
 .distfit__ndd-desc {
@@ -292,7 +305,7 @@
 }
 
 .distfit__ndd-consensus--good { background: rgb(var(--color-success-rgb, 52, 211, 153), 0.06); border-color: rgb(var(--color-success-rgb, 52, 211, 153), 0.2); }
-.distfit__ndd-consensus--moderate { background: rgb(251 191 36 / 6%); border-color: rgb(251 191 36 / 20%); }
+.distfit__ndd-consensus--moderate { background: rgb(var(--distfit-moderate-rgb) / 6%); border-color: rgb(var(--distfit-moderate-rgb) / 20%); }
 .distfit__ndd-consensus--poor { background: rgb(var(--color-error-rgb, 239, 68, 68), 0.06); border-color: rgb(var(--color-error-rgb, 239, 68, 68), 0.2); }
 
 .distfit__ndd-consensus h5 {
