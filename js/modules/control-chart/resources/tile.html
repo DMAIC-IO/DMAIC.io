@@ -1,0 +1,55 @@
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="empty"></p>
+</template>
+<template x-if="!empty">
+  <div class="dashboard-spc">
+    <div class="dashboard-spc__header">
+      <span class="dashboard-spc__type" data-help-key="modules.control-chart.fields.chartTypeId.help" x-text="typeLabel"></span>
+      <span class="dashboard-spc__col" x-text="colName"></span>
+    </div>
+    <template x-if="chart">
+      <div class="dashboard-area__plot dashboard-spc__plot" x-widget="control-chart" x-widget-config="chart"></div>
+    </template>
+    <div class="dashboard-spc__stats">
+      <div class="dashboard-spc__stat">
+        <span class="dashboard-spc__stat-label" data-help-key="modules.control-chart.types.SubchartLimits.cl" x-text="statCL.label"></span>
+        <span class="dashboard-spc__stat-value" x-text="statCL.value"></span>
+      </div>
+      <div class="dashboard-spc__stat">
+        <span class="dashboard-spc__stat-label" data-help-key="modules.control-chart.types.SubchartLimits.ucl" x-text="statUCL.label"></span>
+        <span class="dashboard-spc__stat-value" x-text="statUCL.value"></span>
+      </div>
+      <div class="dashboard-spc__stat">
+        <span class="dashboard-spc__stat-label" data-help-key="modules.control-chart.types.SubchartLimits.lcl" x-text="statLCL.label"></span>
+        <span class="dashboard-spc__stat-value" x-text="statLCL.value"></span>
+      </div>
+      <div class="dashboard-spc__stat">
+        <span class="dashboard-spc__stat-label" data-help-key="modules.control-chart.types.SubchartLimits.sigma" x-text="statSigma.label"></span>
+        <span class="dashboard-spc__stat-value" x-text="statSigma.value"></span>
+      </div>
+    </div>
+    <div class="dashboard-spc__metrics">
+      <div class="dashboard-spc__metric" :class="violations.modifier">
+        <span class="dashboard-spc__metric-value" x-text="violations.value"></span>
+        <span class="dashboard-spc__metric-label" data-help-key="modules.control-chart.types.Result.signals" x-text="violations.label"></span>
+        <span class="dashboard-spc__metric-sub" x-text="violations.sub"></span>
+      </div>
+      <template x-if="outOfSpec">
+        <div class="dashboard-spc__metric" :class="outOfSpec.modifier">
+          <span class="dashboard-spc__metric-value" x-text="outOfSpec.value"></span>
+          <span class="dashboard-spc__metric-label" data-help-key="modules.control-chart.tile.outOfSpec.help" x-text="outOfSpec.label"></span>
+          <span class="dashboard-spc__metric-sub" x-text="outOfSpec.sub"></span>
+        </div>
+      </template>
+      <template x-if="cpk">
+        <div class="dashboard-spc__metric" :class="cpk.modifier">
+          <span class="dashboard-spc__metric-value" x-text="cpk.value"></span>
+          <span class="dashboard-spc__metric-label" data-help-key="modules.control-chart.types.Capability.cpk" x-text="cpk.label"></span>
+          <template x-if="cpk.sub">
+            <span class="dashboard-spc__metric-sub" x-text="cpk.sub"></span>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>

@@ -63,5 +63,14 @@
   "invariants": {
     "subgroupRange": "Die Untergruppengröße muss zum Kartentyp passen: 1 bei I-MR, 2 bis 10 bei X̄-R, 2 bis 25 bei X̄-S.",
     "chartKeys": "Einstellungen gibt es nur für die Teilkarten I, MR, X̄, R und S."
+  },
+  "tile": {
+    "typeLabel_i-mr": "I-MR",
+    "typeLabel_xbar-r": "X̄-R",
+    "typeLabel_xbar-s": "X̄-S",
+    "statCL": "CL",
+    "statUCL": "UCL",
+    "statLCL": "LCL",
+    "statSigma": "σ̂"
   }
 }

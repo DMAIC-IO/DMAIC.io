@@ -6033,6 +6033,11 @@
       "statOf": "of {total} data points",
       "violationsTitle": "Rule Violations ({count})",
       "noViolations": "No rule violations — process is stable.",
+      "tile": {
+        "outOfSpec": {
+          "help": "Number of points on the individuals or means chart that lie above the upper or below the lower specification limit, counted over all points. Shown only when at least one specification limit is set."
+        }
+      },
       "whenToUse": "Monitor a process over time with Shewhart limits: I-MR for single values, X̄-R or X̄-S for subgroups, with Nelson rules, stages, annotations and frozen Phase II limits.",
       "actions": {
         "read": { "help": "Read all inputs, the limits per subchart, capability, rule violations and per point the values and limits." },

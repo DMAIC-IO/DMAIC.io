@@ -63,5 +63,14 @@
   "invariants": {
     "subgroupRange": "The subgroup size must fit the chart type: 1 for I-MR, 2 to 10 for X̄-R, 2 to 25 for X̄-S.",
     "chartKeys": "Settings exist only for the subcharts I, MR, X̄, R and S."
+  },
+  "tile": {
+    "typeLabel_i-mr": "I-MR",
+    "typeLabel_xbar-r": "X̄-R",
+    "typeLabel_xbar-s": "X̄-S",
+    "statCL": "CL",
+    "statUCL": "UCL",
+    "statLCL": "LCL",
+    "statSigma": "σ̂"
   }
 }

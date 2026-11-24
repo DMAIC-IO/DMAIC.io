@@ -6037,6 +6037,11 @@
       "statOf": "von {total} Datenpunkten",
       "violationsTitle": "Regelverletzungen ({count})",
       "noViolations": "Keine Regelverletzungen — Prozess ist stabil.",
+      "tile": {
+        "outOfSpec": {
+          "help": "Zahl der Punkte der Einzelwert- bzw. Mittelwertkarte, die über der oberen oder unter der unteren Spezifikationsgrenze liegen, gezählt über alle Punkte. Erscheint nur, wenn mindestens eine Spezifikationsgrenze gesetzt ist."
+        }
+      },
       "whenToUse": "Einen Prozess über die Zeit mit Shewhart-Grenzen überwachen: I-MR für Einzelwerte, X̄-R oder X̄-S für Untergruppen, mit Nelson-Regeln, Stufen, Anmerkungen und eingefrorenen Grenzen für Phase II.",
       "actions": {
         "read": { "help": "Alle Eingaben, die Grenzen je Teilkarte, die Fähigkeit, Regelverletzungen und je Punkt Werte und Grenzen lesen." },

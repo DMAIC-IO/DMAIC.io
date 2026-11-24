@@ -13,4 +13,5 @@ export default {
   },
   uses: ['worksheet'],
   load: () => import('./viewmodel/viewmodel.js'),
+  tile: () => import('./tile/tile.js'),
 };
