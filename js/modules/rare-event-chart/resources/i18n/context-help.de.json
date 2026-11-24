@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "chartTypeId": {
+      "help": "Der Kartentyp, Beschriftung Kartentyp: g-Karte für die Zahl der Gelegenheiten (zum Beispiel Tage oder Fälle) zwischen seltenen Ereignissen, t-Karte für die Zeit zwischen Ereignissen (nur Werte größer als 0 zählen). Die Wahl bestimmt Mittellinie, Grenzen und Skala der Karte. Vorbelegt ist die g-Karte; die gewählte Spalte bleibt bei einem Wechsel erhalten. Ein anderer Wert wird abgelehnt. Eine Änderung rechnet neu."
+    },
+    "columnRef": {
+      "help": "Die Spalte mit den Abständen zwischen den Ereignissen in zeitlicher Reihenfolge, Beschriftung Werte-Spalte: bei der g-Karte Anzahlen (Zählwerte ab 0), bei der t-Karte Zeiten (Werte größer als 0). Verwertet werden nur Zahlen; leere Zellen und Text, auch Text wie „2,5“, werden übersprungen. Gerechnet wird ab 2 verwertbaren Werten, bei der t-Karte ab 2 Werten größer als 0; Werte bis 0 bleiben dort als Lücke stehen. Mit weniger Werten oder bei einer gelöschten Spalte bleibt die Ausgabe leer. Leer, solange keine gewählt ist; ohne Spalte gibt es keine Karte, ein leerer Wert hebt die Wahl auf. Eine Änderung der Spalte oder ihrer Werte rechnet neu."
+    },
+    "chart": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor: Titel, Achsentitel, Schriftgrößen, Hintergrund, Bezugslinien, Punktfarbe, -symbol, -größe und -rand der Reihe. Ohne Änderung leer; andere Schlüssel werden abgelehnt."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispielblatts, aus dem dieses Modul geladen wurde; leer, wenn es nicht aus einem Beispiel stammt."
+    },
+    "analysis": {
+      "help": "Die Rechnung zum Stand von Kartentyp und Spalte: die Werte der Engine (g-Karte: Mittellinie ḡ, σ und Grenzen; t-Karte: die transformierten Werte mit Grenzen auf beiden Skalen) und die Zahl der verwerteten Werte, oder der Grund errCompute, wenn die Rechnung scheitert oder nicht endliche Werte liefert. Leer ohne Spalte, bei einer gelöschten Spalte und mit weniger als 2 verwertbaren Werten."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; leer ohne Spalte, bei einer gelöschten Spalte, mit weniger als 2 verwertbaren Werten (bei der t-Karte zählen nur Werte größer als 0) oder wenn die Rechnung scheitert (die Oberfläche zeigt dann „Berechnung fehlgeschlagen.“)."
+    },
+    "points": {
+      "help": "Je gezeichnetem Platz eine Zeile in Datenfolge mit dem Wert auf der gezeichneten Skala und der Angabe, ob er außerhalb der Grenzen liegt; an den Lücken der t-Karte ohne Wert. Leer ohne Ergebnis. read({ fields: ['points'] }) liefert sie vollständig."
+    },
+    "activeParams": {
+      "help": "Die Einstellungsfelder, die gerade wirksam beschrieben werden: chartTypeId."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die gerade wirksam beschrieben werden: columnRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "chartType": "Der gerechnete Kartentyp, g oder t, wie bei der Auswahl gesetzt.",
+      "n": "Anzahl der verwerteten Werte der Reihe; bei der t-Karte zählen nur Werte größer als 0. Ab 2 Werten gibt es ein Ergebnis. Die Unterzeile der Kachel Signale nennt diese Zahl als „von n Datenpunkten“.",
+      "cl": "Mittellinie (CL) auf der Originalskala. g-Karte: Mittelwert ḡ der Reihe. t-Karte: Mittelwert ȳ der transformierten Werte y = t^(1/3,6), zurücktransformiert (ȳ^3,6). Die Unterzeile der Kachel zeigt σ̂, bei der t-Karte auf der transformierten Skala. Leer, wenn der Wert nicht endlich ist.",
+      "ucl": "Obere Eingriffsgrenze (UCL) auf der Originalskala. g-Karte: ḡ + 3σ mit σ = √(ḡ(ḡ + 1)). t-Karte: ȳ + 3σ mit σ = MR̄/1,128 auf der transformierten Skala, zurücktransformiert (y^3,6). Ein Punkt darüber ist eine ungewöhnlich lange Strecke ohne Ereignis. Die Unterzeile der Kachel zeigt die untere Eingriffsgrenze (LCL). Leer, wenn der Wert nicht endlich ist.",
+      "lcl": "Untere Eingriffsgrenze (LCL) auf der Originalskala. g-Karte: max(0, ḡ − 3σ), das ist immer 0; die g-Karte kann deshalb keine Häufung kurzer Abstände melden. t-Karte: ȳ − 3σ, bei 0 gekappt und zurücktransformiert (y^3,6). Die Kachel zeigt sie als Unterzeile neben UCL. Leer, wenn der Wert nicht endlich ist.",
+      "sigma": "Streuung σ der Karte. g-Karte: √(ḡ(ḡ + 1)). t-Karte: MR̄/1,128, die mittlere gleitende Spannweite der transformierten Werte geteilt durch 1,128, also auf der transformierten Skala und nicht auf der Skala von Mittellinie und Grenzen. Die Kachel zeigt sie als σ̂ unter der Mittellinie. Leer, wenn der Wert nicht endlich ist.",
+      "transformed": "Wahr bei der t-Karte: sie wird auf der transformierten Skala y = t^(1/3,6) gezeichnet. Falsch bei der g-Karte.",
+      "plotted": "Mittellinie, Grenzen und σ auf der gezeichneten Skala. Bei der g-Karte stehen dieselben Werte wie oben, bei der t-Karte die transformierten.",
+      "signals": "Positionen (ab 0) der Punkte, die strikt über der oberen oder unter der unteren Grenze der gezeichneten Skala liegen, gezählt unter den Zahlen der Spalte (leere und nicht numerische Zellen ausgelassen, nicht die Zeilen des Arbeitsblatts); bei der t-Karte zählen Werte bis 0 als Lücke mit. Die Kachel zählt diese Punkte, ihre Unterzeile nennt die Zahl der Datenpunkte. Bei der g-Karte liegt die untere Grenze bei 0, Signale gibt es dort nur nach oben."
+    },
+    "PlottedLimits": {
+      "cl": "Mittellinie auf der gezeichneten Skala.",
+      "ucl": "Obere Eingriffsgrenze auf der gezeichneten Skala.",
+      "lcl": "Untere Eingriffsgrenze auf der gezeichneten Skala; bei der g-Karte immer 0.",
+      "sigma": "Streuung auf der gezeichneten Skala; bei der t-Karte dieselbe transformierte Streuung wie oben."
+    },
+    "Point": {
+      "value": "Der Wert auf der gezeichneten Skala: bei der g-Karte der Zählwert, bei der t-Karte y = t^(1/3,6). Leer an den Lücken der t-Karte (Werte bis 0).",
+      "signal": "Wahr, wenn der Wert strikt außerhalb der Grenzen der gezeichneten Skala liegt."
+    }
+  }
+}

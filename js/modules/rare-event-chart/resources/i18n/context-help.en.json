@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "chartTypeId": {
+      "help": "The chart type, label Chart Type: g chart for the number of opportunities (for example days or cases) between rare events, t chart for the time between events (only values greater than 0 count). The choice determines center line, limits and scale of the chart. The g chart is preset; the chosen column stays when switching. Any other value is rejected. A change recomputes."
+    },
+    "columnRef": {
+      "help": "The column with the gaps between events in time order, label Values Column: for the g chart counts (whole numbers from 0), for the t chart times (values greater than 0). Only numbers are used; empty cells and text, including text such as “2,5”, are skipped. The analysis runs from 2 usable values, for the t chart from 2 values greater than 0; values up to 0 remain there as gaps. With fewer values or with a deleted column the output stays empty. Empty while none is chosen; without a column there is no chart, an empty value clears the choice. A change of the column or its values recomputes."
+    },
+    "chart": {
+      "help": "The settings from the chart editor: title, axis titles, font sizes, background, reference lines, point color, symbol, size and border of the series. Empty without changes; other keys are rejected."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was loaded from; empty if it does not come from an example."
+    },
+    "analysis": {
+      "help": "The computation for the current chart type and column: the engine values (g chart: center line ḡ, σ and limits; t chart: the transformed values with limits on both scales) and the number of values used, or the reason errCompute if the computation fails or yields non-finite values. Empty without a column, with a deleted column and with fewer than 2 usable values."
+    },
+    "result": {
+      "help": "The computed result, each figure described individually under keys; empty without a column, with a deleted column, with fewer than 2 usable values (the t chart counts only values greater than 0) or if the computation fails (the interface then shows “Computation failed.”)."
+    },
+    "points": {
+      "help": "One row per plotted position in data order with the value on the plotted scale and whether it lies outside the limits; without a value at the gaps of the t chart. Empty without a result. read({ fields: ['points'] }) returns them in full."
+    },
+    "activeParams": {
+      "help": "The setting fields that currently take effect when written: chartTypeId."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields that currently take effect when written: columnRef."
+    }
+  },
+  "types": {
+    "Result": {
+      "chartType": "The computed chart type, g or t, as set in the selection.",
+      "n": "Number of values used from the series; the t chart counts only values greater than 0. A result exists from 2 values. The sub-line of the Signals tile names this number as “of n data points”.",
+      "cl": "Center line (CL) on the original scale. g chart: mean ḡ of the series. t chart: mean ȳ of the transformed values y = t^(1/3.6), transformed back (ȳ^3.6). The tile sub-line shows σ̂, for the t chart on the transformed scale. Empty if the value is not finite.",
+      "ucl": "Upper control limit (UCL) on the original scale. g chart: ḡ + 3σ with σ = √(ḡ(ḡ + 1)). t chart: ȳ + 3σ with σ = MR̄/1.128 on the transformed scale, transformed back (y^3.6). A point above it is an unusually long stretch without an event. The tile sub-line shows the lower control limit (LCL). Empty if the value is not finite.",
+      "lcl": "Lower control limit (LCL) on the original scale. g chart: max(0, ḡ − 3σ), which is always 0; the g chart therefore cannot report a cluster of short gaps. t chart: ȳ − 3σ, capped at 0 and transformed back (y^3.6). The tile shows it as the sub-line next to UCL. Empty if the value is not finite.",
+      "sigma": "Spread σ of the chart. g chart: √(ḡ(ḡ + 1)). t chart: MR̄/1.128, the mean moving range of the transformed values divided by 1.128, so on the transformed scale and not on the scale of center line and limits. The tile shows it as σ̂ below the center line. Empty if the value is not finite.",
+      "transformed": "True for the t chart: it is drawn on the transformed scale y = t^(1/3.6). False for the g chart.",
+      "plotted": "Center line, limits and σ on the plotted scale. For the g chart these are the same values as above, for the t chart the transformed ones.",
+      "signals": "Positions (from 0) of the points strictly above the upper or below the lower limit of the plotted scale, counted among the numbers of the column (empty and non-numeric cells left out, not the worksheet rows); with the t chart, values up to 0 count as a gap. The tile counts these points; its sub-line names the number of data points. On the g chart the lower limit is 0, so signals occur only upward."
+    },
+    "PlottedLimits": {
+      "cl": "Center line on the plotted scale.",
+      "ucl": "Upper control limit on the plotted scale.",
+      "lcl": "Lower control limit on the plotted scale; always 0 for the g chart.",
+      "sigma": "Spread on the plotted scale; for the t chart the same transformed spread as above."
+    },
+    "Point": {
+      "value": "The value on the plotted scale: for the g chart the count, for the t chart y = t^(1/3.6). Empty at the gaps of the t chart (values up to 0).",
+      "signal": "True if the value lies strictly outside the limits of the plotted scale."
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Control Charts for Rare Events",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "For rare events (accidents, tool breaks, low-rate defects) Shewhart {{term:regelkarte|control charts}} and attribute charts such as the {{term:c-chart|c chart}} are of little use: they show zeros for days and then one isolated spike that looks like an outlier. The g and t charts instead evaluate the gaps between events and take their distribution into account."
+        },
+        {
+          "type": "definition",
+          "term": "g chart (opportunities between events)",
+          "content": "Shows the number of units or days between two consecutive events, i.e. whole numbers from 0 (geometric distribution). {{term:regelgrenze|Control limits}} per Benneyan: CL = ḡ, UCL = ḡ + 3·√(ḡ·(ḡ+1)), LCL = ḡ − 3·√(ḡ·(ḡ+1)), capped at 0. Because 3·√(ḡ·(ḡ+1)) is never smaller than ḡ, the LCL of the g chart is always 0."
+        },
+        {
+          "type": "definition",
+          "term": "t chart (time between events)",
+          "content": "Shows the time between events (continuous, exponentially distributed). The times are transformed for the analysis: y = t^(1/3.6) (Nelson 1994); values up to 0 remain as gaps. On y the limits of an individuals chart apply, ȳ ± 3·MR̄/1.128, with the LCL capped at 0. The chart plots y; the figures show center line and limits back-transformed (y^3.6) on the original scale."
+        },
+        {
+          "type": "paragraph",
+          "content": "A point above the UCL is an unusually long “quiet” stretch: events have become rarer, perhaps through an improvement whose cause is worth knowing. A cluster, i.e. conspicuously short gaps and thus a deterioration, shows downward. The g chart cannot report it, because its LCL is always 0 and no gap lies below it. The t chart often has an LCL above 0 on the transformed scale and can then report a cluster as a point below the LCL. The module marks only points outside the limits; it does not check run or trend rules."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Wrong data type",
+          "content": "The g chart needs counts between events; the t chart needs actual time durations greater than 0. Mixing them up yields nonsense limits."
+        },
+        {
+          "type": "definition",
+          "term": "Too few events",
+          "content": "The module computes from as few as two values, but the limits are not reliable then: with fewer than about 20 observations ḡ fluctuates strongly. The classic SPC rule of 25–30 points applies here too."
+        },
+        {
+          "type": "definition",
+          "term": "Clusters on the g chart",
+          "content": "A cluster of events produces no point outside the limits on the g chart (LCL always 0). A run of short gaps is left to looking at the plot. If the gaps are actual time durations, the t chart can report a cluster as a point below the LCL."
+        },
+        {
+          "type": "definition",
+          "term": "Limits from all values",
+          "content": "Center line and limits are estimated from the whole series. If the rate changes within the series, the values after the change pull center line and limits along; the change then often produces no signal, even when it is visible in the plot."
+        },
+        {
+          "type": "definition",
+          "term": "Non-stationary rate",
+          "content": "Both charts assume the event rate is constant. With a clearly increasing rate (e.g. due to tool wear) split the data at the change and run a separate chart per segment, each segment in its own column."
+        }
+      ]
+    }
+  }
+}

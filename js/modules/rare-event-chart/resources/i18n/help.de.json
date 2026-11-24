@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Regelkarten für seltene Ereignisse",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Bei seltenen Ereignissen (Unfälle, Werkzeugbrüche, Defekte mit niedriger Rate) taugen Shewhart-{{term:regelkarte|Regelkarten}} und attributive Karten wie die {{term:c-chart|c-Karte}} kaum: Sie zeigen tagelang Nullen und dann einen einzelnen Ausschlag, der wie ein Ausreißer aussieht. Die g- und die t-Karte werten stattdessen die Abstände zwischen den Ereignissen aus und berücksichtigen deren Verteilung."
+        },
+        {
+          "type": "definition",
+          "term": "g-Karte (Gelegenheiten zwischen Ereignissen)",
+          "content": "Zeigt die Anzahl der Einheiten oder Tage zwischen zwei aufeinanderfolgenden Ereignissen, also ganze Zahlen ab 0 (geometrische Verteilung). {{term:regelgrenze|Eingriffsgrenzen}} nach Benneyan: CL = ḡ, UCL = ḡ + 3·√(ḡ·(ḡ+1)), LCL = ḡ − 3·√(ḡ·(ḡ+1)), bei 0 gekappt. Weil 3·√(ḡ·(ḡ+1)) nie kleiner als ḡ ist, liegt die LCL der g-Karte immer bei 0."
+        },
+        {
+          "type": "definition",
+          "term": "t-Karte (Zeit zwischen Ereignissen)",
+          "content": "Zeigt die Zeitspanne zwischen Ereignissen (stetig, exponentialverteilt). Die Zeiten werden zur Auswertung transformiert: y = t^(1/3,6) (Nelson 1994); Werte bis 0 bleiben als Lücke stehen. Auf y gelten die Grenzen einer Einzelwertkarte, ȳ ± 3·MR̄/1,128, die LCL bei 0 gekappt. Die Karte zeichnet y, die Kennzahlen zeigen Mittellinie und Grenzen rücktransformiert (y^3,6) auf der Originalskala."
+        },
+        {
+          "type": "paragraph",
+          "content": "Ein Punkt über der UCL ist eine außergewöhnlich lange „ruhige“ Strecke: Ereignisse sind seltener geworden, vielleicht durch eine Verbesserung, deren Ursache sich lohnt zu kennen. Eine Häufung, also auffällig kurze Abstände und damit eine Verschlechterung, zeigt sich nach unten. Die g-Karte kann sie nicht melden, weil ihre LCL immer 0 ist und kein Abstand darunter liegt. Die t-Karte hat auf der transformierten Skala oft eine LCL über 0 und kann eine Häufung dann als Punkt unter der LCL melden. Das Modul markiert nur Punkte außerhalb der Grenzen; Lauf- und Trendregeln prüft es nicht."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Falsche Datenart",
+          "content": "Die g-Karte braucht Zählwerte zwischen Ereignissen, die t-Karte echte Zeitdauern größer als 0. Bei Verwechslung sind die Grenzen unsinnig."
+        },
+        {
+          "type": "definition",
+          "term": "Zu wenige Ereignisse",
+          "content": "Das Modul rechnet schon ab zwei Werten, belastbar sind die Grenzen damit aber nicht: Mit weniger als etwa 20 Beobachtungen schwankt ḡ stark. Die klassische SPC-Faustregel von 25–30 Punkten gilt auch hier."
+        },
+        {
+          "type": "definition",
+          "term": "Häufungen auf der g-Karte",
+          "content": "Eine Häufung von Ereignissen ergibt auf der g-Karte keinen Punkt außerhalb der Grenzen (LCL immer 0). Eine Folge kurzer Abstände bleibt dem Blick auf den Verlauf überlassen. Sind die Abstände echte Zeitdauern, kann die t-Karte eine Häufung als Punkt unter der LCL melden."
+        },
+        {
+          "type": "definition",
+          "term": "Grenzen aus allen Werten",
+          "content": "Mittellinie und Grenzen werden aus der ganzen Reihe geschätzt. Ändert sich die Rate innerhalb der Reihe, ziehen die Werte nach der Änderung Mittellinie und Grenzen mit; die Änderung erzeugt dann oft kein Signal, auch wenn sie im Verlauf sichtbar ist."
+        },
+        {
+          "type": "definition",
+          "term": "Nicht-stationäre Rate",
+          "content": "Beide Karten setzen voraus, dass die Ereignisrate konstant ist. Bei klar wachsender Rate (z. B. durch Werkzeugverschleiß) die Daten an der Änderung teilen und je Abschnitt eine eigene Karte rechnen, jeden Abschnitt in einer eigenen Spalte."
+        }
+      ]
+    }
+  }
+}
