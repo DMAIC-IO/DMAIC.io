@@ -3964,6 +3964,7 @@ export const AGENT_REGISTRY = {
   "distribution-fit": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -3978,90 +3979,27 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'dataType'",
-            "optional": false,
-            "help": "welcher Parameter"
-          },
-          {
-            "name": "value",
-            "type": "'auto'|'continuous'|'discrete'",
-            "optional": false,
-            "help": "der Wert; Bedeutung je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Den Datentyp setzen; die Analyse läuft danach neu.",
-        "keysOf": "Params",
-        "keys": {
-          "dataType": {
-            "type": "'auto'|'continuous'|'discrete'",
-            "help": "Datentyp"
-          }
-        }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen; die Analyse läuft danach neu."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet mit der gewählten Spalte. Ohne Spalte bleibt result null und errorMsg leer; mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund."
       }
     },
     "fields": {
       "columnRef": {
-        "type": "object|null",
-        "help": "the chosen data column, `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:1"
+        ]
       },
       "dataType": {
         "type": "'auto'|'continuous'|'discrete'",
-        "help": "how the data is treated",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "the ranking of the fitted distributions with key figures, or null",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -4230,13 +4168,29 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "the reason no result exists (too few values, zero variance), or an empty string",
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chart"
+    ],
+    "settable": [
+      "columnRef",
+      "dataType"
+    ],
+    "invariants": []
   },
   "dmaic-calendar": {
     "tagged": true,

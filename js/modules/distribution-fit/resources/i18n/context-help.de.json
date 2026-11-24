@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "columnRef": {
-      "help": "Die Messwertspalte als { instanceId, sheetId, columnId }: eine numerische Spalte. Gerechnet wird mit mindestens 5 Zahlen; leere und nichtnumerische Zellen werden übersprungen, mit weniger Zahlen bleibt die Auswertung leer. Gesetzt über instance.set mit dem Spaltenbezug einer wählbaren Spalte (siehe describe); null hebt die Wahl auf. Eine Änderung rechnet neu."
+      "help": "Die Messwertspalte: eine numerische Spalte. Gerechnet wird mit mindestens 5 Zahlen; leere und nichtnumerische Zellen werden übersprungen, mit weniger Zahlen bleibt die Auswertung leer. Leer, solange keine gewählt ist; ein leerer Wert hebt die Wahl auf. Eine Änderung rechnet neu."
     },
     "dataType": {
       "help": "Wie die Spalte behandelt wird, Beschriftung Datentyp: Auto, Kontinuierlich oder Diskret, voreingestellt Auto. Kontinuierlich passt nur die stetigen Verteilungen an (Normal, Log-Normal, Weibull, Exponential, Gamma), Diskret nur Poisson und Binomial. Auto nimmt beide Familien, wenn alle Werte ganzzahlig sind, sonst nur die stetigen. Eine Änderung rechnet neu."

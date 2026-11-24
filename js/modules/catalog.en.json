@@ -30,6 +30,11 @@
     "description": "Read data from third-party formats (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) into a worksheet",
     "whenToUse": "When data from a third-party source is to be brought into a data collection; for an agent from CSV or JSON text, with profiles for common measuring-machine exports."
   },
+  "distribution-fit": {
+    "name": "Distribution Fit",
+    "description": "Fit data to multiple distributions and rank by Goodness-of-Fit test",
+    "whenToUse": "When it is unclear which distribution describes a measured characteristic: fits normal, lognormal, Weibull, exponential and further distributions to one numeric column and ranks them by goodness of fit; requires at least 5 values."
+  },
   "dmaic-calendar": {
     "name": "Calendar",
     "description": "Project calendar: appointments per phase in a month and a week view",

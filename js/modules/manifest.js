@@ -257,17 +257,6 @@ export default [
     },
   },
   {
-    id: 'distribution-fit',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./distribution-fit/distribution-fit.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
-  {
     id: 'fmea',
     phase: 'analyze',
     group: 'causes',

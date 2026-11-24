@@ -30,6 +30,11 @@
     "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",
     "whenToUse": "Wenn Daten aus einer Fremdquelle in eine Datensammlung übernommen werden sollen; für einen Agenten aus CSV- oder JSON-Text, mit Profilen für gängige Messmaschinen-Exporte."
   },
+  "distribution-fit": {
+    "name": "Verteilungstests",
+    "description": "Datensatz auf verschiedene Verteilungsfunktionen testen und nach Güte ranken",
+    "whenToUse": "Wenn unklar ist, welche Verteilung ein gemessenes Merkmal beschreibt: passt Normal-, Lognormal-, Weibull-, Exponential- und weitere Verteilungen an eine numerische Spalte an und reiht sie nach der Güte der Anpassung; braucht mindestens 5 Werte."
+  },
   "dmaic-calendar": {
     "name": "Kalender",
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",

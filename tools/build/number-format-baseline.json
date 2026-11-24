@@ -64,9 +64,6 @@
   "js/modules/data-transformation/data-transformation.js": {
     "count": 5
   },
-  "js/modules/distribution-fit/distribution-fit.js": {
-    "count": 1
-  },
   "js/modules/doe-planner/domain/analysis.js": {
     "count": 3,
     "reason": "Neue Faktorstufen beim Re-Zentrieren einer EVOP-Phase werden auf vier Nachkommastellen gerundet und als Text im Plan gespeichert (Modellwert, keine Anzeige), wie bisher"

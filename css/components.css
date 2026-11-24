@@ -1705,7 +1705,7 @@ select.input {
 }
 
 /* ── Hide Algorithm Lab link icons globally via settings toggle ── */
-body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
+body.hide-algo-lab-links .dmike-algo-link { display: none; }
 
 /* ============================================================
    Series Picker — shared multi-column selector

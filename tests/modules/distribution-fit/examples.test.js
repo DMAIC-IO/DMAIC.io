@@ -1,7 +1,6 @@
 /**
- * Verteilungstest: die vier geteilten Beispiele `distfit-*` in der neuen
- * Form (unter tests/fixtures/distribution-fit/, die geteilten Dateien unter
- * examples/projects/ ziehen beim Umschalten nach).
+ * Verteilungstest: die vier mit dem Histogramm geteilten Beispiele
+ * `distfit-*` (examples/projects/) in der neuen Form.
  *
  * Jedes lädt ohne Reparatur; das Ergebnis (`derived.result`) gleicht dem,
  * das die Altform (`read().result`) für dasselbe Beispiel lieferte: n,
@@ -15,15 +14,15 @@ import { State } from '../../../js/modules/distribution-fit/domain/model.js';
 import { normality } from '../../../js/modules/distribution-fit/viewmodel/present.js';
 import { storedSource } from '../../helpers/stored-source.js';
 
-const FIXTURES = '../../fixtures/distribution-fit/';
+const PROJECTS = '../../../examples/projects/';
 const SHARED = '../../../examples/';
 
-/** Ergebnis der Altform je Beispiel (`continuous`): n, Namen, beste, Konsens (Klasse, bestanden/gültig). */
+/** Ergebnis der Altform je Beispiel (`continuous`): Arbeitsblatt, Blatt, n, Namen, beste, Konsens (Klasse, bestanden/gültig). */
 const LEGACY = {
-  'distfit-normal': [80, ['Normal', 'Weibull', 'Gamma', 'Log-Normal', 'Exponential'], 'good', '4/4'],
-  'distfit-exponential': [80, ['Weibull', 'Gamma', 'Log-Normal', 'Exponential', 'Normal'], 'poor', '0/4'],
-  'distfit-weibull': [80, ['Normal', 'Weibull', 'Gamma', 'Log-Normal', 'Exponential'], 'poor', '1/4'],
-  'distfit-lognormal': [80, ['Log-Normal', 'Gamma', 'Weibull', 'Normal', 'Exponential'], 'poor', '0/4'],
+  'distfit-normal': ['worksheets/distribution-normal.json', 'sheet-dist-normal', 80, ['Normal', 'Weibull', 'Gamma', 'Log-Normal', 'Exponential'], 'good', '4/4'],
+  'distfit-exponential': ['worksheets/distribution-exponential.json', 'sheet-dist-exponential', 80, ['Weibull', 'Gamma', 'Log-Normal', 'Exponential', 'Normal'], 'poor', '0/4'],
+  'distfit-weibull': ['shared/worksheets/distribution-weibull.json', 'sheet-dist-weibull', 80, ['Normal', 'Weibull', 'Gamma', 'Log-Normal', 'Exponential'], 'poor', '1/4'],
+  'distfit-lognormal': ['shared/worksheets/distribution-lognormal.json', 'sheet-dist-lognormal', 80, ['Log-Normal', 'Gamma', 'Weibull', 'Normal', 'Exponential'], 'poor', '0/4'],
 };
 
 async function fetchJson(relPath) {
@@ -33,16 +32,15 @@ async function fetchJson(relPath) {
 }
 
 suite('distribution-fit: geteilte Beispiele in der neuen Form', () => {
-  for (const [id, [n, names, consensus, score]] of Object.entries(LEGACY)) {
+  for (const [id, [file, sheetId, n, names, consensus, score]] of Object.entries(LEGACY)) {
     test(`${id}: lädt ohne Reparatur, Ergebnis wie in der Altform`, async () => {
-      const { sourceWorksheetFile, ...data } = await fetchJson(`${FIXTURES}${id}.json`);
-      const old = await fetchJson(`${SHARED}projects/${id}.json`);
-      assertEqual(sourceWorksheetFile, old.sourceWorksheetFile, 'Arbeitsblatt wie in der geteilten Datei');
+      const { sourceWorksheetFile, ...data } = await fetchJson(`${PROJECTS}${id}.json`);
+      assertEqual(sourceWorksheetFile, file, 'Arbeitsblatt unverändert');
       assertEqual(data._schema?.version, '1.0');
       assertDeepEqual(Object.keys(data).sort(), ['_schema', 'columnRef', 'dataType']);
       const model = State.fromJSON(rewriteColumnRefs(State, data, '__source__', 'ws1'));
       assertEqual(model.columnRef.instanceId, 'ws1');
-      assertEqual(model.columnRef.sheetId, old.columnRef.sheetId);
+      assertEqual(model.columnRef.sheetId, sheetId);
       assertEqual(model.dataType, 'continuous');
       assertDeepEqual(JSON.parse(JSON.stringify(model.chart)), {});
       const ws = await fetchJson(`${SHARED}${sourceWorksheetFile}`);

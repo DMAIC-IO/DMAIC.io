@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "columnRef": {
-      "help": "The measurement column as { instanceId, sheetId, columnId }: a numeric column. The analysis needs at least 5 numbers; empty and non-numeric cells are skipped, with fewer numbers the analysis stays empty. Set through instance.set with the reference of a pickable column (see describe); null clears the choice. A change recomputes."
+      "help": "The measurement column: a numeric column. The analysis needs at least 5 numbers; empty and non-numeric cells are skipped, with fewer numbers the analysis stays empty. Empty until one is chosen; an empty value clears the choice. A change recomputes."
     },
     "dataType": {
       "help": "How the column is treated, label Data Type: Auto, Continuous or Discrete, default Auto. Continuous fits only the continuous distributions (Normal, Log-Normal, Weibull, Exponential, Gamma), Discrete only Poisson and Binomial. Auto takes both families when all values are integers, otherwise only the continuous ones. A change recomputes."
