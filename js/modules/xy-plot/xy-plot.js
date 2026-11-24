@@ -32,7 +32,7 @@ import { requireEnum, requireIndex, requireKnownId, requireNumber } from '../../
 import { keyToRef, refToKey } from '../../ui/column-picker.js';
 import Alpine from '@alpinejs/csp';
 import {
-  State, ERROR_BAR_MODES, ERROR_BAR_KEYS,
+  State, ERROR_BAR_MODES, ERROR_BAR_KEYS, ERROR_BAR_FIELD_ORDER,
   emptyErrorBars, errorBarsFromJSON, buildErrorBars,
 } from './xy-plot-model.js';
 import {
@@ -395,7 +395,7 @@ const mod = createModule({
           ? discoverColumns(module._context.stateManager, slotFilter(ySlot))
           : [];
         const fields = h('div', { class: 'xyplot__eb-fields' });
-        for (const key of ERROR_BAR_KEYS) {
+        for (const key of ERROR_BAR_FIELD_ORDER) {
           let input;
           if (eb.mode === 'constant') {
             input = h('input', {

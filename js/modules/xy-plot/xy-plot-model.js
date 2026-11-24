@@ -20,6 +20,9 @@ export const ERROR_BAR_MODES = ['none', 'constant', 'columns'];
 /** The four error directions, in display order. */
 export const ERROR_BAR_KEYS = ['xPlus', 'xMinus', 'yPlus', 'yMinus'];
 
+/** Order of the direction fields in the UI: the negative side left of the positive one. */
+export const ERROR_BAR_FIELD_ORDER = ['xMinus', 'xPlus', 'yMinus', 'yPlus'];
+
 /**
  * @typedef {object} ErrorBarsSpec
  * @property {'none'|'constant'|'columns'} mode
