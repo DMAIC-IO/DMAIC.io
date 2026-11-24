@@ -71,8 +71,10 @@
   border-radius: var(--border-radius);
 }
 
-/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
-   über sie hinweg vom Wirt. */
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm bekommt über sie die
+   Innenhöhe des Streifens als Mindesthöhe (280 px ohne dessen Rand). Mit
+   `inherit` wäre es 280 px hoch, ragte um den Rand über und `overflow: hidden`
+   schnitte den unteren Rand der Zeichenfläche ab. */
 .gage-run-chart__strip > .widget-root {
-  min-height: inherit;
+  min-height: calc(280px - 2 * var(--border-width));
 }
