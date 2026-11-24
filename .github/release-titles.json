@@ -130,5 +130,9 @@
   "1.9.3": {
     "de": "Feste Bezüge mit $ in Formeln, Legenden-Abschnitt im Diagramm-Editor",
     "en": "Absolute references with $ in formulas, legend section in the chart editor"
+  },
+  "1.9.4": {
+    "de": "Fehlerbalken aus Spalten als Abstände oder Endpunkte, mitscrollendes Datenblatt beim Ziehen",
+    "en": "Error bars from columns as distances or end points, worksheet scrolls along while dragging"
   }
 }
