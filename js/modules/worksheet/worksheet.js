@@ -435,6 +435,7 @@ class FormulaEditor {
           refRow([h('code', null, 'C2[5]'), ' ', h('code', null, `'${t('feRefExampleName')}'[5]`)], t('feRefCell')),
           refRow([h('code', null, 'C1:C3'), ' ', h('code', null, "'A':'C'")], t('feRefRange')),
           refRow([h('code', null, 'C1[2]:C3[5]'), ' ', h('code', null, "'A'[2]:'C'[5]")], t('feRefCellRange')),
+          refRow([h('code', null, '$C2[5]'), ' ', h('code', null, 'C2[$5]'), ' ', h('code', null, '$C2[$5]')], t('feRefAbsolute')),
         ),
         h('table', { class: 'formula-editor__ref-table formula-editor__ref-table--sep' },
           refRow([h('code', null, 'SUM(C1; C3)'), ' ', h('code', null, `IF(C1 > 10; "${t('feRefYes')}"; "${t('feRefNo')}")`)], t('feRefSep')),

@@ -1502,6 +1502,7 @@
       "feRefCell": "Einzelne Zelle",
       "feRefRange": "Spaltenbereich (alle Zeilen)",
       "feRefCellRange": "Rechteckiger Bereich",
+      "feRefAbsolute": "$ hält beim Ziehen der Formel die Spalte, die Zeile oder beides fest (wie in Excel)",
       "feRefExampleName": "Messwert",
       "feRefSep": "Argumente mit Semikolon trennen",
       "feRefYes": "ja",
