@@ -9,7 +9,7 @@
         "en": "Run-Chart with shift"
       },
       "description": {
-        "de": "I-MR-Datensatz: Beobachtungen 1–29 stabil bei μ=10, ab Beobachtung 30 Sprung auf μ=10,18. Westerm-Electric- / Nelson-Regeln markieren den Shift.",
+        "de": "I-MR-Datensatz: Beobachtungen 1–29 stabil bei μ=10, ab Beobachtung 30 Sprung auf μ=10,18. Western-Electric- / Nelson-Regeln markieren den Shift.",
         "en": "I-MR series: observations 1–29 stable at μ=10, from obs. 30 shift to μ=10.18. Western Electric / Nelson rules flag the shift."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=502",
