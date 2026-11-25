@@ -1,0 +1,340 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Widerspruchsmatrix (TRIZ)",
+  "description": "Erfinderische Prinzipien für technische Widersprüche nach Altschuller",
+  "whenToUse": "Wenn zwei verschiedene technische Parameter im Konflikt stehen — einen verbessern verschlechtert den anderen — und die Matrix die erprobten Lösungsprinzipien dazu nennen soll; nicht, wenn ein einzelner Parameter selbst zwei entgegengesetzte Werte haben müsste, dafür ist der physikalische Widerspruch da.",
+  "problemHeading": "Problembeschreibung",
+  "problemPlaceholder": "z. B. Die Tragstruktur soll fester werden — wird dabei aber zu schwer.",
+  "improvingParameter": "Zu verbessernder Parameter",
+  "worseningParameter": "Sich verschlechternder Parameter",
+  "selectPlaceholder": "— Parameter wählen —",
+  "swap": "Parameter tauschen",
+  "recommendedHeading": "Empfohlene erfinderische Prinzipien",
+  "hintSelectBoth": "Beide Parameter wählen, um Empfehlungen zu sehen.",
+  "warnSameParameter": "Verbessernder und verschlechternder Parameter sind gleich — kein Widerspruch.",
+  "noContradiction": "Für diese Kombination liegt in der Standard-Matrix keine Empfehlung vor.",
+  "showMatrix": "Vollständige Matrix anzeigen",
+  "hideMatrix": "Matrix ausblenden",
+  "matrixLegend": "Zeile = Verbesserung (↑), Spalte = Verschlechterung (↓). Zahl in Zelle = Anzahl empfohlener Prinzipien. Klick auf eine Zelle setzt die Auswahl.",
+  "matrixCornerTip": "Zeile = Verbesserung, Spalte = Verschlechterung",
+  "parameters": {
+    "1": {
+      "name": "Gewicht eines bewegten Objekts",
+      "description": "Masse eines Objekts, das sich frei im Schwerefeld bewegen kann."
+    },
+    "2": {
+      "name": "Gewicht eines unbewegten Objekts",
+      "description": "Masse eines Objekts, das ortsfest bleibt."
+    },
+    "3": {
+      "name": "Länge eines bewegten Objekts",
+      "description": "Lineare Abmessung in einer beliebigen Richtung eines bewegten Objekts."
+    },
+    "4": {
+      "name": "Länge eines unbewegten Objekts",
+      "description": "Lineare Abmessung in einer beliebigen Richtung eines ortsfesten Objekts."
+    },
+    "5": {
+      "name": "Fläche eines bewegten Objekts",
+      "description": "Geometrisches Maß einer Oberfläche oder eines ebenen Querschnitts eines bewegten Objekts."
+    },
+    "6": {
+      "name": "Fläche eines unbewegten Objekts",
+      "description": "Geometrisches Maß einer Oberfläche oder eines ebenen Querschnitts eines ortsfesten Objekts."
+    },
+    "7": {
+      "name": "Volumen eines bewegten Objekts",
+      "description": "Räumliche Ausdehnung eines bewegten Objekts."
+    },
+    "8": {
+      "name": "Volumen eines unbewegten Objekts",
+      "description": "Räumliche Ausdehnung eines ortsfesten Objekts."
+    },
+    "9": {
+      "name": "Geschwindigkeit",
+      "description": "Verhältnis von zurückgelegtem Weg pro Zeit; Rate eines Vorgangs."
+    },
+    "10": {
+      "name": "Kraft",
+      "description": "Maß für die Wechselwirkung, die Bewegung oder Verformung erzeugt."
+    },
+    "11": {
+      "name": "Spannung / Druck",
+      "description": "Kraft pro Flächeneinheit, mechanische Spannung oder hydraulischer/pneumatischer Druck."
+    },
+    "12": {
+      "name": "Form",
+      "description": "Äußere Kontur oder innere Anordnung eines Objekts."
+    },
+    "13": {
+      "name": "Stabilität der Zusammensetzung",
+      "description": "Konstanz, Geschlossenheit und Widerstandsfähigkeit eines Systems gegen Zerfall."
+    },
+    "14": {
+      "name": "Festigkeit",
+      "description": "Widerstandsfähigkeit gegen Verformung oder Bruch unter Last."
+    },
+    "15": {
+      "name": "Wirkdauer eines bewegten Objekts",
+      "description": "Zeitspanne, während der ein bewegtes Objekt seine Funktion ausführen kann."
+    },
+    "16": {
+      "name": "Wirkdauer eines unbewegten Objekts",
+      "description": "Zeitspanne, während der ein ortsfestes Objekt seine Funktion ausführen kann."
+    },
+    "17": {
+      "name": "Temperatur",
+      "description": "Thermischer Zustand eines Objekts oder Systems."
+    },
+    "18": {
+      "name": "Beleuchtungsstärke",
+      "description": "Lichtstrom pro Fläche; Helligkeit, Lichtqualität."
+    },
+    "19": {
+      "name": "Energieaufwand eines bewegten Objekts",
+      "description": "Vom bewegten Objekt verbrauchte oder umgesetzte Energie."
+    },
+    "20": {
+      "name": "Energieaufwand eines unbewegten Objekts",
+      "description": "Vom ortsfesten Objekt verbrauchte oder umgesetzte Energie."
+    },
+    "21": {
+      "name": "Leistung",
+      "description": "Energie pro Zeit; Rate des Energieumsatzes."
+    },
+    "22": {
+      "name": "Energieverluste",
+      "description": "Nicht-nutzbare oder dissipierte Energieanteile."
+    },
+    "23": {
+      "name": "Materialverluste",
+      "description": "Verluste an Stoff, Substanz oder Material."
+    },
+    "24": {
+      "name": "Informationsverluste",
+      "description": "Verlust an verfügbarer oder zugänglicher Information."
+    },
+    "25": {
+      "name": "Zeitverluste",
+      "description": "Aufgewendete, aber nicht nutzbringend eingesetzte Zeit."
+    },
+    "26": {
+      "name": "Stoffmenge",
+      "description": "Masse, Menge oder Anzahl der eingesetzten Substanz."
+    },
+    "27": {
+      "name": "Zuverlässigkeit",
+      "description": "Wahrscheinlichkeit, dass das System seine Funktion vorhersehbar erfüllt."
+    },
+    "28": {
+      "name": "Messgenauigkeit",
+      "description": "Übereinstimmung des Messergebnisses mit dem wahren Wert."
+    },
+    "29": {
+      "name": "Fertigungsgenauigkeit",
+      "description": "Übereinstimmung der gefertigten mit der Soll-Geometrie/-Eigenschaft."
+    },
+    "30": {
+      "name": "Auf Objekt wirkende Schadfaktoren",
+      "description": "Externe Einflüsse, die das System beeinträchtigen oder schädigen."
+    },
+    "31": {
+      "name": "Vom Objekt erzeugte Schadfaktoren",
+      "description": "Vom System ausgehende, unerwünschte Wirkungen (z.B. Lärm, Abwärme, Abfall)."
+    },
+    "32": {
+      "name": "Fertigungsfreundlichkeit",
+      "description": "Einfachheit, das System herzustellen oder zu fertigen."
+    },
+    "33": {
+      "name": "Bedienungsfreundlichkeit",
+      "description": "Einfachheit, das System zu nutzen, zu bedienen oder zu kontrollieren."
+    },
+    "34": {
+      "name": "Wartungsfreundlichkeit",
+      "description": "Einfachheit, das System zu reparieren, zu warten oder Defekte zu beheben."
+    },
+    "35": {
+      "name": "Anpassungsfähigkeit",
+      "description": "Fähigkeit des Systems, auf wechselnde Umgebungen oder Anforderungen zu reagieren."
+    },
+    "36": {
+      "name": "Komplexität der Struktur",
+      "description": "Anzahl, Verschiedenheit und Beziehungen der Systemelemente."
+    },
+    "37": {
+      "name": "Komplexität der Steuerung",
+      "description": "Schwierigkeit, Zustände zu erkennen, zu messen oder zu regeln."
+    },
+    "38": {
+      "name": "Automatisierungsgrad",
+      "description": "Ausmaß, in dem das System ohne menschlichen Eingriff arbeitet."
+    },
+    "39": {
+      "name": "Produktivität",
+      "description": "Anzahl der je Zeiteinheit erbrachten Funktionen oder Leistungen."
+    }
+  },
+  "principles": {
+    "1": {
+      "name": "Zerlegung",
+      "description": "Objekt in unabhängige Teile zerlegen; modulare oder leicht trennbare Strukturen schaffen."
+    },
+    "2": {
+      "name": "Abtrennen",
+      "description": "Den störenden Teil oder die störende Eigenschaft abtrennen; nur den notwendigen Teil isolieren."
+    },
+    "3": {
+      "name": "Örtliche Qualität",
+      "description": "Homogene Struktur in heterogene überführen; jeder Teil erfüllt seine spezifische Funktion."
+    },
+    "4": {
+      "name": "Asymmetrie",
+      "description": "Symmetrische Form durch asymmetrische ersetzen; bestehende Asymmetrie verstärken."
+    },
+    "5": {
+      "name": "Kopplung / Vereinen",
+      "description": "Gleichartige oder zusammenhängende Operationen, Objekte oder Funktionen kombinieren."
+    },
+    "6": {
+      "name": "Universalität",
+      "description": "Ein Objekt erfüllt mehrere Funktionen, sodass andere Objekte überflüssig werden."
+    },
+    "7": {
+      "name": "Verschachtelung (Matrjoschka)",
+      "description": "Ein Objekt im Inneren eines anderen platzieren; mehrere Objekte ineinander schachteln."
+    },
+    "8": {
+      "name": "Gegengewicht",
+      "description": "Unerwünschte Kräfte (z.B. Gewicht) durch Verbindung mit gegenwirkenden Objekten oder Kräften kompensieren."
+    },
+    "9": {
+      "name": "Vorgezogene Gegenwirkung",
+      "description": "Erwartete schädliche Wirkung durch entgegengesetzte Wirkung vorab kompensieren."
+    },
+    "10": {
+      "name": "Vorgezogene Wirkung",
+      "description": "Notwendige Veränderung am Objekt ganz oder teilweise im Voraus durchführen."
+    },
+    "11": {
+      "name": "Vorbeugende Maßnahme",
+      "description": "Bei nicht hoher Zuverlässigkeit eines Objekts vorab Notmaßnahmen vorbereiten."
+    },
+    "12": {
+      "name": "Äquipotentialität",
+      "description": "Bedingungen so gestalten, dass ein Objekt nicht angehoben oder abgesenkt werden muss."
+    },
+    "13": {
+      "name": "Funktionsumkehr",
+      "description": "Statt der vorgegebenen Aktion die entgegengesetzte ausführen; das Bewegliche unbeweglich machen oder umgekehrt."
+    },
+    "14": {
+      "name": "Krümmung erhöhen",
+      "description": "Geradlinige Teile durch gekrümmte ersetzen; ebene Flächen durch sphärische."
+    },
+    "15": {
+      "name": "Dynamisierung",
+      "description": "Eigenschaften des Objekts oder seiner Umgebung an wechselnde Bedingungen anpassbar machen."
+    },
+    "16": {
+      "name": "Partielle / übermäßige Wirkung",
+      "description": "Wenn ein Effekt nicht zu 100% erreichbar ist, etwas mehr oder weniger desselben Effekts liefern."
+    },
+    "17": {
+      "name": "Übergang in andere Dimension",
+      "description": "Bewegungen oder Anordnungen auf zwei oder drei Dimensionen ausweiten; geschichtete oder gekippte Anordnungen."
+    },
+    "18": {
+      "name": "Mechanische Schwingung",
+      "description": "Das Objekt in Schwingung versetzen; Frequenz oder Amplitude ändern; Resonanz nutzen."
+    },
+    "19": {
+      "name": "Periodische Wirkung",
+      "description": "Kontinuierliche Wirkung durch periodische ersetzen; Pausen für Zusatzaktionen nutzen."
+    },
+    "20": {
+      "name": "Kontinuität nützlicher Wirkung",
+      "description": "Arbeit kontinuierlich durchführen; Leerlauf oder Pausen eliminieren."
+    },
+    "21": {
+      "name": "Durcheilen",
+      "description": "Schädliche oder gefährliche Schritte mit hoher Geschwindigkeit durchlaufen."
+    },
+    "22": {
+      "name": "Schaden in Nutzen wandeln",
+      "description": "Schädliche Faktoren oder Umgebungseffekte zur Erreichung eines positiven Effekts nutzen."
+    },
+    "23": {
+      "name": "Rückkopplung",
+      "description": "Rückkopplung einführen; bestehende Rückkopplung verstärken oder ändern."
+    },
+    "24": {
+      "name": "Vermittler",
+      "description": "Zwischenstoff oder Zwischenobjekt verwenden, um Wirkung zu übertragen oder zu vermitteln."
+    },
+    "25": {
+      "name": "Selbstbedienung",
+      "description": "Das Objekt führt Hilfs- oder Reparaturfunktionen selbst aus; Abfälle als Ressource nutzen."
+    },
+    "26": {
+      "name": "Kopieren",
+      "description": "Statt eines komplexen Originals eine einfache, billige Kopie verwenden; optische, virtuelle oder Modell-Kopien einsetzen."
+    },
+    "27": {
+      "name": "Billige Wegwerfteile",
+      "description": "Teure langlebige Objekte durch viele billige Wegwerfobjekte ersetzen, die einige Eigenschaften aufgeben."
+    },
+    "28": {
+      "name": "Mechanik-Substitution",
+      "description": "Mechanische Wirkung durch sensorische, optische, akustische, elektrische, magnetische ersetzen."
+    },
+    "29": {
+      "name": "Pneumatik / Hydraulik",
+      "description": "Feste Teile durch Gase oder Flüssigkeiten ersetzen; aufblasbare oder hydraulische Konstruktionen nutzen."
+    },
+    "30": {
+      "name": "Flexible Hüllen / dünne Folien",
+      "description": "Übliche Konstruktionen durch flexible Hüllen oder dünne Folien ersetzen; Objekte von Umgebung isolieren."
+    },
+    "31": {
+      "name": "Poröse Werkstoffe",
+      "description": "Poröse Materialien einsetzen; Hohlräume mit nützlichen Substanzen füllen."
+    },
+    "32": {
+      "name": "Farbveränderung",
+      "description": "Farbe oder Transparenz ändern; Indikator-Stoffe einsetzen, um Sichtbarkeit zu verbessern."
+    },
+    "33": {
+      "name": "Gleichartigkeit",
+      "description": "Wechselwirkende Objekte aus gleichem oder ähnlichem Material gestalten."
+    },
+    "34": {
+      "name": "Beseitigen / Wiederverwenden",
+      "description": "Erfüllte Teile entfernen, auflösen oder umwandeln; verbrauchte Teile direkt wiederherstellen."
+    },
+    "35": {
+      "name": "Eigenschaftsänderung",
+      "description": "Aggregatzustand, Konzentration, Konsistenz, Temperatur oder Flexibilität gezielt verändern."
+    },
+    "36": {
+      "name": "Phasenübergang",
+      "description": "Die mit dem Phasenübergang verbundenen Effekte (Volumen-, Wärme- oder Energieänderung) nutzen."
+    },
+    "37": {
+      "name": "Wärmedehnung",
+      "description": "Wärmeausdehnung oder -kontraktion gezielt einsetzen; Materialien mit unterschiedlicher Ausdehnung kombinieren."
+    },
+    "38": {
+      "name": "Starke Oxidationsmittel / Atmosphäre",
+      "description": "Übergang zu sauerstoffreicher Atmosphäre, ionisiertem oder ozonisiertem Sauerstoff zur Verstärkung von Reaktionen."
+    },
+    "39": {
+      "name": "Inerte Atmosphäre",
+      "description": "Reaktive Umgebung durch inerte ersetzen; Vakuum nutzen."
+    },
+    "40": {
+      "name": "Verbundwerkstoffe",
+      "description": "Einheitliche Werkstoffe durch Verbundwerkstoffe ersetzen, die mehrere Eigenschaften kombinieren."
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "improving": {
+      "help": "The parameter to be improved: one of Altshuller's 39 engineering parameters, as a number from 1 to 39 (1 weight of moving object through 39 productivity); empty while none is chosen. In the interface via the list “Parameter to improve” or a click in the matrix. Any other number is rejected."
+    },
+    "worsening": {
+      "help": "The parameter that worsens when the other one is improved: one of Altshuller's 39 engineering parameters, as a number from 1 to 39 (1 weight of moving object through 39 productivity); empty while none is chosen. In the interface via the list “Parameter that worsens” or a click in the matrix. Any other number is rejected."
+    },
+    "problemNote": {
+      "help": "The problem description: the technical contradiction in your own words, plus background and boundary conditions. Free text; an empty text clears the description."
+    },
+    "showMatrix": {
+      "help": "Shows the full 39×39 contradiction matrix below the button or hides it again. The row is the parameter to improve, the column the one that worsens; the number in a cell is the count of recommended principles."
+    },
+    "recommendation": {
+      "help": "The matrix recommendation for the chosen pair: its status and the recommended inventive principles with number, name and description in the active language, as the cards show them."
+    }
+  },
+  "actions": {
+    "swapParams": {
+      "help": "Swaps the parameter to improve and the parameter that worsens against each other, in the interface via the button next to the two lists. If only one side is chosen, the choice moves to the other side.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "pickCell": {
+      "help": "Sets both parameters in one step, like a click on a cell of the full matrix: the row is the parameter to improve, the column the parameter that worsens.",
+      "params": {
+        "improving": "The parameter to improve, a number from 1 to 39. Any other number is rejected.",
+        "worsening": "The parameter that worsens, a number from 1 to 39. Any other number is rejected.",
+        "command": "The command as an object with improving and worsening."
+      }
+    }
+  },
+  "types": {
+    "Recommendation": {
+      "status": "The status of the recommendation: incomplete (a parameter is still missing), sameParameter (both sides are the same, so there is no contradiction), noEntry (the matrix cell is empty) or found (the matrix recommends principles).",
+      "principles": "The recommended principles in the order of the matrix cell, usually three to four; empty unless the status is found."
+    },
+    "RecommendedPrinciple": {
+      "id": "The number of the inventive principle in Altshuller's catalogue, 1 to 40.",
+      "name": "The name of the principle, as the card shows it.",
+      "description": "The short description of the principle, as the card shows it."
+    }
+  }
+}

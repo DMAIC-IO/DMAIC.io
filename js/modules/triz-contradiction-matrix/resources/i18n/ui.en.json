@@ -1,0 +1,340 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Contradiction Matrix (TRIZ)",
+  "description": "Inventive principles for technical contradictions (Altschuller)",
+  "whenToUse": "When two different engineering parameters are in conflict — improving one degrades the other — and the matrix should name the proven solution principles for that pair; not when a single parameter itself would have to hold two opposite values, which is what the physical contradiction is for.",
+  "problemHeading": "Problem description",
+  "problemPlaceholder": "e.g. The support structure must become stronger — but then becomes too heavy.",
+  "improvingParameter": "Parameter to improve",
+  "worseningParameter": "Parameter that worsens",
+  "selectPlaceholder": "— select parameter —",
+  "swap": "Swap parameters",
+  "recommendedHeading": "Recommended inventive principles",
+  "hintSelectBoth": "Pick both parameters to see recommendations.",
+  "warnSameParameter": "Improving and worsening parameters are identical — no contradiction.",
+  "noContradiction": "No recommendation registered for this combination in the standard matrix.",
+  "showMatrix": "Show full matrix",
+  "hideMatrix": "Hide matrix",
+  "matrixLegend": "Row = improving (↑), column = worsening (↓). Cell number = count of recommended principles. Click a cell to apply the selection.",
+  "matrixCornerTip": "Row = improving, column = worsening",
+  "parameters": {
+    "1": {
+      "name": "Weight of moving object",
+      "description": "Mass of an object that moves freely in a gravitational field."
+    },
+    "2": {
+      "name": "Weight of stationary object",
+      "description": "Mass of an object that does not move."
+    },
+    "3": {
+      "name": "Length of moving object",
+      "description": "Any linear dimension (not necessarily the longest) of a moving object."
+    },
+    "4": {
+      "name": "Length of stationary object",
+      "description": "Any linear dimension of a stationary object."
+    },
+    "5": {
+      "name": "Area of moving object",
+      "description": "Two-dimensional measure of a surface or a section of a moving object."
+    },
+    "6": {
+      "name": "Area of stationary object",
+      "description": "Two-dimensional measure of a surface or section of a stationary object."
+    },
+    "7": {
+      "name": "Volume of moving object",
+      "description": "Cubic measure of space occupied by a moving object."
+    },
+    "8": {
+      "name": "Volume of stationary object",
+      "description": "Cubic measure of space occupied by a stationary object."
+    },
+    "9": {
+      "name": "Speed",
+      "description": "Velocity of an object or rate of a process or action in time."
+    },
+    "10": {
+      "name": "Force",
+      "description": "Any interaction intended to change an object's condition."
+    },
+    "11": {
+      "name": "Stress or pressure",
+      "description": "Force per unit area; also, tension."
+    },
+    "12": {
+      "name": "Shape",
+      "description": "External contours or appearance of a system."
+    },
+    "13": {
+      "name": "Stability of object's composition",
+      "description": "Wholeness or integrity of the system; ability to resist decomposition."
+    },
+    "14": {
+      "name": "Strength",
+      "description": "Resistance to changing in response to force; resistance to breaking."
+    },
+    "15": {
+      "name": "Duration of action by moving object",
+      "description": "Time during which a moving object performs its function (service life)."
+    },
+    "16": {
+      "name": "Duration of action by stationary object",
+      "description": "Service life of a stationary object."
+    },
+    "17": {
+      "name": "Temperature",
+      "description": "Thermal condition of the object or system."
+    },
+    "18": {
+      "name": "Illumination intensity",
+      "description": "Light flux per unit area; brightness or quality of light."
+    },
+    "19": {
+      "name": "Use of energy by moving object",
+      "description": "Energy consumed by a moving object."
+    },
+    "20": {
+      "name": "Use of energy by stationary object",
+      "description": "Energy consumed by a stationary object."
+    },
+    "21": {
+      "name": "Power",
+      "description": "Time rate at which work is performed."
+    },
+    "22": {
+      "name": "Loss of energy",
+      "description": "Energy that does not contribute to the job done."
+    },
+    "23": {
+      "name": "Loss of substance",
+      "description": "Partial or complete, permanent or temporary loss of material."
+    },
+    "24": {
+      "name": "Loss of information",
+      "description": "Partial or complete, permanent or temporary loss of data or access to data."
+    },
+    "25": {
+      "name": "Loss of time",
+      "description": "Time inefficiency; lost or wasted time."
+    },
+    "26": {
+      "name": "Quantity of substance",
+      "description": "Number or amount of a system's materials, substances, parts, or subsystems."
+    },
+    "27": {
+      "name": "Reliability",
+      "description": "Ability to perform intended functions in predictable ways and conditions."
+    },
+    "28": {
+      "name": "Measurement accuracy",
+      "description": "Closeness of a measured value to the actual value of the property."
+    },
+    "29": {
+      "name": "Manufacturing precision",
+      "description": "Extent to which the actual characteristic matches the specified one."
+    },
+    "30": {
+      "name": "Object-affecting harmful factors",
+      "description": "External factors that degrade or damage the object."
+    },
+    "31": {
+      "name": "Object-generated harmful factors",
+      "description": "Harmful effects developed by the object as part of its operation."
+    },
+    "32": {
+      "name": "Ease of manufacture",
+      "description": "How easy or convenient it is to manufacture the system."
+    },
+    "33": {
+      "name": "Ease of operation",
+      "description": "Simplicity in using and controlling the system."
+    },
+    "34": {
+      "name": "Ease of repair",
+      "description": "Simplicity, time, and convenience of repair."
+    },
+    "35": {
+      "name": "Adaptability or versatility",
+      "description": "Ability of the system to respond to external changes or to perform multiple functions."
+    },
+    "36": {
+      "name": "Device complexity",
+      "description": "Number and diversity of elements and interrelations within a system."
+    },
+    "37": {
+      "name": "Difficulty of detecting & measuring",
+      "description": "Complexity of measurement and control systems."
+    },
+    "38": {
+      "name": "Extent of automation",
+      "description": "Extent to which a system performs its functions without human interface."
+    },
+    "39": {
+      "name": "Productivity",
+      "description": "Number of functions or operations performed per unit time."
+    }
+  },
+  "principles": {
+    "1": {
+      "name": "Segmentation",
+      "description": "Divide an object into independent parts; make it sectional or easy to disassemble."
+    },
+    "2": {
+      "name": "Taking out (Extraction)",
+      "description": "Separate an interfering part or property; extract only the needed part."
+    },
+    "3": {
+      "name": "Local quality",
+      "description": "Transition from homogeneous to heterogeneous structure; each part fulfills its specific function."
+    },
+    "4": {
+      "name": "Asymmetry",
+      "description": "Change the shape from symmetric to asymmetric; increase the degree of existing asymmetry."
+    },
+    "5": {
+      "name": "Merging",
+      "description": "Bring closer together (or merge) identical or related objects, operations, or functions."
+    },
+    "6": {
+      "name": "Universality",
+      "description": "Make a part or object perform multiple functions, eliminating the need for other parts."
+    },
+    "7": {
+      "name": "Nested doll",
+      "description": "Place one object inside another; pass each object through a cavity of the other."
+    },
+    "8": {
+      "name": "Anti-weight",
+      "description": "Compensate the weight of an object by merging with another that provides lift, or by aerodynamic/hydrodynamic forces."
+    },
+    "9": {
+      "name": "Preliminary anti-action",
+      "description": "If an action will have both useful and harmful effects, replace it with anti-actions to control harmful effects."
+    },
+    "10": {
+      "name": "Preliminary action",
+      "description": "Perform the required change of an object in advance, fully or partially."
+    },
+    "11": {
+      "name": "Beforehand cushioning",
+      "description": "Prepare emergency means beforehand to compensate for the relatively low reliability of an object."
+    },
+    "12": {
+      "name": "Equipotentiality",
+      "description": "In a potential field, limit position changes (e.g., change the operating conditions to eliminate the need to raise or lower)."
+    },
+    "13": {
+      "name": "The other way round (Inversion)",
+      "description": "Invert the action used to solve the problem; make movable parts fixed and fixed parts movable."
+    },
+    "14": {
+      "name": "Spheroidality / Curvature",
+      "description": "Replace linear parts with curved; replace flat surfaces with spherical; use rollers, balls, spirals."
+    },
+    "15": {
+      "name": "Dynamics",
+      "description": "Allow object characteristics, external environment or process to change to be optimal at each operating stage."
+    },
+    "16": {
+      "name": "Partial or excessive action",
+      "description": "If 100% of an objective is hard to achieve, achieve somewhat more or less of it; problem may become easier."
+    },
+    "17": {
+      "name": "Another dimension",
+      "description": "Move into an additional dimension — from line to plane, from plane to space, multilayer or tilted arrangements."
+    },
+    "18": {
+      "name": "Mechanical vibration",
+      "description": "Cause the object to oscillate or vibrate; change frequency, amplitude or use resonance."
+    },
+    "19": {
+      "name": "Periodic action",
+      "description": "Replace continuous action with periodic; if action is already periodic, change frequency; use pauses."
+    },
+    "20": {
+      "name": "Continuity of useful action",
+      "description": "Carry out work continuously; eliminate idle or intermittent operations."
+    },
+    "21": {
+      "name": "Skipping (Hurrying)",
+      "description": "Conduct dangerous or harmful operations at very high speed."
+    },
+    "22": {
+      "name": "Blessing in disguise",
+      "description": "Use harmful factors (especially harmful environmental effects) to achieve a positive effect."
+    },
+    "23": {
+      "name": "Feedback",
+      "description": "Introduce feedback; if feedback already exists, change its magnitude or influence."
+    },
+    "24": {
+      "name": "Intermediary",
+      "description": "Use an intermediary carrier article or intermediate process; merge one object temporarily with another easily removed."
+    },
+    "25": {
+      "name": "Self-service",
+      "description": "Make an object serve itself by performing auxiliary helpful functions; use waste resources."
+    },
+    "26": {
+      "name": "Copying",
+      "description": "Use simple and inexpensive copies instead of an unavailable, complex, expensive, or fragile object."
+    },
+    "27": {
+      "name": "Cheap short-living objects",
+      "description": "Replace an expensive object with a multitude of inexpensive ones, compromising certain qualities."
+    },
+    "28": {
+      "name": "Mechanics substitution",
+      "description": "Replace mechanical means with sensory (optical, acoustic, taste, smell); use electric, magnetic, electromagnetic fields."
+    },
+    "29": {
+      "name": "Pneumatics and hydraulics",
+      "description": "Use gas and liquid parts in place of solid parts (inflatable, hydrostatic, hydroreactive)."
+    },
+    "30": {
+      "name": "Flexible shells and thin films",
+      "description": "Use flexible shells and thin films instead of three-dimensional structures; isolate object from environment."
+    },
+    "31": {
+      "name": "Porous materials",
+      "description": "Make an object porous or add porous elements; fill the pores with a useful substance."
+    },
+    "32": {
+      "name": "Color changes",
+      "description": "Change the color, transparency, or use indicators to improve visibility of an object or process."
+    },
+    "33": {
+      "name": "Homogeneity",
+      "description": "Make objects interacting with a primary object of the same material (or with matching properties)."
+    },
+    "34": {
+      "name": "Discarding and recovering",
+      "description": "Discard portions of an object that have fulfilled their function (dissolve, evaporate); restore consumable parts directly."
+    },
+    "35": {
+      "name": "Parameter changes",
+      "description": "Change physical state (gas/liquid/solid), concentration, consistency, temperature, or degree of flexibility."
+    },
+    "36": {
+      "name": "Phase transitions",
+      "description": "Use phenomena occurring during phase transitions (volume change, heat absorption/release)."
+    },
+    "37": {
+      "name": "Thermal expansion",
+      "description": "Use thermal expansion or contraction of materials; combine materials with different coefficients."
+    },
+    "38": {
+      "name": "Strong oxidants / Boosted interactions",
+      "description": "Replace common air with oxygen-enriched air, pure oxygen, ionized or ozonized oxygen."
+    },
+    "39": {
+      "name": "Inert atmosphere",
+      "description": "Replace a normal environment with an inert one (vacuum, inert gas); add neutral parts or additives."
+    },
+    "40": {
+      "name": "Composite materials",
+      "description": "Change from uniform to composite materials combining several properties."
+    }
+  }
+}

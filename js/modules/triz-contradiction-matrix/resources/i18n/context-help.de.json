@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "improving": {
+      "help": "Der Parameter, der verbessert werden soll: einer der 39 technischen Parameter nach Altschuller, als Nummer von 1 bis 39 (1 Gewicht eines bewegten Objekts bis 39 Produktivität); leer, solange keiner gewählt ist. In der Oberfläche über die Auswahlliste „Zu verbessernder Parameter“ oder über einen Klick in die Matrix. Eine andere Zahl wird abgelehnt."
+    },
+    "worsening": {
+      "help": "Der Parameter, der sich verschlechtert, wenn der andere verbessert wird: einer der 39 technischen Parameter nach Altschuller, als Nummer von 1 bis 39 (1 Gewicht eines bewegten Objekts bis 39 Produktivität); leer, solange keiner gewählt ist. In der Oberfläche über die Auswahlliste „Sich verschlechternder Parameter“ oder über einen Klick in die Matrix. Eine andere Zahl wird abgelehnt."
+    },
+    "problemNote": {
+      "help": "Die Problembeschreibung: der technische Widerspruch in eigenen Worten, dazu Hintergrund und Randbedingungen. Freier Text; ein leerer Text leert die Beschreibung."
+    },
+    "showMatrix": {
+      "help": "Zeigt die vollständige 39×39-Widerspruchsmatrix unter dem Knopf oder blendet sie wieder aus. Die Zeile ist der zu verbessernde Parameter, die Spalte der sich verschlechternde; die Zahl in einer Zelle ist die Anzahl der empfohlenen Prinzipien."
+    },
+    "recommendation": {
+      "help": "Die Empfehlung der Matrix zum gewählten Paar: ihr Stand und die empfohlenen erfinderischen Prinzipien mit Nummer, Name und Beschreibung in der eingestellten Sprache, so wie die Karten sie zeigen."
+    }
+  },
+  "actions": {
+    "swapParams": {
+      "help": "Tauscht den zu verbessernden und den sich verschlechternden Parameter gegeneinander, in der Oberfläche über den Knopf neben den beiden Auswahllisten. Ist nur eine Seite gewählt, steht die Wahl danach auf der anderen.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "pickCell": {
+      "help": "Setzt beide Parameter in einem Schritt, wie ein Klick in eine Zelle der vollständigen Matrix: die Zeile ist der zu verbessernde, die Spalte der sich verschlechternde Parameter.",
+      "params": {
+        "improving": "Der zu verbessernde Parameter, eine Nummer von 1 bis 39. Eine andere Zahl wird abgelehnt.",
+        "worsening": "Der sich verschlechternde Parameter, eine Nummer von 1 bis 39. Eine andere Zahl wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit improving und worsening."
+      }
+    }
+  },
+  "types": {
+    "Recommendation": {
+      "status": "Der Stand der Empfehlung: incomplete (unvollständig, ein Parameter fehlt noch), sameParameter (gleicher Parameter, beide Seiten sind gleich, also kein Widerspruch), noEntry (kein Eintrag, die Zelle der Matrix ist leer) oder found (gefunden, die Matrix empfiehlt Prinzipien).",
+      "principles": "Die empfohlenen Prinzipien in der Reihenfolge der Matrixzelle, meist drei bis vier; leer, solange der Stand nicht found (gefunden) ist."
+    },
+    "RecommendedPrinciple": {
+      "id": "Die Nummer des erfinderischen Prinzips nach Altschuller, 1 bis 40.",
+      "name": "Der Name des Prinzips, wie ihn die Karte zeigt.",
+      "description": "Die Kurzbeschreibung des Prinzips, wie sie die Karte zeigt."
+    }
+  }
+}
