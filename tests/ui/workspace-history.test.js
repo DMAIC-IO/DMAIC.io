@@ -199,13 +199,15 @@ suite('Workspace — Verlaufskürzel', () => {
     });
   }
 
-  test('Fokus in <select>: Kürzel greift nicht', () => {
+  test('Fokus auf <select>: Strg+Z/Strg+Y gehen an den Modulverlauf', () => {
     setup();
     const el = document.createElement('select');
     document.body.append(el);
     try {
-      press(el);
-      assertEqual(inst.steps.length, 0);
+      const ev = press(el);
+      press(el, { key: 'y' });
+      assertEqual(inst.steps.join(','), 'undo,redo');
+      assertTrue(ev.defaultPrevented, 'Browser-Rückgängig unterdrückt');
     } finally { el.remove(); }
   });
 

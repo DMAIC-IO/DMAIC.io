@@ -42,7 +42,9 @@ const NON_TEXT_INPUT_TYPES = new Set([
  */
 function isTextEditTarget(t) {
   if (t.isContentEditable || t.closest('[contenteditable]:not([contenteditable="false"])')) return true;
-  if (t.closest('textarea, select')) return true;
+  // `<select>` fehlt bewusst: das Browser-Rückgängig tut dort nichts, und
+  // der Fokus bleibt nach der Wahl auf der Liste — Strg+Z gehört dem Modul.
+  if (t.closest('textarea')) return true;
   const input = t.closest('input');
   return Boolean(input) && !NON_TEXT_INPUT_TYPES.has(input.type);
 }
