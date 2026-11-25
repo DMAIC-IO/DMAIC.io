@@ -620,10 +620,167 @@ suite('worksheet: clearRange (Verhalten aus _clearSelection)', () => {
   });
 });
 
+suite('worksheet: moveCells (Verhalten aus DataGrid.moveCells)', () => {
+  const moveSheet = () => setup({
+    heads: [col('x', { name: 'X', shortName: 'C1' }), col('y', { name: 'Y', shortName: 'C2' }), col('z', { name: 'Z', shortName: 'C3' })],
+    cells: [[1, 2, 3, 4, null, null], [10, 20, 30, 40, null, null], [null, null, null, null, null, null]],
+    formulas: { z: { 0: '=C1[1]+C2[1]', 1: '=SUM(C1[1]:C1[2])', 2: '=C2[3]', 3: '=C1[4]' } },
+  });
+  const mv = (w, source, toCol, toRow) => w.m.moveCells({ sheetId: 's1', source, toCol, toRow });
+  const fz = (w, row) => sheet(w).formulas.z?.[row] ?? null;
+  const join = (w, c) => values(w, c).map((v) => v ?? '').join('|');
+  const down = { c0: 0, r0: 0, c1: 0, r1: 1 };
+
+  test('moves the values and empties the source', () => {
+    const w = moveSheet();
+    assertDeepEqual(mv(w, down, 0, 4), { c0: 0, r0: 4, c1: 0, r1: 5 });
+    assertEqual(join(w, 0), '||3|4|1|2');
+  });
+
+  test('references to the moved cells follow them', () => {
+    const w = moveSheet();
+    mv(w, down, 0, 4);
+    assertEqual(fz(w, 0), '=C1[5]+C2[1]');
+    assertEqual(fz(w, 1), '=SUM(C1[5]:C1[6])');
+    assertEqual(values(w, 2)[0], 11);
+    assertEqual(values(w, 2)[1], 3);
+  });
+
+  test('a reference to an overwritten cell becomes #REF!', () => {
+    const w = moveSheet();
+    mv(w, down, 0, 2);
+    assertEqual(join(w, 0), '||1|2||');
+    assertEqual(fz(w, 3), '=#REF!');
+    assertEqual(fz(w, 0), '=C1[3]+C2[1]');
+    assertEqual(values(w, 2)[3], null);
+  });
+
+  test('a moved formula keeps pointing at the same cells', () => {
+    const w = moveSheet();
+    mv(w, { c0: 2, r0: 2, c1: 2, r1: 2 }, 2, 5);
+    assertEqual(fz(w, 5), '=C2[3]');
+    assertEqual(values(w, 2)[5], 30);
+    assertEqual(fz(w, 2), null);
+    assertEqual(values(w, 2)[2], null);
+  });
+
+  test('a formula moved together with its source still sees it', () => {
+    const w = moveSheet();
+    mv(w, { c0: 1, r0: 2, c1: 2, r1: 2 }, 1, 5);
+    assertEqual(fz(w, 5), '=C2[6]');
+    assertEqual(values(w, 2)[5], 30);
+  });
+
+  test('undo and redo restore values and formulas', () => {
+    roundTrip(moveSheet(), { type: 'moveCells', sheetId: 's1', source: down, toCol: 0, toRow: 2 });
+    const w = moveSheet();
+    mv(w, down, 0, 2);
+    for (const c of [...w.seen.inverses].reverse()) w.m.execute(c);
+    assertEqual(join(w, 0), '1|2|3|4||');
+    assertEqual(fz(w, 3), '=C1[4]');
+    assertEqual(values(w, 2)[3], 4);
+  });
+
+  test('selects the target (Rückgabe, eine Änderung)', () => {
+    const w = moveSheet();
+    const rev = w.m.$tableRev;
+    w.seen.inverses = null;
+    assertDeepEqual(mv(w, { c0: 0, r0: 0, c1: 1, r1: 0 }, 1, 4), { c0: 1, r0: 4, c1: 2, r1: 4 });
+    assertEqual(w.m.$tableRev, rev + 1);
+    assertEqual(w.seen.inverses.length, 1);
+  });
+
+  test('clamps the target into the grid', () => {
+    const w = moveSheet();
+    assertDeepEqual(mv(w, down, 0, 99), { c0: 0, r0: 4, c1: 0, r1: 5 });
+    assertEqual(join(w, 0), '||3|4|1|2');
+  });
+
+  test('a locked column in the target refuses the move', () => {
+    const w = setup({
+      heads: [col('x', { name: 'X', shortName: 'C1' }), col('y', { name: 'Y', shortName: 'C2', meta: { lock: 'hard' } }), col('z', { shortName: 'C3' })],
+      cells: [[1, 2, 3, 4, null, null], [10, 20, 30, 40, null, null], [null, null, null, null, null, null]],
+    });
+    rejects(w, () => mv(w, { c0: 0, r0: 0, c1: 0, r1: 0 }, 1, 4), 'column "y" is locked (hard)');
+    assertEqual(join(w, 0), '1|2|3|4||');
+  });
+
+  test('Ziel = Quelle → null, kein Verlauf', () => {
+    const w = moveSheet();
+    const before = w.json();
+    w.seen.inverses = null;
+    assertEqual(mv(w, down, 0, 0), null);
+    assertEqual(w.seen.inverses?.length ?? 0, 0);
+    assertEqual(w.json(), before);
+    assertEqual(mv(w, { c0: 0, r0: 4, c1: 0, r1: 5 }, 0, 99), null);
+    assertEqual(w.seen.inverses?.length ?? 0, 0);
+    assertEqual(w.json(), before);
+  });
+
+  test('Quelle außerhalb wirft', () => {
+    const w = moveSheet();
+    rejects(w, () => mv(w, { c0: 0, r0: 0, c1: 3, r1: 0 }, 0, 1), 'invalid source.c1');
+  });
+
+  test('Typ der Zielspalte neu erkannt', () => {
+    const w = setup({
+      heads: [col('x', { type: 'text', role: 'categorical', shortName: 'C1' }), col('y', { shortName: 'C2' })],
+      cells: [['a', 'b', 'c', 'd'], [null, null, null, null]],
+    });
+    mv(w, down, 1, 0);
+    assertEqual(sheet(w).columns[1].type, 'text');
+    assertEqual(join(w, 1), 'a|b||');
+  });
+
+  test('überlappendes Ziel: Quelle zuerst gelesen, Bezug auf Quellzelle folgt', () => {
+    const w = setup({
+      heads: [col('x', { shortName: 'C1' }), col('y', { shortName: 'C2' })],
+      cells: [[1, 2, 3, null], [null, null, null, null]],
+      formulas: { y: { 0: '=C1[2]' } },
+    });
+    mv(w, { c0: 0, r0: 0, c1: 0, r1: 2 }, 0, 1);
+    assertEqual(join(w, 0), '|1|2|3');
+    assertEqual(sheet(w).formulas.y[0], '=C1[3]');
+    assertEqual(values(w, 1)[0], 2);
+  });
+});
+
+suite('worksheet: moveCells (Bezüge, moveCellRefs über das Kommando)', () => {
+  const refSheet = (formula) => setup({
+    heads: [col('x', { name: 'X', shortName: 'C1' }), col('y', { name: 'Y', shortName: 'C2' }), col('u', { shortName: 'C3' }), col('f', { name: 'F', shortName: 'C4' })],
+    cells: [0, 1, 2, 3].map(() => new Array(6).fill(null)),
+    formulas: { f: { 5: formula } },
+  });
+  const src = { c0: 0, r0: 0, c1: 0, r1: 1 };
+  const run = (formula, toCol, toRow) => {
+    const w = refSheet(formula);
+    w.m.moveCells({ sheetId: 's1', source: src, toCol, toRow });
+    return sheet(w).formulas.f[5];
+  };
+
+  test('keeps $ markers and leaves column refs alone', () => {
+    assertEqual(run('=$C1[$2]+C1+SUM(C1:C2)+C2[1]', 0, 3), '=$C1[$5]+C1+SUM(C1:C2)+C2[1]');
+  });
+  test('a partly moved cell range stays', () => {
+    assertEqual(run('=SUM(C1[2]:C1[3])', 0, 3), '=SUM(C1[2]:C1[3])');
+  });
+  test('a reference into the overwritten area becomes #REF!', () => {
+    assertEqual(run('=C1[4]+$C1[$5]+C1[6]', 0, 3), '=#REF!+#REF!+C1[6]');
+  });
+  test('a named reference takes the target column name, or C<n>', () => {
+    assertEqual(run("='X'[1]*2", 1, 0), "='Y'[1]*2");
+    assertEqual(run("='X'[1]*2", 2, 0), '=C3[1]*2');
+    assertEqual(run("='X'[1]", 0, 3), "='X'[4]");
+  });
+  test('leaves string literals alone', () => {
+    assertEqual(run('=IF(C1[1]>0, "C1[1]", 0)', 0, 3), '=IF(C1[4]>0, "C1[1]", 0)');
+  });
+});
+
 suite('worksheet: Agentenfläche der Zellkommandos', () => {
-  test('pasteBlock, fillRange, clearRange sind Aktionen; restoreCells (nur Umkehrung) nicht', () => {
+  test('pasteBlock, fillRange, clearRange, moveCells sind Aktionen; restoreCells (nur Umkehrung) nicht', () => {
     const { actions } = schemaAgentEntry(WorksheetModel);
-    for (const name of ['setCells', 'setFormula', 'writeColumns', 'importCsv', 'pasteBlock', 'fillRange', 'clearRange']) {
+    for (const name of ['setCells', 'setFormula', 'writeColumns', 'importCsv', 'pasteBlock', 'fillRange', 'clearRange', 'moveCells']) {
       assertTrue(Boolean(actions[name]), `${name} fehlt`);
     }
     assertEqual(actions.restoreCells, undefined);

@@ -3,8 +3,9 @@
  *
  * `setCells`, `setFormula`, `writeColumns`, `importCsv` (heutige Agenten-
  * aktionen, Gründe und Meldungen wörtlich aus `worksheet.js`) und die
- * Kommandos des Rasters `pasteBlock`, `fillRange`, `clearRange` (Verhalten
- * aus `DataGrid.importFromClipboard`, `_applyFill`, `_clearSelection`).
+ * Kommandos des Rasters `pasteBlock`, `fillRange`, `clearRange`, `moveCells`
+ * (Verhalten aus `DataGrid.importFromClipboard`, `_applyFill`,
+ * `_clearSelection`, `moveCells`).
  *
  * Jedes Kommando prüft alles, bevor es schreibt (ganz oder gar nicht), und
  * beschreibt seine Wirkung als Änderung (`Change`): Zeilen- und Spaltenzahl
@@ -26,7 +27,7 @@ import {
 import { requireKnownId, requireIndex, requireForm } from '../../../core/validate.js';
 import { isCell } from '../../../core/table-data.js';
 import { COLUMN_TYPES, detectInputType, parseCellInput, isNumericType, parseNumeric } from '../../../core/datagrid/datagrid-utils.js';
-import { isFormula } from '../../../core/datagrid/datagrid-formula.js';
+import { isFormula, moveCellRefs } from '../../../core/datagrid/datagrid-formula.js';
 import { recalcFormulas } from '../../../core/datagrid/table/formulas.js';
 import { splitHeader, fillBlock } from '../../../core/datagrid/table/paste.js';
 import { detectColumnType } from '../../../core/parser/column-types.js';
@@ -780,6 +781,129 @@ export const cellCommands = {
       if (written === 0) return 0;
       commit(this, sheet, { rowCount, columnCount: numCols, cols });
       return written;
+    },
+  }),
+
+  /**
+   * Einen Zellblock verschieben, wie das Raster beim Ziehen am Rand: Werte und
+   * Formeln wandern, die Quelle wird leer, was das Ziel hielt, ist
+   * überschrieben. Bezüge auf verschobene Zellen folgen ihnen; ein Bezug auf
+   * eine überschriebene Zelle wird `#REF!`. Das Ziel wird in das Blatt
+   * geklemmt (das Blatt wächst nicht); ist es gleich der Quelle, passiert
+   * nichts. Eine gesperrte Spalte in Quelle oder Ziel verweigert alles.
+   * Liefert den Zielblock (nullbasiert) oder `null`, wenn nichts geschah.
+   * @agent
+   */
+  moveCells: command({
+    params: {
+      sheetId: text(),
+      source: object({
+        c0: number({ integer: true, min: 0 }), r0: number({ integer: true, min: 0 }),
+        c1: number({ integer: true, min: 0 }), r1: number({ integer: true, min: 0 }),
+      }),
+      toCol: number({ integer: true, min: 0 }),
+      toRow: number({ integer: true, min: 0 }),
+    },
+    returns: object({
+      c0: number({ integer: true, min: 0 }), r0: number({ integer: true, min: 0 }),
+      c1: number({ integer: true, min: 0 }), r1: number({ integer: true, min: 0 }),
+    }, { nullable: true }),
+    run({ sheetId, source: s, toCol, toRow }) {
+      const sheet = sheetOf(this, sheetId);
+      const heads = sheet.columns;
+      const rows = sheet.data.rowCount;
+      requireRect('source.', s, heads.length, rows);
+      const w = s.c1 - s.c0 + 1;
+      const h = s.r1 - s.r0 + 1;
+      const tc = Math.min(Math.max(toCol, 0), heads.length - w);
+      const tr = Math.min(Math.max(toRow, 0), rows - h);
+      if (tc === s.c0 && tr === s.r0) return null;
+      const dCol = tc - s.c0;
+      const dRow = tr - s.r0;
+      const tgt = { c0: tc, r0: tr, c1: tc + w - 1, r1: tr + h - 1 };
+      for (let c = s.c0; c <= s.c1; c++) requireUnlocked(heads[c]);
+      for (let c = tgt.c0; c <= tgt.c1; c++) requireUnlocked(heads[c]);
+
+      const colName = (/** @type {number} */ n) => heads[n - 1]?.name || null;
+      const colIndex = (/** @type {string} */ name) => {
+        const i = heads.findIndex((/** @type {{ name: string }} */ x) => x.name === name);
+        return i < 0 ? null : i + 1;
+      };
+      const rewrite = (/** @type {string} */ f) => moveCellRefs(f, {
+        src: { c1: s.c0 + 1, c2: s.c1 + 1, r1: s.r0 + 1, r2: s.r1 + 1 }, dCol, dRow, colName, colIndex,
+      });
+      const inRect = (/** @type {any} */ b, /** @type {number} */ c, /** @type {number} */ r) => c >= b.c0 && c <= b.c1 && r >= b.r0 && r <= b.r1;
+
+      // Quellzellen zuerst lesen (Quelle und Ziel dürfen sich überlappen).
+      const moved = [];
+      for (let c = s.c0; c <= s.c1; c++) {
+        for (let r = s.r0; r <= s.r1; r++) {
+          const f = sheet.formulas[heads[c].id]?.[r] ?? null;
+          moved.push({ c: c + dCol, r: r + dRow, value: f ? null : sheet.data.columns[c][r], formula: f ? rewrite(f) : null });
+        }
+      }
+
+      const r0 = Math.min(s.r0, tr);
+      const r1 = Math.max(s.r1, tgt.r1);
+      /** @type {Map<number, ColumnChange>} */ const byCol = new Map();
+      const entry = (/** @type {number} */ c) => {
+        if (!byCol.has(c)) byCol.set(c, { index: c, formulas: {} });
+        return /** @type {ColumnChange} */ (byCol.get(c));
+      };
+      /** @type {number[]} */ const touched = [];
+      for (let c = s.c0; c <= s.c1; c++) touched.push(c);
+      for (let c = tgt.c0; c <= tgt.c1; c++) if (!touched.includes(c)) touched.push(c);
+
+      // Formeln aller anderen Zellen: Bezüge folgen oder werden #REF!.
+      for (let c = 0; c < heads.length; c++) {
+        const byRow = sheet.formulas[heads[c].id];
+        if (!byRow) continue;
+        for (const [key, f] of Object.entries(byRow)) {
+          const r = Number(key);
+          if (inRect(s, c, r) || inRect(tgt, c, r)) continue;
+          const next = rewrite(f);
+          if (next !== f) /** @type {Record<string, string|null>} */ (entry(c).formulas)[key] = next;
+        }
+      }
+
+      for (const c of touched) {
+        const cur = sheet.data.columns[c];
+        const e = entry(c);
+        const fs = /** @type {Record<string, string|null>} */ (e.formulas);
+        let values = cur.slice();
+        for (let r = r0; r <= r1; r++) {
+          if (inRect(s, c, r) || inRect(tgt, c, r)) {
+            values[r] = null;
+            if (sheet.formulas[heads[c].id]?.[r]) fs[r] = null;
+          }
+        }
+        for (const m of moved) {
+          if (m.c !== c) continue;
+          values[m.r] = m.value;
+          fs[m.r] = m.formula;
+        }
+        const head = copyHead(heads[c]);
+        const detected = detectColumnType(values, { format: head.format });
+        if (detected) {
+          head.type = detected.type;
+          head.format = detected.format;
+          values = detected.values.map((v) => (isCell(v) ? v : null));
+        }
+        const col = { ...head, values };
+        reinferRoleAfterRetype(col);
+        head.role = col.role;
+        head.roleManual = col.roleManual;
+        if (JSON.stringify(head) !== JSON.stringify(heads[c])) e.head = head;
+        const run = changedRun(cur, values);
+        if (run) Object.assign(e, run);
+      }
+
+      const cols = [...byCol.values()].map((e) => {
+        if (!Object.keys(/** @type {object} */ (e.formulas)).length) delete e.formulas;
+        return e;
+      }).filter((e) => e.head || e.values || e.formulas).sort((a, b) => a.index - b.index);
+      commit(this, sheet, { rowCount: rows, columnCount: heads.length, cols });
+      return tgt;
     },
   }),
 
