@@ -666,9 +666,13 @@ const mod = createModule({
           for (const p of pickers) p.refresh();
           this.refresh();
         };
+        // Worksheet cell edits emit only `worksheet:dataChanged`, not `data:changed`.
+        const onWorksheet = () => { for (const p of pickers) p.refresh(); this.refresh(); };
         eb.on('data:changed', onData);
+        eb.on('worksheet:dataChanged', onWorksheet);
         eb.on('module:activated', onActivated);
         unsubs.push(() => eb.off('data:changed', onData));
+        unsubs.push(() => eb.off('worksheet:dataChanged', onWorksheet));
         unsubs.push(() => eb.off('module:activated', onActivated));
       },
 

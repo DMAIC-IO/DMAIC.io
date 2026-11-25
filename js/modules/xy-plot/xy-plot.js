@@ -163,6 +163,8 @@ const mod = createModule({
       _chart: null,
       /** Guard against concurrent plot runs */
       _plotting: false,
+      /** A plot request arrived while one was running — replay it afterwards. */
+      _plotPending: false,
       /** @type {import('../../ui/dataset-picker.js').DatasetPicker|null} */
       _picker: null,
       /** Last series array passed to the chart (for _renderStats). */
@@ -381,14 +383,22 @@ const mod = createModule({
         // A value edit updates `cur` and skips the re-render, so focus and the
         // click that ended the edit survive; only a mode change rebuilds.
         let cur = eb;
+        // Once the mode changed, these fields are stale: the browser may still
+        // fire `change` on the removed input (blur on teardown), which would
+        // write the old mode back into the model.
+        let superseded = false;
         const setValue = (key, v) => {
+          if (superseded || cur[key] === v) return;
           cur = { ...cur, [key]: v };
           update(cur, { render: false });
         };
         const helpKey = (k) => `modules.xy-plot.types.ErrorBars.${k}`;
         const modeSelect = h('select', { class: 'xyplot__eb-mode', 'data-ref': 'eb-mode' },
           ERROR_BAR_MODES.map(m => h('option', { value: m, selected: m === eb.mode }, _t(ERROR_BAR_MODE_LABELS[m]))));
-        modeSelect.addEventListener('change', () => update(emptyErrorBars(modeSelect.value)));
+        modeSelect.addEventListener('change', () => {
+          superseded = true;
+          update(emptyErrorBars(modeSelect.value));
+        });
         el.append(h('label', { class: 'xyplot__eb-head', 'data-help-key': helpKey('mode') },
           h('span', { class: 'xyplot__eb-title' }, _t('errorBars')), modeSelect));
         if (eb.mode === 'none') return;
@@ -624,10 +634,31 @@ const mod = createModule({
         return series;
       },
 
+      /**
+       * Plot the current model. A request that arrives while a plot is still
+       * running is not dropped: it is remembered and replayed once the running
+       * plot has finished, so the chart and the stats table always end up on
+       * the latest model and data.
+       */
       async _plot() {
-        if (this._plotting) return;
+        if (this._plotting) {
+          this._plotPending = true;
+          return;
+        }
         this._plotting = true;
+        try {
+          await this._plotOnce();
+        } finally {
+          this._plotting = false;
+          if (this._plotPending) {
+            this._plotPending = false;
+            this._plot();
+          }
+        }
+      },
 
+      /** One plot run; only called through _plot(), which serialises the runs. */
+      async _plotOnce() {
         const errBox = module._container.querySelector('[data-ref="error-box"]');
         if (errBox) errBox.style.display = 'none';
 
@@ -636,7 +667,6 @@ const mod = createModule({
           series = this._buildSeries();
         } catch (err) {
           this._showError(err.message);
-          this._plotting = false;
           return;
         }
         // First ready dataset's X column names the x axis (a ready dataset always yields a series, or throws).
@@ -647,7 +677,6 @@ const mod = createModule({
           this._showPlaceholder();
           this._lastSeries = null;
           this._renderStats();
-          this._plotting = false;
           return;
         }
 
@@ -664,36 +693,30 @@ const mod = createModule({
 
         const gen = ++this._renderGen;
 
-        try {
-          const chart = await module._context.chartManager.create(plotEl, 'scatter', {
-            title: '',
-            xLabel,
-            yLabel: '',
-            showLegend: module._context.stateManager.get('settings.chartShowLegend') !== false,
-            series,
-            refLines: this.model.refLines,
-            refAreas: this.model.refAreas,
-            ...(this.model.bgColor ? { bgColor: this.model.bgColor } : {}),
-            onSeriesChange: (idx, key, value) => {
-              this._syncSeriesOverride(idx, key, value);
-            },
-            onEditorBuild: (editorInner, t, onUpdate, seriesItemEls) => {
-              this._appendSeriesDetails(editorInner, seriesItemEls);
-            },
-          });
+        const chart = await module._context.chartManager.create(plotEl, 'scatter', {
+          title: '',
+          xLabel,
+          yLabel: '',
+          showLegend: module._context.stateManager.get('settings.chartShowLegend') !== false,
+          series,
+          refLines: this.model.refLines,
+          refAreas: this.model.refAreas,
+          ...(this.model.bgColor ? { bgColor: this.model.bgColor } : {}),
+          onSeriesChange: (idx, key, value) => {
+            this._syncSeriesOverride(idx, key, value);
+          },
+          onEditorBuild: (editorInner, t, onUpdate, seriesItemEls) => {
+            this._appendSeriesDetails(editorInner, seriesItemEls);
+          },
+        });
 
-          if (gen !== this._renderGen) {
-            // Stale render — a newer one started while awaiting.
-            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
-            this._plotting = false;
-            return;
-          }
-
-          this._chart = chart;
-        } finally {
-          this._plotting = false;
+        if (gen !== this._renderGen) {
+          // Stale render — the chart was torn down (e.g. destroy()) while awaiting.
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+          return;
         }
 
+        this._chart = chart;
         this._lastSeries = series;
         this._renderStats();
       },
@@ -801,6 +824,12 @@ const mod = createModule({
           () => eb.off('worksheet:dataChanged', onRefresh),
         );
 
+        // Re-plot (chart and stats) when worksheet data changes — otherwise
+        // both keep showing the values from the last column pick.
+        const onData = () => this._plot();
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         // Refresh picker when a worksheet module is added / removed
         const onAdd = ({ moduleId }) => { if (moduleId === 'worksheet') this._refreshPicker(); };
         eb.on('module:added', onAdd);
@@ -838,6 +867,9 @@ const mod = createModule({
         this._unsubs = [];
         this._picker?.destroy();
         this._picker = null;
+        // A plot still awaiting its chart drops the result; none is replayed.
+        this._renderGen++;
+        this._plotPending = false;
         this._destroyChart();
       },
     };

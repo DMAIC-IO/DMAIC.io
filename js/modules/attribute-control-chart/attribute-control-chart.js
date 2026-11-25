@@ -569,6 +569,15 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // A worksheet edit changes the data, not the model: recompute in place.
+        const onData = () => {
+          this._pickerDefects?.refresh();
+          this._pickerSize?.refresh();
+          this.runAnalysis();
+        };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         const onTheme = () => {
           if (this._lastResult) {
             this.$nextTick(() => this._renderChart(this._lastResult.result, this._lastResult.violations, ++this._renderGen));

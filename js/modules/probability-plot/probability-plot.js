@@ -526,11 +526,12 @@ const mod = createModule({
         // Refresh picker (column list) when worksheet data changes
         const onRefresh = () => this._refreshPicker();
         eb.on('state:saved', onRefresh);
-        eb.on('worksheet:dataChanged', onRefresh);
-        this._unsubs.push(
-          () => eb.off('state:saved', onRefresh),
-          () => eb.off('worksheet:dataChanged', onRefresh),
-        );
+        this._unsubs.push(() => eb.off('state:saved', onRefresh));
+
+        // Worksheet edits change the plotted values, not only the column list.
+        const onData = () => { this._refreshPicker(); this._autoPlot(); };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
 
         // Refresh picker when a worksheet module is added / removed
         const onAdd = ({ moduleId }) => { if (moduleId === 'worksheet') this._refreshPicker(); };

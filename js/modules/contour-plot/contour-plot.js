@@ -624,6 +624,15 @@ const mod = createModule({
           eb.on('module:activated', onActivated);
           this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+          // The data point overlay reads the worksheet at draw time: redraw
+          // on an edit so the dots follow the data.
+          const onData = () => {
+            this._picker?.refresh();
+            if (this._lastGrid) this._drawContour();
+          };
+          eb.on('worksheet:dataChanged', onData);
+          this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
           const onTheme = () => { if (this._lastGrid) this._drawContour(); };
           eb.on('theme:changed', onTheme);
           this._unsubs.push(() => eb.off('theme:changed', onTheme));

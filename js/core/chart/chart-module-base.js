@@ -90,6 +90,10 @@ export function whenAnchor(module, instance, selector, gen, maxFrames = 30) {
  *   the `themeMode`-derived default. Used by autorun modules whose theme
  *   response re-renders the *cached* result in place (rather than re-running the
  *   full analysis). `this` is the live Alpine instance.
+ * @property {(this:object) => void} [onDataChanged]
+ *   Optional explicit `worksheet:dataChanged` handler. When omitted, the PLOT
+ *   cluster refreshes the picker and calls `this._plot()`, the AUTORUN cluster
+ *   refreshes the picker and calls `this._scheduleAutoRun()`.
  */
 
 /**
@@ -101,7 +105,10 @@ export function whenAnchor(module, instance, selector, gen, maxFrames = 30) {
  * @returns {object} Lifecycle members to spread into the data-fn return.
  */
 export function chartModuleLifecycle(module, cfg) {
-  const { mountPicker, themeMode, autorun = false, initialRender, onActivated, onTheme: onThemeOverride } = cfg;
+  const {
+    mountPicker, themeMode, autorun = false, initialRender, onActivated,
+    onTheme: onThemeOverride, onDataChanged: onDataOverride,
+  } = cfg;
 
   return {
     // ── Transient view state (not persisted) ──────────────────
@@ -255,6 +262,18 @@ export function chartModuleLifecycle(module, cfg) {
           : () => { if (this._chart) this._chart.render(); };
       eb.on('theme:changed', onTheme);
       this._unsubs.push(() => eb.off('theme:changed', onTheme));
+
+      // Re-render when worksheet data changes. Without this the chart keeps
+      // showing the data it was drawn from (2026-11-25: every module on this
+      // lifecycle went stale after a worksheet edit). An explicit
+      // `onDataChanged` replaces the cluster default.
+      const onData = onDataOverride
+        ? () => { onDataOverride.call(this); }
+        : autorun
+          ? () => { this._picker?.refresh?.(); this._scheduleAutoRun(); }
+          : () => { this._picker?.refresh?.(); if (typeof this._plot === 'function') this._plot(); };
+      eb.on('worksheet:dataChanged', onData);
+      this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
 
       // Initial render from restored state.
       if (initialRender) {

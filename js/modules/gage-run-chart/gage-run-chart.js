@@ -523,6 +523,14 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // A worksheet edit changes the data, not the model: recompute in place.
+        const onData = () => {
+          for (const p of Object.values(this._pickers)) p?.refresh();
+          this._runAnalysis();
+        };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         // Chart colours come from CSS custom properties — re-render on theme flip.
         const onTheme = () => {
           if (this.result) this._renderStrips(this.result, ++this._renderGen);

@@ -1560,6 +1560,15 @@ const definition = {
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // A worksheet edit changes the data, not the model: the test is cheap
+        // and deterministic, so recompute in place rather than flag it stale.
+        const onData = () => {
+          this._picker1?.refresh(); this._picker2?.refresh(); this._pickerK?.refresh();
+          this.runAnalysis();
+        };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         this.runAnalysis();
       },
 

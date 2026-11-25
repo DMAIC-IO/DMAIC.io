@@ -773,6 +773,14 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // A worksheet edit changes the data, not the model: recompute in place.
+        const onData = () => {
+          onActivated({ instanceId: module._context.instanceId });
+          this.runAnalysis();
+        };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         // Chart-Farben kommen aus CSS-Custom-Properties — beim Theme-Wechsel neu zeichnen.
         const onTheme = () => {
           if (this.result) this._renderStrips(this.result, ++this._renderGen);

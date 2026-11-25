@@ -502,6 +502,11 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // A worksheet edit changes the data, not the model: recompute in place.
+        const onData = () => { this._picker?.refresh(); this.runAnalysis(); };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         const onTheme = () => {
           if (this.result) this._renderCharts(this.result, ++this._renderGen);
         };

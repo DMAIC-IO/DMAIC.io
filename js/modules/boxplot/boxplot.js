@@ -434,6 +434,11 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // Re-plot when worksheet data changes — the chart must not keep the old values.
+        const onData = () => { this._picker?.refresh(); this._autoPlot(); };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         // Re-render chart on theme change
         const onTheme = () => {
           if (this._lastGroups) this._plot();
