@@ -163,11 +163,14 @@ suite('worksheet: removeColumn', () => {
     assertDeepEqual(values(w, 0), ['x', 'y', 'z']);
   });
 
-  test('Formeln, die die entfernte Spalte nennen, bleiben stehen und rechnen leer', () => {
-    const w = filled();
-    w.m.removeColumn({ sheetId: 's1', columnId: 'a' });
-    assertDeepEqual(sheet(w).formulas.c, { 0: "='A'[1]*10", 2: "='A'[3]+1" });
-    assertDeepEqual(values(w, 1), [null, null, null]);
+  test('Formeln, die die entfernte Spalte nennen, werden #REF!, Rückgängig stellt sie wörtlich her', () => {
+    const w = setup({
+      cells: [[1, 2, 3], [null, null, null]],
+      heads: [col('a', { shortName: 'C1' }), col('b', { shortName: 'C2' })],
+      formulas: { b: { 0: '=C1[1]*10' } },
+    });
+    roundTrip(w, { type: 'removeColumn', sheetId: 's1', columnId: 'a' });
+    assertDeepEqual(sheet(w).formulas.b, { 0: '=#REF!*10' });
   });
 
   test('weiche Sperre erlaubt das Entfernen (wie das Kopfmenü)', () => {
@@ -487,5 +490,150 @@ suite('worksheet: Umkehr-Kommandos', () => {
     assertEqual(actions.applyRowPermutation, undefined);
     assertEqual(actions.restoreColumn, undefined);
     assertEqual(actions.restoreRows, undefined);
+  });
+});
+
+/** Köpfe `col_a` (C1, Werte 1..3) und `col_b` (C2) mit `=C1[r]*2` (Upstream `newGrid`). */
+function refs() {
+  return setup({
+    heads: [col('col_a', { name: 'X', shortName: 'C1' }), col('col_b', { name: 'Doppelt', shortName: 'C2' })],
+    cells: [[1, 2, 3], [null, null, null]],
+    formulas: { col_b: { 0: '=C1[1]*2', 1: '=C1[2]*2', 2: '=C1[3]*2' } },
+  });
+}
+const vb = (w) => values(w, ids(w).indexOf('col_b')).join('|');
+const fb = (w, r) => sheet(w).formulas.col_b[r];
+
+/** Mit `n` Spalten, Formel `f` in der letzten; Werte in der ersten. */
+function many(n, f, rows = 6) {
+  const heads = Array.from({ length: n }, (_, i) => col(`k${i + 1}`, { shortName: `C${i + 1}` }));
+  const cells = heads.map((_, i) => (i === 0 ? Array.from({ length: rows }, (_x, r) => r + 1) : new Array(rows).fill(null)));
+  return setup({ heads, cells, formulas: { [`k${n}`]: { 0: f } } });
+}
+
+suite('worksheet: Spaltenbezüge folgen', () => {
+  test('eine nach vorn gezogene neue Spalte lässt die Formeln bei ihrer Quelle', () => {
+    const w = refs();
+    assertEqual(vb(w), '2|4|6');
+    const id = w.m.addColumn({ sheetId: 's1' });
+    w.m.moveColumn({ sheetId: 's1', columnId: id, toIndex: 0 });
+    assertEqual(ids(w)[0], id);
+    assertEqual(vb(w), '2|4|6');
+    assertEqual(fb(w, 0), '=C2[1]*2');
+  });
+
+  test('links eingefügte Spalte lässt die Formeln bei ihrer Quelle', () => {
+    const w = refs();
+    roundTrip(w, { type: 'addColumn', sheetId: 's1', position: 0 });
+    assertEqual(vb(w), '2|4|6');
+    assertEqual(fb(w, 0), '=C2[1]*2');
+  });
+
+  test('Rückgängig einer Verschiebung stellt den Formeltext her', () => {
+    const w = refs();
+    const id = w.m.addColumn({ sheetId: 's1' });
+    roundTrip(w, { type: 'moveColumn', sheetId: 's1', columnId: id, toIndex: 0 });
+    w.m.moveColumn({ sheetId: 's1', columnId: id, toIndex: 2 });
+    assertEqual(fb(w, 0), '=C1[1]*2');
+    assertEqual(vb(w), '2|4|6');
+  });
+
+  test('Entfernen einer Spalte davor rückt die Bezüge zurück', () => {
+    const w = refs();
+    const id = w.m.addColumn({ sheetId: 's1', position: 0 });
+    roundTrip(w, { type: 'removeColumn', sheetId: 's1', columnId: id });
+    assertEqual(fb(w, 0), '=C1[1]*2');
+    assertEqual(vb(w), '2|4|6');
+  });
+
+  /** Mittlere Spalte `mid` mit 5, Formel `=C2[1]+C1[2]` in col_b Zeile 1. */
+  function withMid() {
+    const w = refs();
+    const mid = w.m.addColumn({ sheetId: 's1', position: 1 });
+    w.m.setCells({ sheetId: 's1', columnId: mid, startRow: 0, values: [5] });
+    w.m.setFormula({ sheetId: 's1', columnId: 'col_b', row: 1, formula: '=C2[1]+C1[2]' });
+    return { w, mid };
+  }
+
+  test('Rückgängig einer Entfernung stellt die Bezüge auf beide Spalten her', () => {
+    const { w, mid } = withMid();
+    assertEqual(fb(w, 1), '=C2[1]+C1[2]');
+    roundTrip(w, { type: 'removeColumn', sheetId: 's1', columnId: mid });
+    // roundTrip endet nach dem Wiederholen: dort steht #REF!
+    assertEqual(fb(w, 1), '=#REF!+C1[2]');
+    // Rückgängig allein: Wert und Text wörtlich zurück
+    const w2 = withMid().w;
+    w2.seen.inverses = null;
+    w2.m.removeColumn({ sheetId: 's1', columnId: ids(w2)[1] });
+    for (const c of [...w2.seen.inverses].reverse()) w2.m.execute(c);
+    assertEqual(fb(w2, 1), '=C2[1]+C1[2]');
+    assertEqual(fb(w2, 0), '=C1[1]*2');
+    assertEqual(values(w2, 2)[1], 7);
+  });
+
+  test('Bezug auf die entfernte Spalte wird #REF!', () => {
+    const { w, mid } = withMid();
+    w.m.removeColumn({ sheetId: 's1', columnId: mid });
+    assertEqual(fb(w, 1), '=#REF!+C1[2]');
+    assertEqual(fb(w, 0), '=C1[1]*2');
+    assertEqual(values(w, 1)[1], null);
+  });
+
+  test('Wiederholen der Entfernung schreibt #REF! wieder', () => {
+    const { w, mid } = withMid();
+    roundTrip(w, { type: 'removeColumn', sheetId: 's1', columnId: mid });
+    assertEqual(fb(w, 1), '=#REF!+C1[2]');
+  });
+
+  test('removeColumn zweimal hin und her: Texte kommen wörtlich zurück', () => {
+    const { w, mid } = withMid();
+    const before = w.json();
+    w.seen.inverses = null;
+    w.m.removeColumn({ sheetId: 's1', columnId: mid });
+    const undo = w.seen.inverses;
+    const redo = collectInverses(w.m, () => { for (const c of [...undo].reverse()) w.m.execute(c); });
+    assertEqual(w.json(), before);
+    const undo2 = collectInverses(w.m, () => { for (const c of [...redo].reverse()) w.m.execute(c); });
+    assertEqual(fb(w, 1), '=#REF!+C1[2]');
+    for (const c of [...undo2].reverse()) w.m.execute(c);
+    assertEqual(fb(w, 1), '=C2[1]+C1[2]');
+    assertEqual(fb(w, 0), '=C1[1]*2');
+    assertEqual(w.json(), before);
+  });
+
+  test('schreibt Zell-, bloße, festgesetzte und Bereichsbezüge um', () => {
+    const w = setup({
+      heads: [col('p', { shortName: 'C1' }), col('q', { shortName: 'C2' }), col('r', { shortName: 'C3' })],
+      cells: [[1, 2, 3], [1, 2, 3], [null, null, null]],
+      formulas: { r: { 0: '=C1[2]+$C2[$3]+SUM(C1:C2)+MEAN(C1)' } },
+    });
+    w.m.moveColumn({ sheetId: 's1', columnId: 'q', toIndex: 0 });
+    assertEqual(sheet(w).formulas.r[0], '=C2[2]+$C1[$3]+SUM(C2:C1)+MEAN(C2)');
+  });
+
+  test('lässt Namen, Zeichenketten und Funktionsnamen stehen', () => {
+    const w = setup({
+      heads: [col('p', { shortName: 'C1' }), col('q', { shortName: 'C2' }), col('r', { shortName: 'C3' })],
+      cells: [[1, 2, 3], [1, 2, 3], [null, null, null]],
+      formulas: { r: { 0: "=COUNTIF('C1', \"C1\")+LOG10(C1)" } },
+    });
+    w.m.moveColumn({ sheetId: 's1', columnId: 'q', toIndex: 0 });
+    assertEqual(sheet(w).formulas.r[0], "=COUNTIF('C1', \"C1\")+LOG10(C2)");
+  });
+
+  test('ein auf #REF! abgebildeter Bezug ersetzt auch Zeile und $', () => {
+    const w = many(4, '=$C2[$5]+C3[2]+SUM(C1:C2)');
+    w.m.removeColumn({ sheetId: 's1', columnId: 'k2' });
+    assertEqual(sheet(w).formulas.k4[0], '=#REF!+C2[2]+SUM(C1:#REF!)');
+  });
+
+  test('ein Bezug auf eine nicht vorhandene Spalte bleibt stehen', () => {
+    const w = setup({
+      heads: [col('p', { shortName: 'C1' }), col('q', { shortName: 'C2' })],
+      cells: [[1, 2, 3], [null, null, null]],
+      formulas: { q: { 0: '=C9*2' } },
+    });
+    w.m.moveColumn({ sheetId: 's1', columnId: 'q', toIndex: 0 });
+    assertEqual(sheet(w).formulas.q[0], '=C9*2');
   });
 });

@@ -6,8 +6,10 @@
  * `setColumnFormat`), Zeilen (`addRows`, `removeRows`, `moveRow`) und
  * `sortRows`. Prüfungen und Meldungen wörtlich aus den heutigen
  * Agentenaktionen (`worksheet.js`), die Wirkung wie `DataGrid` (Kurznamen
- * C1… folgen der Reihenfolge, Formeln wandern mit ihrer Zeile, Bezüge in
- * Formeln bleiben stehen; nur Umbenennen schreibt sie um).
+ * C1… folgen der Reihenfolge, Formeln wandern mit ihrer Zeile; positionale
+ * Bezüge (`C2`, `C2[5]`, `C1:C3`) folgen Verschieben, Einfügen und Entfernen
+ * ihrer Spalte, ein Bezug auf eine entfernte Spalte wird `#REF!`; Umbenennen
+ * schreibt Namensbezüge um).
  *
  * Jedes Kommando prüft alles, bevor es schreibt, sammelt seine Umkehrung
  * (`recordInverse`), setzt Formelzeilen mit `remapFormulaRows` um, rechnet
@@ -31,6 +33,7 @@ import {
   insertRows, deleteRows, moveRowData, insertColumn, deleteColumn, moveColumnData,
   sortPermutation, applyPermutation, invertPermutation, convertColumn,
 } from '../../../core/datagrid/table/ops.js';
+import { remapColumnRefs, REF_ERROR } from '../../../core/datagrid/datagrid-formula.js';
 import { recalcFormulas, remapFormulaRows, renameInFormulas } from '../../../core/datagrid/table/formulas.js';
 import { reinferRoleAfterRetype } from '../../../core/worksheet-write.js';
 import { isCell } from '../../../core/table-data.js';
@@ -54,6 +57,47 @@ const shortNameAt = (i) => `C${i + 1}`;
  */
 function reassignShortNames(heads) {
   heads.forEach((h, i) => { h.shortName = shortNameAt(i); });
+}
+
+/**
+ * Einsbasierte Position jeder Spalte (`index + 1`; die Formel-Engine löst
+ * `C<n>` über den Index auf) — vor einer Spaltenänderung genommen.
+ * @param {any} sheet @returns {Map<string, number>}
+ */
+function positionsOf(sheet) {
+  return new Map(sheet.columns.map((/** @type {any} */ h, /** @type {number} */ i) => [h.id, i + 1]));
+}
+
+/**
+ * Positionale Spaltenbezüge aller Formeln des Blatts umschreiben, nachdem
+ * Spalten ihren Platz wechselten. Eine Spalte, die es nicht mehr gibt
+ * (`removedCol`), wird `#REF!`; eine Position ohne Spalte bleibt stehen.
+ * @param {any} sheet @param {Map<string, number>} oldPos aus `positionsOf`
+ * @param {{ removedCol?: string }} [opts]
+ * @returns {Record<string, Record<string, string>>} Texte vor dem Umschreiben,
+ *   nur geänderte Formeln
+ */
+function remapAfterReorder(sheet, oldPos, { removedCol } = {}) {
+  /** @type {Map<number, string>} */
+  const idAt = new Map([...oldPos].map(([id, pos]) => [pos, id]));
+  const newPos = positionsOf(sheet);
+  const mapCol = (/** @type {number} */ old) => {
+    const id = idAt.get(old);
+    if (id === undefined) return null;
+    if (id === removedCol) return REF_ERROR;
+    return newPos.get(id) ?? null;
+  };
+  /** @type {Record<string, Record<string, string>>} */
+  const before = {};
+  for (const [columnId, rows] of Object.entries(sheet.formulas)) {
+    for (const [row, f] of Object.entries(/** @type {Record<string, string>} */ (rows))) {
+      const next = remapColumnRefs(f, mapCol);
+      if (next === f) continue;
+      (before[columnId] ??= {})[row] = f;
+      /** @type {any} */ (rows)[row] = next;
+    }
+  }
+  return before;
 }
 
 /**
@@ -174,7 +218,7 @@ function commitHead(model, sheet, ci, head, run = null) {
 export const structureCommands = {
   /**
    * Eine leere Zahlenspalte einfügen, ohne Position am Ende. Die Kurznamen
-   * (C1, …) folgen der Reihenfolge. Liefert die id der neuen Spalte.
+   * (C1, …) folgen der Reihenfolge, Formelbezüge auf Spalten dahinter rücken mit. Liefert die id der neuen Spalte.
    * @agent
    */
   addColumn: command({
@@ -190,7 +234,9 @@ export const structureCommands = {
         role: defaultRoleForType('numeric'), roleManual: false, format: {}, meta: null,
       };
       const off = offShortNames(sheet);
+      const oldPos = positionsOf(sheet);
       insertColumnAt(sheet, at, head, undefined, undefined);
+      if (position !== undefined) remapAfterReorder(sheet, oldPos);
       recordShortNames(this, sheet, off, count);
       recordInverse(this, { type: 'removeColumn', sheetId, columnId: head.id });
       done(this, sheet);
@@ -199,7 +245,8 @@ export const structureCommands = {
   }),
 
   /**
-   * Eine Spalte samt Werten und Formeln entfernen. Eine harte Sperre lehnt
+   * Eine Spalte samt Werten und Formeln entfernen; Formelbezüge auf spätere
+   * Spalten rücken nach, Bezüge auf die entfernte werden `#REF!`. Eine harte Sperre lehnt
    * ab, eine weiche nicht (wie das Kopfmenü).
    * @agent
    */
@@ -212,13 +259,15 @@ export const structureCommands = {
       if (head.meta?.lock === 'hard') throw new Error(`column "${columnId}" is locked (hard)`);
       const count = sheet.columns.length;
       const off = offShortNames(sheet);
+      const oldPos = positionsOf(sheet);
       sheet.columns.splice(ci, 1);
       const values = deleteColumn(sheet.data, ci);
       const formulas = sheet.formulas[columnId] ?? {};
       delete sheet.formulas[columnId];
       reassignShortNames(sheet.columns);
+      const otherFormulas = remapAfterReorder(sheet, oldPos, { removedCol: columnId });
       recordShortNames(this, sheet, off, count);
-      recordInverse(this, { type: 'restoreColumn', sheetId, index: ci, head: copyHead(head), values, formulas });
+      recordInverse(this, { type: 'restoreColumn', sheetId, index: ci, head: copyHead(head), values, formulas, otherFormulas });
       done(this, sheet);
     },
   }),
@@ -268,7 +317,7 @@ export const structureCommands = {
 
   /**
    * Eine Spalte verschieben, wie das Ziehen ihres Kopfs; `toIndex` ist ihre
-   * Position danach. Die Kurznamen folgen. Liefert false, wenn die Spalte
+   * Position danach. Die Kurznamen und die Formelbezüge folgen. Liefert false, wenn die Spalte
    * schon dort steht.
    * @agent
    */
@@ -282,10 +331,12 @@ export const structureCommands = {
       requireIndex('toIndex', toIndex, count, { existing: true });
       if (from === toIndex) return false;
       const off = offShortNames(sheet);
+      const oldPos = positionsOf(sheet);
       const [head] = sheet.columns.splice(from, 1);
       sheet.columns.splice(toIndex, 0, head);
       moveColumnData(sheet.data, from, toIndex);
       reassignShortNames(sheet.columns);
+      remapAfterReorder(sheet, oldPos);
       recordShortNames(this, sheet, off, count);
       recordInverse(this, { type: 'moveColumn', sheetId, columnId, toIndex: from });
       done(this, sheet);
@@ -520,7 +571,8 @@ export const structureCommands = {
 
   /**
    * @noagent Nur Umkehrung: setzt eine entfernte Spalte samt Kopf, Werten
-   * und Formeln wieder ein (Umkehrung von `removeColumn`).
+   * und Formeln wieder ein (Umkehrung von `removeColumn`); `otherFormulas` sind
+   * die Texte der anderen Spalten vor dem Entfernen, wörtlich zurückgesetzt.
    */
   restoreColumn: command({
     params: {
@@ -529,8 +581,9 @@ export const structureCommands = {
       head: object(COLUMN_SHAPE, hidden),
       values: list(cell(), hidden),
       formulas: map(text(), text(), hidden),
+      otherFormulas: map(text(), map(text(), text()), { ...hidden, optional: true }),
     },
-    run({ sheetId, index, head, values, formulas }) {
+    run({ sheetId, index, head, values, formulas, otherFormulas }) {
       const sheet = sheetOf(this, sheetId);
       const count = sheet.columns.length;
       const rows = sheet.data.rowCount;
@@ -539,7 +592,13 @@ export const structureCommands = {
       requireForm('values', `[${values.length} cells]`, values.length === rows, `${rows} cells`);
       for (const key of Object.keys(formulas)) requireIndex('formulas row', Number(key), rows, { existing: true });
       const off = offShortNames(sheet);
+      for (const [key, rowsOf] of Object.entries(otherFormulas ?? {})) {
+        for (const row of Object.keys(rowsOf)) requireIndex(`otherFormulas ${key} row`, Number(row), rows, { existing: true });
+      }
       insertColumnAt(sheet, index, head, values, formulas);
+      for (const [key, rowsOf] of Object.entries(otherFormulas ?? {})) {
+        sheet.formulas[key] = { ...(sheet.formulas[key] ?? {}), ...rowsOf };
+      }
       recordShortNames(this, sheet, off, count);
       recordInverse(this, { type: 'removeColumn', sheetId, columnId: head.id });
       done(this, sheet);
