@@ -57,6 +57,19 @@ suite('histogram module — chart config', () => {
     assertEqual(back.chartConfig.yLabel, 'Anzahl');
     assertTrue(back.chartConfig.title === '');
   });
+  test('grid line switches survive a round trip through toJSON', () => {
+    const m = new State();
+    const cfg = buildChartConfig(m, series(), AUTO);
+    assertTrue(cfg.showXGrid !== false && cfg.showYGrid !== false, 'grid on by default');
+    cfg.showXGrid = false;
+    cfg.showYGrid = false;
+    copyBack(m, cfg, AUTO);
+    const back = State.fromJSON(JSON.parse(JSON.stringify(m.toJSON())));
+    const again = buildChartConfig(back, series(), AUTO);
+    assertEqual(again.showXGrid, false);
+    assertEqual(again.showYGrid, false);
+    assertEqual(buildChartConfig(State.fromJSON({}), series(), AUTO).showXGrid, true, 'old data: grid on');
+  });
 });
 
 suite('histogram module — destroy before the queued auto-plot', () => {
