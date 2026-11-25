@@ -1,0 +1,110 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein **physikalischer Widerspruch** liegt vor, wenn ein und derselbe Parameter eines Systems gleichzeitig zwei entgegengesetzte Werte annehmen muss. Anders als der {{term:technischer-widerspruch|technische Widerspruch}} der Altschuller-Matrix („Parameter A verbessert ↑, Parameter B verschlechtert ↓“) ist der physikalische Widerspruch enger — und genau deshalb mächtiger: Er zwingt zur klaren Aussage „X muss A sein UND nicht-A sein“."
+        },
+        {
+          "type": "definition",
+          "term": "Physikalischer Widerspruch",
+          "content": "Ein Parameter X muss zwei sich ausschließende Werte gleichzeitig annehmen. Formal: X soll A sein, damit Wirkung 1 eintritt. X soll ¬A sein, damit Wirkung 2 eintritt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Klassische Beispiele:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Eine Tragfläche soll **lang** sein (für Auftrieb beim Start) und **kurz** sein (für niedrigen Luftwiderstand im Reiseflug).",
+            "Eine Kaffeetasse soll **heiß** sein (damit der Kaffee warm bleibt) und **kalt** sein (damit die Lippe nicht verbrennt).",
+            "Eine Schweißelektrode soll **dick** sein (für Stromtragfähigkeit) und **dünn** sein (um in die Fuge zu kommen)."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Lösung führt nicht über eine Matrix, sondern über die **vier Separationsprinzipien**: Zeit, Raum, Bedingung und {{term:supersystem|Systemebene}}. Eines dieser {{term:separationsprinzipien|vier Prinzipien}} löst praktisch jeden physikalischen Widerspruch auf — die Frage ist nur, welches."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Den Parameter klar benennen — *ein* messbares Attribut des Systems, nicht das System selbst (also „Tragflügellänge“, nicht „Tragflügel“).",
+            "Die zwei entgegengesetzten Anforderungen formulieren („soll A sein, damit …“ / „soll ¬A sein, damit …“). Wichtig: das *damit* — die jeweilige Funktion oder Wirkung mitschreiben.",
+            "Plausibilitätscheck: handelt es sich wirklich um einen *physikalischen* Widerspruch (gleicher Parameter zwei Werte) und nicht um einen *technischen* (zwei Parameter)? Im Zweifel zurück in die {{term:widerspruchsmatrix|Widerspruchsmatrix}}.",
+            "Die vier Separationsprinzipien der Reihe nach durchgehen. Für jedes prüfen, ob es im konkreten Fall anwendbar ist, und die Idee dazu festhalten.",
+            "Das passende Prinzip auswählen und die konkrete Lösungsidee im Lösungs-Feld konkretisieren — was wird wann / wo / unter welcher Bedingung / auf welcher Ebene anders?"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Wenn mehrere Prinzipien passen, dürfen Sie sie auch kombinieren — das ist häufig die ergiebigste Lösung. In dem Fall wählen Sie das *dominante* Prinzip und beschreiben die Kombination im Lösungs-Feld."
+        }
+      ]
+    },
+    "principles": {
+      "title": "Die vier Separationsprinzipien",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "1. Trennung in der Zeit",
+          "content": "Der Parameter ist A zum Zeitpunkt t₁ und ¬A zum Zeitpunkt t₂. Beispiel: Klapptragwerk — der Flügel ist im Reiseflug kurz, beim Start lang. Auch: Fahrwerk ein-/ausfahrbar, Airbag entfaltet sich nur im Crash, Sägeblatt entfernt Material beim Schnitt, nicht beim Rückhub."
+        },
+        {
+          "type": "definition",
+          "term": "2. Trennung im Raum",
+          "content": "Der Parameter ist A in Region X und ¬A in Region Y des Systems. Beispiel: Schraubenkopf hart (für den Schraubendreher), Schaft elastisch (gegen Bruch). Auch: Bohrer scharf an der Spitze, stumpf am Schaft; Brille mit unterschiedlichen Bereichen (Gleitsicht)."
+        },
+        {
+          "type": "definition",
+          "term": "3. Trennung nach Bedingung",
+          "content": "Der Parameter ist A unter Bedingung C₁ und ¬A unter Bedingung C₂. Bedingung kann Last, Temperatur, Nutzergruppe, Geschwindigkeit, … sein. Beispiel: Nicht-Newton'sche Flüssigkeit — bei niedriger Last flüssig, bei Schlag fest. Auch: photochrome Brillengläser, Memory-Schaum, ABS-Bremsdruck nach Schlupf."
+        },
+        {
+          "type": "definition",
+          "term": "4. Trennung in der Systemebene",
+          "content": "Der Widerspruch löst sich auf, wenn man die Hierarchieebene wechselt: Was auf der Systemebene widersprüchlich ist, kann durch Teilung in Subsysteme (jedes Subsystem nur einen Wert) oder durch Eingliederung in ein Supersystem aufgelöst werden. Beispiel: Fahrradkette — als Ganzes flexibel, einzelne Glieder starr. Auch: Litze (jeder Draht dünn, der Strang dick), Sandwich-Bauteile."
+        }
+      ]
+    },
+    "crossLinks": {
+      "title": "Bezug zu anderen TRIZ-Werkzeugen",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der physikalische Widerspruch sitzt zwischen der **Widerspruchsmatrix** (technischer Widerspruch) und der **Substanz-Feld-Analyse** ({{term:standardloesungen|Lösungs-Standards}}):"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Wenn die Widerspruchsmatrix für eine Parameter-Kombination *mehrere widersprüchliche* Prinzipien empfiehlt oder *gar keinen* Eintrag liefert, ist das ein Hinweis: der Kern des Problems ist wahrscheinlich ein physikalischer Widerspruch — wechseln Sie hierhin.",
+            "Das **9-Fenster-Werkzeug** ist vorgeschaltet: es weitet den Systemblick. Innerhalb einer der neun Zellen taucht dann oft ein konkreter Widerspruch auf, den dieses Modul löst.",
+            "Die Separationsebene „System“ ist direkt verwandt mit der Hierarchieachse des 9-Fenster-Werkzeugs — sub/system/super sind dieselben Ebenen."
+          ]
+        }
+      ]
+    },
+    "references": {
+      "title": "Quellen & Weiterlesen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "G. S. Altschuller: „Erfinden — Wege zur Lösung technischer Probleme“ (1973, dt. 1984).",
+            "D. Mann: „Hands-On Systematic Innovation“ — Kapitel zu physikalischen Widersprüchen und Separationsprinzipien.",
+            "V. Souchkov: „TRIZ Body of Knowledge“ — Kurzdefinitionen Separation Principles.",
+            "oxfordcreativity.co.uk — frei verfügbare Beispiele zu jedem Separationsprinzip."
+          ]
+        }
+      ]
+    }
+  }
+}

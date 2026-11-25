@@ -1,0 +1,110 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A **physical contradiction** exists when one and the same parameter of a system must take two opposite values at the same time. Unlike the {{term:technischer-widerspruch|technical contradiction}} of Altshuller's matrix (\"if I improve A, B gets worse\"), the physical contradiction is sharper — and that is its power: it forces the explicit statement \"X must be A AND not-A\"."
+        },
+        {
+          "type": "definition",
+          "term": "Physical contradiction",
+          "content": "A parameter X must take two mutually exclusive values at the same time. Formally: X should be A for effect 1 to occur. X should be ¬A for effect 2 to occur."
+        },
+        {
+          "type": "paragraph",
+          "content": "Classical examples:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "An aircraft wing must be **long** (for lift at take-off) and **short** (for low drag at cruise).",
+            "A coffee cup must be **hot** (to keep the drink warm) and **cold** (so the lip doesn't burn).",
+            "A welding electrode must be **thick** (for current capacity) and **thin** (to reach the joint)."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Resolution is not via a matrix but via the **four separation principles**: time, space, condition, {{term:supersystem|system level}}. One of these {{term:separationsprinzipien|four principles}} resolves almost every physical contradiction — the question is just which one."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Name the parameter clearly — *one* measurable attribute of the system, not the system itself (\"wing length\", not \"wing\").",
+            "Phrase the two opposite requirements (\"should be A, in order to …\" / \"should be ¬A, in order to …\"). Crucially, capture the *in order to* — the function or effect each value serves.",
+            "Sanity check: is this really a *physical* contradiction (one parameter, two values) and not a *technical* one (two parameters)? When in doubt, fall back to the {{term:widerspruchsmatrix|contradiction matrix}}.",
+            "Walk through the four separation principles one by one. For each, ask whether it applies to your case and write down the candidate idea.",
+            "Pick the principle that fits and elaborate the concrete solution in the solution field — what changes when / where / under which condition / at which level?"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "If several principles apply, you may combine them — that is often the most productive solution. In that case pick the *dominant* principle and describe the combination in the solution field."
+        }
+      ]
+    },
+    "principles": {
+      "title": "The four separation principles",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "1. Separation in time",
+          "content": "The parameter is A at moment t₁ and ¬A at moment t₂. Example: a folding wing — short at cruise, long at take-off. Also: retractable landing gear, airbags that deploy only on impact, saw teeth that remove material on the cutting stroke and not on the return."
+        },
+        {
+          "type": "definition",
+          "term": "2. Separation in space",
+          "content": "The parameter is A in region X and ¬A in region Y of the system. Example: a screw with a hard head (for the screwdriver) and an elastic shaft (against breakage). Also: a drill bit sharp at the tip and blunt at the shank; progressive eyeglass lenses."
+        },
+        {
+          "type": "definition",
+          "term": "3. Separation on condition",
+          "content": "The parameter is A under condition C₁ and ¬A under condition C₂. Condition may be load, temperature, user, speed, … Example: a non-Newtonian fluid — liquid under low load, solid under impact. Also: photochromic eyeglasses, memory foam, ABS brake pressure responding to wheel slip."
+        },
+        {
+          "type": "definition",
+          "term": "4. Separation between system levels",
+          "content": "The contradiction dissolves when you change hierarchy level: what is contradictory at the system level may resolve by splitting into subsystems (each subsystem taking just one of the values) or by embedding into a supersystem. Example: a bicycle chain — flexible as a whole, rigid in each link. Also: stranded wire (each thread thin, the strand thick), sandwich composites."
+        }
+      ]
+    },
+    "crossLinks": {
+      "title": "Relation to other TRIZ tools",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The physical contradiction sits between the **contradiction matrix** (technical contradiction) and **Substance-Field analysis** ({{term:standardloesungen|76 standard solutions}}):"
+        },
+        {
+          "type": "list",
+          "items": [
+            "When the contradiction matrix returns *several conflicting* principles for a parameter pair or *no entry at all*, that is a hint: the core problem is probably a physical contradiction — switch here.",
+            "The **9-Windows tool** sits upstream: it broadens the system view. Within one of the nine cells a concrete contradiction often emerges that this module resolves.",
+            "The \"system level\" separation principle is directly related to the 9-Windows hierarchy axis — sub / system / super are the same levels."
+          ]
+        }
+      ]
+    },
+    "references": {
+      "title": "References & further reading",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "G. S. Altshuller: \"Creativity as an Exact Science\" (1984).",
+            "D. Mann: \"Hands-On Systematic Innovation\" — chapter on physical contradictions and separation principles.",
+            "V. Souchkov: \"TRIZ Body of Knowledge\" — short definitions of the separation principles.",
+            "oxfordcreativity.co.uk — open examples for each separation principle."
+          ]
+        }
+      ]
+    }
+  }
+}

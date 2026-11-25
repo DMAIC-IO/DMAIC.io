@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "parameter": {
+      "help": "Der technische Parameter, der die beiden gegensätzlichen Anforderungen tragen muss: ein messbares Merkmal des Systems, zum Beispiel Flügellänge oder Härte. Freier Text; ein leerer Text leert das Feld."
+    },
+    "requirementA": {
+      "help": "Die Anforderung A — die eine Seite des Widerspruchs, samt ihrer Begründung („soll A sein, damit …“). Freier Text; ein leerer Text leert das Feld."
+    },
+    "requirementNotA": {
+      "help": "Die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs, samt ihrer Begründung („soll ¬A sein, damit …“). Freier Text; ein leerer Text leert das Feld."
+    },
+    "problemNote": {
+      "help": "Die Problemnotiz: warum beide Anforderungen zugleich unmöglich sind, dazu Hintergrund und Randbedingungen. Freier Text; ein leerer Text leert die Notiz."
+    },
+    "principleNotes": {
+      "help": "Je Trennungsprinzip eine Notiz: ob und wie sich das Prinzip auf diesen Widerspruch anwenden lässt. Die vier Prinzipien sind time (Zeit), space (Raum), condition (Bedingung) und system (Systemebene). Geschrieben werden die Notizen als Ganzes mit allen vier Prinzipien; ein leerer Text leert eine Notiz.",
+      "time": {
+        "help": "Notiz zur Trennung in der Zeit: Der Parameter hat zu verschiedenen Zeitpunkten verschiedene Werte, etwa ein Tragflügel, der zum Start ausgefahren und im Reiseflug eingefahren ist. Hier steht, wie das auf dieses Problem passt."
+      },
+      "space": {
+        "help": "Notiz zur Trennung im Raum: Der Parameter hat an verschiedenen Stellen verschiedene Werte, etwa eine Schraube mit hartem Kopf und elastischem Schaft. Hier steht, wie das auf dieses Problem passt."
+      },
+      "condition": {
+        "help": "Notiz zur Trennung nach Bedingung: Der Parameter hat je nach Last, Temperatur oder Geschwindigkeit verschiedene Werte, etwa eine photochrome Brille, die im Sonnenlicht dunkel und im Schatten hell ist. Hier steht, wie das auf dieses Problem passt."
+      },
+      "system": {
+        "help": "Notiz zur Trennung in der Systemebene: Das Ganze verhält sich anders als seine Teile, etwa eine Fahrradkette, die als Ganzes flexibel ist, deren einzelne Glieder aber starr sind. Hier steht, wie das auf dieses Problem passt."
+      }
+    },
+    "selectedPrinciple": {
+      "help": "Das gewählte Trennungsprinzip, mit dem der Widerspruch aufgelöst wird: time (Zeit), space (Raum), condition (Bedingung) oder system (Systemebene); leer, solange keines gewählt ist. In der Oberfläche über „Diese Richtung wählen“ auf einer der vier Karten. Erst nach der Wahl erscheint die Lösungsnotiz. Ein anderer Wert wird abgelehnt."
+    },
+    "solutionNote": {
+      "help": "Die Lösungsnotiz zum gewählten Trennungsprinzip: die konkrete Lösungsidee, was wann, wo, unter welcher Bedingung oder auf welcher Ebene anders wird. Sie erscheint erst, wenn ein Prinzip gewählt ist, und bleibt bei einem Wechsel des Prinzips stehen. Freier Text; ein leerer Text leert die Notiz."
+    }
+  },
+  "actions": {
+    "swap": {
+      "help": "Tauscht die beiden gegensätzlichen Anforderungen A und Nicht-A gegeneinander, in der Oberfläche über den Knopf zwischen den beiden Feldern.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    }
+  }
+}

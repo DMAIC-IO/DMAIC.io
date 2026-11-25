@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Physical Contradiction (TRIZ)",
+  "description": "One parameter must be A and ¬A — resolution via four separation principles",
+  "whenToUse": "When a single parameter would have to hold two opposite values at the same time and the contradiction is to be resolved by separation in time, space, condition or system level — not for a contradiction between two different characteristics, which is what the contradiction matrix is for.",
+  "problemHeading": "Contradiction",
+  "parameterLabel": "Parameter (one measurable attribute)",
+  "parameterPlaceholder": "e.g. wing length",
+  "requirementALabel": "should be A, in order to …",
+  "requirementAPlaceholder": "e.g. long — for high lift at take-off",
+  "requirementNotALabel": "should be ¬A, in order to …",
+  "requirementNotAPlaceholder": "e.g. short — for low drag at cruise",
+  "problemNoteLabel": "Note / context",
+  "problemNotePlaceholder": "Background, boundary conditions, cross-reference to contradiction matrix or 9-Windows …",
+  "swap": "Swap A and ¬A",
+  "separationHeading": "Separation principles",
+  "separationHint": "For each principle, note whether and how it can be applied to the case. Then pick the principle that fits.",
+  "exampleLead": "Example",
+  "principleNotePlaceholder": "How could this principle be applied to the contradiction at hand?",
+  "selectPrinciple": "Choose this direction",
+  "solutionHeading": "Solution direction",
+  "chosenPrinciple": "Chosen principle",
+  "solutionPlaceholder": "Derive the concrete solution from the chosen principle — what changes when / where / under which condition / at which level?",
+  "principles": {
+    "time": {
+      "name": "Separation in time",
+      "question": "Can the parameter take different values at different moments?",
+      "example": "Folding wing — long for take-off, short at cruise. Also: landing gear, airbag, saw blade (cut vs. return stroke)."
+    },
+    "space": {
+      "name": "Separation in space",
+      "question": "Can the parameter take different values in different regions of the system?",
+      "example": "Screw — hard head, elastic shaft. Also: drill bit sharp at the tip, progressive eyeglass lenses."
+    },
+    "condition": {
+      "name": "Separation on condition",
+      "question": "Can the parameter take different values depending on load, temperature, speed, user …?",
+      "example": "Non-Newtonian fluid — liquid at rest, solid under impact. Also: photochromic glasses, memory foam, ABS."
+    },
+    "system": {
+      "name": "Separation between system levels",
+      "question": "Does the contradiction dissolve when you switch between sub-, system and supersystem?",
+      "example": "Bicycle chain — flexible as a whole, rigid in each link. Also: stranded wire (thin threads, thick strand), sandwich composites."
+    }
+  }
+}

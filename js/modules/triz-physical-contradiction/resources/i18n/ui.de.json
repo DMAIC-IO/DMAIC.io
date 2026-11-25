@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Physikalischer Widerspruch (TRIZ)",
+  "description": "Ein Parameter soll A und ¬A sein — Auflösung über vier Separationsprinzipien",
+  "whenToUse": "Wenn ein einzelner Parameter gleichzeitig zwei entgegengesetzte Werte haben müsste und der Widerspruch durch Trennung in Zeit, Raum, Bedingung oder Systemebene aufgelöst werden soll — nicht für einen Widerspruch zwischen zwei verschiedenen Merkmalen, dafür ist die Widerspruchsmatrix da.",
+  "problemHeading": "Widerspruch",
+  "parameterLabel": "Parameter (ein messbares Attribut)",
+  "parameterPlaceholder": "z. B. Länge des Tragflügels",
+  "requirementALabel": "soll A sein, damit …",
+  "requirementAPlaceholder": "z. B. lang — für hohen Auftrieb beim Start",
+  "requirementNotALabel": "soll ¬A sein, damit …",
+  "requirementNotAPlaceholder": "z. B. kurz — für niedrigen Widerstand im Reiseflug",
+  "problemNoteLabel": "Notiz / Kontext",
+  "problemNotePlaceholder": "Hintergrund, Randbedingungen, Verweis auf Widerspruchsmatrix oder 9-Fenster …",
+  "swap": "A und ¬A tauschen",
+  "separationHeading": "Separationsprinzipien",
+  "separationHint": "Pro Prinzip notieren, ob und wie es im konkreten Fall anwendbar ist. Anschließend das passende Prinzip auswählen.",
+  "exampleLead": "Beispiel",
+  "principleNotePlaceholder": "Wie ließe sich dieses Prinzip auf den konkreten Widerspruch anwenden?",
+  "selectPrinciple": "Diese Richtung wählen",
+  "solutionHeading": "Lösungsrichtung",
+  "chosenPrinciple": "Gewähltes Prinzip",
+  "solutionPlaceholder": "Konkrete Lösungsidee aus dem gewählten Prinzip ableiten — was wird wann / wo / unter welcher Bedingung / auf welcher Ebene anders?",
+  "principles": {
+    "time": {
+      "name": "Trennung in der Zeit",
+      "question": "Kann der Parameter zu unterschiedlichen Zeitpunkten verschiedene Werte annehmen?",
+      "example": "Klapptragwerk — Flügel lang beim Start, kurz im Reiseflug. Auch: Fahrwerk, Airbag, Sägeblatt (Hin- vs. Rückhub)."
+    },
+    "space": {
+      "name": "Trennung im Raum",
+      "question": "Kann der Parameter an unterschiedlichen Stellen des Systems verschiedene Werte annehmen?",
+      "example": "Schraube — Kopf hart, Schaft elastisch. Auch: Bohrer scharf an der Spitze, Gleitsichtbrille."
+    },
+    "condition": {
+      "name": "Trennung nach Bedingung",
+      "question": "Kann der Parameter abhängig von Last, Temperatur, Geschwindigkeit, Nutzer … unterschiedliche Werte annehmen?",
+      "example": "Nicht-Newton'sche Flüssigkeit — flüssig bei Ruhe, fest beim Schlag. Auch: photochrome Brille, Memory-Schaum, ABS."
+    },
+    "system": {
+      "name": "Trennung in der Systemebene",
+      "question": "Lässt sich der Widerspruch auflösen, wenn man zwischen Sub-, System- und Supersystem wechselt?",
+      "example": "Fahrradkette — als Ganzes flexibel, einzelne Glieder starr. Auch: Litze (dünne Drähte, dicker Strang), Sandwich-Bauteile."
+    }
+  }
+}

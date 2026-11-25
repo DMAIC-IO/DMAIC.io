@@ -1,0 +1,97 @@
+<div class="module-container triz-pc" x-data="trizPhysicalContradiction">
+  <div class="module-container__body triz-pc__body">
+    <section class="triz-pc__section">
+      <h3 class="triz-pc__section-title" x-text="t('problemHeading')"></h3>
+
+      <div class="triz-pc__field">
+        <label data-help-key="modules.triz-physical-contradiction.fields.parameter.help" class="triz-pc__label" :for="fieldId('parameter')" x-text="t('parameterLabel')">
+        </label>
+        <input class="field triz-pc__input" type="text" data-role="parameter"
+          :id="fieldId('parameter')"
+          x-model="model.parameter"
+          :placeholder="t('parameterPlaceholder')">
+      </div>
+
+      <div class="triz-pc__requirements">
+        <div class="triz-pc__field triz-pc__field--a">
+          <label data-help-key="modules.triz-physical-contradiction.fields.requirementA.help" class="triz-pc__label triz-pc__label--a" :for="fieldId('requirement-a')">
+            <span class="triz-pc__dot triz-pc__dot--a"></span>
+            <span x-text="t('requirementALabel')"></span>
+          </label>
+          <input class="field triz-pc__input" type="text" data-role="requirement-a"
+            :id="fieldId('requirement-a')"
+            x-model="model.requirementA"
+            :placeholder="t('requirementAPlaceholder')">
+        </div>
+        <button data-help-key="modules.triz-physical-contradiction.actions.swap.help" class="btn btn--sm triz-pc__swap-btn" type="button" data-action="swap"
+          :title="t('swap')"
+          :aria-label="t('swap')"
+          x-command="swap">
+          <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
+        </button>
+        <div class="triz-pc__field triz-pc__field--b">
+          <label data-help-key="modules.triz-physical-contradiction.fields.requirementNotA.help" class="triz-pc__label triz-pc__label--b" :for="fieldId('requirement-not-a')">
+            <span class="triz-pc__dot triz-pc__dot--b"></span>
+            <span x-text="t('requirementNotALabel')"></span>
+          </label>
+          <input class="field triz-pc__input" type="text" data-role="requirement-not-a"
+            :id="fieldId('requirement-not-a')"
+            x-model="model.requirementNotA"
+            :placeholder="t('requirementNotAPlaceholder')">
+        </div>
+      </div>
+
+      <div class="triz-pc__field">
+        <label data-help-key="modules.triz-physical-contradiction.fields.problemNote.help" class="triz-pc__label" :for="fieldId('problem-note')" x-text="t('problemNoteLabel')">
+        </label>
+        <textarea class="field triz-pc__textarea" rows="2" data-role="problem-note"
+          :id="fieldId('problem-note')"
+          x-model="model.problemNote"
+          :placeholder="t('problemNotePlaceholder')"></textarea>
+      </div>
+    </section>
+
+    <section class="triz-pc__section">
+      <h3 class="triz-pc__section-title" x-text="t('separationHeading')"></h3>
+      <p class="triz-pc__hint" x-text="t('separationHint')"></p>
+      <div class="triz-pc__principles" role="radiogroup" x-set="model.selectedPrinciple" data-help-key="" :aria-label="t('separationHeading')">
+        <template x-for="key in principles" :key="key"><article class="triz-pc__principle"
+            :class="principleClass(key)"
+            :data-principle="key">
+            <header class="triz-pc__principle-head">
+              <span class="triz-pc__principle-num" x-text="principleNum(key)"></span>
+              <span class="icon icon--sm" :data-icon="principleIcon(key)" aria-hidden="true"></span>
+              <h4 data-help-key="modules.triz-physical-contradiction.fields.principleNotes.help" class="triz-pc__principle-title" :id="principleTitleId(key)" x-text="principleName(key)"></h4>
+            </header>
+            <p class="triz-pc__principle-question" x-text="principleQuestion(key)"></p>
+            <p class="triz-pc__principle-example">
+              <em x-text="t('exampleLead')"></em>: <span x-text="principleExample(key)"></span>
+            </p>
+            <textarea class="field triz-pc__principle-note" rows="3" data-role="principle-note"
+              :data-principle="key"
+              :aria-labelledby="principleTitleId(key)"
+              :placeholder="t('principleNotePlaceholder')"
+              x-model="model.principleNotes[key]"></textarea>
+            <label data-help-anchor="box" data-help-key="modules.triz-physical-contradiction.fields.selectedPrinciple.help" class="triz-pc__principle-select">
+              <input type="radio"
+                :value="key"
+                data-role="select-principle">
+              <span x-text="t('selectPrinciple')"></span>
+            </label>
+          </article></template>
+      </div>
+    </section>
+
+    <template x-if="model.selectedPrinciple"><section class="triz-pc__section triz-pc__solution">
+      <h3 data-help-key="modules.triz-physical-contradiction.fields.solutionNote.help" class="triz-pc__section-title" :id="fieldId('solution-title')" x-text="t('solutionHeading')"></h3>
+      <p class="triz-pc__solution-chosen">
+        <span x-text="t('chosenPrinciple')"></span>:
+        <strong x-text="chosenPrincipleName()"></strong>
+      </p>
+      <textarea class="field triz-pc__textarea" rows="3" data-role="solution-note"
+        :aria-labelledby="fieldId('solution-title')"
+        :placeholder="t('solutionPlaceholder')"
+        x-model="model.solutionNote"></textarea>
+    </section></template>
+  </div>
+</div>
