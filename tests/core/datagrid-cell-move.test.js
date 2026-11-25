@@ -2,8 +2,6 @@
  * Tests for moving a block of cells (DataGrid.moveCells, the border drag and
  * moveCellRefs): the cells move, and the formula references follow them.
  *
- * Spec: docs/superpowers/specs/2026-11-25-datagrid-cell-block-move-design.md
- *
  * Runs in the browser test runner — the grid container sits in document.body.
  */
 
