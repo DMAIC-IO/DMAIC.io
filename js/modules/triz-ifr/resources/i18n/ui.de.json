@@ -28,5 +28,5 @@
   "obstaclesHint": "Was hindert das System heute daran, den IFR zu erreichen? Diese Liste ist die eigentliche Aufgabenliste.",
   "obstaclesPlaceholder": "• Partikelgrößenverteilung zu breit\n• Übergangswinkel zu steil\n• …",
   "openResources": "Ressourcen-Checkliste öffnen",
-  "openResourcesHint": "Füge das Modul „Ressourcen-Checkliste (TRIZ)“ über die Extras-Tile (⋯) hinzu — IFR-3 fragt nach genau diesen Ressourcen."
+  "openResourcesHint": "Füge das Modul „Ressourcen-Checkliste (TRIZ)“ über die Extras-Kachel (⋯) hinzu — IFR-3 fragt nach genau diesen Ressourcen."
 }

@@ -1,8 +1,8 @@
 /* TRIZ Ideal Final Result — module styles. BEM-light, theme-driven. */
 
-/* Text auf der Akzentfarbe: hell und dunkel gleich. */
+/* Text auf der Akzentfarbe: App-Standard wie .btn--primary (hell #fff, dunkel #1d1d1f). */
 .triz-ifr {
-  --triz-ifr-on-accent: #fff;
+  --triz-ifr-on-accent: var(--color-text-inverse);
 }
 
 .triz-ifr__body {
