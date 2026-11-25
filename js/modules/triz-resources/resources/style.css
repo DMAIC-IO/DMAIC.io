@@ -87,6 +87,8 @@
 
 /* ── Cell ─────────────────────────────────────────────────── */
 .triz-res__cell {
+  /* Statusknopf-Kante; das Notizfeld rückt seinen Text um diese Breite ein. */
+  --triz-res-status-size: 24px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -112,13 +114,19 @@
   font-size: var(--font-size-sm);
 }
 
+/* Der Statusknopf liegt oben rechts über dem Feld: Text und Platzhalter
+   enden links davon (Knopfbreite + Abstand). */
+.triz-res__cell .triz-res__notes {
+  padding-right: calc(var(--triz-res-status-size) + var(--spacing-xs));
+}
+
 /* ── Status pill ─────────────────────────────────────────── */
 .triz-res__status {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 24px;
-  height: 24px;
+  width: var(--triz-res-status-size);
+  height: var(--triz-res-status-size);
   border-radius: 50%;
   border: 1px solid var(--color-border-primary);
   background: var(--color-bg-secondary);
