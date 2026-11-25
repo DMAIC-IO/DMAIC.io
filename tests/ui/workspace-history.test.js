@@ -170,6 +170,45 @@ suite('Workspace — Verlaufskürzel', () => {
     });
   }
 
+  const input = (type) => () => { const i = document.createElement('input'); i.type = type; return i; };
+
+  for (const type of ['text', 'search', 'email', 'url', 'tel', 'password', 'number', 'date']) {
+    test(`Fokus in <input type="${type}">: Kürzel greift nicht`, () => {
+      setup();
+      const el = input(type)();
+      document.body.append(el);
+      try {
+        const ev = press(el);
+        assertEqual(inst.steps.length, 0);
+        assertEqual(ev.defaultPrevented, false, 'Browser-Rückgängig bleibt');
+      } finally { el.remove(); }
+    });
+  }
+
+  for (const type of ['radio', 'checkbox', 'button', 'range', 'color']) {
+    test(`Fokus auf <input type="${type}">: Strg+Z/Strg+Y gehen an den Modulverlauf`, () => {
+      setup();
+      const el = input(type)();
+      document.body.append(el);
+      try {
+        const ev = press(el);
+        press(el, { key: 'y' });
+        assertEqual(inst.steps.join(','), 'undo,redo');
+        assertTrue(ev.defaultPrevented, 'Browser-Rückgängig unterdrückt');
+      } finally { el.remove(); }
+    });
+  }
+
+  test('Fokus in <select>: Kürzel greift nicht', () => {
+    setup();
+    const el = document.createElement('select');
+    document.body.append(el);
+    try {
+      press(el);
+      assertEqual(inst.steps.length, 0);
+    } finally { el.remove(); }
+  });
+
   test('Tab ohne history: Kürzel greift nicht', () => {
     setup({ withHistory: false });
     press(document.body);

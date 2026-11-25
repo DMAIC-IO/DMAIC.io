@@ -25,6 +25,29 @@ import { shortcutRegistry } from '../core/shortcut-registry.js';
 const MOUNT_TIMEOUT_MS = 20000;
 
 /**
+ * `<input>`-Typen ohne Texteingabe: das Browser-Rückgängig tut dort nichts,
+ * Strg+Z/Strg+Y gehen an den Modulverlauf. Alle übrigen Typen (text, search,
+ * email, url, tel, password, number, Datum/Zeit, unbekannte) behalten das
+ * Rückgängig des Browsers.
+ */
+const NON_TEXT_INPUT_TYPES = new Set([
+  'radio', 'checkbox', 'button', 'submit', 'reset', 'image', 'range', 'color', 'file',
+]);
+
+/**
+ * Liegt der Fokus in einer Texteingabe oder bearbeitbaren Fläche, in der das
+ * Browser-Rückgängig gilt?
+ * @param {Element} t
+ * @returns {boolean}
+ */
+function isTextEditTarget(t) {
+  if (t.isContentEditable || t.closest('[contenteditable]:not([contenteditable="false"])')) return true;
+  if (t.closest('textarea, select')) return true;
+  const input = t.closest('input');
+  return Boolean(input) && !NON_TEXT_INPUT_TYPES.has(input.type);
+}
+
+/**
  * Ein Werkzeugleisten-Eintrag mit `command`: Rückfrage und Kommando über
  * den Griff `_ui` der Komponente, Fehler per notify.
  * @param {{ command: string, args: object }} vm @param {{ getActionData?: () => any }} inst
@@ -430,8 +453,10 @@ export class Workspace {
 
   /**
    * Strg+Z / Strg+Y am Dokument: Verlauf des aktiven Tabs. Greift nicht in
-   * Eingabefeldern und bearbeitbaren Flächen — dort gilt das Rückgängig des
-   * Browsers — und nicht in Tabs ohne Verlauf.
+   * Texteingaben und bearbeitbaren Flächen — dort gilt das Rückgängig des
+   * Browsers — und nicht in Tabs ohne Verlauf. Radio, Kontrollkästchen und
+   * die übrigen Felder ohne Text (`NON_TEXT_INPUT_TYPES`) bekommen das
+   * Kern-Rückgängig: das Browser-Rückgängig täte dort nichts.
    * @param {KeyboardEvent} e
    */
   _onHistoryKey(e) {
@@ -440,8 +465,7 @@ export class Workspace {
       : shortcutRegistry.matches(e, 'module.redo') ? 'redo' : null;
     if (!dir) return;
     const t = e.target;
-    if (t instanceof Element && (t.closest('input, textarea, select') || t.isContentEditable
-      || t.closest('[contenteditable]:not([contenteditable="false"])'))) return;
+    if (t instanceof Element && isTextEditTarget(t)) return;
     // Ein Dialog über dem Modul hat Vorrang: das Kürzel gilt nicht dahinter.
     if (t instanceof Element && t.closest('dialog[open], [role="dialog"], [aria-modal="true"]')) return;
     if (this._stateManager?.isCompleted?.() === true) return;
