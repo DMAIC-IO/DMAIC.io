@@ -138,5 +138,9 @@
   "1.9.5": {
     "de": "Zellblöcke per Drag & Drop verschieben, Diagramme folgen jeder Datenblatt-Änderung sofort",
     "en": "Move cell blocks by drag and drop, charts follow every worksheet edit right away"
+  },
+  "1.9.6": {
+    "de": "Referenzlinien und -flächen in XY-Plot und Wahrscheinlichkeitsnetz bleiben gespeichert",
+    "en": "Reference lines and areas in XY plot and probability plot are saved again"
   }
 }
