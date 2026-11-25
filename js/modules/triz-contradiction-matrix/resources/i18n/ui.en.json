@@ -14,7 +14,6 @@
   "warnSameParameter": "Improving and worsening parameters are identical — no contradiction.",
   "noContradiction": "No recommendation registered for this combination in the standard matrix.",
   "showMatrix": "Show full matrix",
-  "hideMatrix": "Hide matrix",
   "matrixLegend": "Row = improving (↑), column = worsening (↓). Cell number = count of recommended principles. Click a cell to apply the selection.",
   "matrixCornerTip": "Row = improving, column = worsening",
   "parameters": {

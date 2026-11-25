@@ -11,7 +11,7 @@
       "help": "Die Problembeschreibung: der technische Widerspruch in eigenen Worten, dazu Hintergrund und Randbedingungen. Freier Text; ein leerer Text leert die Beschreibung."
     },
     "showMatrix": {
-      "help": "Zeigt die vollständige 39×39-Widerspruchsmatrix unter dem Knopf oder blendet sie wieder aus. Die Zeile ist der zu verbessernde Parameter, die Spalte der sich verschlechternde; die Zahl in einer Zelle ist die Anzahl der empfohlenen Prinzipien."
+      "help": "Ist das Kästchen angehakt, steht darunter die vollständige 39×39-Widerspruchsmatrix; ohne Haken ist sie ausgeblendet. Die Zeile ist der zu verbessernde Parameter, die Spalte der sich verschlechternde; die Zahl in einer Zelle ist die Anzahl der empfohlenen Prinzipien."
     },
     "recommendation": {
       "help": "Die Empfehlung der Matrix zum gewählten Paar: ihr Stand und die empfohlenen erfinderischen Prinzipien mit Nummer, Name und Beschreibung in der eingestellten Sprache, so wie die Karten sie zeigen."

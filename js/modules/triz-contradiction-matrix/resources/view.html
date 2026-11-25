@@ -1,0 +1,94 @@
+<section class="module-container triz-cm" x-data="trizContradictionMatrix">
+  <div class="module-container__body triz-cm__body">
+
+    <section class="triz-cm__section">
+      <h3 data-help-key="modules.triz-contradiction-matrix.fields.problemNote.help" class="triz-cm__section-title" x-text="t('problemHeading')"></h3>
+      <textarea class="field triz-cm__problem" rows="2" x-model="model.problemNote" :placeholder="t('problemPlaceholder')" :aria-label="t('problemHeading')"></textarea>
+    </section>
+
+    <section class="triz-cm__section triz-cm__selectors">
+      <div class="triz-cm__selector">
+        <label data-help-key="modules.triz-contradiction-matrix.fields.improving.help" class="triz-cm__label triz-cm__label--improving" :for="fieldId('improving')">
+          <span class="triz-cm__dot triz-cm__dot--improving"></span>
+          <span x-text="t('improvingParameter')"></span>
+        </label>
+        <select class="field triz-cm__select" data-role="improving" data-help-key="" :id="fieldId('improving')" x-field="model.improving">
+          <option value="" x-text="t('selectPlaceholder')"></option>
+          <template x-for="id in parameterIds" :key="id">
+            <option :value="id" x-text="optionText(id)"></option>
+          </template>
+        </select>
+        <template x-if="model.improving"><p class="triz-cm__param-desc" x-text="paramDesc(model.improving)"></p></template>
+      </div>
+
+      <div class="triz-cm__selector">
+        <label data-help-key="modules.triz-contradiction-matrix.fields.worsening.help" class="triz-cm__label triz-cm__label--worsening" :for="fieldId('worsening')">
+          <span class="triz-cm__dot triz-cm__dot--worsening"></span>
+          <span x-text="t('worseningParameter')"></span>
+        </label>
+        <select class="field triz-cm__select" data-role="worsening" data-help-key="" :id="fieldId('worsening')" x-field="model.worsening">
+          <option value="" x-text="t('selectPlaceholder')"></option>
+          <template x-for="id in parameterIds" :key="id">
+            <option :value="id" x-text="optionText(id)"></option>
+          </template>
+        </select>
+        <template x-if="model.worsening"><p class="triz-cm__param-desc" x-text="paramDesc(model.worsening)"></p></template>
+      </div>
+
+      <button data-help-key="modules.triz-contradiction-matrix.actions.swapParams.help" class="btn btn--sm triz-cm__swap-btn" type="button" data-action="swap" x-command="swapParams" :title="t('swap')" :aria-label="t('swap')"><span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span></button>
+    </section>
+
+    <section class="triz-cm__section">
+      <h3 data-help-key="modules.triz-contradiction-matrix.fields.recommendation.help" class="triz-cm__section-title" x-text="t('recommendedHeading')"></h3>
+      <template x-if="showHint"><p class="triz-cm__hint" x-text="t('hintSelectBoth')"></p></template>
+      <template x-if="showWarn"><p class="triz-cm__warn" x-text="t('warnSameParameter')"></p></template>
+      <template x-if="showNoEntry"><p class="triz-cm__hint" x-text="t('noContradiction')"></p></template>
+      <ol class="triz-cm__principles" x-show="showPrinciples">
+        <template x-for="pr in recommendation.principles" :key="pr.id">
+          <li class="triz-cm__principle">
+            <div class="triz-cm__principle-num" x-text="pr.id"></div>
+            <div class="triz-cm__principle-body">
+              <div class="triz-cm__principle-name" x-text="pr.name"></div>
+              <div class="triz-cm__principle-desc" x-text="pr.description"></div>
+            </div>
+          </li>
+        </template>
+      </ol>
+    </section>
+
+    <section class="triz-cm__section">
+      <label class="field-check triz-cm__matrix-toggle" data-help-anchor="box" data-help-key="modules.triz-contradiction-matrix.fields.showMatrix.help">
+        <input type="checkbox" data-action="toggle-matrix" x-model="model.showMatrix">
+        <span x-text="t('showMatrix')"></span>
+      </label>
+      <template x-if="model.showMatrix"><div class="triz-cm__mx-wrap">
+        <p class="triz-cm__mx-legend"><span data-help-key="modules.triz-contradiction-matrix.actions.pickCell.help" x-text="t('matrixLegend')"></span></p>
+        <table class="triz-cm__mx">
+          <thead>
+            <tr>
+              <th class="triz-cm__mx-corner" :title="t('matrixCornerTip')">&uarr;/&darr;</th>
+              <template x-for="j in indexes" :key="j">
+                <th class="triz-cm__mx-col-head" :class="colHeadClass(j)" :title="headTitle(j)" x-text="headLabel(j)"></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="i in indexes" :key="i">
+              <tr>
+                <th class="triz-cm__mx-row-head" :class="rowHeadClass(i)" :title="headTitle(i)" x-text="headLabel(i)"></th>
+                <template x-for="j in cellsBefore(i)" :key="j">
+                  <td class="triz-cm__mx-cell" :class="cellClass(i, j)" :data-i-idx="paramId(i)" :data-j-idx="paramId(j)" :data-arg-improving="paramId(i)" :data-arg-worsening="paramId(j)" data-help-key="" :title="cellTitle(i, j)" x-command="pickCell"><span x-text="cellContent(i, j)"></span></td>
+                </template>
+                <td class="triz-cm__mx-cell" :class="cellClass(i, i)" :data-i-idx="paramId(i)" :data-j-idx="paramId(i)" :title="cellTitle(i, i)"><span x-text="cellContent(i, i)"></span></td>
+                <template x-for="j in cellsAfter(i)" :key="j">
+                  <td class="triz-cm__mx-cell" :class="cellClass(i, j)" :data-i-idx="paramId(i)" :data-j-idx="paramId(j)" :data-arg-improving="paramId(i)" :data-arg-worsening="paramId(j)" data-help-key="" :title="cellTitle(i, j)" x-command="pickCell"><span x-text="cellContent(i, j)"></span></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div></template>
+    </section>
+
+  </div>
+</section>

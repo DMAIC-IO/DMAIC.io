@@ -11,7 +11,7 @@
       "help": "The problem description: the technical contradiction in your own words, plus background and boundary conditions. Free text; an empty text clears the description."
     },
     "showMatrix": {
-      "help": "Shows the full 39×39 contradiction matrix below the button or hides it again. The row is the parameter to improve, the column the one that worsens; the number in a cell is the count of recommended principles."
+      "help": "When the box is checked, the full 39×39 contradiction matrix appears below it; unchecked, it is hidden. The row is the parameter to improve, the column the one that worsens; the number in a cell is the count of recommended principles."
     },
     "recommendation": {
       "help": "The matrix recommendation for the chosen pair: its status and the recommended inventive principles with number, name and description in the active language, as the cards show them."

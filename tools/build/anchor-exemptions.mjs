@@ -143,10 +143,11 @@ export const ANCHOR_EXEMPTIONS = {
   'triz-9-windows': [
     { match: 'triz-9w__upload-btn', reason: 'Bild-Upload je Fenster (9×); Dateiwahl ohne Agentenweg', count: 1 },
   ],
+  // count 2: Alt- und Zielvorlage stehen bis zum Umschalten nebeneinander; danach 1.
   'triz-contradiction-matrix': [
-    { match: 'triz-cm__mx-corner', reason: 'Ecke der Nachschlagematrix (Pfeile); der Knopf darüber erklärt die Matrix', count: 1 },
-    { match: 'triz-cm__mx-col-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },
-    { match: 'triz-cm__mx-row-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },
+    { match: 'triz-cm__mx-corner', reason: 'Ecke der Nachschlagematrix (Pfeile); das Kontrollkästchen darüber erklärt die Matrix', count: 2 },
+    { match: 'triz-cm__mx-col-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 2 },
+    { match: 'triz-cm__mx-row-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 2 },
   ],
   'triz-sufield': [
     { match: 'triz-sf__standard-select', reason: 'Kästchen je Standardlösung (78), in aufklappbaren Klassen', count: 1 },
