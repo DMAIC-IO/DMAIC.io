@@ -74,6 +74,14 @@ const limitsOf = (l) => ({
  * Die eingefrorenen Grenzen. Übernommen nur mit bekanntem Kartentyp,
  * Untergruppe über 0 und Objekten für beide Teilkarten (ohne eines davon
  * konnte die Altform die Grenzen nie anwenden); sonst `null`.
+ *
+ * - `subgroupSize`: gerundet und in den Bereich des eigenen Kartentyps
+ *   geklemmt wie die des Models, damit gleiche Altwerte gleich bleiben
+ *   (I-MR bei 5 eingefroren, Model 5: die Altform wandte sie an).
+ * - `columnRef`: fehlend oder leer (falsy) → `null`, die Grenzen gelten
+ *   überall wie in der Altform (`!fl.columnRef`). Vorhanden, aber nicht
+ *   lesbar → ganze Grenzen `null`: `sameColumn` schlug in der Altform fehl,
+ *   sie galten nie.
  * @param {unknown} v
  * @returns {Record<string, any>|null}
  */
@@ -82,10 +90,12 @@ function frozenOf(v) {
   const { chartTypeId, subgroupSize, primary, secondary } = v;
   if (typeof chartTypeId !== 'string' || !Object.hasOwn(RANGE, chartTypeId)) return null;
   if (!finite(subgroupSize) || subgroupSize <= 0 || !isObject(primary) || !isObject(secondary)) return null;
+  const columnRef = refOrNull(v.columnRef);
+  if (v.columnRef && !columnRef) return null;
   return {
     chartTypeId,
-    subgroupSize: Math.max(1, Math.round(subgroupSize)),
-    columnRef: refOrNull(v.columnRef),
+    subgroupSize: subgroupOf(subgroupSize, /** @type {'i-mr'|'xbar-r'|'xbar-s'} */ (chartTypeId)),
+    columnRef,
     baselineEnd: finite(v.baselineEnd) ? v.baselineEnd : null,
     primary: limitsOf(primary),
     secondary: limitsOf(secondary),
@@ -93,6 +103,23 @@ function frozenOf(v) {
       ? v.excludedIndices.filter((i) => Number.isSafeInteger(i) && i >= 0)
       : [],
   };
+}
+
+/**
+ * Ob die Altform die Grenzen bei dieser Untergruppe je anwenden konnte:
+ * schon jetzt (gleiche Rohwerte) oder nach einer Eingabe in der Oberfläche
+ * (ganze Zahl im Bereich des Kartentyps). Sonst würde das Klemmen zwei
+ * verschiedene Altwerte gleichmachen (I-MR bei 5 eingefroren, Model 1).
+ * @param {unknown} frozenSize Rohwert der Grenzen
+ * @param {unknown} modelSize Rohwert des Models
+ * @param {'i-mr'|'xbar-r'|'xbar-s'} chartTypeId
+ * @returns {boolean}
+ */
+function reachable(frozenSize, modelSize, chartTypeId) {
+  const oldModel = finite(modelSize) && modelSize > 0 ? modelSize : 1;
+  if (frozenSize === oldModel) return true;
+  const [lo, hi] = RANGE[chartTypeId];
+  return Number.isInteger(frozenSize) && /** @type {number} */ (frozenSize) >= lo && /** @type {number} */ (frozenSize) <= hi;
 }
 
 /**
@@ -110,7 +137,9 @@ function frozenOf(v) {
  * - `stagesText`: nur Text bleibt; `usl`/`lsl`: nur endliche Zahlen.
  * - `enabledRules`: bekannte Regeln, ohne Doppelte, sortiert; ohne Liste
  *   Regel 1.
- * - `annotations`, `frozenLimits`: siehe oben.
+ * - `annotations`, `frozenLimits`: siehe oben. Grenzen, die erst das Klemmen
+ *   auf die Untergruppe des Models bringt und die die Altform nie anwenden
+ *   konnte, entfallen.
  * - `exampleWorksheetId`: nur Text bleibt.
  * - Fremdschlüssel entfallen. Die Altform hatte keine Darstellungsfelder;
  *   alte Editor-Einstellungen je Teilkarte übernimmt der Kern beim Einhängen
@@ -136,6 +165,9 @@ export function from0(json) {
     : [1];
   out.annotations = annotationsOf(json.annotations);
   out.frozenLimits = frozenOf(json.frozenLimits);
+  if (out.frozenLimits?.chartTypeId === chartTypeId
+    && out.frozenLimits.subgroupSize === out.subgroupSize
+    && !reachable(json.frozenLimits.subgroupSize, json.subgroupSize, chartTypeId)) out.frozenLimits = null;
   if (typeof json.exampleWorksheetId === 'string') out.exampleWorksheetId = json.exampleWorksheetId;
   return out;
 }

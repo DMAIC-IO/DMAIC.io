@@ -7,6 +7,7 @@
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/control-chart/domain/model.js';
 import { from0 } from '../../../js/modules/control-chart/domain/migrations.js';
+import { frozenApplies } from '../../../js/modules/control-chart/domain/analyze.js';
 import { buildPrefill } from '../../../js/modules/chart-suggestion/domain/prefill.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { sheetSource } from '../../helpers/sheet-source.js';
@@ -222,7 +223,47 @@ suite('control-chart: Migration — eingefrorene Grenzen', () => {
     const { columnRef: _c, ...rest } = FROZEN;
     const m = load({ ...LEGACY, frozenLimits: rest });
     assertEqual(m.frozenLimits.columnRef, null);
-    assertEqual(load({ frozenLimits: { ...FROZEN, columnRef: { instanceId: 'i' } } }).frozenLimits.columnRef, null);
+    for (const c of [null, '', 0, false]) {
+      assertEqual(load({ ...LEGACY, frozenLimits: { ...FROZEN, columnRef: c } }).frozenLimits.columnRef, null, String(c));
+    }
+  });
+
+  test('Review M1: vorhandener, unlesbarer columnRef → ganze Grenzen null (galten in der Altform nie)', () => {
+    for (const c of [{ instanceId: 'i' }, { ...DURCHMESSER, columnId: '' }, 'col', 5]) {
+      const m = load({ ...LEGACY, frozenLimits: { ...FROZEN, columnRef: c } });
+      assertEqual(m.frozenLimits, null, JSON.stringify(c));
+    }
+    // Gegenprobe: lesbarer Bezug bleibt und greift.
+    const m = load(LEGACY);
+    assertTrue(frozenApplies(m.frozenLimits, m, false), 'lesbarer Bezug greift');
+  });
+
+  test('Review M1: Untergruppe der Grenzen wie die des Models geklemmt — Altstand greift weiter', () => {
+    // I-MR, Untergruppe 5, bei 5 eingefroren: die Altform wandte sie an (5 === 5).
+    const imr = load({ ...LEGACY, subgroupSize: 5, frozenLimits: { ...FROZEN, subgroupSize: 5 } });
+    assertEqual(imr.subgroupSize, 1);
+    assertEqual(imr.frozenLimits.subgroupSize, 1);
+    assertTrue(frozenApplies(imr.frozenLimits, imr, false), 'I-MR 5/5 greift');
+    // X̄-R, Untergruppe 30, bei 30 eingefroren: beide auf 10.
+    const xr = load({ ...LEGACY, chartTypeId: 'xbar-r', subgroupSize: 30, frozenLimits: { ...FROZEN, chartTypeId: 'xbar-r', subgroupSize: 30 } });
+    assertEqual(xr.frozenLimits.subgroupSize, 10);
+    assertTrue(frozenApplies(xr.frozenLimits, xr, false), 'X̄-R 30/30 greift');
+  });
+
+  test('Review M1: Gegenprobe — was die Altform nicht anwandte, greift weiter nicht', () => {
+    // Anderer Kartentyp: X̄-R bei 5 eingefroren, Model I-MR 5.
+    const other = load({ ...LEGACY, subgroupSize: 5, frozenLimits: { ...FROZEN, chartTypeId: 'xbar-r', subgroupSize: 5 } });
+    assertEqual(other.frozenLimits.subgroupSize, 5);
+    assertEqual(frozenApplies(other.frozenLimits, other, false), false);
+    // Andere Untergruppe im Bereich: X̄-R bei 5 eingefroren, Model 7 (Nutzer konnte 5 wählen).
+    const xr = load({ ...LEGACY, chartTypeId: 'xbar-r', subgroupSize: 7, frozenLimits: { ...FROZEN, chartTypeId: 'xbar-r', subgroupSize: 5 } });
+    assertEqual(xr.frozenLimits.subgroupSize, 5);
+    assertEqual(frozenApplies(xr.frozenLimits, xr, false), false);
+    // Erst das Klemmen machte die Werte gleich und die Altform konnte sie nie anwenden → entfallen.
+    for (const [type, model, frozen] of [['i-mr', 1, 5], ['xbar-r', 12, 30], ['xbar-s', 1, 1.4]]) {
+      const m = load({ ...LEGACY, chartTypeId: type, subgroupSize: model, frozenLimits: { ...FROZEN, chartTypeId: type, subgroupSize: frozen } });
+      assertEqual(m.frozenLimits, null, `${type} ${model}/${frozen}`);
+    }
   });
 
   test('nicht endliche oder fehlende Grenze → null, die übrigen bleiben', () => {
@@ -232,7 +273,7 @@ suite('control-chart: Migration — eingefrorene Grenzen', () => {
   });
 
   test('baselineEnd endlich oder null; excludedIndices nur ganze Zahlen ab 0; Untergruppe gerundet', () => {
-    const m = load({ frozenLimits: { ...FROZEN, baselineEnd: 'x', excludedIndices: [3, -1, 2.5, '4', 7], subgroupSize: 4.6 } });
+    const m = load({ frozenLimits: { ...FROZEN, chartTypeId: 'xbar-r', baselineEnd: 'x', excludedIndices: [3, -1, 2.5, '4', 7], subgroupSize: 4.6 } });
     assertEqual(m.frozenLimits.baselineEnd, null);
     assertDeepEqual(plain(m.frozenLimits.excludedIndices), [3, 7]);
     assertEqual(m.frozenLimits.subgroupSize, 5);
