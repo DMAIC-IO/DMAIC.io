@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "9-Fenster (TRIZ Systemoperator)",
+  "description": "System auf den Achsen Zeit × Hierarchie betrachten",
+  "whenToUse": "Wenn ein Problem in seinem Zusammenhang betrachtet werden soll — drei Systemebenen mal drei Zeitfenster — um Ursachen und Lösungsräume außerhalb des Systems selbst zu finden; nicht, um eine einzelne Ursachenkette zu verfolgen, dafür sind 5-Why oder Ishikawa da.",
+  "systemHeading": "System",
+  "systemPlaceholder": "z. B. Pkw mit Verbrennungsmotor",
+  "gridAriaLabel": "9-Fenster-Raster",
+  "cornerTip": "Zeilen = Hierarchie, Spalten = Zeit",
+  "axisRows": "Hierarchie",
+  "axisCols": "Zeit",
+  "colPast": "Vergangenheit",
+  "colPresent": "Gegenwart",
+  "colFuture": "Zukunft",
+  "rowSub": "Subsystem",
+  "rowSys": "System",
+  "rowSuper": "Supersystem",
+  "colAxisAria": "Beschriftung Spalte {idx}",
+  "rowAxisAria": "Beschriftung Zeile {idx}",
+  "cellPlaceholder": "Hier Beobachtungen, Bauteile, Trends, Fragen … notieren.",
+  "addImage": "Bild",
+  "clearImage": "Bild entfernen",
+  "imageAlt": "Skizze für {row} · {col}",
+  "imageTooLarge": "Bild zu groß (max. 2 MB).",
+  "imageReadError": "Bild konnte nicht gelesen werden.",
+  "imageTypeError": "Ausgewählte Datei ist kein Bild.",
+  "invariants": {
+    "colLabelCount": "Die Zeitachse hat genau drei Spaltenbeschriftungen.",
+    "rowLabelCount": "Die Systemebenen haben genau drei Zeilenbeschriftungen.",
+    "cellGrid": "Das Raster hat genau drei Zeilen mit je drei Fenstern."
+  }
+}

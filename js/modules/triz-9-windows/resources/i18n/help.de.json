@@ -1,0 +1,98 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der {{term:systemoperator|Systemoperator}} — auch „9 Fenster“ oder „Multi-Screen Tool“ genannt — ist ein {{term:triz|TRIZ}}-Werkzeug, das ein System gleichzeitig auf zwei Achsen betrachtet: in der Zeit (Vergangenheit, Gegenwart, Zukunft) und in der Hierarchie ({{term:supersystem|Subsystem, System, Supersystem}}). Das ergibt ein 3×3-Raster aus neun Perspektiven auf denselben Sachverhalt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Der Trick: anstatt nur den aktuellen Zustand des Systems zu denken, springt man bewusst in die Nachbarzellen. Wie funktionierte ein Vorgängersystem? Welche Bestandteile (Subsystem) werden sich in Zukunft ändern? In welcher Umgebung (Supersystem) wird das System dann arbeiten? Aus den Antworten entstehen erfinderische Ideen, die sich aus reiner Gegenwartsbetrachtung nie ergeben würden."
+        },
+        {
+          "type": "definition",
+          "term": "System",
+          "content": "Das Untersuchungsobjekt — z. B. „Pkw mit Verbrennungsmotor“, „Spannvorrichtung“, „Fertigungslinie“."
+        },
+        {
+          "type": "definition",
+          "term": "Subsystem",
+          "content": "Die Bestandteile, aus denen das System aufgebaut ist (eine Hierarchieebene tiefer)."
+        },
+        {
+          "type": "definition",
+          "term": "Supersystem",
+          "content": "Die übergeordnete Struktur, in die das System eingebettet ist (eine Hierarchieebene höher)."
+        },
+        {
+          "type": "paragraph",
+          "content": "Genrich Altschuller selbst hat dieses Werkzeug propagiert. Es ist kein algorithmisches Verfahren wie die {{term:widerspruchsmatrix|Widerspruchsmatrix}}, sondern eine Denkstruktur, die Tunnelblick gegen Systemdenken eintauscht."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "System klar benennen (Titel-Feld). Ein präziser Name verhindert Verwechslungen mit Sub- oder Supersystem.",
+            "Die mittlere Zelle „System / Gegenwart“ ausfüllen — das ist der Ist-Zustand.",
+            "Spaltenweise weiter: Vergangenheit (wie war das früher gelöst?) und Zukunft (wie könnte es zukünftig aussehen?).",
+            "Zeilenweise nach unten / oben: Subsystem (Bauteile, Stoffe, Felder) und Supersystem (Umgebung, Schnittstellen, Stakeholder).",
+            "Die Eckzellen (Subsystem-Vergangenheit, Supersystem-Zukunft, …) bewusst ausfüllen — gerade dort entstehen oft die Aha-Momente.",
+            "Skizzen, Fotos oder Diagramme als Bild pro Zelle hinzufügen, wenn Text nicht ausreicht.",
+            "Aus dem Gesamtbild Ideen ableiten: Welche Eigenschaften aus der Vergangenheit lassen sich wiederbeleben? Welche Trends im Supersystem erzwingen Änderungen am System?"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Achsenbeschriftungen lassen sich ändern. Üblich sind auch die Begriffspaare „Mikro / Makro / Meta“, „Komponente / Produkt / Markt“ oder „Modul / Anlage / Werk“. Wichtig ist, dass die Hierarchieabstände gleich bleiben."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Ergebnis interpretieren",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Ergebnis sind keine fertigen Lösungen, sondern ein Denk-Inventar. Lesen Sie das ausgefüllte Raster horizontal und vertikal: Welche Komponente (Subsystem) ist heute kritisch, war es aber früher nicht? Welche Veränderung im Supersystem (z. B. neue Vorschrift, neue Nachbartechnologie) wird die Anforderungen an das System verschieben?"
+        },
+        {
+          "type": "paragraph",
+          "content": "Häufige Muster:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Die Vergangenheits-Spalte zeigt oft, dass aktuelle Probleme durch eine Detail-Optimierung entstanden sind, die im Vorgängersystem nicht nötig war.",
+            "Die Zukunfts-Spalte legt offen, ob der heutige Konstruktionsweg überhaupt zukunftsfähig ist oder ob ein Sprung nötig wird.",
+            "Die Subsystem-Zeile entlarvt versteckte Annahmen über die Bauteile — TRIZ nennt das „psychologische Trägheit“.",
+            "Die Supersystem-Zeile holt Stakeholder, Vorschriften, Marktbedingungen ins Bild."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Wenn Zellen leer bleiben: nicht erzwingen. Eine leere Zelle ist eine ehrliche Aussage — „dazu fehlt mir Wissen“. Das ist ein konkreter Auftrag für die Recherche."
+        }
+      ]
+    },
+    "references": {
+      "title": "Quellen & Weiterlesen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "G. S. Altschuller: „Erfinden — Wege zur Lösung technischer Probleme“ (1973, dt. 1984).",
+            "D. Mann: „Hands-On Systematic Innovation“ — Kapitel zum Multi-Screen Tool.",
+            "V. Souchkov: „TRIZ Body of Knowledge“ — Kurzdefinition System Operator.",
+            "oxfordcreativity.co.uk — frei verfügbare Materialien zum Werkzeug."
+          ]
+        }
+      ]
+    }
+  }
+}

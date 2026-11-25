@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "systemTitle": {
+      "help": "Der Titel des betrachteten Systems: Name oder kurze Beschreibung des Untersuchungsobjekts, das in der mittleren Zeile in der Gegenwart steht. Freier Text; ein leerer Text leert das Feld."
+    },
+    "colLabels": {
+      "help": "Die drei Beschriftungen der Zeitachse, in der Reihenfolge Vergangenheit, Gegenwart, Zukunft. Ein leerer Eintrag heißt: die Spalte zeigt ihre Vorgabe. Es sind immer genau drei Einträge."
+    },
+    "rowLabels": {
+      "help": "Die drei Beschriftungen der Systemebenen, in der Reihenfolge Subsystem, System, Supersystem. Ein leerer Eintrag heißt: die Zeile zeigt ihre Vorgabe. Es sind immer genau drei Einträge."
+    },
+    "cells": {
+      "help": "Die neun Fenster, je eines für jede Systemebene (Zeile: Subsystem, System, Supersystem) und jedes Zeitfenster (Spalte: Vergangenheit, Gegenwart, Zukunft). Jedes Fenster trägt einen freien Text und höchstens ein Bild, etwa eine Skizze. Die Bilddaten stehen nur als Größe da. Das Raster kommt erst auf Nachfrage vollständig, sonst steht nur sein Umfang da."
+    }
+  },
+  "actions": {
+    "setCellText": {
+      "help": "Schreibt den Text eines Fensters, wie das Tippen in das Textfeld des Fensters in der Oberfläche. Ein Bild im Fenster bleibt.",
+      "params": {
+        "row": "Die Systemebene, 0 bis 2: Subsystem, System, Supersystem. Ein anderer Wert wird abgelehnt.",
+        "col": "Das Zeitfenster, 0 bis 2: Vergangenheit, Gegenwart, Zukunft. Ein anderer Wert wird abgelehnt.",
+        "text": "Der neue Text des Fensters; ein leerer Text leert es.",
+        "command": "Das Kommando als ein Objekt mit row, col und text."
+      }
+    },
+    "clearImage": {
+      "help": "Entfernt das Bild eines Fensters, in der Oberfläche über den runden Knopf oben rechts am Vorschaubild. Der Text des Fensters bleibt.",
+      "params": {
+        "row": "Die Systemebene, 0 bis 2: Subsystem, System, Supersystem. Ein anderer Wert wird abgelehnt.",
+        "col": "Das Zeitfenster, 0 bis 2: Vergangenheit, Gegenwart, Zukunft. Ein anderer Wert wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit row und col."
+      }
+    },
+    "setCellImage": {
+      "help": "Setzt das Bild eines Fensters und ersetzt ein vorhandenes, nur über die Oberfläche: über den Bildknopf des Fensters oder durch Ablegen einer Bilddatei darauf. Der Text des Fensters bleibt.",
+      "params": {
+        "row": "Die Systemebene, 0 bis 2: Subsystem, System, Supersystem. Ein anderer Wert wird abgelehnt.",
+        "col": "Das Zeitfenster, 0 bis 2: Vergangenheit, Gegenwart, Zukunft. Ein anderer Wert wird abgelehnt.",
+        "dataUrl": "Das Bild als Daten-URL.",
+        "command": "Das Kommando als ein Objekt mit row, col und dataUrl."
+      }
+    }
+  }
+}

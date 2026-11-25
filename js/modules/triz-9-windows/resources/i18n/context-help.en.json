@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "systemTitle": {
+      "help": "The title of the system under study: name or short description of the object of analysis that sits in the middle row in the present. Free text; an empty text clears the field."
+    },
+    "colLabels": {
+      "help": "The three labels of the time axis, in the order past, present, future. An empty entry means the column shows its default. There are always exactly three entries."
+    },
+    "rowLabels": {
+      "help": "The three labels of the system levels, in the order subsystem, system, supersystem. An empty entry means the row shows its default. There are always exactly three entries."
+    },
+    "cells": {
+      "help": "The nine windows, one for each system level (row: subsystem, system, supersystem) and each time window (column: past, present, future). Every window carries a free text and at most one image, such as a sketch. The image data appears only as a size. The grid comes in full only on request; otherwise only its extent appears."
+    }
+  },
+  "actions": {
+    "setCellText": {
+      "help": "Writes the text of a window, like typing into the window's text field in the interface. An image in the window stays.",
+      "params": {
+        "row": "The system level, 0 to 2: subsystem, system, supersystem. Any other value is rejected.",
+        "col": "The time window, 0 to 2: past, present, future. Any other value is rejected.",
+        "text": "The new text of the window; an empty text clears it.",
+        "command": "The command as an object with row, col and text."
+      }
+    },
+    "clearImage": {
+      "help": "Removes the image of a window, in the interface via the round button at the top right of the thumbnail. The window's text stays.",
+      "params": {
+        "row": "The system level, 0 to 2: subsystem, system, supersystem. Any other value is rejected.",
+        "col": "The time window, 0 to 2: past, present, future. Any other value is rejected.",
+        "command": "The command as an object with row and col."
+      }
+    },
+    "setCellImage": {
+      "help": "Sets the image of a window, replacing an existing one, only through the interface: via the window's image button or by dropping an image file onto it. The window's text stays.",
+      "params": {
+        "row": "The system level, 0 to 2: subsystem, system, supersystem. Any other value is rejected.",
+        "col": "The time window, 0 to 2: past, present, future. Any other value is rejected.",
+        "dataUrl": "The image as a data URL.",
+        "command": "The command as an object with row, col and dataUrl."
+      }
+    }
+  }
+}

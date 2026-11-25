@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "9 Windows (TRIZ System Operator)",
+  "description": "Examine the system on time × hierarchy axes",
+  "whenToUse": "When a problem is to be looked at in its context — three system levels by three time windows — to find causes and solution spaces outside the system itself; not to follow a single chain of causes, which is what 5-why or Ishikawa are for.",
+  "systemHeading": "System",
+  "systemPlaceholder": "e.g. passenger car with combustion engine",
+  "gridAriaLabel": "9-Windows grid",
+  "cornerTip": "Rows = hierarchy, columns = time",
+  "axisRows": "Hierarchy",
+  "axisCols": "Time",
+  "colPast": "Past",
+  "colPresent": "Present",
+  "colFuture": "Future",
+  "rowSub": "Subsystem",
+  "rowSys": "System",
+  "rowSuper": "Supersystem",
+  "colAxisAria": "Label for column {idx}",
+  "rowAxisAria": "Label for row {idx}",
+  "cellPlaceholder": "Note observations, components, trends, open questions …",
+  "addImage": "Image",
+  "clearImage": "Remove image",
+  "imageAlt": "Sketch for {row} · {col}",
+  "imageTooLarge": "Image too large (max. 2 MB).",
+  "imageReadError": "Could not read image.",
+  "imageTypeError": "Selected file is not an image.",
+  "invariants": {
+    "colLabelCount": "The time axis has exactly three column labels.",
+    "rowLabelCount": "The system levels have exactly three row labels.",
+    "cellGrid": "The grid has exactly three rows of three windows each."
+  }
+}
