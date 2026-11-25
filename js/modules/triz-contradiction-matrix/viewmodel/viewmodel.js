@@ -81,15 +81,15 @@ export default createModule({
 
       /** Titel einer Zelle: beide Parameter mit Pfeil und die empfohlenen Prinzipien. @param {number} i @param {number} j @returns {string} */
       cellTitle(i, j) {
-        if (i === j) return `${i + 1} ↔ ${i + 1}`;
-        const head = `${i + 1}↑ ${this.t(`parameters.${i + 1}.name`)} / ${j + 1}↓ ${this.t(`parameters.${j + 1}.name`)}`;
+        if (i === j) return `${i + 1} \u2194 ${i + 1}`;
+        const head = `${i + 1}\u2191 ${this.t(`parameters.${i + 1}.name`)} / ${j + 1}\u2193 ${this.t(`parameters.${j + 1}.name`)}`;
         const cell = MATRIX[i][j];
         return cell ? `${head}: ${cell.join(', ')}` : head;
       },
 
       /** Inhalt einer Zelle: Punkt auf der Diagonale, sonst die Anzahl der Prinzipien oder leer. @param {number} i @param {number} j @returns {string} */
       cellContent(i, j) {
-        if (i === j) return '·';
+        if (i === j) return '\u00b7';
         const cell = MATRIX[i][j];
         return cell === null ? '' : String(cell.length);
       },
