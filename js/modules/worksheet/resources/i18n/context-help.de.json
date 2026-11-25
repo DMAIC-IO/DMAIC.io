@@ -341,6 +341,7 @@
         "sheetId": "Optional: das Blatt der Zelle; ohne Angabe das aktive.",
         "columnId": "Optional: die Spalte der Zelle; ohne Angabe die aktive Zelle der Auswahl.",
         "row": "Optional: die Zeile der Zelle, von 0 an gezählt.",
+        "text": "Optional: Starttext des Formel-Editors (der Hinweisknopf „=“ übergibt den Editortext); ohne Angabe die Formel der Zelle.",
         "command": "Das Kommando als ein Objekt mit sheetId, columnId und row."
       }
     },

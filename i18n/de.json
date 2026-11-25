@@ -1250,6 +1250,7 @@
     },
     "datagrid": {
       "renameColumn": "Spalte umbenennen",
+      "formulaEditorHint": "Formel-Editor (F4)",
       "promptColumnName": "Spaltenname:",
       "sortAsc": "Aufsteigend sortieren",
       "sortDesc": "Absteigend sortieren",

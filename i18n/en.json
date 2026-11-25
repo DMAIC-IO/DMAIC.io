@@ -1250,6 +1250,7 @@
     },
     "datagrid": {
       "renameColumn": "Rename column",
+      "formulaEditorHint": "Formula Editor (F4)",
       "promptColumnName": "Column name:",
       "sortAsc": "Sort ascending",
       "sortDesc": "Sort descending",

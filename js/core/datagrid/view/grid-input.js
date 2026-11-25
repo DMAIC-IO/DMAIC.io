@@ -16,6 +16,7 @@
  * Bestandsliste der Bedienung: Spec F1.14, „Nachtrag Bedienliste“.
  */
 import { h, isShown } from '../../dom.js';
+import { icon } from '../../icon.js';
 import { shortcutRegistry } from '../../shortcut-registry.js';
 import { formatGridLossless } from '../datagrid-utils.js';
 import { parseClipboard } from '../table/paste.js';
@@ -327,11 +328,33 @@ export function createGridInput(view, {
     const box = h('div', { class: 'datagrid__editor' }, input);
     el.append(box);
     editor = { c, r, columnId: col.id, input, box, initial };
+    if (initialChar === '=' || formula != null) showHint();
+    input.addEventListener('input', () => { if (input.value.startsWith('=')) showHint(); });
     revealCell(c, r);
     paint();
     input.focus({ preventScroll: true });
     if (initialChar) input.setSelectionRange(1, 1); else input.select();
     input.addEventListener('blur', () => { if (editor?.input === input) commitEdit(false); });
+  }
+
+  /**
+   * Hinweisknopf „=“ in der Editorbox (öffnet den Formel-Editor mit dem Editortext).
+   * Höchstens einer je Editor; er verschwindet nur mit der Box.
+   */
+  function showHint() {
+    if (!editor || features.formulaEditor !== true || !can('openFormulaEditor')) return;
+    if (editor.box.querySelector('.fe-expand-hint')) return;
+    const btn = h('button', { class: 'fe-expand-hint', type: 'button', title: t('ui.datagrid.formulaEditorHint') },
+      icon('action.expand', { size: 'sm' }));
+    // mousedown statt click: der Editor übernimmt sonst per blur.
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!editor) return;
+      const ed = closeEditor(false);
+      send('openFormulaEditor', { columnId: ed.columnId, row: ed.r, text: ed.input.value });
+    });
+    editor.box.append(btn);
   }
 
   function closeEditor(refocus) {

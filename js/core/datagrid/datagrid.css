@@ -1571,3 +1571,22 @@ td.datagrid__row-header:active {
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+
+/* Hinweisknopf „=“ im Zelleneditor (öffnet den Formel-Editor) */
+.datagrid__editor .fe-expand-hint {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-l);
+  height: var(--spacing-ml);
+  padding: 0;
+  border: none;
+  border-radius: 0 0 0 var(--border-radius-sm);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+}

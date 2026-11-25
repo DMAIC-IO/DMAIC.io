@@ -659,3 +659,78 @@ suite('GridInput — eigene Kopie einfügen', () => {
     } finally { s.done(); }
   });
 });
+
+suite('GridInput — Hinweisknopf „=“ (.fe-expand-hint)', () => {
+  const hints = (s) => s.el.querySelectorAll('.datagrid__editor .fe-expand-hint');
+  const feOn = { formulaEditor: true };
+
+  test('Starttext „=“ zeigt genau einen Knopf mit Titel und Icon', async () => {
+    const s = await setup({ features: feOn });
+    try {
+      clickCell(s, 1, 0);
+      key(document.activeElement, '=');
+      assertEqual(hints(s).length, 1, 'ein Knopf');
+      assertEqual(hints(s)[0].title, 'formulaEditorHint');
+      assertEqual(hints(s)[0].querySelector('[data-icon="action.expand"]') !== null, true, 'Icon');
+      assertEqual(hints(s)[0].hasAttribute('style'), false, 'kein Inline-Stil');
+    } finally { s.done(); }
+  });
+
+  test('Formelzelle per F2: Knopf da', async () => {
+    const s = await setup({ features: feOn, formulas: { a: { 2: '=1+1' } } });
+    try {
+      clickCell(s, 0, 2);
+      key(document.activeElement, 'F2');
+      assertEqual(hints(s).length, 1);
+    } finally { s.done(); }
+  });
+
+  test('erst das input-Ereignis mit „=“ zeigt den Knopf, nie doppelt', async () => {
+    const s = await setup({ features: feOn });
+    try {
+      clickCell(s, 1, 0);
+      key(document.activeElement, 'F2');
+      assertEqual(hints(s).length, 0, 'noch kein Knopf');
+      const ed = s.el.querySelector('.datagrid__editor input');
+      ed.value = '=';
+      ed.dispatchEvent(new Event('input'));
+      assertEqual(hints(s).length, 1, 'Knopf da');
+      ed.dispatchEvent(new Event('input'));
+      assertEqual(hints(s).length, 1, 'weiterhin einer');
+    } finally { s.done(); }
+  });
+
+  test('ohne features.formulaEditor kein Knopf', async () => {
+    const s = await setup();
+    try {
+      clickCell(s, 1, 0);
+      key(document.activeElement, '=');
+      assertEqual(hints(s).length, 0);
+    } finally { s.done(); }
+  });
+
+  test('Klick meldet openFormulaEditor mit Text, schreibt nichts, schließt den Editor', async () => {
+    const s = await setup({ features: feOn });
+    try {
+      clickCell(s, 1, 0);
+      key(document.activeElement, '=');
+      mouse(hints(s)[0], 'mousedown');
+      assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['openFormulaEditor', { columnId: 'b', row: 0, text: '=' }]]);
+      assertEqual(s.el.querySelector('.datagrid__editor'), null, 'Editor zu');
+      assertEqual(s.el.querySelectorAll('.fe-expand-hint').length, 0, 'Knopf weg');
+    } finally { s.done(); }
+  });
+
+  test('Enter und Esc entfernen den Knopf mit dem Editor', async () => {
+    for (const k of ['Enter', 'Escape']) {
+      const s = await setup({ features: feOn });
+      try {
+        clickCell(s, 1, 0);
+        key(document.activeElement, '=');
+        assertEqual(hints(s).length, 1);
+        key(s.el.querySelector('.datagrid__editor input'), k);
+        assertEqual(s.el.querySelectorAll('.fe-expand-hint').length, 0, k);
+      } finally { s.done(); }
+    }
+  });
+});

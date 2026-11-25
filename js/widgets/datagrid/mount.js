@@ -8,7 +8,7 @@
  * (Block am Auswahlrand verschieben, Merkmal `structure`).
  * Fehlt die Rolle in `commands`, ist ihr Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke. Die
  * Ansichtsereignisse `contextMenu { id, columnId, row }` und
- * `openFormulaEditor { columnId, row }` sind keine Datenrollen; sie gehen an
+ * `openFormulaEditor { columnId, row, text? }` sind keine Datenrollen; sie gehen an
  * `config.commands.contextMenu` bzw. `.openFormulaEditor`, falls hinterlegt.
  *
  * Neu gezeichnet wird, wenn sich `table.rev` (über die Eingabe `rev` =

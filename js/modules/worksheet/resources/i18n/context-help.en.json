@@ -341,6 +341,7 @@
         "sheetId": "Optional: the sheet of the cell; the active one if omitted.",
         "columnId": "Optional: the column of the cell; the active cell of the selection if omitted.",
         "row": "Optional: the row of the cell, counted from 0.",
+        "text": "Optional: initial text of the formula editor (the \"=\" hint button passes the editor text); defaults to the cell formula.",
         "command": "The command as one object with sheetId, columnId and row."
       }
     },

@@ -15,7 +15,7 @@
  * - `exportAs` — eine Datei aus dem aktiven Blatt: CSV wie die Altform
  *   (`sheetCsv`), XLSX und JSON über die Mapper unten;
  * - `openFormulaEditor` — den Formel-Editor zeigen (Werkzeugleiste, F4,
- *   Doppelklick auf eine Formelzelle im Raster);
+ *   Doppelklick auf eine Formelzelle im Raster, Hinweisknopf „=“ mit `text`);
  * - `suggestChart` — `chart-suggestion` mit den gewählten Spalten öffnen;
  * - `confirmRoles` — die Rollen aus der Bestätigung vor dem Vorschlag setzen,
  *   alle zusammen als ein Schritt im Verlauf.
@@ -124,8 +124,9 @@ export default createModule({
     openFormulaEditor: command({
       params: {
         sheetId: text(optional), columnId: text(optional), row: number({ integer: true, min: 0, optional: true }),
+        text: text(optional),
       },
-      run(args) { this.showFormulaEditor(args); },
+      run(args) { this.showFormulaEditor(args, args.text ?? null); },
     }),
     suggestChart: command({
       params: {},
