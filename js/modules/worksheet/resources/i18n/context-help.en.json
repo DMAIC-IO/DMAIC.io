@@ -90,7 +90,7 @@
       }
     },
     "moveCells": {
-      "help": "Moves a block of cells, like dragging the border of the selection: values and formulas go to the new place, the source becomes empty, and formulas that point at the moved cells follow. An overwritten cell that is still referenced becomes #REF! there. The target is clamped into the sheet; a locked column in source or target rejects the command. One history step, undo restores everything. Returns the target block { c0, r0, c1, r1 }, or null if there was nothing to move.",
+      "help": "Moves a block of cells, like dragging the border of the selection: values and formulas go to the new place, the source becomes empty, and formulas that point at the moved cells follow. A reference in a formula that pointed at an overwritten cell becomes #REF!. A moved formula keeps pointing at the same cells; plain column references (C1) and partly moved ranges stay unchanged. The target is clamped into the sheet; a locked column in source or target rejects the command. One history step, undo restores everything. Returns the target block { c0, r0, c1, r1 }, or null if there was nothing to move.",
       "params": {
         "sheetId": "The id of the sheet, as read().sheets[].id names it.",
         "source": "The source block { c0, r0, c1, r1 }: first and last column, first and last row, all zero-based.",

@@ -90,7 +90,7 @@
       }
     },
     "moveCells": {
-      "help": "Verschiebt einen Zellblock, wie das Ziehen am Rand der Auswahl: die Werte und Formeln wandern an die neue Stelle, die Quelle wird leer, Formeln, die auf die verschobenen Zellen zeigen, folgen mit. Eine überschriebene Zelle, auf die noch etwas zeigt, wird dort zu #REF!. Das Ziel wird ins Blatt geklemmt; eine gesperrte Spalte in Quelle oder Ziel lehnt das Kommando ab. Ein Schritt im Verlauf, Rückgängig stellt alles her. Liefert den Zielblock { c0, r0, c1, r1 } oder null, wenn nichts zu verschieben war.",
+      "help": "Verschiebt einen Zellblock, wie das Ziehen am Rand der Auswahl: die Werte und Formeln wandern an die neue Stelle, die Quelle wird leer, Formeln, die auf die verschobenen Zellen zeigen, folgen mit. Ein Bezug in einer Formel, der auf eine überschriebene Zelle zeigte, wird zu #REF!. Eine verschobene Formel zeigt weiter auf dieselben Zellen; reine Spaltenbezüge (C1) und nur teilweise verschobene Bereiche bleiben unverändert. Das Ziel wird ins Blatt geklemmt; eine gesperrte Spalte in Quelle oder Ziel lehnt das Kommando ab. Ein Schritt im Verlauf, Rückgängig stellt alles her. Liefert den Zielblock { c0, r0, c1, r1 } oder null, wenn nichts zu verschieben war.",
       "params": {
         "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
         "source": "Der Quellblock { c0, r0, c1, r1 }: erste und letzte Spalte, erste und letzte Zeile, alle nullbasiert.",
