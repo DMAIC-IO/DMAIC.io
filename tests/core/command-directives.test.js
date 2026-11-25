@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
-import { registerCommandDirectives, runUiCommand, openDialogAt } from '../../js/core/command-directives.js';
+import { registerCommandDirectives, runUiCommand, openDialogAt, closeDialogsIn } from '../../js/core/command-directives.js';
 import { defineModel, defineForm, command, text, number, oneOf, index, list, record, runCommand } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
@@ -824,6 +824,25 @@ suite('Dialog aus Code und x-dialog.dblclick', () => {
     dialog.open.api.remove();
     await done;
     assertDeepEqual([...model.columns.a], ['x']);
+  });
+
+  test('closeDialogsIn bricht die offenen Dialoge der Komponenten ab, das Formular kehrt heim', async () => {
+    const { host, root, dialog, model } = await mount('<div class="home"><form x-ref="f" x-command-form="addItem"><input x-param="col"><input x-param="text"></form></div>');
+    assertEqual(closeDialogsIn(host), null);
+    const fromCode = openDialogAt(Alpine, root, 'f', { defaults: { col: 'b', text: 'Entwurf' } });
+    await flush();
+    assertTrue(dialog.open !== null);
+    assertEqual(root.querySelector('.home form'), null);
+    const closing = closeDialogsIn(host);
+    assertTrue(closing instanceof Promise);
+    await closing;
+    await fromCode;
+    assertEqual(dialog.open, null);
+    assertTrue(root.querySelector('.home form') !== null);
+    assertTrue(!root.querySelector('form').hasAttribute('data-default-arg-text'));
+    assertDeepEqual([...model.columns.a], []);
+    assertDeepEqual([...model.columns.b], []);
+    assertEqual(closeDialogsIn(host), null);
   });
 
   test('x-dialog.dblclick öffnet erst beim Doppelklick', async () => {

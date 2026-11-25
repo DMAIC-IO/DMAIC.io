@@ -51,6 +51,8 @@ const registered = new WeakSet();
 const FORMS = new WeakMap();
 /** Inhalt eines offenen Dialogs → Abschluss bei Erfolg. */
 const OPEN_DIALOGS = new WeakMap();
+/** Wurzel einer Komponente → ihre offenen Dialoge (Abbrechen, Ende des Öffnens). */
+const DIALOGS_OF = new WeakMap();
 
 /** @param {string} directive @returns {Error} */
 function missingUiError(directive) {
@@ -541,6 +543,14 @@ export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
     throw err;
   }
   OPEN_DIALOGS.set(target, finish);
+  const owner = anchor.closest('[x-data]');
+  /** @type {() => void} */
+  let ended = () => {};
+  const entry = { cancel: () => api?.cancel(), done: new Promise((resolve) => { ended = resolve; }) };
+  if (owner) {
+    if (!DIALOGS_OF.has(owner)) DIALOGS_OF.set(owner, new Set());
+    DIALOGS_OF.get(owner).add(entry);
+  }
   const del = opts.delete;
   const deleteArgs = () => {
     const params = commandDef(ui, del).params;
@@ -574,9 +584,34 @@ export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
     });
   } finally {
     OPEN_DIALOGS.delete(target);
-    restoreArgs();
-    ctl?.close();
+    DIALOGS_OF.get(owner)?.delete(entry);
+    try {
+      restoreArgs();
+      ctl?.close();
+    } finally {
+      ended();
+    }
   }
+}
+
+/**
+ * Die offenen Dialoge der Komponenten in `container` (samt ihm selbst)
+ * abbrechen — beim Abbauen eines Moduls, bevor sein Baum zerstört wird. Das
+ * ausgeliehene Formular kehrt heim. Ohne offenen Dialog `null` (der Aufrufer
+ * bleibt synchron), sonst erfüllt, wenn jedes Öffnen beendet ist.
+ * @param {HTMLElement} container
+ * @returns {Promise<void>|null}
+ */
+export function closeDialogsIn(container) {
+  /** @type {Promise<void>[]} */
+  const pending = [];
+  for (const root of [container, ...container.querySelectorAll('[x-data]')]) {
+    for (const entry of [...(DIALOGS_OF.get(root) ?? [])]) {
+      entry.cancel();
+      pending.push(entry.done);
+    }
+  }
+  return pending.length ? Promise.all(pending).then(() => {}) : null;
 }
 
 /**

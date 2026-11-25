@@ -10,7 +10,7 @@ import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
 import { requireKnownId } from './validate.js';
 import { formatsOf } from './exporter.js';
-import { openDialogSafely } from './command-directives.js';
+import { openDialogSafely, closeDialogsIn } from './command-directives.js';
 import { defineComputedSlots, bindComputed } from './computed.js';
 import { derivedAccessor, evaluateDerived } from './derived.js';
 import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async-task.js';
@@ -962,6 +962,10 @@ export function createModule(base) {
       if (alpine) {
         this._gestureDetach.forEach((detach) => detach());
         this._gestureDetach = [];
+        // Ein offener Dialog (x-dialog, ctx.openDialog) hält das Formular außerhalb des Containers.
+        const closing = closeDialogsIn(this._container);
+        if (closing) await closing;
+        if (!this._container) return;
         this._container.querySelectorAll('[x-data]').forEach(root => {
           Alpine.destroyTree(root);
         });
