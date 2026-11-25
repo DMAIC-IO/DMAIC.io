@@ -983,7 +983,7 @@ const definition = {
         const charts = [
           ['chart-resid-fits', 'scatter', {
             title: _t('residualsVsFitted'), xLabel: _t('fittedValues'), yLabel: _t('residuals'),
-            showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
+            showLegend: false, moduleRefLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
           }],
           ['chart-resid-normal', 'probability-plot', {
             title: _t('residualsNormalPlot'), xLabel: _t('residuals'), yLabel: _t('residualsPercent'),
@@ -996,7 +996,7 @@ const definition = {
           }],
           ['chart-resid-order', 'scatter', {
             title: _t('residualsVsOrder'), xLabel: _t('residualsVsOrderByGroup'), yLabel: _t('residuals'),
-            showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
+            showLegend: false, moduleRefLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
           }],
         ];
 

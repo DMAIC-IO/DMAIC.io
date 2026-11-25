@@ -548,7 +548,7 @@ export default createModule({
           title: '', xLabel: _t('vc.axisValue'), yLabel: _t('vc.axisCost'), showLegend: false,
           // Half a unit of margin keeps a point at 0 or 10 from being cut off.
           xMin: -0.5, xMax: 10.5, yMin: -0.5, yMax: 10.5,
-          refLines: [{ dir: 'v', ...split }, { dir: 'h', ...split }],
+          moduleRefLines: [{ dir: 'v', ...split }, { dir: 'h', ...split }],
           series: [],
         }).then((chart) => {
           if (!chart) return;

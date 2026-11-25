@@ -1312,7 +1312,7 @@ const mod = createModule({
             strokeWidth: 1.5,
             errorBars: { show: true, yMode: 'relative', yPlus, yMinus },
           }],
-          refLines,
+          moduleRefLines: refLines,
         });
         if (gen !== this._renderGen) { module._context.chartManager.destroy(chart); return; }
         this._charts.push(chart);
@@ -1350,7 +1350,7 @@ const mod = createModule({
             strokeWidth: 1.5,
             errorBars: { show: true, yMode: 'relative', yPlus, yMinus },
           }],
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: 0.90, label: '90 %', dash: 'dash', width: 1, color: 'var(--color-success, #2ea043)' },
             { dir: 'h', value: 0.80, label: '80 %', dash: 'dash', width: 1, color: 'var(--color-warning, #d29922)' },
           ],
@@ -1385,7 +1385,7 @@ const mod = createModule({
           yLabel: "d'",
           showLegend: true,
           series,
-          refLines: [
+          moduleRefLines: [
             { dir: 'v', value: 0, label: 'c = 0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
             { dir: 'h', value: 0, label: "d' = 0", dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
           ],
@@ -1583,6 +1583,9 @@ const mod = createModule({
         clearTimeout(this._debTimer);
         for (const p of Object.values(this._pickers)) p?.destroy?.();
         this._pickers = { part: null, appraiser: null, rating: null, reference: null, replicate: null, ratings: null };
+        // A create still awaited would otherwise land after this cleanup
+        // and leave an orphan chart in the host.
+        this._renderGen++;
         this._destroyCharts();
       },
     };

@@ -144,8 +144,8 @@ export function bootChartConfig(summary, ciMethod, t) {
     title: chartTitle('chartBootTitle', summary, t),
     xLabel: t('chartBootX'),
     showLegend: false,
-    refAreas: iv ? [{ dir: 'x', min: iv[0], max: iv[1], color: 'var(--color-accent-light)', label: t('ciLabel') }] : [],
-    refLines: Number.isFinite(boot.estimate)
+    moduleRefAreas: iv ? [{ dir: 'x', min: iv[0], max: iv[1], color: 'var(--color-accent-light)', label: t('ciLabel') }] : [],
+    moduleRefLines: Number.isFinite(boot.estimate)
       ? [{ value: boot.estimate, color: 'var(--color-chart-2)', label: 'θ̂', showLabel: true }]
       : [],
   };
@@ -173,7 +173,7 @@ export function permChartConfig(summary, t) {
     title: chartTitle('chartPermTitle', summary, t),
     xLabel: t('chartPermX'),
     showLegend: false,
-    refAreas: [],
-    refLines,
+    moduleRefAreas: [],
+    moduleRefLines: refLines,
   };
 }

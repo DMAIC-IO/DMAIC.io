@@ -1227,7 +1227,7 @@ const mod = createModule({
             x: r.fittedValues, y: r.devianceResiduals, name: _t('devianceResiduals'),
             color: 'var(--color-chart-1)', markerSize: 5, strokeWidth: 0.75, symbol: 'circle',
           }],
-          refLines: [{ dir: 'h', value: 0, dash: 'dash', color: 'var(--color-text-secondary)', width: 1 }],
+          moduleRefLines: [{ dir: 'h', value: 0, dash: 'dash', color: 'var(--color-text-secondary)', width: 1 }],
         }, 'residuals');
       },
 
@@ -1262,7 +1262,7 @@ const mod = createModule({
             x: indices, y: r._cooks, name: _t('cooksDistance'),
             color: 'var(--color-chart-2)', markerSize: 4, strokeWidth: 0.75, symbol: 'circle',
           }],
-          refLines: [{ dir: 'h', value: threshold, dash: 'dash', color: 'var(--color-warning)', width: 1.5, label: `4/n = ${threshold.toFixed(4)}` }],
+          moduleRefLines: [{ dir: 'h', value: threshold, dash: 'dash', color: 'var(--color-warning)', width: 1.5, label: `4/n = ${threshold.toFixed(4)}` }],
         }, 'cooks');
       },
 

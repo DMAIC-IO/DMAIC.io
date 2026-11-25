@@ -478,7 +478,7 @@ const mod = createModule({
             xLabel: '', yLabel: yCol.name || '', showLegend: false,
             xMin: -0.5, xMax: gm.levels.length - 0.5, yMin, yMax, xTicks: xs,
             xTickFormat: (v) => { const idx = Math.round(v); return idx >= 0 && idx < gm.levels.length ? gm.levels[idx] : ''; },
-            refLines: Number.isFinite(overallY) ? [{ dir: 'h', value: overallY, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' }] : [],
+            moduleRefLines: Number.isFinite(overallY) ? [{ dir: 'h', value: overallY, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' }] : [],
             series: [{
               name: factor.name || '', color: CHART_COLORS[0], markerSize: 5,
               x: xs, y: gm.means,

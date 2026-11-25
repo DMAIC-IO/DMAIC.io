@@ -665,7 +665,7 @@ const mod = createModule({
           xMin: -0.5,
           xMax: r.partLabels.length - 0.5,
           series,
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: r.grandMean, label: 'x̄', dash: 'dash', color: 'var(--color-info)' },
           ],
         });
@@ -692,7 +692,7 @@ const mod = createModule({
           showOutliers: true,
           showLegend: false,
           xLabel: _t('operatorLabel'),
-          refLines: [
+          moduleRefLines: [
             { dir: 'v', value: r.grandMean, label: 'x̄', dash: 'dash', color: 'var(--color-info)' },
           ],
         });
@@ -759,7 +759,7 @@ const mod = createModule({
             symbol: 'circle', strokeWidth: 1,
             connectLine: { show: true, width: 1, dash: 'solid', color: 'var(--color-text-secondary)' },
           }],
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: ctrl.xbarUCL, label: 'UCL', dash: 'dash', color: 'var(--color-error)' },
             { dir: 'h', value: ctrl.xbarCL, label: 'CL', dash: 'dash', color: 'var(--color-success)' },
             { dir: 'h', value: ctrl.xbarLCL, label: 'LCL', dash: 'dash', color: 'var(--color-error)' },
@@ -802,7 +802,7 @@ const mod = createModule({
             symbol: 'circle', strokeWidth: 1,
             connectLine: { show: true, width: 1, dash: 'solid', color: 'var(--color-text-secondary)' },
           }],
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: ctrl.rUCL, label: 'UCL', dash: 'dash', color: 'var(--color-error)' },
             { dir: 'h', value: ctrl.rCL, label: 'CL', dash: 'dash', color: 'var(--color-success)' },
             { dir: 'h', value: ctrl.rLCL, label: 'LCL', dash: 'dash', color: 'var(--color-error)' },
@@ -895,6 +895,9 @@ const mod = createModule({
         clearTimeout(this._debTimer);
         for (const p of Object.values(this._pickers)) p?.destroy();
         this._pickers = { part: null, operator: null, measurement: null };
+        // A create still awaited would otherwise land after this cleanup
+        // and leave an orphan chart in the host.
+        this._renderGen++;
         this._destroyCharts();
       },
     };

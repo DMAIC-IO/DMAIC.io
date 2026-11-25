@@ -782,7 +782,7 @@ export class ResultsViewModel {
         name: r.label, color: 'var(--color-chart-1)', symbol: 'circle', markerSize: 8, strokeWidth: 1,
         x: [Math.abs(r.ds)], y: [r.cs],
       })),
-      refLines: [
+      moduleRefLines: [
         { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
         { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
       ],

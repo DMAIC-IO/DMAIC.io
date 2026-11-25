@@ -636,6 +636,7 @@ const mod = createModule({
       clearResults() {
         this.result = null;
         this._values = null;
+        this._renderGen++; // a histogram still being created must not appear
         this._destroyCharts();
       },
 
@@ -657,7 +658,7 @@ const mod = createModule({
           barColor: 'var(--color-accent)',
           normalCurveColor: 'var(--color-info)',
           showLegend: true,
-          refLines,
+          moduleRefLines: refLines,
         });
         // Stale-render guard: a newer render started while we awaited.
         if (gen !== this._renderGen) {
@@ -826,6 +827,9 @@ const mod = createModule({
         if (this._picker) { this._picker.destroy(); this._picker = null; }
         if (this._subgroupPicker) { this._subgroupPicker.destroy(); this._subgroupPicker = null; }
         clearTimeout(this._debTimer);
+        // A create still awaited would otherwise land after this cleanup and
+        // leave an orphan chart in the host (two histograms after a reload).
+        this._renderGen++;
         this._destroyCharts();
       },
     };

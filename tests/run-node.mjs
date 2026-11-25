@@ -80,6 +80,7 @@ const SKIP = new Set([
   'core/chart/chart-editor-sections.test.js',
   'core/chart/chart-fixed-size.test.js',
   'core/chart/chart-legend-order.test.js',
+  'core/chart/chart-module-ref-lines.test.js',
   'core/chart/chart-title-center.test.js',
   'core/chart/chart-axis-title-gap.test.js',
   'core/chart/chart-exact-range.test.js',

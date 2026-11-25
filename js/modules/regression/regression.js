@@ -1244,7 +1244,7 @@ const mod = createModule({
         plotEl.replaceChildren();
         await this._create(plotEl, 'scatter', {
           title: _t('residualsVsFitted'), xLabel: _t('fittedValues'), yLabel: _t('residuals'), showLegend: false,
-          refLines: [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }],
+          moduleRefLines: [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }],
           series: [{ name: _t('residuals'), color: 'var(--color-chart-3)', markerSize: 4, strokeWidth: 0.75, x: r.yHat, y: r.residuals, symbol: 'circle' }],
         }, gen);
       },
@@ -1257,7 +1257,7 @@ const mod = createModule({
         const indices = r.residuals.map((_, i) => i + 1);
         await this._create(plotEl, 'scatter', {
           title: _t('residualsVsOrder'), xLabel: _t('observationNr'), yLabel: _t('residuals'), showLegend: false,
-          refLines: [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }],
+          moduleRefLines: [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }],
           series: [{ name: _t('residuals'), color: 'var(--color-chart-4)', markerSize: 4, strokeWidth: 0.75, x: indices, y: r.residuals, symbol: 'circle', connectLine: { show: true, dash: 'solid', width: 1, color: 'var(--color-chart-4)' } }],
         }, gen);
       },
@@ -1427,7 +1427,7 @@ const mod = createModule({
           await this._create(cell, 'scatter', {
             title: xNames[xi] || `X${xi + 1}`, xLabel: xNames[xi] || `X${xi + 1}`, yLabel: _t('meanResponse'),
             titleSize: 13, labelSize: 11, tickSize: 10, showLegend: false,
-            refLines: [{ dir: 'h', value: yMean, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)', label: '' }],
+            moduleRefLines: [{ dir: 'h', value: yMean, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)', label: '' }],
             series: [{ name: xNames[xi], color: 'var(--color-chart-1)', markerSize: 0, x: lineX, y: lineY, connectLine: { show: true, dash: 'solid', width: 2.5, color: 'var(--color-chart-1)' } }],
           }, gen);
         }
