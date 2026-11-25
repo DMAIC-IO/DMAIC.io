@@ -14,19 +14,7 @@
       "help": "The problem note: why both requirements are impossible at the same time, plus background and boundary conditions. Free text; an empty text clears the note."
     },
     "principleNotes": {
-      "help": "One note per separation principle: whether and how the principle applies to this contradiction. The four principles are time, space, condition and system (system level). The notes are written as a whole with all four principles; an empty text clears a note.",
-      "time": {
-        "help": "Note on separation in time: the parameter takes different values at different times, for example a wing that is extended for take-off and retracted in cruise. It records how this fits the problem."
-      },
-      "space": {
-        "help": "Note on separation in space: the parameter takes different values at different places, for example a screw with a hard head and an elastic shaft. It records how this fits the problem."
-      },
-      "condition": {
-        "help": "Note on separation by condition: the parameter takes different values depending on load, temperature or speed, for example photochromic glasses that are dark in sunlight and clear in shade. It records how this fits the problem."
-      },
-      "system": {
-        "help": "Note on separation at the system level: the whole behaves differently from its parts, for example a bicycle chain that is flexible as a whole while its individual links are rigid. It records how this fits the problem."
-      }
+      "help": "One note per separation principle: whether and how the principle applies to this contradiction. The four principles are time, space, condition and system (system level). The notes are written as a whole with all four principles; an empty text clears a note."
     },
     "selectedPrinciple": {
       "help": "The chosen separation principle that resolves the contradiction: time, space, condition or system (system level); empty while none is chosen. In the interface via “Choose this direction” on one of the four cards. The solution note appears only after the choice. Any other value is rejected."

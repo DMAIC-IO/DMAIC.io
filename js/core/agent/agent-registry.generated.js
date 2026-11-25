@@ -20606,6 +20606,7 @@ export const AGENT_REGISTRY = {
   "triz-physical-contradiction": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -20615,164 +20616,78 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "swap": {
-        "params": [],
-        "returns": "void",
-        "help": "Tauscht die beiden gegensätzlichen Anforderungen gegeneinander."
-      },
-      "selectPrinciple": {
+        "target": "model",
         "params": [
           {
-            "name": "key",
-            "type": "string|null",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Schlüssel des Trennungsprinzips; `null` nimmt die Wahl zurück"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Wählt das Trennungsprinzip, mit dem der Widerspruch aufgelöst wird."
-      },
-      "setParameter": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "Name des Parameters"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den technischen Parameter, der die beiden gegensätzlichen Anforderungen trägt."
-      },
-      "setRequirementA": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Anforderung A"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Anforderung A — die eine Seite des Widerspruchs."
-      },
-      "setRequirementNotA": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Anforderung Nicht-A"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs."
-      },
-      "setProblemNote": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Problemnotiz"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Problemnotiz zum Widerspruch."
-      },
-      "setSolutionNote": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Lösungsnotiz"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Lösungsnotiz zum gewählten Trennungsprinzip."
-      },
-      "setPrincipleNote": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'time'|'space'|'condition'|'system'",
-            "optional": false,
-            "help": "welches Trennungsprinzip"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Notiz zu diesem Prinzip"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Notiz zu einem der vier Trennungsprinzipien.",
-        "keysOf": "PrincipleNotes",
-        "keys": {
-          "time": {
-            "type": "string",
-            "help": "Notiz zur Trennung in der Zeit"
-          },
-          "space": {
-            "type": "string",
-            "help": "Notiz zur Trennung im Raum"
-          },
-          "condition": {
-            "type": "string",
-            "help": "Notiz zur Trennung nach Bedingung"
-          },
-          "system": {
-            "type": "string",
-            "help": "Notiz zur Trennung in der Systemebene"
-          }
-        }
+        "help": "",
+        "keysOf": "swap",
+        "keysHelp": "actions.swap.params",
+        "keys": {}
       }
     },
     "fields": {
       "parameter": {
         "type": "string",
-        "help": "der technische Parameter, der die beiden gegensätzlichen Anforderungen trägt",
+        "help": "",
         "bulk": false
       },
       "requirementA": {
         "type": "string",
-        "help": "die Anforderung A — die eine Seite des Widerspruchs",
+        "help": "",
         "bulk": false
       },
       "requirementNotA": {
         "type": "string",
-        "help": "die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs",
+        "help": "",
         "bulk": false
       },
       "problemNote": {
         "type": "string",
-        "help": "die Problemnotiz: warum beide Anforderungen zugleich unmöglich sind",
+        "help": "",
         "bulk": false
       },
       "principleNotes": {
-        "type": "Record<string, string>",
-        "help": "je Trennungsprinzip (time, space, condition, system) eine Notiz",
+        "type": "Record<'time'|'space'|'condition'|'system', string>",
+        "help": "",
         "bulk": false
       },
       "selectedPrinciple": {
-        "type": "string|null",
-        "help": "das gewählte Trennungsprinzip (time, space, condition, system) oder null",
+        "type": "'time'|'space'|'condition'|'system'|null",
+        "help": "",
         "bulk": false
       },
       "solutionNote": {
         "type": "string",
-        "help": "die Lösungsnotiz zum gewählten Trennungsprinzip",
+        "help": "",
         "bulk": false
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "parameter",
+      "requirementA",
+      "requirementNotA",
+      "problemNote",
+      "principleNotes",
+      "selectedPrinciple",
+      "solutionNote"
+    ],
+    "invariants": []
   },
   "triz-resources": {
     "tagged": true,

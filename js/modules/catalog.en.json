@@ -200,6 +200,11 @@
     "description": "State the ideal and work backwards to a solution",
     "whenToUse": "When a target image is needed to work backwards from towards a solution — not to judge a solution already found or to pick between variants."
   },
+  "triz-physical-contradiction": {
+    "name": "Physical Contradiction (TRIZ)",
+    "description": "One parameter must be A and ¬A — resolution via four separation principles",
+    "whenToUse": "When a single parameter would have to hold two opposite values at the same time and the contradiction is to be resolved by separation in time, space, condition or system level — not for a contradiction between two different characteristics, which is what the contradiction matrix is for."
+  },
   "triz-resources": {
     "name": "Resources Checklist (TRIZ)",
     "description": "Systematic inventory of substances, fields, space, time, information and functions",

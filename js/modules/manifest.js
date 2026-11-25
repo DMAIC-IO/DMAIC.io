@@ -367,14 +367,6 @@ export default [
     },
   },
   {
-    id: 'triz-physical-contradiction',
-    phase: 'improve',
-    load: () => import('./triz-physical-contradiction/triz-physical-contradiction.js'),
-    cycles: {
-      eightd: { phase: 'corrective' },
-    },
-  },
-  {
     id: 'triz-sufield',
     phase: 'improve',
     load: () => import('./triz-sufield/triz-sufield.js'),

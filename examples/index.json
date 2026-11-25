@@ -1359,31 +1359,6 @@
       ]
     },
     {
-      "id": "triz-physical-contradiction-tragfluegel",
-      "type": "project",
-      "title": {
-        "de": "TRIZ Physikalischer Widerspruch: Tragflügel",
-        "en": "TRIZ Physical Contradiction: Aircraft Wing"
-      },
-      "description": {
-        "de": "Klassisches Lehrbeispiel: Tragflügel soll gleichzeitig lang (Auftrieb) und kurz (Widerstand) sein. Auflösung über Separation in der Zeit — Schwenkflügel.",
-        "en": "Classic textbook case: a wing must be both long (lift) and short (drag). Resolved via separation in time — swing wing."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/triz-physical-contradiction-tragfluegel.json",
-      "format": "json",
-      "modules": [
-        "triz-physical-contradiction"
-      ],
-      "tags": [
-        "improve",
-        "triz",
-        "physical-contradiction",
-        "separation"
-      ]
-    },
-    {
       "id": "triz-sufield-bohrer-beton",
       "type": "project",
       "title": {

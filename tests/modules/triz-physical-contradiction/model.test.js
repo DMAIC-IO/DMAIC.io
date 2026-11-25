@@ -3,8 +3,8 @@
  * Vorgaben (vier Texte, ein record aus Text, eine nullbare Wahl), gespeicherte
  * Stände '1.0' ohne Migrationsschritt (zeichengleich zurück), Stände ohne
  * `_schema` über '0→1.0', das Kommando `swap`, Schreiben der Wahl und aller
- * Notizen, Versionsprüfung, Reparatur unlesbarer Stände, `hasContent` und
- * das Beispiel am bisherigen Ort.
+ * Notizen, Versionsprüfung, Reparatur unlesbarer Stände und `hasContent`.
+ * Das Beispiel prüft examples.test.js.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/triz-physical-contradiction/domain/model.js';
@@ -302,21 +302,5 @@ suite('triz-physical-contradiction Model — hasContent', () => {
   });
   test('Altprojekt → true', () => {
     assertEqual(State.fromJSON(plain(LEGACY)).hasContent(), true);
-  });
-});
-
-suite('triz-physical-contradiction Model — Beispiel am bisherigen Ort', () => {
-  test('tragfluegel (ohne _schema) lädt über 0→1.0 ohne Reparatur, Werte wie in der Datei', async () => {
-    const url = new URL('../../../examples/projects/triz-physical-contradiction-tragfluegel.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch example: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file._schema, undefined);
-    const { m, fields } = repaired(plain(file));
-    assertDeepEqual(fields, []);
-    assertEqual(m.selectedPrinciple, 'time');
-    for (const k of PRINC) assertTrue(m.principleNotes[k].length > 0, k);
-    assertDeepEqual(fieldsOf(m), file);
-    assertEqual(JSON.stringify(m.toJSON()), JSON.stringify({ ...SCHEMA, ...file }));
   });
 });

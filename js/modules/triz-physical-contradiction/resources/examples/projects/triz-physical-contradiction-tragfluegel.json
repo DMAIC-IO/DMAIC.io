@@ -1,4 +1,5 @@
 {
+  "_schema": { "name": "triz-physical-contradiction", "version": "1.0" },
   "parameter": "Länge des Tragflügels",
   "requirementA": "lang — für hohen Auftrieb beim Start und im Langsamflug",
   "requirementNotA": "kurz — für niedrigen Luftwiderstand im Reiseflug",

@@ -200,6 +200,11 @@
     "description": "Formuliere den Idealzustand und arbeite rückwärts zur Lösung",
     "whenToUse": "Wenn ein Zielbild gebraucht wird, von dem aus rückwärts zur Lösung gearbeitet wird — nicht, um eine bereits gefundene Lösung zu bewerten oder zwischen Varianten zu wählen."
   },
+  "triz-physical-contradiction": {
+    "name": "Physikalischer Widerspruch (TRIZ)",
+    "description": "Ein Parameter soll A und ¬A sein — Auflösung über vier Separationsprinzipien",
+    "whenToUse": "Wenn ein einzelner Parameter gleichzeitig zwei entgegengesetzte Werte haben müsste und der Widerspruch durch Trennung in Zeit, Raum, Bedingung oder Systemebene aufgelöst werden soll — nicht für einen Widerspruch zwischen zwei verschiedenen Merkmalen, dafür ist die Widerspruchsmatrix da."
+  },
   "triz-resources": {
     "name": "Ressourcen-Checkliste (TRIZ)",
     "description": "Systematische Inventarisierung von Stoffen, Feldern, Raum, Zeit, Information und Funktionen",
