@@ -5,7 +5,7 @@
  */
 
 import { History } from './datagrid-history.js';
-import { isFormula, evaluateFormula, recalcAllFormulas } from './datagrid-formula.js';
+import { isFormula, evaluateFormula, recalcAllFormulas, remapColumnRefs, moveCellRefs, REF_ERROR } from './datagrid-formula.js';
 import { detectPattern, generateFill, shiftFormulaRefs, withCtrlModifier } from './datagrid-fill.js';
 import {
   uid, clamp, parseNumeric, formatNumber,
@@ -26,6 +26,29 @@ export { isFormula, evaluateFormula } from './datagrid-formula.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 export { COLUMN_TYPES, isNumericType, formatCellValue, uid } from './datagrid-utils.js';
 export { ROLE, ALL_ROLES } from './datagrid-roles.js';
+
+/**
+ * Text the last copy/cut out of any DataGrid put on the clipboard. A paste of
+ * exactly this text is a grid-to-grid copy: it carries no header row, and
+ * header guessing would drop its first row.
+ */
+let lastGridCopy = null;
+
+/** Width in px of the selection border zone that grabs the block for a move. */
+const CELL_MOVE_EDGE = 4;
+
+/**
+ * Whether the first row of pasted external data is a header: every cell holds
+ * text that is no number, and the next row holds at least one number.
+ * @param {string[][]} data
+ * @returns {boolean}
+ */
+function looksLikeHeaderRow(data) {
+  if (data.length < 2) return false;
+  const [first, next] = data;
+  const isLabel = (v) => v.trim() !== '' && parseNumeric(v) === null;
+  return first.every(isLabel) && next.some(v => parseNumeric(v) !== null);
+}
 
 export class DataGrid {
   /**
@@ -121,7 +144,8 @@ export class DataGrid {
       const col = {
         id: c.id || uid(),
         name: c.name || '',
-        shortName: c.shortName || `C${i + 1}`,
+        // Loaded formulas already match this order — no reference remapping.
+        shortName: `C${i + 1}`,
         type: c.type || 'numeric',
         unit: c.unit || null,
         values: [...c.values],
@@ -194,12 +218,15 @@ export class DataGrid {
       this.emit('column:edit-blocked', { columnId, action: 'remove', lock: 'hard', reason: col.meta.reason });
       return;
     }
+    // Undo restores the formulas verbatim: a #REF! no longer tells which
+    // column the reference pointed to.
+    const oldFormulas = this._snapshotFormulas();
     this.columns.splice(idx, 1);
-    this._reassignShortNames();
+    this._reassignShortNames({ removedCol: idx + 1 });
     // Indices in the additive set are positional, so column removal can
     // shift them. Drop them rather than try to remap.
     this._extraSelectedCols.clear();
-    this.history.push({ type: 'column-remove', column: col, index: idx });
+    this.history.push({ type: 'column-remove', column: col, index: idx, oldFormulas });
     this.render();
     this.emit('column:removed', { columnId });
   }
@@ -871,6 +898,116 @@ export class DataGrid {
   }
 
   // ═══════════════════════════════════════════════════════════
+  //  CELL BLOCK MOVE
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Move a block of cells (values and formulas) so its top-left corner lands
+   * on (toCol, toRow); the source cells the target does not cover become
+   * empty. References to the moved cells follow them in every formula (see
+   * moveCellRefs). The target is clamped into the grid. One undo step.
+   * @param {{c1:number,c2:number,r1:number,r2:number}} range — 0-based source block
+   * @param {number} toCol — 0-based target column of the top-left cell
+   * @param {number} toRow — 0-based target row of the top-left cell
+   * @returns {boolean} true when the cells moved
+   */
+  moveCells(range, toCol, toRow) {
+    if (this._isReadOnly() || !range) return false;
+    const c1 = Math.min(range.c1, range.c2), c2 = Math.max(range.c1, range.c2);
+    const r1 = Math.min(range.r1, range.r2), r2 = Math.max(range.r1, range.r2);
+    if (c1 < 0 || r1 < 0 || c2 >= this.columns.length || r2 >= this.rowCount) return false;
+    const w = c2 - c1 + 1, h = r2 - r1 + 1;
+    const tc = clamp(toCol, 0, this.columns.length - w);
+    const tr = clamp(toRow, 0, this.rowCount - h);
+    if (tc === c1 && tr === r1) return false;
+
+    const touched = new Set();
+    for (let c = c1; c <= c2; c++) { touched.add(c); touched.add(c - c1 + tc); }
+    for (const c of touched) {
+      const col = this.columns[c];
+      if (col.meta?.lock) {
+        this.emit('cell:edit-blocked', {
+          action: 'move', columnId: col.id, rowIndex: r1, lock: col.meta.lock, reason: col.meta.reason,
+        });
+        return false;
+      }
+    }
+
+    this._commitEdit();
+    const before = this._snapshotCells();
+    const block = [];
+    for (let c = c1; c <= c2; c++) {
+      const col = this.columns[c];
+      const cells = [];
+      for (let r = r1; r <= r2; r++) {
+        cells.push({ value: col.values[r], formula: col.formulas?.[r] || null });
+        col.values[r] = null;
+        if (col.formulas) col.formulas[r] = null;
+      }
+      block.push(cells);
+    }
+    block.forEach((cells, ci) => {
+      const col = this.columns[tc + ci];
+      cells.forEach((cell, ri) => {
+        col.values[tr + ri] = cell.value;
+        if (cell.formula) {
+          if (!col.formulas) col.formulas = new Array(this.rowCount).fill(null);
+          col.formulas[tr + ri] = cell.formula;
+        } else if (col.formulas) {
+          col.formulas[tr + ri] = null;
+        }
+      });
+    });
+
+    const move = {
+      src: { c1: c1 + 1, c2: c2 + 1, r1: r1 + 1, r2: r2 + 1 },
+      dCol: tc - c1, dRow: tr - r1,
+      colName: (n) => this.columns[n - 1]?.name || null,
+      colIndex: (name) => {
+        const i = this.columns.findIndex(c => c.name === name);
+        return i < 0 ? null : i + 1;
+      },
+    };
+    for (const col of this.columns) {
+      if (!col.formulas) continue;
+      for (let r = 0; r < col.formulas.length; r++) {
+        if (col.formulas[r]) col.formulas[r] = moveCellRefs(col.formulas[r], move);
+      }
+    }
+    recalcAllFormulas(this);
+    for (const c of touched) this._autoDetectType(this.columns[c]);
+
+    const after = this._snapshotCells();
+    this.history.push({ type: 'cell-move', before, after });
+    this.metadata.modified = new Date().toISOString();
+    const to = { c1: tc, c2: tc + w - 1, r1: tr, r2: tr + h - 1 };
+    this.setSelection({
+      startCol: to.c1, startRow: to.r1, endCol: to.c2, endRow: to.r2,
+      activeCol: to.c1, activeRow: to.r1,
+    });
+    this.render();
+    this.emit('cells:moved', { from: { c1, c2, r1, r2 }, to });
+    return true;
+  }
+
+  /** Values, formulas and type of every column — the undo state of a cell move. */
+  _snapshotCells() {
+    return this.columns.map(c => ({
+      id: c.id, type: c.type, values: [...c.values], formulas: c.formulas ? [...c.formulas] : null,
+    }));
+  }
+
+  _restoreCells(snapshot) {
+    for (const s of snapshot) {
+      const col = this.getColumn(s.id);
+      if (!col) continue;
+      col.type = s.type;
+      col.values = [...s.values];
+      col.formulas = s.formulas ? [...s.formulas] : null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
   //  UNDO / REDO
   // ═══════════════════════════════════════════════════════════
 
@@ -911,7 +1048,14 @@ export class DataGrid {
       }
       case 'column-remove': {
         this.columns.splice(action.index, 0, action.column);
-        this._reassignShortNames();
+        if (action.oldFormulas) {
+          this.columns.forEach((c, i) => c.shortName = `C${i + 1}`);
+          for (const c of this.columns) {
+            if (action.oldFormulas.has(c.id)) c.formulas = [...action.oldFormulas.get(c.id)];
+          }
+        } else {
+          this._reassignShortNames();
+        }
         break;
       }
       case 'column-rename': {
@@ -1017,6 +1161,9 @@ export class DataGrid {
         this._reassignShortNames();
         break;
       }
+      case 'cell-move':
+        this._restoreCells(action.before);
+        break;
     }
     this._reinferAutoRoles();
     this.render();
@@ -1042,7 +1189,7 @@ export class DataGrid {
       case 'column-remove': {
         const idx = this.columns.findIndex(c => c.id === action.column.id);
         if (idx >= 0) this.columns.splice(idx, 1);
-        this._reassignShortNames();
+        this._reassignShortNames(idx >= 0 ? { removedCol: idx + 1 } : {});
         break;
       }
       case 'column-rename': {
@@ -1101,6 +1248,9 @@ export class DataGrid {
         this._reassignShortNames();
         break;
       }
+      case 'cell-move':
+        this._restoreCells(action.after);
+        break;
     }
     this.render();
   }
@@ -1110,18 +1260,19 @@ export class DataGrid {
   // ═══════════════════════════════════════════════════════════
 
   importFromClipboard(tsvString) {
+    const fromGrid = tsvString === lastGridCopy;
     const rows = tsvString.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-    const data = rows.map(r => r.split('\t')).filter(r => r.some(c => c.trim() !== ''));
+    const data = rows.map(r => r.split('\t'));
+    // A grid copy is pasted as selected, blank rows included. External text
+    // loses blank lines around the block only; a blank row inside it is data.
+    const isBlank = (r) => r.every(c => c.trim() === '');
+    if (!fromGrid) {
+      while (data.length && isBlank(data[data.length - 1])) data.pop();
+      while (data.length && isBlank(data[0])) data.shift();
+    }
     if (data.length === 0) return;
 
-    const firstRow = data[0];
-    const rest = data.slice(1);
-    let hasHeader = false;
-    if (rest.length > 0) {
-      const firstRowNumeric = firstRow.every(v => parseNumeric(v) !== null);
-      const restHasNumeric = rest[0].some(v => parseNumeric(v) !== null);
-      if (!firstRowNumeric && restHasNumeric) hasHeader = true;
-    }
+    const hasHeader = !fromGrid && looksLikeHeaderRow(data);
 
     const headerRow = hasHeader ? data[0] : null;
     const valueRows = hasHeader ? data.slice(1) : data;
@@ -1308,7 +1459,35 @@ export class DataGrid {
     this.render();
   }
 
-  _reassignShortNames() {
+  /** @returns {Map<string, Array<?string>>} copy of every column's formulas, by column id */
+  _snapshotFormulas() {
+    return new Map(this.columns.filter(c => c.formulas).map(c => [c.id, [...c.formulas]]));
+  }
+
+  /**
+   * Renumber the short names C1…Cn after the column order changed, and move
+   * every positional reference in the formulas along with its column. A
+   * column's old position is its not yet renumbered short name (a new column
+   * has none). A reference to the removed column becomes #REF!; any other
+   * reference to a column that is gone stays as written.
+   * @param {{removedCol?: number}} [opts] — 1-based position the removed
+   *   column held before the removal
+   */
+  _reassignShortNames({ removedCol } = {}) {
+    const oldToNew = new Map();
+    this.columns.forEach((c, i) => {
+      const old = /^C(\d+)$/.exec(c.shortName || '');
+      if (old) oldToNew.set(parseInt(old[1], 10), i + 1);
+    });
+    if (removedCol != null || [...oldToNew].some(([from, to]) => from !== to)) {
+      const mapCol = (n) => (n === removedCol ? REF_ERROR : oldToNew.get(n) ?? null);
+      for (const col of this.columns) {
+        if (!col.formulas) continue;
+        for (let r = 0; r < col.formulas.length; r++) {
+          if (col.formulas[r]) col.formulas[r] = remapColumnRefs(col.formulas[r], mapCol);
+        }
+      }
+    }
     this.columns.forEach((c, i) => c.shortName = `C${i + 1}`);
   }
 
@@ -1764,7 +1943,7 @@ export class DataGrid {
 
   _autoScrollStep() {
     this._autoScrollFrame = null;
-    if (!this._fillDrag && !this.isSelecting) return;
+    if (!this._fillDrag && !this._cellMoveDrag && !this.isSelecting) return;
     const d = this._autoScrollDelta();
     if (!d) return;
     const top = this.scrollDiv.scrollTop;
@@ -1775,6 +1954,7 @@ export class DataGrid {
     const cell = this._cellFromPoint(p.x, p.y);
     if (cell) {
       if (this._fillDrag) this._setFillTarget(cell);
+      else if (this._cellMoveDrag) this._setCellMoveTarget(cell);
       else this._extendSelectionTo(cell);
     }
     this._autoScrollFrame = requestAnimationFrame(() => this._autoScrollStep());
@@ -1813,6 +1993,12 @@ export class DataGrid {
     if (!cell) return;
     this._commitEdit();
 
+    if (!e.shiftKey && e.button === 0 && !this._isReadOnly() && this._isOnSelectionBorder(e.clientX, e.clientY)) {
+      e.preventDefault();
+      this._startCellMoveDrag(cell);
+      return;
+    }
+
     if (e.shiftKey && this.selection) {
       this.selection.endCol = cell.colIdx;
       this.selection.endRow = cell.rowIdx;
@@ -1839,6 +2025,13 @@ export class DataGrid {
   _onMouseMove(e) {
     if (this._fillDrag) {
       this._updateFillDrag(e);
+      return;
+    }
+
+    if (this._cellMoveDrag) {
+      this._trackDragPointer(e);
+      const cell = this._cellAtPointer(e);
+      if (cell) this._setCellMoveTarget(cell);
       return;
     }
 
@@ -1881,7 +2074,10 @@ export class DataGrid {
       return;
     }
 
-    if (!this.isSelecting || !this.selection) return;
+    if (!this.isSelecting || !this.selection) {
+      this._updateMoveHover(e);
+      return;
+    }
     this._trackDragPointer(e);
     const cell = this._cellAtPointer(e);
     if (!cell) return;
@@ -1893,6 +2089,7 @@ export class DataGrid {
     this._rowDragPending = null;
     this._colDragPending = null;
     if (this._fillDrag) { this._finishFillDrag(); return; }
+    if (this._cellMoveDrag) { this._finishCellMoveDrag(); return; }
     if (this._rowDrag) { this._finishRowDrag(); return; }
     if (this._colDrag) { this._finishColDrag(); return; }
     if (this._resizing) {
@@ -1986,10 +2183,16 @@ export class DataGrid {
 
   _renderFillPreview() {
     const fd = this._fillDrag;
-    if (!fd || !this.fillPreviewEl) return;
+    if (!fd) return;
+    this._renderPreviewRect(fd.tgtC1, fd.tgtR1, fd.tgtC2, fd.tgtR2);
+  }
+
+  /** Shows the dashed preview frame over the 0-based cell rectangle. */
+  _renderPreviewRect(c1, r1, c2, r2) {
+    if (!this.fillPreviewEl) return;
     const rows = this.tbodyEl.children;
-    const tlTd = rows[fd.tgtR1]?.children[fd.tgtC1 + 1];
-    const brTd = rows[fd.tgtR2]?.children[fd.tgtC2 + 1];
+    const tlTd = rows[r1]?.children[c1 + 1];
+    const brTd = rows[r2]?.children[c2 + 1];
     if (!tlTd || !brTd) { this.fillPreviewEl.style.display = 'none'; return; }
     const sRect = this.scrollDiv.getBoundingClientRect();
     const tl = tlTd.getBoundingClientRect();
@@ -2009,6 +2212,92 @@ export class DataGrid {
     if (this.fillPreviewEl) this.fillPreviewEl.style.display = 'none';
     this.container.classList.remove('datagrid--fill-dragging');
     this.container.classList.remove('datagrid--fill-ctrl');
+  }
+
+  // ─── Cell block move (drag the selection border) ────────────
+
+  /** Normalised 0-based bounds of the current selection, or null. */
+  _selectionBounds() {
+    const s = this.selection;
+    if (!s) return null;
+    return {
+      c1: Math.min(s.startCol, s.endCol), c2: Math.max(s.startCol, s.endCol),
+      r1: Math.min(s.startRow, s.endRow), r2: Math.max(s.startRow, s.endRow),
+    };
+  }
+
+  /**
+   * Whether a viewport point lies on the outer border of the selection —
+   * inside the selected block, at most CELL_MOVE_EDGE px from its edge.
+   */
+  _isOnSelectionBorder(x, y) {
+    const b = this._selectionBounds();
+    if (!b || !this.tbodyEl) return false;
+    const rows = this.tbodyEl.children;
+    const tl = rows[b.r1]?.children[b.c1 + 1];
+    const br = rows[b.r2]?.children[b.c2 + 1];
+    if (!tl || !br) return false;
+    const a = tl.getBoundingClientRect();
+    const z = br.getBoundingClientRect();
+    if (x < a.left || x > z.right || y < a.top || y > z.bottom) return false;
+    return x - a.left <= CELL_MOVE_EDGE || z.right - x <= CELL_MOVE_EDGE
+      || y - a.top <= CELL_MOVE_EDGE || z.bottom - y <= CELL_MOVE_EDGE;
+  }
+
+  /** Move cursor while the pointer rests on the selection border. */
+  _updateMoveHover(e) {
+    const on = !this._isReadOnly() && !this._rowDrag && !this._colDrag && !this._resizing
+      && Boolean(e.target?.closest?.('td[data-col-idx]'))
+      && this.container.contains(e.target)
+      && this._isOnSelectionBorder(e.clientX, e.clientY);
+    this.container.classList.toggle('datagrid--move-hover', on);
+  }
+
+  _startCellMoveDrag(cell) {
+    const src = this._selectionBounds();
+    this._cellMoveDrag = {
+      src,
+      grabCol: cell.colIdx - src.c1,
+      grabRow: cell.rowIdx - src.r1,
+      toCol: src.c1,
+      toRow: src.r1,
+    };
+    this.container.classList.add('datagrid--cell-moving');
+    this._renderCellMovePreview();
+  }
+
+  _setCellMoveTarget(cell) {
+    const md = this._cellMoveDrag;
+    if (!md) return;
+    const w = md.src.c2 - md.src.c1, h = md.src.r2 - md.src.r1;
+    const toCol = clamp(cell.colIdx - md.grabCol, 0, this.columns.length - 1 - w);
+    const toRow = clamp(cell.rowIdx - md.grabRow, 0, this.rowCount - 1 - h);
+    if (toCol === md.toCol && toRow === md.toRow) return;
+    md.toCol = toCol;
+    md.toRow = toRow;
+    this._renderCellMovePreview();
+  }
+
+  _renderCellMovePreview() {
+    const md = this._cellMoveDrag;
+    if (!md) return;
+    this._renderPreviewRect(md.toCol, md.toRow,
+      md.toCol + md.src.c2 - md.src.c1, md.toRow + md.src.r2 - md.src.r1);
+  }
+
+  _cancelCellMoveDrag() {
+    this._stopAutoScroll();
+    this._cellMoveDrag = null;
+    if (this.fillPreviewEl) this.fillPreviewEl.style.display = 'none';
+    this.container.classList.remove('datagrid--cell-moving');
+  }
+
+  _finishCellMoveDrag() {
+    const md = this._cellMoveDrag;
+    this._cancelCellMoveDrag();
+    if (md && (md.toCol !== md.src.c1 || md.toRow !== md.src.r1)) {
+      this.moveCells(md.src, md.toCol, md.toRow);
+    }
   }
 
   _finishFillDrag() {
@@ -2505,6 +2794,12 @@ export class DataGrid {
       return;
     }
 
+    if (this._cellMoveDrag && e.key === 'Escape') {
+      e.preventDefault();
+      this._cancelCellMoveDrag();
+      return;
+    }
+
     if (shortcutRegistry.matches(e, 'datagrid.undo')) {
       e.preventDefault(); if (!this._isReadOnly()) this.undo(); return;
     }
@@ -2757,6 +3052,7 @@ export class DataGrid {
     if (!this.container.contains(document.activeElement) && document.activeElement !== document.body) return;
     e.preventDefault();
     const tsv = this.exportToTSV();
+    lastGridCopy = tsv;
     e.clipboardData.setData('text/plain', tsv);
   }
 
@@ -2765,6 +3061,7 @@ export class DataGrid {
     if (!this.container.contains(document.activeElement) && document.activeElement !== document.body) return;
     e.preventDefault();
     const tsv = this.exportToTSV();
+    lastGridCopy = tsv;
     e.clipboardData.setData('text/plain', tsv);
     if (!this._isReadOnly()) this._clearSelection();
   }

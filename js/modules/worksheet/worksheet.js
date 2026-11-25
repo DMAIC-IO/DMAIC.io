@@ -1723,7 +1723,7 @@ const mod = createModule({
           'cell:changed', 'data:pasted', 'data:imported',
           'column:added', 'column:removed', 'column:renamed',
           'column:type-changed', 'column:moved',
-          'rows:added', 'rows:removed', 'rows:moved',
+          'rows:added', 'rows:removed', 'rows:moved', 'cells:moved',
           'undo', 'redo',
         ];
         const schedulePersist = () => {
@@ -1801,7 +1801,22 @@ const mod = createModule({
         this._grid.on('edit:start', ({ colIdx, rowIdx, initialChar, formula }) => {
           if (initialChar === '=' || formula) {
             showFormulaExpandHint(this._grid, this._formulaEditor, colIdx, rowIdx);
+            return;
           }
+          // The editor may open empty (double-click, Enter) and get its "="
+          // only afterwards — offer the hint as soon as the text turns into a formula.
+          const input = this._grid.editorEl;
+          if (!input) return;
+          const onInput = () => {
+            if (this._grid.editorEl !== input) {
+              input.removeEventListener('input', onInput);
+              return;
+            }
+            if (!input.value.startsWith('=')) return;
+            input.removeEventListener('input', onInput);
+            showFormulaExpandHint(this._grid, this._formulaEditor, colIdx, rowIdx);
+          };
+          input.addEventListener('input', onInput);
         });
       },
 

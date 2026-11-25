@@ -23,6 +23,10 @@ export function evaluateFormula(formulaStr, grid) {
   try {
     const raw = stripAbsoluteMarkers(formulaStr.trim().substring(1).trim());
     if (!raw) return { result: null, error: '#EMPTY' };
+    // A reference to a removed column, outside '…' names and "…" strings.
+    if (raw.replace(/'(?:[^'\\]|\\.)*'|"[^"]*"/g, '').includes(REF_ERROR)) {
+      return { result: null, error: REF_ERROR };
+    }
     return _evalExpr(raw, grid);
   } catch {
     return { result: null, error: '#ERROR' };
@@ -57,6 +61,153 @@ export function stripAbsoluteMarkers(expr) {
       if (beforeColumn || beforeRow) continue;
     }
     out += ch;
+  }
+  return out;
+}
+
+/** Written in place of a reference to a column that was removed. */
+export const REF_ERROR = '#REF!';
+
+/**
+ * Rewrite the positional column references in a formula (`C2`, `C2[5]`,
+ * `$C2[$5]`, `C1:C3`) after columns changed place. `$` markers stay: they pin a
+ * reference against fills, not against moving the column it points to.
+ * Quoted column names and string literals are left alone.
+ * @param {string} formula — formula string starting with '='
+ * @param {(oldCol: number) => (number|string|null)} mapCol — 1-based old
+ *   column number to its new 1-based number; REF_ERROR replaces the whole
+ *   reference (its `$` and `[row]` included); null keeps it as written
+ * @returns {string}
+ */
+export function remapColumnRefs(formula, mapCol) {
+  if (!formula || typeof formula !== 'string') return formula;
+  let out = '';
+  let quote = null;
+  for (let i = 0; i < formula.length; i++) {
+    const ch = formula[i];
+    if (quote) {
+      out += ch;
+      if (ch === '\\' && quote === "'" && i + 1 < formula.length) out += formula[++i];
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"') { quote = ch; out += ch; continue; }
+    const ref = /^C(\d+)/i.exec(formula.slice(i));
+    const prev = formula[i - 1] ?? '';
+    if (ref && !/[A-Za-z\d_.]/.test(prev) && !/[A-Za-z_(]/.test(formula[i + ref[0].length] ?? '')) {
+      const mapped = mapCol(parseInt(ref[1], 10));
+      if (mapped === REF_ERROR) {
+        if (out.endsWith('$')) out = out.slice(0, -1);
+        const row = /^\[\$?\d+\]/.exec(formula.slice(i + ref[0].length));
+        out += REF_ERROR;
+        i += ref[0].length + (row ? row[0].length : 0) - 1;
+        continue;
+      }
+      out += mapped == null ? ref[0] : `${ref[0][0]}${mapped}`;
+      i += ref[0].length - 1;
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
+/**
+ * Read a cell reference (`C2[5]`, `$C2[$5]`, `'Name'[5]`) at `i`.
+ * @returns {{len:number, named:boolean, name?:string, quoted?:string,
+ *   colNum?:number, colDollar:string, rowDollar:string, row:number, cChar?:string}|null}
+ */
+function _readCellRef(s, i) {
+  const prev = s[i - 1] ?? '';
+  if (s[i] === "'") {
+    const m = /^'((?:[^'\\]|\\.)*)'\[(\$?)(\d+)\]/.exec(s.slice(i));
+    if (!m) return null;
+    return {
+      len: m[0].length, named: true, quoted: `'${m[1]}'`,
+      name: m[1].replace(/\\(.)/g, '$1'), colDollar: '', rowDollar: m[2], row: parseInt(m[3], 10),
+    };
+  }
+  if (/[A-Za-z\d_.]/.test(prev)) return null;
+  const m = /^(\$?)(C)(\d+)\[(\$?)(\d+)\]/i.exec(s.slice(i));
+  if (!m) return null;
+  return {
+    len: m[0].length, named: false, colDollar: m[1], cChar: m[2],
+    colNum: parseInt(m[3], 10), rowDollar: m[4], row: parseInt(m[5], 10),
+  };
+}
+
+/**
+ * Rewrite the cell references of a formula after a block of cells moved
+ * (DataGrid.moveCells). A reference to a moved cell follows it; a cell range
+ * follows only when both ends moved; a reference to a cell the block
+ * overwrote becomes REF_ERROR; everything else — other cells, bare column
+ * references, column ranges, string literals — stays as written. `$` markers
+ * stay. A named reference that changes column takes the target column's name,
+ * or `C<n>` when that column has none.
+ * @param {string} formula — formula string starting with '='
+ * @param {{ src:{c1:number,c2:number,r1:number,r2:number}, dCol:number, dRow:number,
+ *   colName:(n:number)=>(string|null), colIndex:(name:string)=>(number|null) }} move —
+ *   1-based source block and offset; colName/colIndex map 1-based column numbers to names
+ * @returns {string}
+ */
+export function moveCellRefs(formula, move) {
+  if (!formula || typeof formula !== 'string') return formula;
+  const { src, dCol, dRow } = move;
+  const inSrc = (c, r) => c >= src.c1 && c <= src.c2 && r >= src.r1 && r <= src.r2;
+  const inTarget = (c, r) => c >= src.c1 + dCol && c <= src.c2 + dCol
+    && r >= src.r1 + dRow && r <= src.r2 + dRow;
+  const colOf = (ref) => (ref.named ? move.colIndex(ref.name) : ref.colNum);
+  const shifted = (ref) => {
+    const row = `[${ref.rowDollar}${ref.row + dRow}]`;
+    if (!ref.named) return `${ref.colDollar}${ref.cChar}${ref.colNum + dCol}${row}`;
+    if (dCol === 0) return `${ref.quoted}${row}`;
+    const n = move.colIndex(ref.name) + dCol;
+    const name = move.colName(n);
+    return name ? `'${name.replace(/[\\']/g, '\\$&')}'${row}` : `C${n}${row}`;
+  };
+  const single = (ref, text) => {
+    const c = colOf(ref);
+    if (c == null) return text;
+    if (inSrc(c, ref.row)) return shifted(ref);
+    if (inTarget(c, ref.row)) return REF_ERROR;
+    return text;
+  };
+
+  let out = '';
+  for (let i = 0; i < formula.length; i++) {
+    const ch = formula[i];
+    if (ch === '"') {
+      const end = formula.indexOf('"', i + 1);
+      const stop = end < 0 ? formula.length : end + 1;
+      out += formula.slice(i, stop);
+      i = stop - 1;
+      continue;
+    }
+    const ref = _readCellRef(formula, i);
+    if (!ref) {
+      if (ch === "'") {
+        // A quoted name without a row (column reference): copy it whole.
+        const m = /^'(?:[^'\\]|\\.)*'/.exec(formula.slice(i));
+        if (m) { out += m[0]; i += m[0].length - 1; continue; }
+      }
+      out += ch;
+      continue;
+    }
+    const refText = formula.slice(i, i + ref.len);
+    const second = formula[i + ref.len] === ':' ? _readCellRef(formula, i + ref.len + 1) : null;
+    if (second) {
+      const rangeEnd = i + ref.len + 1 + second.len;
+      const c1 = colOf(ref), c2 = colOf(second);
+      if (c1 != null && c2 != null && inSrc(c1, ref.row) && inSrc(c2, second.row)) {
+        out += `${shifted(ref)}:${shifted(second)}`;
+      } else {
+        out += formula.slice(i, rangeEnd);
+      }
+      i = rangeEnd - 1;
+      continue;
+    }
+    out += single(ref, refText);
+    i += ref.len - 1;
   }
   return out;
 }

@@ -494,6 +494,16 @@ td.cell-fill-anchor {
   cursor: crosshair !important;
 }
 
+/* Cell block move: the selection border grabs the block (see moveCells). */
+.datagrid--move-hover td[data-col-idx] {
+  cursor: move;
+}
+
+.datagrid--cell-moving,
+.datagrid--cell-moving * {
+  cursor: move !important;
+}
+
 /* Editing */
 td.cell-editing {
   padding: 0 !important;
