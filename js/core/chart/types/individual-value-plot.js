@@ -71,7 +71,7 @@ function groupStats(values) {
 
 export default class IndividualValuePlotChart extends ChartBase {
   /** Base editor keys plus this type's own editor settings. */
-  static editorKeys = [...ChartBase.editorKeys, 'showMean', 'showMedian', 'connectMeans', 'showOverallMean', 'jitter'];
+  static editorKeys = [...ChartBase.editorKeys, 'showMean', 'showMedian', 'connectMeans', 'showOverallMean', 'jitter', 'pointColors', 'pointStrokes', 'pointSize', 'pointStrokeWidth', 'pointSymbol'];
 
   /**
    * @param {HTMLElement} container

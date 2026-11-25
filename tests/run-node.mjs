@@ -74,6 +74,7 @@ const SKIP = new Set([
   'core/chart/bar-numeric-axis.test.js',
   'core/chart/boxplot.test.js',
   'core/chart/chart-base-editor-change.test.js',
+  'core/chart/chart-editor-keys-coverage.test.js',
   'core/chart/chart-base-modebar.test.js',
   'core/chart/chart-axis-range.test.js',
   'core/chart/chart-editor-sections.test.js',

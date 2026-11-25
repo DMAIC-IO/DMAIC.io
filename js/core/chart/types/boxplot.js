@@ -69,7 +69,7 @@ function boxStats(values) {
 
 export default class BoxplotChart extends ChartBase {
   /** Base editor keys plus this type's own editor settings. */
-  static editorKeys = [...ChartBase.editorKeys, 'showOutliers', 'showMean', 'boxHeight', 'outlierSymbol', 'outlierSize', 'outlierColor', 'outlierStroke', 'outlierStrokeWidth'];
+  static editorKeys = [...ChartBase.editorKeys, 'showOutliers', 'showMean', 'boxHeight', 'outlierSymbol', 'outlierSize', 'outlierColor', 'outlierStroke', 'outlierStrokeWidth', 'boxColors', 'boxStrokes', 'boxStrokeWidths'];
 
   /**
    * @param {HTMLElement} container

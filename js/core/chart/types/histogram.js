@@ -116,6 +116,9 @@ function normalPdf(x, mean, stdDev) {
 }
 
 export default class HistogramChart extends ChartBase {
+  /** Chart-level settings the editor writes (persisted for module charts). */
+  static editorKeys = [...ChartBase.editorKeys, 'binMethod', 'binCount', 'showNormalCurve', 'pareto', 'boxplotStrip', 'barGap', 'barColor', 'barBorderColor', 'normalCurveColor'];
+
   /**
    * @param {HTMLElement} container
    * @param {Object} config

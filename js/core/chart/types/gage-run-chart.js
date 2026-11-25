@@ -35,6 +35,9 @@ const OPERATOR_SYMBOLS = ['circle', 'square', 'diamond', 'triangle', 'triangle-d
 const BAND_H = 20;
 
 export default class GageRunChartType extends ChartBase {
+  /** Chart-level settings the editor writes (persisted for module charts). */
+  static editorKeys = [...ChartBase.editorKeys, 'pointSize', 'pointStrokeWidth'];
+
   constructor(container, config, context) {
     const defaults = {
       /** @type {Array<{part: string, series: Array<{operator: string, values: number[], mean: number}>}>} */

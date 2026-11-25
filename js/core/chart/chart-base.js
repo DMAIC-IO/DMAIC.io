@@ -79,7 +79,7 @@ export default class ChartBase {
   static editorKeys = [
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
     'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
-    'bgColor', 'refLines', 'refAreas', 'axisRange',
+    'showXGrid', 'showYGrid', 'bgColor', 'refLines', 'refAreas', 'axisRange',
     'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder',
   ];
 
