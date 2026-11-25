@@ -14,6 +14,17 @@
 
 import { columnRefFromJSON } from '../../core/chart/chart-data-prep.js';
 
+/**
+ * Deep plain copy of a JSON array. Alpine hands array entries out as reactive
+ * proxies; a shallow `.slice()` keeps them, and structuredClone in
+ * stateManager.setModuleState then throws and skips the save.
+ * @param {Array} arr
+ * @returns {Array}
+ */
+function plainCopy(arr) {
+  return JSON.parse(JSON.stringify(arr ?? []));
+}
+
 /** Error bar modes a dataset can use. */
 export const ERROR_BAR_MODES = ['none', 'constant', 'columns', 'columnsAbsolute'];
 
@@ -253,9 +264,9 @@ export class State {
       })),
       showLines: this.showLines,
       showMarkers: this.showMarkers,
-      seriesOverrides: this.seriesOverrides.slice(),
-      refLines: this.refLines.slice(),
-      refAreas: this.refAreas.slice(),
+      seriesOverrides: plainCopy(this.seriesOverrides),
+      refLines: plainCopy(this.refLines),
+      refAreas: plainCopy(this.refAreas),
       bgColor: this.bgColor,
       showStats: this.showStats,
       confLevel: this.confLevel,

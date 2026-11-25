@@ -430,3 +430,22 @@ suite('XY-Plot Model — error bars', () => {
     assertEqual(buildErrorBars(null, [0, 1], {}), null);
   });
 });
+
+// ─── State: toJSON is structuredClone-safe ───────────────────────────────────
+
+suite('XY-Plot Model — toJSON survives reactive entries', () => {
+  // Alpine hands the model's array entries out as reactive proxies. A shallow
+  // `.slice()` keeps those proxies, structuredClone throws, and the state
+  // manager silently skips the save — chart-editor reference lines and areas
+  // were lost on every reload.
+  test('toJSON copies proxied refLines/refAreas/seriesOverrides into plain objects', () => {
+    const s = new State();
+    s.refLines = [new Proxy({ dir: 'h', value: 2, color: 'red', width: 1, dash: 'dash' }, {})];
+    s.refAreas = [new Proxy({ dir: 'x', min: 0, max: 1, color: 'blue' }, {})];
+    s.seriesOverrides = [new Proxy({ color: 'green' }, {})];
+    const cloned = structuredClone(s.toJSON());
+    assertEqual(cloned.refLines[0].value, 2);
+    assertEqual(cloned.refAreas[0].max, 1);
+    assertEqual(cloned.seriesOverrides[0].color, 'green');
+  });
+});
