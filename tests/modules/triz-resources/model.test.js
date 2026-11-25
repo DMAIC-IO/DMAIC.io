@@ -3,8 +3,8 @@
  * (ein record in einem record), gespeicherte Stände '1.0' ohne
  * Migrationsschritt (zeichengleich zurück), Stände ohne `_schema` über
  * '0→1.0', die Kommandos `cycleStatus` und `setCellStatus`, Schreiben des
- * ganzen Rasters, Versionsprüfung, Reparatur unlesbarer Stände,
- * `hasContent` und das Beispiel am bisherigen Ort.
+ * ganzen Rasters, Versionsprüfung, Reparatur unlesbarer Stände und
+ * `hasContent`. Das Beispiel prüft examples.test.js.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/triz-resources/domain/model.js';
@@ -316,33 +316,5 @@ suite('triz-resources Model — hasContent', () => {
   });
   test('Altprojekt → true', () => {
     assertEqual(State.fromJSON(plain(LEGACY)).hasContent(), true);
-  });
-});
-
-suite('triz-resources Model — Beispiel am bisherigen Ort', () => {
-  test('bandfoerderer (ohne _schema) lädt über 0→1.0 ohne Reparatur, Werte wie in der Datei', async () => {
-    const url = new URL('../../../examples/projects/triz-resources-bandfoerderer.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch example: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file._schema, undefined);
-    const { m, fields } = repaired(plain(file));
-    assertDeepEqual(fields, []);
-    assertEqual(m.system, file.system);
-    assertDeepEqual(CATS.map((c) => LVLS.map((l) => m.cells[c][l].status)), [
-      ['full', 'partial', 'unused'],
-      ['full', 'partial', 'unknown'],
-      ['partial', 'unused', 'unused'],
-      ['unused', 'unknown', 'unused'],
-      ['partial', 'unused', 'unknown'],
-      ['unused', 'unused', 'unknown'],
-    ]);
-    for (const c of CATS) {
-      for (const l of LVLS) {
-        assertTrue(m.cells[c][l].notes.length > 0, `${c}.${l}`);
-        assertEqual(m.cells[c][l].notes, file.cells[c][l].notes, `${c}.${l}`);
-      }
-    }
-    assertEqual(JSON.stringify(m.toJSON()), JSON.stringify({ ...SCHEMA, ...file }));
   });
 });

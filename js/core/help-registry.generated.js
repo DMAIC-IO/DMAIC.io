@@ -30,10 +30,9 @@ import h27 from '../modules/todo/todo-help.js';
 import h28 from '../modules/triz-9-windows/triz-9-windows-help.js';
 import h29 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
 import h30 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h31 from '../modules/triz-resources/triz-resources-help.js';
-import h32 from '../modules/triz-sufield/triz-sufield-help.js';
-import h33 from '../modules/unit-converter/unit-converter-help.js';
-import h34 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h31 from '../modules/triz-sufield/triz-sufield-help.js';
+import h32 from '../modules/unit-converter/unit-converter-help.js';
+import h33 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -67,8 +66,7 @@ export const HELP = {
   "triz-9-windows": h28,
   "triz-contradiction-matrix": h29,
   "triz-physical-contradiction": h30,
-  "triz-resources": h31,
-  "triz-sufield": h32,
-  "unit-converter": h33,
-  "voc-ctx-tree": h34,
+  "triz-sufield": h31,
+  "unit-converter": h32,
+  "voc-ctx-tree": h33,
 };

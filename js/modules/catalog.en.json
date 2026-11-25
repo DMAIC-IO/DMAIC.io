@@ -200,6 +200,11 @@
     "description": "State the ideal and work backwards to a solution",
     "whenToUse": "When a target image is needed to work backwards from towards a solution — not to judge a solution already found or to pick between variants."
   },
+  "triz-resources": {
+    "name": "Resources Checklist (TRIZ)",
+    "description": "Systematic inventory of substances, fields, space, time, information and functions",
+    "whenToUse": "When you want to inventory what the system and its environment already provide at no cost, before searching for solutions — not to judge solutions or resolve contradictions."
+  },
   "worksheet": {
     "name": "Data Collection",
     "description": "Spreadsheet for data entry and management",

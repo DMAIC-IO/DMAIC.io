@@ -95,6 +95,9 @@ export const HELP_ANCHOR_EXEMPTIONS = {
   'multi-vari': [
     { name: 'actions.setFactorColumn', reason: 'die Oberfläche schreibt die Spalte per x-field in den Spaltenwähler der Faktorzeile; verankert ist fields.factors.ref' },
   ],
+  'triz-resources': [
+    { name: 'actions.setCellStatus', reason: 'nur für den Agenten; die Oberfläche schaltet den Füllstand mit dem Statusknopf weiter (cycleStatus)' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

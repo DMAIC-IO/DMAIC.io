@@ -1384,31 +1384,6 @@
       ]
     },
     {
-      "id": "triz-resources-bandfoerderer",
-      "type": "project",
-      "title": {
-        "de": "TRIZ Ressourcen-Checkliste: Bandförderer",
-        "en": "TRIZ Resources Checklist: Belt Conveyor"
-      },
-      "description": {
-        "de": "Ressourcen-Inventar über 6 Kategorien × 3 Systemebenen für den Bandförderer-Lehrcase — passend zum IFR-Beispiel.",
-        "en": "Resources inventory across 6 categories × 3 system levels for the belt-conveyor case — companion to the IFR example."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/triz-resources-bandfoerderer.json",
-      "format": "json",
-      "modules": [
-        "triz-resources"
-      ],
-      "tags": [
-        "improve",
-        "triz",
-        "resources",
-        "bandfoerderer"
-      ]
-    },
-    {
       "id": "triz-sufield-bohrer-beton",
       "type": "project",
       "title": {

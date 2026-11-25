@@ -200,6 +200,11 @@
     "description": "Formuliere den Idealzustand und arbeite rückwärts zur Lösung",
     "whenToUse": "Wenn ein Zielbild gebraucht wird, von dem aus rückwärts zur Lösung gearbeitet wird — nicht, um eine bereits gefundene Lösung zu bewerten oder zwischen Varianten zu wählen."
   },
+  "triz-resources": {
+    "name": "Ressourcen-Checkliste (TRIZ)",
+    "description": "Systematische Inventarisierung von Stoffen, Feldern, Raum, Zeit, Information und Funktionen",
+    "whenToUse": "Wenn vor der Lösungssuche aufgenommen werden soll, was im System und seiner Umgebung schon vorhanden ist und nichts kostet — nicht, um Lösungen zu bewerten oder Widersprüche aufzulösen."
+  },
   "worksheet": {
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",
