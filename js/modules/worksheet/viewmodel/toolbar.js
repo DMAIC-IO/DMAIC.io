@@ -17,7 +17,8 @@ import { activeSheetOf } from './sheets.js';
 /** Rollen des Rasters → Kommandos (Model; `gridView`, `openFormulaEditor`, `exportAs`: Viewmodel). */
 const GRID_COMMANDS = Object.freeze({
   setCells: 'setCells', setFormula: 'setFormula', pasteBlock: 'pasteBlock', fillRange: 'fillRange',
-  clearRange: 'clearRange', addColumn: 'addColumn', removeColumn: 'removeColumn', moveColumn: 'moveColumn',
+  moveCells: 'moveCells', clearRange: 'clearRange', addColumn: 'addColumn', removeColumn: 'removeColumn',
+  moveColumn: 'moveColumn',
   renameColumn: 'renameColumn', addRows: 'addRows', removeRows: 'removeRows', moveRow: 'moveRow',
   sortRows: 'sortRows', setColumnType: 'setColumnType', setColumnFormat: 'setColumnFormat',
   setColumnRole: 'setColumnRole', gridView: 'gridView', openFormulaEditor: 'openFormulaEditor',

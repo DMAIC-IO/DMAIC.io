@@ -4,6 +4,8 @@
  * virtualisiert) und GridInput (Bedienung) über der `TableData` des Models.
  * Das Widget ändert nie selbst Daten: jede Bedienung meldet eine Rolle, das
  * Widget ruft `command(config.commands[role], { ...config.commandArgs, ...args })`.
+ * Datenrollen wie in grid-input.js, darunter `moveCells { source, toCol, toRow }`
+ * (Block am Auswahlrand verschieben, Merkmal `structure`).
  * Fehlt die Rolle in `commands`, ist ihr Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke. Die
  * Ansichtsereignisse `contextMenu { id, columnId, row }` und
  * `openFormulaEditor { columnId, row }` sind keine Datenrollen; sie gehen an
@@ -26,7 +28,7 @@ const READONLY = 'dmike--readonly';
 
 /** Rollen aus P7 und die beiden Ansichtsereignisse. */
 const ROLES = new Set([
-  'setCells', 'setFormula', 'pasteBlock', 'fillRange', 'clearRange', 'addColumn', 'removeColumn',
+  'setCells', 'setFormula', 'pasteBlock', 'fillRange', 'moveCells', 'clearRange', 'addColumn', 'removeColumn',
   'moveColumn', 'renameColumn', 'addRows', 'removeRows', 'moveRow', 'sortRows', 'setColumnType',
   'setColumnFormat', 'setColumnRole', 'undo', 'redo', 'gridView', 'contextMenu', 'openFormulaEditor', 'exportAs',
 ]);

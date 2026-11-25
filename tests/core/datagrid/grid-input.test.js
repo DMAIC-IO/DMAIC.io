@@ -449,3 +449,213 @@ suite('GridInput — Bedienung meldet Kommandos', () => {
   });
 });
 
+
+// ─── Block am Auswahlrand verschieben (Upstream datagrid-cell-move) ──
+
+const edgeLeft = (td) => { const r = td.getBoundingClientRect(); return { clientX: r.left + 2, clientY: r.top + r.height / 2 }; };
+const moves = (s) => s.calls.filter((c) => c[0] === 'moveCells');
+/** Wählt (c0,r0)–(c1,r1) per Klick und Shift-Klick. */
+function selectBlock(s, c0, r0, c1, r1) {
+  clickCell(s, c0, r0);
+  if (c1 !== c0 || r1 !== r0) mouse(cell(s, c1, r1), 'mousedown', { shiftKey: true });
+}
+/** Greift am linken Rand von (c,r), zieht zum linken Rand von (tc,tr), lässt los. */
+function dragBorder(s, c, r, tc, tr) {
+  mouse(cell(s, c, r), 'mousedown', edgeLeft(cell(s, c, r)));
+  mouse(document, 'mousemove', edgeLeft(cell(s, tc, tr)));
+  mouse(document, 'mouseup', edgeLeft(cell(s, tc, tr)));
+}
+
+suite('GridInput — Block am Rand verschieben', () => {
+  test('dragging the selection border moves the block', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 0, 0, 1);
+      dragBorder(s, 0, 0, 0, 4);
+      assertDeepEqual(moves(s), [['moveCells', { source: { c0: 0, r0: 0, c1: 0, r1: 1 }, toCol: 0, toRow: 4 }]]);
+      assertTrue(cell(s, 0, 4).classList.contains('cell-selected') && cell(s, 0, 5).classList.contains('cell-selected'), 'Ziel gewählt');
+      assertTrue(cell(s, 0, 4).classList.contains('cell-active'), 'aktive Zelle links oben im Ziel');
+      assertTrue(!cell(s, 0, 0).classList.contains('cell-selected'), 'Quelle nicht mehr gewählt');
+      assertTrue(!s.el.classList.contains('datagrid--cell-moving'), 'Klasse nach der Geste weg');
+    } finally { s.done(); }
+  });
+
+  test('a click inside the selection, away from the border, still selects', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 0, 1, 1);
+      clickCell(s, 1, 1);
+      assertEqual(moves(s).length, 0);
+      assertTrue(cell(s, 1, 1).classList.contains('cell-active'), 'geklickte Zelle aktiv');
+      assertTrue(!cell(s, 0, 0).classList.contains('cell-selected'), 'Einzelauswahl');
+    } finally { s.done(); }
+  });
+
+  test('clamps the target into the grid', async () => {
+    const s = await setup();
+    try {
+      const open = mkCols().map(({ lock, reason, ...c }) => c);
+      s.input.setView({ table: s.table, columns: open, formulas: {}, colWidths: {}, selection: null, lang: 'en' });
+      selectBlock(s, 0, 0, 1, 0);
+      dragBorder(s, 0, 0, 2, 3);
+      assertDeepEqual(moves(s), [['moveCells', { source: { c0: 0, r0: 0, c1: 1, r1: 0 }, toCol: 1, toRow: 3 }]]);
+    } finally { s.done(); }
+  });
+
+  test('a locked column in the target refuses the move', async () => {
+    const s = await setup();
+    try {
+      const seen = [];
+      s.el.addEventListener('cell:edit-blocked', (e) => seen.push(e.detail));
+      selectBlock(s, 1, 0, 1, 0);
+      dragBorder(s, 1, 0, 2, 4);
+      assertEqual(seen.length, 1);
+      assertEqual(seen[0].action, 'move');
+      assertEqual(seen[0].columnId, 'c');
+      assertEqual(moves(s).length, 0);
+    } finally { s.done(); }
+  });
+
+  test('Esc bricht ab: nichts gesendet, Vorschau weg, Auswahl unverändert', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 0, 0, 1);
+      mouse(cell(s, 0, 0), 'mousedown', edgeLeft(cell(s, 0, 0)));
+      mouse(document, 'mousemove', edgeLeft(cell(s, 0, 4)));
+      const preview = s.el.querySelector('.datagrid__fill-preview');
+      assertEqual(preview.style.display, 'block', 'Vorschau während der Geste');
+      key(document.activeElement, 'Escape');
+      mouse(document, 'mouseup', edgeLeft(cell(s, 0, 4)));
+      assertEqual(moves(s).length, 0);
+      assertEqual(preview.style.display, 'none');
+      assertTrue(cell(s, 0, 0).classList.contains('cell-active') && cell(s, 0, 1).classList.contains('cell-selected'), 'Auswahl unverändert');
+      assertTrue(!cell(s, 0, 4).classList.contains('cell-selected'));
+    } finally { s.done(); }
+  });
+
+  test('Rand-Klick ohne Ziehen hebt die Einzelauswahl nicht auf', async () => {
+    const s = await setup();
+    try {
+      clickCell(s, 0, 0);
+      mouse(cell(s, 0, 0), 'mousedown', edgeLeft(cell(s, 0, 0)));
+      mouse(document, 'mouseup', edgeLeft(cell(s, 0, 0)));
+      assertEqual(s.calls.filter((c) => c[0] !== 'gridView').length, 0, 'keine Meldung');
+      assertTrue(cell(s, 0, 0).classList.contains('cell-active'), 'Auswahl bleibt');
+    } finally { s.done(); }
+  });
+
+  test('Hover am Rand schaltet datagrid--move-hover', async () => {
+    const s = await setup();
+    try {
+      clickCell(s, 0, 0);
+      mouse(cell(s, 0, 0), 'mousemove', edgeLeft(cell(s, 0, 0)));
+      assertTrue(s.el.classList.contains('datagrid--move-hover'), 'am Rand');
+      mouse(cell(s, 0, 0), 'mousemove');
+      assertTrue(!s.el.classList.contains('datagrid--move-hover'), 'in der Mitte nicht');
+      mouse(cell(s, 0, 0), 'mousemove', edgeLeft(cell(s, 0, 0)));
+      s.el.dispatchEvent(new MouseEvent('mouseleave'));
+      assertTrue(!s.el.classList.contains('datagrid--move-hover'), 'mouseleave nimmt sie weg');
+    } finally { s.done(); }
+  });
+
+  test('kein Griff bei extraCols (Strg-Spalten)', async () => {
+    const s = await setup();
+    try {
+      const th = (c) => s.el.querySelector(`thead th[data-col-idx="${c}"]`);
+      mouse(th(0), 'mousedown');
+      mouse(document, 'mouseup', { clientX: 0, clientY: 0 });
+      mouse(th(1), 'mousedown', { ctrlKey: true });
+      mouse(cell(s, 1, 0), 'mousemove', edgeLeft(cell(s, 1, 0)));
+      assertTrue(!s.el.classList.contains('datagrid--move-hover'), 'kein Hover');
+      dragBorder(s, 1, 0, 1, 4);
+      assertEqual(moves(s).length, 0);
+    } finally { s.done(); }
+  });
+
+  test('ohne Merkmal structure kein Griff: Rand-mousedown wählt wie ein Klick', async () => {
+    const s = await setup({ features: { structure: false } });
+    try {
+      selectBlock(s, 0, 0, 0, 1);
+      mouse(cell(s, 0, 0), 'mousedown', edgeLeft(cell(s, 0, 0)));
+      mouse(document, 'mouseup', edgeLeft(cell(s, 0, 0)));
+      assertEqual(moves(s).length, 0);
+      assertTrue(cell(s, 0, 0).classList.contains('cell-active'), 'geklickte Zelle aktiv');
+      assertTrue(!cell(s, 0, 1).classList.contains('cell-selected'), 'Einzelauswahl');
+    } finally { s.done(); }
+  });
+
+  test('Randgriff nach Scrollen (Trefferzone in Inhaltskoordinaten)', async () => {
+    const s = await setup();
+    try {
+      s.el.scrollTop = 500 * s.view.rowHeight();
+      for (let i = 0; i < 50 && !cell(s, 0, 505); i++) await wait(20);
+      assertTrue(cell(s, 0, 505) !== null, 'Zeilen dort gezeichnet');
+      selectBlock(s, 0, 500, 0, 501);
+      dragBorder(s, 0, 500, 0, 505);
+      assertDeepEqual(moves(s), [['moveCells', { source: { c0: 0, r0: 500, c1: 0, r1: 501 }, toCol: 0, toRow: 505 }]]);
+    } finally { s.done(); }
+  });
+});
+
+// ─── Einfügen der eigenen Kopie (Upstream datagrid-paste) ────────────
+
+function clip(s, type, text) {
+  const dt = new DataTransfer();
+  if (text != null) dt.setData('text/plain', text);
+  document.activeElement.dispatchEvent(new ClipboardEvent(type, { clipboardData: dt, bubbles: true, cancelable: true }));
+  return dt.getData('text/plain');
+}
+const pastes = (s) => s.calls.filter((c) => c[0] === 'pasteBlock');
+
+suite('GridInput — eigene Kopie einfügen', () => {
+  test('Kopieren → Einfügen sendet pasteBlock mit header: false und allen Zeilen', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 1, 1, 3);
+      const text = clip(s, 'copy');
+      clickCell(s, 0, 5);
+      clip(s, 'paste', text);
+      assertDeepEqual(pastes(s), [['pasteBlock', {
+        columnId: 'a', startRow: 5, rows: [['1', 't1'], ['2', 't2'], ['3', 't3']], header: false,
+      }]]);
+    } finally { s.done(); }
+  });
+
+  test('leere Zeilen im eigenen Block bleiben Daten', async () => {
+    const s = await setup();
+    try {
+      const t = new TableData(6, [[0, 1, null, null, 4, 5], ['t0', 't1', null, null, 't4', 't5'], [0, 2, 4, 6, 8, 10]]);
+      s.input.setView({ table: t, columns: s.cols, formulas: {}, colWidths: {}, selection: null, lang: 'en' });
+      selectBlock(s, 0, 1, 1, 3);
+      const text = clip(s, 'copy');
+      clickCell(s, 0, 4);
+      clip(s, 'paste', text);
+      assertDeepEqual(pastes(s), [['pasteBlock', {
+        columnId: 'a', startRow: 4, rows: [['1', 't1'], ['', ''], ['', '']], header: false,
+      }]]);
+    } finally { s.done(); }
+  });
+
+  test('Ausschneiden merkt die eigene Kopie ebenso', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 1, 1, 2);
+      const text = clip(s, 'cut');
+      assertEqual(s.calls.filter((c) => c[0] === 'clearRange').length, 1, 'cut leert');
+      clickCell(s, 0, 7);
+      clip(s, 'paste', text);
+      assertDeepEqual(pastes(s), [['pasteBlock', { columnId: 'a', startRow: 7, rows: [['1', 't1'], ['2', 't2']], header: false }]]);
+    } finally { s.done(); }
+  });
+
+  test('fremder Text nach eigener Kopie rät wieder', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 1, 1, 2);
+      clip(s, 'copy');
+      clickCell(s, 0, 7);
+      clip(s, 'paste', 'x\ty\n1\t2');
+      assertDeepEqual(pastes(s), [['pasteBlock', { columnId: 'a', startRow: 7, rows: [['x', 'y'], ['1', '2']] }]]);
+    } finally { s.done(); }
+  });
+});

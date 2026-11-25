@@ -2,10 +2,10 @@
  * D.Mike — Bedienung des Rasters (datagrid/view/grid-input.js)
  *
  * Auswahl, Tastatur, Zelleneditor, Ziehen mit Scrollen am Rand, Ausfüllgriff,
- * Zwischenablage, Spaltenbreite sowie Zeilen-/Spaltenverschieben über einer
- * GridView (grid-view.js). Die Bedienung ändert nie Daten: sie meldet
- * Kommandos über `emit(role, args)` mit einer Rolle aus P7 und Argumenten in
- * Model-Form. Die Blatt-Id kennt sie nicht; feste Argumente mischt das Widget
+ * Block am Auswahlrand verschieben, Zwischenablage, Spaltenbreite sowie
+ * Zeilen-/Spaltenverschieben über einer GridView (grid-view.js). Die Bedienung
+ * ändert nie Daten: sie meldet Kommandos über `emit(role, args)` mit einer
+ * Rolle aus P7 und Argumenten in Model-Form. Die Blatt-Id kennt sie nicht; feste Argumente mischt das Widget
  * hinzu (Ruling R2).
  *
  * Ansichtszustand (Auswahl, Spaltenbreiten) hält die Bedienung selbst und
@@ -30,6 +30,7 @@ const FEATURE_OF_ROLE = Object.freeze({
   addColumn: 'structure',
   removeColumn: 'structure',
   moveColumn: 'structure',
+  moveCells: 'structure',
   addRows: 'structure',
   removeRows: 'structure',
   moveRow: 'structure',
@@ -49,6 +50,15 @@ const MIN_COL_WIDTH = 50;
 const DRAG_THRESHOLD = 4;
 const EDGE_ZONE = 30;
 const MAX_EDGE_STEP = 40;
+/** Breite der Trefferzone am Auswahlrand (px), in der ein Block gegriffen wird. */
+const CELL_MOVE_EDGE = 4;
+
+/**
+ * Letzter vom Raster kopierter Text, über alle Raster (wie im Altraster):
+ * Einfügen genau dieses Texts rät keine Kopfzeile und behält leere Zeilen.
+ * @type {string|null}
+ */
+let lastGridCopy = null;
 
 /**
  * @typedef {import('./selection.js').GridSelection} GridSelection
@@ -70,8 +80,10 @@ const MAX_EDGE_STEP = 40;
  *
  * Gemeldete Rollen und Argumente:
  * `setCells { columnId, startRow, values }`, `setFormula { columnId, row, formula }`,
- * `pasteBlock { columnId, startRow, rows }`, `fillRange { source, target, ctrl }`
+ * `pasteBlock { columnId, startRow, rows, header? }` (`header: false` bei der eigenen
+ * letzten Kopie), `fillRange { source, target, ctrl }`
  * (beide `{ c0, r0, c1, r1 }`, `target` umfasst die Quelle),
+ * `moveCells { source: { c0, r0, c1, r1 }, toCol, toRow }` (Ziel der linken oberen Zelle, geklemmt),
  * `clearRange { c0, r0, c1, r1 }`, `addColumn { position }`, `removeColumn { columnId }`,
  * `moveColumn { columnId, toIndex }`, `renameColumn { columnId, name }`,
  * `addRows { count, position }`, `removeRows { startRow, count }`,
@@ -287,7 +299,7 @@ export function createGridInput(view, {
       const ebox = boxOf(editor.c, editor.r, editor.c, editor.r);
       if (ebox) place(editor.box, ebox);
     }
-    if (drag?.kind === 'fill') placePreview();
+    if (drag?.kind === 'fill' || drag?.kind === 'move') placePreview();
   }
   view.onUpdate(paint);
 
@@ -436,7 +448,8 @@ export function createGridInput(view, {
    */
   function pasteText(text) {
     if (!can('pasteBlock') || !nCols()) return;
-    const rows = parseClipboard(text || '');
+    const own = text != null && text === lastGridCopy;
+    const rows = parseClipboard(text || '', { keepBlank: own });
     if (!rows.length) return;
     const { c0, r0 } = sel ? S.rangeOf(sel) : { c0: 0, r0: 0 };
     const width = Math.max(...rows.map((r) => r.length));
@@ -444,19 +457,24 @@ export function createGridInput(view, {
     if (locked.length) blocked('cell:edit-blocked', locked[0], { action: 'paste' });
     // Spalten jenseits des Blattendes kommen ungesperrt dazu.
     if (locked.length === width) return;
-    send('pasteBlock', { columnId: columns[c0].id, startRow: r0, rows });
+    send('pasteBlock', { columnId: columns[c0].id, startRow: r0, rows, ...(own ? { header: false } : {}) });
   }
 
   const ownsClipboard = () => !editor && document.activeElement === el && featureOn('clipboard') && isShown(el);
+  /** TSV der Auswahl, als eigene letzte Kopie gemerkt. */
+  function copySelection() {
+    lastGridCopy = selectionTSV();
+    return lastGridCopy;
+  }
   function onCopy(e) {
     if (!sel || !ownsClipboard()) return;
     e.preventDefault();
-    e.clipboardData.setData('text/plain', selectionTSV());
+    e.clipboardData.setData('text/plain', copySelection());
   }
   function onCut(e) {
     if (!sel || !ownsClipboard()) return;
     e.preventDefault();
-    e.clipboardData.setData('text/plain', selectionTSV());
+    e.clipboardData.setData('text/plain', copySelection());
     clear();
   }
   function onPaste(e) {
@@ -476,7 +494,7 @@ export function createGridInput(view, {
       e.preventDefault();
       if (!sel) return true;
       const isCut = shortcutRegistry.matches(e, 'datagrid.cut');
-      navigator.clipboard.writeText(selectionTSV()).then(() => { if (isCut) clear(); }, () => {});
+      navigator.clipboard.writeText(copySelection()).then(() => { if (isCut) clear(); }, () => {});
       return true;
     }
     if (shortcutRegistry.matches(e, 'datagrid.paste')) {
@@ -491,7 +509,7 @@ export function createGridInput(view, {
 
   function onKeyDown(e) {
     if (!isShown(el)) return;
-    if (drag?.kind === 'fill' && shortcutRegistry.matches(e, 'datagrid.cancelEdit')) {
+    if ((drag?.kind === 'fill' || drag?.kind === 'move') && shortcutRegistry.matches(e, 'datagrid.cancelEdit')) {
       e.preventDefault();
       endDrag();
       return;
@@ -537,7 +555,7 @@ export function createGridInput(view, {
     }
   }
 
-  // ─── Ziehen (Auswahl, Ausfüllen, Breite, Zeile, Spalte) ───────────
+  // ─── Ziehen (Auswahl, Ausfüllen, Block, Breite, Zeile, Spalte) ────
 
   function beginDrag(d) {
     drag = d;
@@ -552,9 +570,9 @@ export function createGridInput(view, {
     autoRaf = 0;
     document.removeEventListener('mousemove', onDocMove);
     document.removeEventListener('mouseup', onDocUp);
-    if (d?.kind === 'fill') {
+    if (d?.kind === 'fill' || d?.kind === 'move') {
       fillPreview.style.display = 'none';
-      el.classList.remove('datagrid--fill-dragging', 'datagrid--fill-ctrl');
+      el.classList.remove('datagrid--fill-dragging', 'datagrid--fill-ctrl', 'datagrid--cell-moving');
     }
     d?.ghost?.remove();
     d?.indicator?.remove();
@@ -601,7 +619,7 @@ export function createGridInput(view, {
       if (drag.kind === 'rowPending') startRowDrag(e); else startColDrag(e);
     }
     dragMove();
-    if (['select', 'fill', 'row', 'col'].includes(drag?.kind) && !autoRaf) autoRaf = requestAnimationFrame(autoScroll);
+    if (['select', 'fill', 'move', 'row', 'col'].includes(drag?.kind) && !autoRaf) autoRaf = requestAnimationFrame(autoScroll);
   }
 
   function dragMove() {
@@ -623,6 +641,8 @@ export function createGridInput(view, {
       if (sel && (sel.endCol !== cell.c || sel.endRow !== cell.r)) setSel(S.extendTo(sel, cell.c, cell.r), { reveal: false });
     } else if (drag.kind === 'fill') {
       updateFill(cell);
+    } else if (drag.kind === 'move') {
+      updateMove(cell);
     }
   }
 
@@ -630,6 +650,7 @@ export function createGridInput(view, {
     const d = drag;
     if (!d) return;
     if (d.kind === 'fill') finishFill(d);
+    else if (d.kind === 'move') finishMove(d);
     else if (d.kind === 'row') finishRowDrag(d);
     else if (d.kind === 'col') finishColDrag(d);
     endDrag();
@@ -675,6 +696,58 @@ export function createGridInput(view, {
     if (locked) blocked('cell:edit-blocked', locked, { action: 'fill' });
     send('fillRange', { source: { ...src }, target: { ...tgt }, ctrl });
     setSel({ ...S.rect(tgt.c0, tgt.r0, tgt.c1, tgt.r1), activeCol: sel?.activeCol ?? tgt.c0, activeRow: sel?.activeRow ?? tgt.r0 }, { reveal: false });
+  }
+
+  // Block am Auswahlrand verschieben (`_isOnSelectionBorder`, `_startCellMoveDrag`, `_setCellMoveTarget`)
+  /**
+   * Liegt der Zeiger auf dem Rand der Auswahl — innerhalb des Blocks, höchstens
+   * `CELL_MOVE_EDGE` px von einer Außenkante? Gerechnet in Inhaltskoordinaten
+   * über `boxOf`, nicht über `td`-Rechtecke (gilt auch nach dem Scrollen).
+   * @param {MouseEvent} e @returns {boolean}
+   */
+  function onBorder(e) {
+    const td = /** @type {HTMLElement} */ (e.target).closest?.('tbody td[data-col-idx]');
+    if (!td || td.classList.contains('datagrid__row-header')) return false;
+    if (!sel || sel.extraCols.length || readOnly || !can('moveCells')) return false;
+    const { c0, r0, c1, r1 } = S.rangeOf(sel);
+    const box = boxOf(c0, r0, c1, r1);
+    if (!box) return false;
+    const er = el.getBoundingClientRect();
+    const x = e.clientX - er.left - el.clientLeft + el.scrollLeft - box.left;
+    const y = e.clientY - er.top - el.clientTop + el.scrollTop - box.top;
+    if (x < 0 || y < 0 || x > box.width || y > box.height) return false;
+    return x <= CELL_MOVE_EDGE || box.width - x <= CELL_MOVE_EDGE || y <= CELL_MOVE_EDGE || box.height - y <= CELL_MOVE_EDGE;
+  }
+  /** Greift den Block sofort (ohne Mindestweg); (c, r) ist die gegriffene Zelle. */
+  function startMove(c, r) {
+    const src = S.rangeOf(sel);
+    el.classList.add('datagrid--cell-moving');
+    beginDrag({ kind: 'move', src, grabCol: c - src.c0, grabRow: r - src.r0, tgt: { ...src } });
+    placePreview();
+  }
+  /** Ziel = Zelle unter dem Zeiger minus Griffversatz, in das Blatt geklemmt (es wächst nicht). */
+  function updateMove({ c, r }) {
+    const { src, grabCol, grabRow } = drag;
+    const w = src.c1 - src.c0;
+    const hh = src.r1 - src.r0;
+    const toCol = Math.max(0, Math.min(nCols() - 1 - w, c - grabCol));
+    const toRow = Math.max(0, Math.min(nRows() - 1 - hh, r - grabRow));
+    drag.tgt = { c0: toCol, r0: toRow, c1: toCol + w, r1: toRow + hh };
+    placePreview();
+  }
+  /** Ziel = Quelle: nichts. Sperre in Quelle ∪ Ziel: Meldung, nichts gesendet. */
+  function finishMove({ src, tgt }) {
+    if (tgt.c0 === src.c0 && tgt.r0 === src.r0) return;
+    const touched = new Set();
+    for (let c = src.c0; c <= src.c1; c++) touched.add(c);
+    for (let c = tgt.c0; c <= tgt.c1; c++) touched.add(c);
+    const locked = [...touched].sort((a, b) => a - b).map((c) => columns[c]).find((col) => col?.lock);
+    if (locked) {
+      blocked('cell:edit-blocked', locked, { action: 'move' });
+      return;
+    }
+    send('moveCells', { source: { ...src }, toCol: tgt.c0, toRow: tgt.r0 });
+    setSel({ ...S.rect(tgt.c0, tgt.r0, tgt.c1, tgt.r1), activeCol: tgt.c0, activeRow: tgt.r0 }, { reveal: false });
   }
 
   // Zeile verschieben (`_startRowDrag` ff.)
@@ -797,6 +870,11 @@ export function createGridInput(view, {
       return;
     }
     const c = Number(td.dataset.colIdx);
+    // Vor Shift-Erweitern und vor „Klick auf die einzige markierte Zelle hebt sie auf“.
+    if (!e.shiftKey && onBorder(e)) {
+      startMove(c, r);
+      return;
+    }
     if (e.shiftKey && sel) {
       setSel(S.extendTo(sel, c, r), { reveal: false });
     } else if (S.isSingle(sel) && sel.activeCol === c && sel.activeRow === r) {
@@ -935,7 +1013,13 @@ export function createGridInput(view, {
     hoverCol = c;
     paint();
   }
+  /** Cursor `move` am Auswahlrand (ohne laufende Geste). */
+  function onHoverMove(e) {
+    if (drag) return;
+    el.classList.toggle('datagrid--move-hover', onBorder(e));
+  }
   function onMouseLeave() {
+    el.classList.remove('datagrid--move-hover');
     if (hoverCol < 0) return;
     hoverCol = -1;
     paint();
@@ -944,7 +1028,7 @@ export function createGridInput(view, {
   const listeners = [
     ['mousedown', onMouseDown], ['dblclick', onDblClick], ['click', onClick], ['contextmenu', onContextMenu],
     ['keydown', onKeyDown], ['copy', onCopy], ['cut', onCut], ['paste', onPaste],
-    ['mouseover', onMouseOver], ['mouseleave', onMouseLeave],
+    ['mouseover', onMouseOver], ['mousemove', onHoverMove], ['mouseleave', onMouseLeave],
   ];
   for (const [type, fn] of listeners) el.addEventListener(type, fn);
 
