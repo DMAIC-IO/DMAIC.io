@@ -273,6 +273,32 @@ Aufklappen steht nicht in `steps`, sondern nur im Kommando `setExpanded`. Der
 Import aus anderen Modulen läuft über `ctx.instances` und ist für den Agenten
 nicht sichtbar.
 
+Beispiel für ein Schema-Modul mit Model- und Viewmodel-Kommandos:
+`control-chart` (Regelkarte I-MR, X̄-R, X̄-S). Der Agent setzt die Felder über
+`instance.set`: `columnRef` (Spaltenbezug oder `null`), `baselineCount` (ganze
+Zahl ab 1 oder `null` für alle), `stagesText`, `usl`, `lsl` (Zahl oder `null`),
+`enabledRules` (Liste aus 1 bis 8), `chartTypeId` und `subgroupSize`. Die
+Untergruppengröße muss zum Kartentyp passen (1 bei I-MR, 2 bis 10 bei X̄-R, 2 bis
+25 bei X̄-S, Invariante `subgroupRange`); wer beides ändert, schreibt beides in
+einem `instance.set`. Jedes Kommando nimmt genau ein Objekt. Model-Kommandos:
+`setChartType { chartTypeId }` wechselt den Kartentyp und klemmt die
+Untergruppengröße in dessen Bereich, `toggleRule { ruleId, on }` hakt eine Regel
+an oder ab, `removeAnnotation { index }` löscht die Anmerkung eines Punkts
+(ohne Anmerkung abgewiesen). Anmerkungen und eingefrorene Grenzen sind gesperrt
+(`agentWrite: false`) und gehen nur über zwei Viewmodel-Kommandos, die das
+Ergebnis über das Arbeitsblatt brauchen und daher die Ansicht wechseln:
+`setAnnotation { index, comment, excluded }` (der Punkt muss existieren, `allowed:
+0..<n−1>`; leerer Kommentar ohne Ausschluss löscht) und `setPhase2 { enabled }`.
+`setPhase2` liefert `null`; ohne Ergebnis oder mit wirksamen Stufen antwortet es
+mit `call_failed` und dem übersetzten Grund der Oberfläche (etwa „Erst Daten
+laden, dann Grenzen einfrieren.“), ein Einfrieren bei schon eingefrorenen Grenzen
+und ein Freigeben ohne sie bleiben ohne Wirkung. `read()` liefert die Felder, die
+Ableitungen `result` (Grenzen je Teilkarte, Fähigkeit, Verletzungen, `frozen`:
+ob die eingefrorenen Grenzen gelten) und `points` (Massenfeld, je Punkt die Werte
+und Grenzen beider Teilkarten), dazu `activeParams` und `activeColumnSlots`
+(`['columnRef']`). Die Aktionen `setColumn`, `setParam` und `runAnalysis` gibt es
+nicht mehr; es rechnet bei jeder Änderung neu, ohne Entprellung.
+
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
 `auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
 
