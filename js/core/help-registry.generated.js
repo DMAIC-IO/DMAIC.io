@@ -28,10 +28,9 @@ import h25 from '../modules/sample-size/sample-size-help.js';
 import h26 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
 import h27 from '../modules/todo/todo-help.js';
 import h28 from '../modules/triz-9-windows/triz-9-windows-help.js';
-import h29 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
-import h30 from '../modules/triz-sufield/triz-sufield-help.js';
-import h31 from '../modules/unit-converter/unit-converter-help.js';
-import h32 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h29 from '../modules/triz-sufield/triz-sufield-help.js';
+import h30 from '../modules/unit-converter/unit-converter-help.js';
+import h31 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -63,8 +62,7 @@ export const HELP = {
   "stakeholder-analysis": h26,
   "todo": h27,
   "triz-9-windows": h28,
-  "triz-contradiction-matrix": h29,
-  "triz-sufield": h30,
-  "unit-converter": h31,
-  "voc-ctx-tree": h32,
+  "triz-sufield": h29,
+  "unit-converter": h30,
+  "voc-ctx-tree": h31,
 };

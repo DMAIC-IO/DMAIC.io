@@ -185,6 +185,11 @@
     "description": "I-MR with Box-Cox transform for non-normal data",
     "whenToUse": "Control-chart skewed, strictly positive data: a Box-Cox transformation makes them near-normal before I-MR limits are computed."
   },
+  "triz-contradiction-matrix": {
+    "name": "Contradiction Matrix (TRIZ)",
+    "description": "Inventive principles for technical contradictions (Altschuller)",
+    "whenToUse": "When two different engineering parameters are in conflict — improving one degrades the other — and the matrix should name the proven solution principles for that pair; not when a single parameter itself would have to hold two opposite values, which is what the physical contradiction is for."
+  },
   "triz-evolution-trends": {
     "name": "Trends of Technical Evolution (TRIZ)",
     "description": "Eight classical evolution trajectories — locate the system and identify the next stage jump",

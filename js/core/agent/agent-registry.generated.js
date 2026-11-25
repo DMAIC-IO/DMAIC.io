@@ -19867,6 +19867,7 @@ export const AGENT_REGISTRY = {
   "triz-contradiction-matrix": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -19876,74 +19877,113 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "setImproving": {
-        "params": [
-          {
-            "name": "param",
-            "type": "number|null",
-            "optional": false,
-            "help": "Nummer des Merkmals, 1 bis 39; `null` nimmt die Wahl zurück"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt das Merkmal, das verbessert werden soll."
-      },
-      "setWorsening": {
-        "params": [
-          {
-            "name": "param",
-            "type": "number|null",
-            "optional": false,
-            "help": "Nummer des Merkmals, 1 bis 39; `null` nimmt die Wahl zurück"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt das Merkmal, das sich dabei verschlechtert."
-      },
-      "setProblemNote": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Problemnotiz"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Problemnotiz zum Widerspruch."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "swapParams": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Tauscht verbesserndes und verschlechterndes Merkmal gegeneinander."
+        "help": "",
+        "keysOf": "swapParams",
+        "keysHelp": "actions.swapParams.params",
+        "keys": {}
+      },
+      "pickCell": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "pickCell",
+        "keysHelp": "actions.pickCell.params",
+        "keys": {
+          "improving": {
+            "type": "number",
+            "help": ""
+          },
+          "worsening": {
+            "type": "number",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "improving": {
         "type": "number|null",
-        "help": "Nummer des Merkmals, das verbessert werden soll (1 bis 39), oder null",
+        "help": "",
         "bulk": false
       },
       "worsening": {
         "type": "number|null",
-        "help": "Nummer des Merkmals, das sich dabei verschlechtert (1 bis 39), oder null",
+        "help": "",
         "bulk": false
       },
       "problemNote": {
         "type": "string",
-        "help": "die Problemnotiz zum Widerspruch",
+        "help": "",
         "bulk": false
+      },
+      "recommendation": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Recommendation",
+        "keys": {
+          "status": {
+            "type": "'incomplete'|'sameParameter'|'noEntry'|'found'",
+            "help": "incomplete: a parameter is missing; sameParameter: both are the same; noEntry: the matrix cell is empty; found: principles are recommended"
+          },
+          "principles": {
+            "type": "RecommendedPrinciple[]",
+            "help": "the recommended principles in the order of the matrix cell; empty unless status is found",
+            "keysOf": "RecommendedPrinciple",
+            "keys": {
+              "id": {
+                "type": "number",
+                "help": "number of the inventive principle (1 to 40)"
+              },
+              "name": {
+                "type": "string",
+                "help": "name of the principle in the active language"
+              },
+              "description": {
+                "type": "string",
+                "help": "short description of the principle in the active language"
+              }
+            }
+          }
+        }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "showMatrix"
-    ]
+    ],
+    "settable": [
+      "improving",
+      "worsening",
+      "problemNote"
+    ],
+    "invariants": []
   },
   "triz-evolution-trends": {
     "tagged": true,

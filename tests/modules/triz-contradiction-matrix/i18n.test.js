@@ -1,9 +1,11 @@
 /**
  * Widerspruchsmatrix (TRIZ): Texte der 39 Parameter und 40 Prinzipien in
  * resources/i18n/ui.<lang>.json — vollständig in beiden Sprachen, passend zur
- * Tabelle und wortgleich mit den Quelldateien unter data/.
+ * Tabelle und wortgleich mit den früheren Quelldateien `parameters.json` und
+ * `principles.json` (Prüfsummen, gebildet, als beide noch gleich waren).
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { cyrb53 } from '../../../js/core/hash.js';
 import { MATRIX, PARAMETER_COUNT, PRINCIPLE_COUNT } from '../../../js/modules/triz-contradiction-matrix/domain/matrix.js';
 
 const MOD = '../../../js/modules/triz-contradiction-matrix/';
@@ -18,10 +20,11 @@ async function fetchJson(path) {
 const ui = (lang) => fetchJson(`resources/i18n/ui.${lang}.json`);
 const ids = (n) => Array.from({ length: n }, (_, i) => String(i + 1));
 
-/** Texte einer Tabelle aus der Quelldatei als `{ "<id>": { name, description } }`. */
-const fromSource = (list, lang) => Object.fromEntries(
-  list.map((e) => [String(e.id), { name: e[lang].name, description: e[lang].description }]),
-);
+/** cyrb53 über JSON der Tabellentexte je Sprache. */
+const CHECKSUMS = {
+  de: { parameters: 5205695168019191, principles: 4356071275164251 },
+  en: { parameters: 1718647034650640, principles: 880279776355777 },
+};
 
 suite('Widerspruchsmatrix (TRIZ): Tabellentexte in ui.<lang>.json', () => {
   test('39 Parameter und 40 Prinzipien in DE und EN, je mit Name und Beschreibung', async () => {
@@ -48,13 +51,11 @@ suite('Widerspruchsmatrix (TRIZ): Tabellentexte in ui.<lang>.json', () => {
     }
   });
 
-  test('Parametertexte gleichen data/parameters.json wortgleich', async () => {
-    const { parameters: source } = await fetchJson('data/parameters.json');
-    for (const lang of LANGS) assertDeepEqual((await ui(lang)).parameters, fromSource(source, lang), lang);
-  });
-
-  test('Prinzipientexte gleichen data/principles.json wortgleich', async () => {
-    const { principles: source } = await fetchJson('data/principles.json');
-    for (const lang of LANGS) assertDeepEqual((await ui(lang)).principles, fromSource(source, lang), lang);
+  test('Parameter- und Prinzipientexte wortgleich mit den früheren Quelldateien (Prüfsummen)', async () => {
+    for (const lang of LANGS) {
+      const { parameters, principles } = await ui(lang);
+      assertEqual(cyrb53(JSON.stringify(parameters)), CHECKSUMS[lang].parameters, `${lang} parameters`);
+      assertEqual(cyrb53(JSON.stringify(principles)), CHECKSUMS[lang].principles, `${lang} principles`);
+    }
   });
 });

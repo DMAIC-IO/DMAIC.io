@@ -3,8 +3,8 @@
  * Vorgaben (zwei nullbare Parameter 1 bis 39, eine Notiz, ein Ansichtsfeld),
  * Stände ohne `_schema` über '0→1.0', gespeicherte Stände '1.0' ohne
  * Migrationsschritt, Versionsprüfung, Reparatur, die Kommandos `swapParams`
- * und `pickCell`, Schreiben der Felder, `hasContent`, die Ableitung
- * `recommendation` und das Beispiel am bisherigen Ort.
+ * und `pickCell`, Schreiben der Felder, `hasContent` und die Ableitung
+ * `recommendation`.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/triz-contradiction-matrix/domain/model.js';
@@ -357,22 +357,5 @@ suite('triz-contradiction-matrix Model — recommendation', () => {
     assertDeepEqual(evaluateDerived(m, /** @type {any} */ (undefined)).recommendation, { status: 'incomplete', principles: [] });
     m.pickCell({ improving: 1, worsening: 3 });
     assertTrue(typeof evaluateDerived(m, /** @type {any} */ (undefined)).recommendation.error === 'string');
-  });
-});
-
-suite('triz-contradiction-matrix Model — Beispiel am bisherigen Ort', () => {
-  test('speed-vs-productivity (ohne _schema) lädt über 0→1.0 ohne Reparatur, Werte wie in der Datei', async () => {
-    const url = new URL('../../../examples/projects/triz-contradiction-speed-vs-productivity.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch example: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file._schema, undefined);
-    const { m, fields } = repaired(plain(file));
-    assertDeepEqual(fields, []);
-    assertEqual(m.improving, 9);
-    assertEqual(m.worsening, 39);
-    assertEqual(m.showMatrix, true);
-    assertEqual(JSON.stringify(m.toJSON()), JSON.stringify({ ...SCHEMA, ...file }));
-    assertEqual(recommendation(m).status, 'noEntry');
   });
 });

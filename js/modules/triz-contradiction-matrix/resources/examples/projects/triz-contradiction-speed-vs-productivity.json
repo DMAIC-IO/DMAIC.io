@@ -1,4 +1,5 @@
 {
+  "_schema": { "name": "triz-contradiction-matrix", "version": "1.0" },
   "improving": 9,
   "worsening": 39,
   "problemNote": "Wir wollen die Pizza schneller ausliefern (Speed ↑), ohne dass die Produktivität pro Schicht sinkt. Klassischer TRIZ-Konflikt im Lieferprozess — siehe Inventive Principles 35 (Eigenschaften ändern) und 18 (Mechanische Vibration / Pulsation, hier sinngemäß: gepufferter Takt).",

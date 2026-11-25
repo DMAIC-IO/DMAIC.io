@@ -47,7 +47,6 @@ export const MIXIN_READ_MODULES = Object.freeze([
   'raci-matrix',
   'todo',
   'triz-9-windows',
-  'triz-contradiction-matrix',
   'voc-ctx-tree',
 ]);
 

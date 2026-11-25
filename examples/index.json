@@ -1309,31 +1309,6 @@
       ]
     },
     {
-      "id": "triz-contradiction-speed-vs-productivity",
-      "type": "project",
-      "title": {
-        "de": "TRIZ-Konflikt: Speed vs. Productivity",
-        "en": "TRIZ Contradiction: Speed vs. Productivity"
-      },
-      "description": {
-        "de": "Klassischer TRIZ-Konflikt aus dem Pizza-Lehrcase: schneller liefern, ohne Produktivität zu opfern. Improving = 9 (Speed), worsening = 39 (Productivity).",
-        "en": "Classic TRIZ contradiction from the pizza case: deliver faster without sacrificing productivity. Improving = 9 (Speed), worsening = 39 (Productivity)."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/triz-contradiction-speed-vs-productivity.json",
-      "format": "json",
-      "modules": [
-        "triz-contradiction-matrix"
-      ],
-      "tags": [
-        "improve",
-        "triz",
-        "contradiction",
-        "pizza-lehrcase"
-      ]
-    },
-    {
       "id": "triz-9windows-pizza-lieferung",
       "type": "project",
       "title": {

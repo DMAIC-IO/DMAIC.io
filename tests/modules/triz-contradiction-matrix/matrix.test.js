@@ -1,10 +1,11 @@
 /**
  * Tests for modules/triz-contradiction-matrix/domain/matrix.js — Form der
  * 39×39-Tabelle, Stichproben, die Diagonalzellen mit Listen, `lookup` und
- * `recommendationOf` je Zustand und die Gleichheit mit der Quelldatei
- * `data/matrix.json`.
+ * `recommendationOf` je Zustand und eine Prüfsumme über die ganze Tabelle
+ * (gebildet aus der früheren Quelldatei `matrix.json`, mit ihr tief gleich).
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { cyrb53 } from '../../../js/core/hash.js';
 import {
   MATRIX, PARAMETER_COUNT, PRINCIPLE_COUNT, lookup, recommendationOf,
 } from '../../../js/modules/triz-contradiction-matrix/domain/matrix.js';
@@ -55,15 +56,9 @@ suite('triz-contradiction-matrix Tabelle — Form', () => {
   });
 });
 
-suite('triz-contradiction-matrix Tabelle — gleich der Quelldatei', () => {
-  test('MATRIX gleicht cells aus data/matrix.json', async () => {
-    const url = new URL('../../../js/modules/triz-contradiction-matrix/data/matrix.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch matrix: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file.rows, PARAMETER_COUNT);
-    assertEqual(file.cols, PARAMETER_COUNT);
-    assertDeepEqual(plain(MATRIX), file.cells);
+suite('triz-contradiction-matrix Tabelle — Prüfsumme', () => {
+  test('cyrb53 über JSON der Tabelle gleicht der früheren Quelldatei', () => {
+    assertEqual(cyrb53(JSON.stringify(MATRIX)), 1461895991295664);
   });
 });
 

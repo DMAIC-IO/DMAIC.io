@@ -351,14 +351,6 @@ export default [
   // the registry's cycle-mapping check (`m.cycles?.[cycleId]`) returns
   // undefined for every cycle, so getByCycleAndPhase('extras') matches.
   {
-    id: 'triz-contradiction-matrix',
-    phase: 'improve',
-    load: () => import('./triz-contradiction-matrix/triz-contradiction-matrix.js'),
-    cycles: {
-      eightd: { phase: 'corrective' },
-    },
-  },
-  {
     id: 'triz-9-windows',
     phase: 'improve',
     load: () => import('./triz-9-windows/triz-9-windows.js'),
