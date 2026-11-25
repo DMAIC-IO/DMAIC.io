@@ -21926,6 +21926,11 @@ export const AGENT_REGISTRY = {
           "rows": {
             "type": "string[][]",
             "help": ""
+          },
+          "header": {
+            "type": "boolean",
+            "help": "",
+            "optional": true
           }
         }
       },
@@ -21960,6 +21965,39 @@ export const AGENT_REGISTRY = {
             "type": "boolean",
             "help": "",
             "optional": true
+          }
+        }
+      },
+      "moveCells": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ c0: number, r0: number, c1: number, r1: number }|null",
+        "help": "",
+        "keysOf": "moveCells",
+        "keysHelp": "actions.moveCells.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "source": {
+            "type": "{ c0: number, r0: number, c1: number, r1: number }",
+            "help": ""
+          },
+          "toCol": {
+            "type": "number",
+            "help": ""
+          },
+          "toRow": {
+            "type": "number",
+            "help": ""
           }
         }
       },
@@ -22598,6 +22636,10 @@ export const AGENT_REGISTRY = {
             "help": ""
           },
           "row": {
+            "type": "unknown",
+            "help": ""
+          },
+          "text": {
             "type": "unknown",
             "help": ""
           }

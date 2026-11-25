@@ -89,6 +89,16 @@
         "command": "Das Kommando als ein Objekt mit sheetId, source, target und ctrl."
       }
     },
+    "moveCells": {
+      "help": "Verschiebt einen Zellblock, wie das Ziehen am Rand der Auswahl: die Werte und Formeln wandern an die neue Stelle, die Quelle wird leer, Formeln, die auf die verschobenen Zellen zeigen, folgen mit. Eine überschriebene Zelle, auf die noch etwas zeigt, wird dort zu #REF!. Das Ziel wird ins Blatt geklemmt; eine gesperrte Spalte in Quelle oder Ziel lehnt das Kommando ab. Ein Schritt im Verlauf, Rückgängig stellt alles her. Liefert den Zielblock { c0, r0, c1, r1 } oder null, wenn nichts zu verschieben war.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "source": "Der Quellblock { c0, r0, c1, r1 }: erste und letzte Spalte, erste und letzte Zeile, alle nullbasiert.",
+        "toCol": "Die Spalte der linken oberen Ecke des Ziels, nullbasiert.",
+        "toRow": "Die Zeile der linken oberen Ecke des Ziels, nullbasiert.",
+        "command": "Das Kommando als ein Objekt mit sheetId, source, toCol und toRow."
+      }
+    },
     "clearRange": {
       "help": "Leert Werte und Formeln eines Bereichs, wie Entf im Raster. Gesperrte Spalten bleiben unverändert. Liefert die Zahl der Zellen, die einen Wert oder eine Formel hatten.",
       "params": {
@@ -111,7 +121,7 @@
       }
     },
     "addColumn": {
-      "help": "Fügt dem Blatt eine leere Spalte hinzu — ohne Position am Ende. Der Agent erhält die id der neuen Spalte.",
+      "help": "Fügt dem Blatt eine leere Spalte hinzu — ohne Position am Ende. Bei einer Position davor rücken die Spaltenbezüge der Formeln nach, sodass sie dieselben Spalten treffen. Der Agent erhält die id der neuen Spalte.",
       "params": {
         "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
         "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an.",
@@ -119,7 +129,7 @@
       }
     },
     "removeColumn": {
-      "help": "Entfernt eine Spalte samt Werten und Formeln. Hart gesperrte Spalten (etwa vom Versuchsplaner verwaltet) lassen sich nicht entfernen. Rückgängig holt die Spalte zurück.",
+      "help": "Entfernt eine Spalte samt Werten und Formeln. Spaltenbezüge der übrigen Formeln rücken nach; ein Bezug auf die entfernte Spalte wird zu #REF!. Hart gesperrte Spalten (etwa vom Versuchsplaner verwaltet) lassen sich nicht entfernen. Rückgängig holt die Spalte zurück und stellt die Formeln wörtlich her.",
       "params": {
         "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
         "columnId": "Die id der zu entfernenden Spalte.",
@@ -136,7 +146,7 @@
       }
     },
     "moveColumn": {
-      "help": "Verschiebt eine Spalte des Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge. Formeln, die sich auf Kurznamen beziehen, werden dabei nicht umgeschrieben. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück.",
+      "help": "Verschiebt eine Spalte des Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge, und Formeln, die sich auf Kurznamen beziehen, werden so umgeschrieben, dass sie dieselben Spalten treffen. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück und stellt die Formeln wörtlich her.",
       "params": {
         "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
         "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
@@ -233,7 +243,8 @@
         "head": "Gesicherter Stand für die Umkehrung.",
         "values": "Gesicherter Stand für die Umkehrung.",
         "formulas": "Gesicherter Stand für die Umkehrung.",
-        "command": "Das Kommando als ein Objekt mit sheetId, index, head, values und formulas."
+        "otherFormulas": "Gesicherter Stand für die Umkehrung: die umgeschriebenen Formeln der übrigen Spalten, je Spalte und Zeile.",
+        "command": "Das Kommando als ein Objekt mit sheetId, index, head, values, formulas und otherFormulas."
       }
     },
     "restoreRows": {

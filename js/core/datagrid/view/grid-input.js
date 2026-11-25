@@ -75,7 +75,7 @@ let lastGridCopy = null;
  * `clipboard`); ein Merkmal ist an, solange es nicht `false` ist. Zusätzlich:
  * `stats`/`scan` (Spaltenstatistik/-scan, brauchen `dialog`) und
  * `formulaEditor` (nur bei `true`: Doppelklick auf eine Formelzelle meldet
- * `openFormulaEditor { columnId, row }` statt den Zelleneditor zu öffnen).
+ * `openFormulaEditor { columnId, row, text? }` statt den Zelleneditor zu öffnen).
  * `roles` (optional) nennt die Rollen, für die ein Kommando hinterlegt ist;
  * fehlt eine, sind ihre Tasten stumm und ihre Menüeinträge ausgeblendet.
  *
@@ -92,7 +92,7 @@ let lastGridCopy = null;
  * `setColumnType { columnId, columnType }`, `setColumnFormat { columnId, key, value }`,
  * `setColumnRole { columnId, role }`, `gridView { colWidths, selection }`,
  * `contextMenu { id, columnId, row }` (Zusatzeintrag aus `contextMenu`),
- * `openFormulaEditor { columnId, row }`.
+ * `openFormulaEditor { columnId, row, text? }`.
  *
  * Gesperrte Spalten öffnen keinen Editor; die Bedienung sendet dann am
  * Scrollbereich das DOM-Ereignis `cell:edit-blocked` bzw. `column:edit-blocked`

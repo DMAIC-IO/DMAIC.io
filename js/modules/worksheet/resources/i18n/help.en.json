@@ -48,6 +48,7 @@
             "Click a cell and type — Enter moves down, Tab moves right.",
             "Select a range and use Ctrl+C / Ctrl+V to copy or paste — also from Excel.",
             "Click a column header to change name, type, and unit.",
+            "Drag a selected block by the border of the selection to move it; formulas that point at it follow, and an overwritten target becomes #REF!.",
             "Ctrl+Z / Ctrl+Y for undo and redo."
           ]
         },

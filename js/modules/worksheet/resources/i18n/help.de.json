@@ -48,6 +48,7 @@
             "Zelle anklicken und tippen — Enter springt nach unten, Tab springt nach rechts.",
             "Bereich markieren und mit Strg+C / Strg+V kopieren bzw. einfügen — auch aus Excel.",
             "Spaltenkopf anklicken, um Name, Typ und Einheit zu ändern.",
+            "Einen markierten Block am Rand der Auswahl packen und ziehen verschiebt ihn; Formeln, die darauf zeigen, folgen mit, ein überschriebenes Ziel wird zu #REF!.",
             "Strg+Z / Strg+Y für Rückgängig und Wiederherstellen."
           ]
         },

@@ -45,6 +45,7 @@ import { sheetOf, columnIndex, requireUnlocked, copyHead, changedRun, commit } f
 export const DEFAULT_ADD_ROWS = 10;
 
 const hidden = { agentWrite: false };
+const hiddenOptional = { agentWrite: false, optional: true };
 
 // ─── Hilfen ──────────────────────────────────────────────────────
 
@@ -581,7 +582,7 @@ export const structureCommands = {
       head: object(COLUMN_SHAPE, hidden),
       values: list(cell(), hidden),
       formulas: map(text(), text(), hidden),
-      otherFormulas: map(text(), map(text(), text()), { ...hidden, optional: true }),
+      otherFormulas: map(text(), map(text(), text()), hiddenOptional),
     },
     run({ sheetId, index, head, values, formulas, otherFormulas }) {
       const sheet = sheetOf(this, sheetId);

@@ -89,6 +89,16 @@
         "command": "The command as one object with sheetId, source, target and ctrl."
       }
     },
+    "moveCells": {
+      "help": "Moves a block of cells, like dragging the border of the selection: values and formulas go to the new place, the source becomes empty, and formulas that point at the moved cells follow. An overwritten cell that is still referenced becomes #REF! there. The target is clamped into the sheet; a locked column in source or target rejects the command. One history step, undo restores everything. Returns the target block { c0, r0, c1, r1 }, or null if there was nothing to move.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "source": "The source block { c0, r0, c1, r1 }: first and last column, first and last row, all zero-based.",
+        "toCol": "The column of the top left corner of the target, zero-based.",
+        "toRow": "The row of the top left corner of the target, zero-based.",
+        "command": "The command as one object with sheetId, source, toCol and toRow."
+      }
+    },
     "clearRange": {
       "help": "Clears values and formulas of a range, like Delete in the grid. Locked columns stay unchanged. Returns the number of cells that held a value or a formula.",
       "params": {
@@ -111,7 +121,7 @@
       }
     },
     "addColumn": {
-      "help": "Adds an empty column to the sheet — at the end without a position. The agent receives the new column's id.",
+      "help": "Adds an empty column to the sheet — at the end without a position. With a position in front, the column references of formulas shift so they still hit the same columns. The agent receives the new column's id.",
       "params": {
         "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
         "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it.",
@@ -119,7 +129,7 @@
       }
     },
     "removeColumn": {
-      "help": "Removes a column with its values and formulas. Hard-locked columns (managed by the DoE planner, for example) cannot be removed. Undo brings the column back.",
+      "help": "Removes a column with its values and formulas. Column references in the remaining formulas shift up; a reference to the removed column becomes #REF!. Hard-locked columns (managed by the DoE planner, for example) cannot be removed. Undo brings the column back and restores the formulas word for word.",
       "params": {
         "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
         "columnId": "The id of the column to remove.",
@@ -136,7 +146,7 @@
       }
     },
     "moveColumn": {
-      "help": "Moves a column of the sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Formulas that refer to short names are not rewritten when columns move. Returns false if the column already is there. Undo moves it back.",
+      "help": "Moves a column of the sheet, like dragging its header; the short names (C1, C2 …) follow the new order, and formulas that refer to short names are rewritten so they still hit the same columns. Returns false if the column already is there. Undo moves it back and restores the formulas word for word.",
       "params": {
         "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
         "columnId": "The id of the column, as read().columns[].id names it.",
@@ -233,7 +243,8 @@
         "head": "Saved state for the inverse.",
         "values": "Saved state for the inverse.",
         "formulas": "Saved state for the inverse.",
-        "command": "The command as one object with sheetId, index, head, values and formulas."
+        "otherFormulas": "Saved state for the inverse: the rewritten formulas of the other columns, per column and row.",
+        "command": "The command as one object with sheetId, index, head, values, formulas and otherFormulas."
       }
     },
     "restoreRows": {
