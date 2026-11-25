@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "system": {
+      "help": "Das betrachtete System, Beschriftung System: Name oder kurze Beschreibung einer konkreten technischen Einheit, auf die sich alle drei Formulierungen beziehen. Freier Text ohne Einfluss auf eine Rechnung; ein leerer Text leert das Feld."
+    },
+    "usefulFunction": {
+      "help": "Die nützliche Funktion, die das System erfüllen soll, Beschriftung Nützliche Funktion, am besten als Tätigkeit formuliert. Freier Text ohne Einfluss auf eine Rechnung; ein leerer Text leert das Feld."
+    },
+    "harmfulEffect": {
+      "help": "Die schädliche Wirkung oder der Kompromiss, den das System heute mitbringt und den das ideale Endresultat auflösen soll, Beschriftung Schädliche Wirkung / Kompromiss. Freier Text ohne Einfluss auf eine Rechnung; ein leerer Text leert das Feld."
+    },
+    "ifr1": {
+      "help": "Die erste Stufe des idealen Endresultats: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus. Freier Text, als Zustandsaussage im Präsens; ohne Einfluss auf eine Rechnung, ein leerer Text leert das Feld."
+    },
+    "ifr2": {
+      "help": "Die zweite Stufe des idealen Endresultats: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert. Freier Text, als Zustandsaussage im Präsens; ohne Einfluss auf eine Rechnung, ein leerer Text leert das Feld."
+    },
+    "ifr3": {
+      "help": "Die dritte Stufe des idealen Endresultats: eine bereits vorhandene Ressource aus dem Supersystem übernimmt die Funktion. Freier Text, als Zustandsaussage im Präsens; ohne Einfluss auf eine Rechnung, ein leerer Text leert das Feld."
+    },
+    "obstacles": {
+      "help": "Die Hindernisse, die das System heute vom idealen Endresultat trennen — die eigentliche Aufgabenliste. Freier Text, eines je Zeile; ohne Einfluss auf eine Rechnung, ein leerer Text leert die Liste."
+    }
+  }
+}

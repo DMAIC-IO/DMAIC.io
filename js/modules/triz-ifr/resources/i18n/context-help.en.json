@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "system": {
+      "help": "The system under study, labelled System: name or short description of a concrete technical unit that all three statements refer to. Free text with no effect on any computation; an empty text clears the field."
+    },
+    "usefulFunction": {
+      "help": "The useful function the system is meant to deliver, labelled Useful function, best phrased as an activity. Free text with no effect on any computation; an empty text clears the field."
+    },
+    "harmfulEffect": {
+      "help": "The harmful effect or compromise the system carries today and that the ideal final result is meant to dissolve, labelled Harmful effect / compromise. Free text with no effect on any computation; an empty text clears the field."
+    },
+    "ifr1": {
+      "help": "The first level of the ideal final result: the system remains, the harmful effect disappears without a new mechanism. Free text, phrased as a present-tense state; no effect on any computation, an empty text clears the field."
+    },
+    "ifr2": {
+      "help": "The second level of the ideal final result: the useful function exists without the system being present at all. Free text, phrased as a present-tense state; no effect on any computation, an empty text clears the field."
+    },
+    "ifr3": {
+      "help": "The third level of the ideal final result: a resource already present in the supersystem takes over the function. Free text, phrased as a present-tense state; no effect on any computation, an empty text clears the field."
+    },
+    "obstacles": {
+      "help": "The obstacles that separate the system from the ideal final result today — the actual task list. Free text, one per line; no effect on any computation, an empty text clears the list."
+    }
+  }
+}

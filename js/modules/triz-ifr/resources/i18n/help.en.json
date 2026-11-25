@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The **Ideal Final Result** (IFR) is one of {{term:triz|TRIZ}}'s central tools: before seeking compromises, the team formulates the ideal state — the useful function is fulfilled, **the system itself disappears**, **for free**, **with no complication**, **and no harmful side-effect**. Working backwards from that ideal is far more productive than incremental improvement from the status quo."
+        },
+        {
+          "type": "paragraph",
+          "content": "Altshuller distinguishes three IFR levels — increasingly radical:"
+        },
+        {
+          "type": "definition",
+          "term": "IFR-1: The system solves the problem itself",
+          "content": "The system remains, but the harmful effect disappears without a new mechanism. \"The conveyor itself prevents jamming.\""
+        },
+        {
+          "type": "definition",
+          "term": "IFR-2: Function without the system",
+          "content": "The useful function exists without the system being present at all. \"Parts do not jam.\" The problem ceases to exist."
+        },
+        {
+          "type": "definition",
+          "term": "IFR-3: A supersystem resource performs the function",
+          "content": "A resource already present in the {{term:supersystem|supersystem}} (gravity, ambient heat, airflow …) takes over the function — for free, with no new component."
+        },
+        {
+          "type": "paragraph",
+          "content": "The module **does not generate solutions** — it forces a sharp goal formulation and a gap analysis: what blocks the IFR today? That gap is the actual {{term:problembeschreibung|problem statement}}."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Name the system clearly — a concrete technical unit, not a whole plant.",
+            "Capture the useful function — what should the system do? Use an active verb, not a noun.",
+            "State the harmful effect — what goes wrong today, or where do you compromise?",
+            "Phrase IFR-1: the system remains, but the harmful effect is eliminated by itself. Deliberately psychologically uncomfortable — that is the sign of a good IFR.",
+            "Phrase IFR-2: the problem does not exist. This level often feels \"too radical\" — and that is exactly its value, exposing hidden assumptions.",
+            "Phrase IFR-3: which resource in the supersystem could carry the function? The {{term:ressourcen-analyse|Resources Checklist}} is the natural next step here.",
+            "Gap analysis: which concrete obstacles sit between the current state and the IFR? That list becomes the actual task list for the team."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "When the system has several competing useful functions, run one IFR per function. The exercise often reveals that the functions are in conflict — that is then a case for the {{term:widerspruchsmatrix|contradiction matrix}} or the physical contradiction."
+        }
+      ]
+    },
+    "crossLinks": {
+      "title": "Relation to other TRIZ tools",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Resources Checklist** — the natural next step. IFR-3 asks for a supersystem resource; the checklist systematically inventories all 18 cells (6 categories × 3 levels).",
+            "**Contradiction Matrix / Physical Contradiction** — when IFR-1 cannot be reached because two requirements clash, formalise the clash there.",
+            "**9-Windows** — broadens the system view first. The IFR is then formulated for a specific system from the 9-Windows grid."
+          ]
+        }
+      ]
+    },
+    "references": {
+      "title": "References & further reading",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "G. S. Altshuller: \"Creativity as an Exact Science\" (1984), ARIZ chapter, step \"IFR formulation\".",
+            "D. Mann: \"Hands-On Systematic Innovation\" — chapter \"Ideality and Trends of Evolution\".",
+            "V. Souchkov: \"TRIZ Body of Knowledge\" — definition Ideal Final Result.",
+            "oxfordcreativity.co.uk — worked IFR examples."
+          ]
+        }
+      ]
+    }
+  }
+}

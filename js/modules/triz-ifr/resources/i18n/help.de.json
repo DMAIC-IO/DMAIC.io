@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das **Ideale Endresultat** (IFR — Ideal Final Result) ist eines der zentralen {{term:triz|TRIZ}}-Werkzeuge: Bevor man Kompromisse sucht, formuliert das Team den Idealzustand — die nützliche Funktion wird erfüllt, **das System selbst verschwindet**, **es entstehen keine Kosten**, **keine Komplikation**, **keine schädliche Nebenwirkung**. Von diesem Idealzustand aus rückwärts zu arbeiten ist erfahrungsgemäß ergiebiger als inkrementelle Optimierung vom Status quo."
+        },
+        {
+          "type": "paragraph",
+          "content": "Altschuller unterscheidet drei IFR-Stufen — zunehmend radikal:"
+        },
+        {
+          "type": "definition",
+          "term": "IFR-1: System löst das Problem selbst",
+          "content": "Das System bleibt erhalten, aber die schädliche Wirkung verschwindet ohne neuen Mechanismus. „Der Bandförderer verhindert das Verklemmen von selbst.“"
+        },
+        {
+          "type": "definition",
+          "term": "IFR-2: Funktion ohne System",
+          "content": "Die nützliche Funktion entsteht, ohne dass das System überhaupt existiert. „Das Material verklemmt nicht.“ Das Problem existiert nicht mehr."
+        },
+        {
+          "type": "definition",
+          "term": "IFR-3: Supersystem-Ressource erfüllt die Funktion",
+          "content": "Eine bereits vorhandene Ressource aus dem {{term:supersystem|Supersystem}} (Schwerkraft, Umgebungswärme, Luftströmung …) übernimmt die Aufgabe — kostenfrei, ohne neue Komponente."
+        },
+        {
+          "type": "paragraph",
+          "content": "Das Modul **erzeugt keine Lösungen** — es zwingt zur scharfen Formulierung des Ziels und zur Gap-Analyse: Was hindert das System heute am IFR? Diese Lücke ist die eigentliche {{term:problembeschreibung|Problemstellung}}."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "System klar benennen — eine konkrete technische Einheit, nicht ein ganzes Werk.",
+            "Nützliche Funktion festhalten — was soll das System leisten? Eine aktive Verbform, kein Substantiv.",
+            "Schädliche Wirkung benennen — was geht heute schief, oder wo wird kompromittiert?",
+            "IFR-1 formulieren: System bleibt, aber die schädliche Wirkung wird von selbst beseitigt. Bewusst psychologisch unbequem — das ist das Zeichen für einen guten IFR.",
+            "IFR-2 formulieren: Das Problem existiert nicht. Diese Stufe wirkt häufig „zu radikal“ — und ist gerade deshalb hilfreich, weil sie versteckte Annahmen entlarvt.",
+            "IFR-3 formulieren: Welche Ressource im Supersystem könnte die Funktion übernehmen? Hier hilft die {{term:ressourcen-analyse|Ressourcen-Checkliste}} als nächster Schritt.",
+            "Gap-Analyse: Welche konkreten Hindernisse stehen zwischen Ist-Zustand und IFR? Diese Liste wird zur eigentlichen Aufgabenliste für das Team."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Bei mehreren konkurrierenden nützlichen Funktionen empfiehlt sich ein eigener IFR pro Funktion. Häufig zeigt sich dabei, dass die Funktionen miteinander im Konflikt stehen — das ist dann ein Fall für die {{term:widerspruchsmatrix|Widerspruchsmatrix}} oder den physikalischen Widerspruch."
+        }
+      ]
+    },
+    "crossLinks": {
+      "title": "Bezug zu anderen TRIZ-Werkzeugen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Ressourcen-Checkliste** — der natürliche nächste Schritt. IFR-3 fragt nach einer Supersystem-Ressource; die Checkliste inventarisiert systematisch alle 18 Felder (6 Kategorien × 3 Ebenen).",
+            "**Widerspruchsmatrix / Physikalischer Widerspruch** — wenn IFR-1 nicht erreichbar ist, weil zwei Anforderungen sich widersprechen, formalisiere den Widerspruch dort.",
+            "**9-Fenster-Werkzeug** — weitet zuerst den Systemblick. Der IFR wird dann für ein konkretes System aus dem 9-Fenster-Raster formuliert."
+          ]
+        }
+      ]
+    },
+    "references": {
+      "title": "Quellen & Weiterlesen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "G. S. Altschuller: „Erfinden — Wege zur Lösung technischer Probleme“ (1973, dt. 1984), Kapitel ARIZ — Schritt „IFR-Formulierung“.",
+            "D. Mann: „Hands-On Systematic Innovation“ — Kapitel „Ideality and Trends of Evolution“.",
+            "V. Souchkov: „TRIZ Body of Knowledge“ — Definition Ideal Final Result.",
+            "oxfordcreativity.co.uk — Praxisbeispiele zur IFR-Formulierung."
+          ]
+        }
+      ]
+    }
+  }
+}
