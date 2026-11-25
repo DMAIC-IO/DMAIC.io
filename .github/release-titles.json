@@ -134,5 +134,9 @@
   "1.9.4": {
     "de": "Fehlerbalken aus Spalten als Abstände oder Endpunkte, mitscrollendes Datenblatt beim Ziehen",
     "en": "Error bars from columns as distances or end points, worksheet scrolls along while dragging"
+  },
+  "1.9.5": {
+    "de": "Zellblöcke per Drag & Drop verschieben, Diagramme folgen jeder Datenblatt-Änderung sofort",
+    "en": "Move cell blocks by drag and drop, charts follow every worksheet edit right away"
   }
 }
