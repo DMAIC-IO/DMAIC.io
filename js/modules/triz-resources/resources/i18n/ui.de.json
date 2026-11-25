@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Ressourcen-Checkliste (TRIZ)",
+  "description": "Systematische Inventarisierung von Stoffen, Feldern, Raum, Zeit, Information und Funktionen",
+  "whenToUse": "Wenn vor der Lösungssuche aufgenommen werden soll, was im System und seiner Umgebung schon vorhanden ist und nichts kostet — nicht, um Lösungen zu bewerten oder Widersprüche aufzulösen.",
+  "systemLabel": "System",
+  "systemPlaceholder": "z. B. Bandförderer für loses Schüttgut",
+  "gridAriaLabel": "Ressourcen-Raster",
+  "cornerTipRows": "Kategorie",
+  "cornerTipCols": "Ebene",
+  "legendUnknown": "Status: unbekannt",
+  "legendUnused": "ungenutzt",
+  "legendPartial": "tlw. genutzt",
+  "legendFull": "voll genutzt",
+  "legendHint": "Klick zum Wechseln.",
+  "level": {
+    "sub": "Subsystem",
+    "sys": "System",
+    "super": "Supersystem"
+  },
+  "status": {
+    "unknown": "unbekannt — noch nicht untersucht",
+    "unused": "ungenutzt — vorhanden, aber unverwendet",
+    "partial": "teilweise genutzt",
+    "full": "voll genutzt"
+  },
+  "category": {
+    "substance": {
+      "name": "Stoffe",
+      "prompt": "Materialien, Bauteile, Abfall, Nebenprodukte, Atmosphäre, Verunreinigungen …"
+    },
+    "field": {
+      "name": "Felder",
+      "prompt": "Mechanisch, thermisch, chemisch, elektrisch, magnetisch, akustisch, optisch, gravitativ …"
+    },
+    "space": {
+      "name": "Raum",
+      "prompt": "Ungenutzte Volumina, Oberflächen, Spalte, Hohlräume, Kontaktflächen …"
+    },
+    "time": {
+      "name": "Zeit",
+      "prompt": "Leerlaufphasen, Übergänge, Pausen zwischen Zyklen, Vor-/Nachlaufzeiten …"
+    },
+    "info": {
+      "name": "Information",
+      "prompt": "Sensorsignale, Indikatoren, natürlich anfallende Daten, Nebenprodukt-Informationen …"
+    },
+    "function": {
+      "name": "Funktion / Energie",
+      "prompt": "Bestehende Funktionen für Doppelnutzung; Energie, die ohnehin durch das System fließt …"
+    }
+  }
+}

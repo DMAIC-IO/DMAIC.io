@@ -215,6 +215,7 @@ const SKIP = new Set([
   'modules/control-chart-view.test.js',
   'modules/triz-ifr-view.test.js',
   'modules/triz-evolution-trends-view.test.js',
+  'modules/triz-resources-view.test.js',
   'modules/heatmap-view.test.js',
   'modules/process-capability-view.test.js',
   'modules/data-import/viewmodel.test.js',

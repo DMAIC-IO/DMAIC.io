@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "system": {
+      "help": "The system under study, labelled System: name or short description of the technical unit whose resources are being inventoried. Free text with no effect on any computation; an empty text clears the field."
+    },
+    "cells": {
+      "help": "The resource grid: six categories as rows — substance (Substances), field (Fields), space (Space), time (Time), info (Information) and function (Function / energy) — by three system levels as columns — sub (Subsystem), sys (System) and super (Supersystem). Each of the 18 fields holds a note and a fill level. The grid is written as a whole with all 18 fields.",
+      "notes": {
+        "help": "The note on the field: which resource of this category exists on this level. Free text with no effect on any computation; an empty text clears the note."
+      },
+      "status": {
+        "help": "The fill level of the field, how far the resource is used today: unknown (not yet investigated), unused (present but not exploited), partial (partly used) or full (fully used). Any other value is rejected."
+      }
+    }
+  },
+  "actions": {
+    "cycleStatus": {
+      "help": "Advances the fill level of a field by one step, in the interface by clicking the round status button at the top right of the field: unknown, unused, partly used, fully used, then back to unknown. For a specific fill level there is an action that sets it directly.",
+      "params": {
+        "catKey": "The resource category, given by its key: substance (Substances), field (Fields), space (Space), time (Time), info (Information) or function (Function / energy). Any other key is rejected.",
+        "lvlKey": "The system level, given by its key: sub (Subsystem), sys (System) or super (Supersystem). Any other key is rejected.",
+        "command": "The command as one object with catKey and lvlKey."
+      }
+    },
+    "setCellStatus": {
+      "help": "Sets the fill level of a field directly to a specific value: how far this resource is used today. In the interface the status button advances the fill level instead.",
+      "params": {
+        "catKey": "The resource category, given by its key: substance (Substances), field (Fields), space (Space), time (Time), info (Information) or function (Function / energy). Any other key is rejected.",
+        "lvlKey": "The system level, given by its key: sub (Subsystem), sys (System) or super (Supersystem). Any other key is rejected.",
+        "status": "The new fill level: unknown (not yet investigated), unused (present but not exploited), partial (partly used) or full (fully used). Any other value is rejected and leaves the state unchanged.",
+        "command": "The command as one object with catKey, lvlKey and status."
+      }
+    }
+  }
+}

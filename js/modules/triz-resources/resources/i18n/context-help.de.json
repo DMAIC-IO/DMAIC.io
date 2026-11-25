@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "system": {
+      "help": "Das betrachtete System, Beschriftung System: Name oder kurze Beschreibung der technischen Einheit, deren Ressourcen aufgenommen werden. Freier Text ohne Einfluss auf eine Rechnung; ein leerer Text leert das Feld."
+    },
+    "cells": {
+      "help": "Das Raster der Ressourcen: sechs Kategorien als Zeilen — substance (Stoffe), field (Felder), space (Raum), time (Zeit), info (Information) und function (Funktion / Energie) — mal drei Systemebenen als Spalten — sub (Subsystem), sys (System) und super (Supersystem). Jedes der 18 Felder hält eine Notiz und einen Füllstand. Geschrieben wird das Raster als Ganzes mit allen 18 Feldern.",
+      "notes": {
+        "help": "Die Notiz zum Feld: welche Ressource dieser Kategorie auf dieser Ebene vorhanden ist. Freier Text ohne Einfluss auf eine Rechnung; ein leerer Text leert die Notiz."
+      },
+      "status": {
+        "help": "Der Füllstand des Felds, wie weit die Ressource heute genutzt wird: unknown (unbekannt, noch nicht untersucht), unused (vorhanden, aber ungenutzt), partial (teilweise genutzt) oder full (voll genutzt). Ein anderer Wert wird abgelehnt."
+      }
+    }
+  },
+  "actions": {
+    "cycleStatus": {
+      "help": "Schaltet den Füllstand eines Felds einen Schritt weiter, in der Oberfläche durch Klick auf den runden Statusknopf oben rechts im Feld: unbekannt, ungenutzt, teilweise genutzt, voll genutzt, danach wieder unbekannt. Für einen bestimmten Füllstand gibt es die Aktion zum direkten Setzen.",
+      "params": {
+        "catKey": "Die Ressourcenkategorie, angegeben über ihren Schlüssel: substance (Stoffe), field (Felder), space (Raum), time (Zeit), info (Information) oder function (Funktion / Energie). Ein anderer Schlüssel wird abgelehnt.",
+        "lvlKey": "Die Systemebene, angegeben über ihren Schlüssel: sub (Subsystem), sys (System) oder super (Supersystem). Ein anderer Schlüssel wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit catKey und lvlKey."
+      }
+    },
+    "setCellStatus": {
+      "help": "Setzt den Füllstand eines Felds direkt auf einen bestimmten Wert: wie weit diese Ressource heute genutzt wird. In der Oberfläche schaltet der Statusknopf den Füllstand stattdessen weiter.",
+      "params": {
+        "catKey": "Die Ressourcenkategorie, angegeben über ihren Schlüssel: substance (Stoffe), field (Felder), space (Raum), time (Zeit), info (Information) oder function (Funktion / Energie). Ein anderer Schlüssel wird abgelehnt.",
+        "lvlKey": "Die Systemebene, angegeben über ihren Schlüssel: sub (Subsystem), sys (System) oder super (Supersystem). Ein anderer Schlüssel wird abgelehnt.",
+        "status": "Der neue Füllstand: unknown (unbekannt, noch nicht untersucht), unused (vorhanden, aber ungenutzt), partial (teilweise genutzt) oder full (voll genutzt). Ein anderer Wert wird abgelehnt und lässt den Stand unverändert.",
+        "command": "Das Kommando als ein Objekt mit catKey, lvlKey und status."
+      }
+    }
+  }
+}

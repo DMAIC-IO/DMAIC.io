@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Resources Checklist (TRIZ)",
+  "description": "Systematic inventory of substances, fields, space, time, information and functions",
+  "whenToUse": "When you want to inventory what the system and its environment already provide at no cost, before searching for solutions — not to judge solutions or resolve contradictions.",
+  "systemLabel": "System",
+  "systemPlaceholder": "e.g. belt conveyor for bulk solids",
+  "gridAriaLabel": "Resources grid",
+  "cornerTipRows": "Category",
+  "cornerTipCols": "level",
+  "legendUnknown": "Status: unknown",
+  "legendUnused": "unused",
+  "legendPartial": "partly used",
+  "legendFull": "fully used",
+  "legendHint": "click to cycle.",
+  "level": {
+    "sub": "Subsystem",
+    "sys": "System",
+    "super": "Supersystem"
+  },
+  "status": {
+    "unknown": "unknown — not yet investigated",
+    "unused": "unused — present but not exploited",
+    "partial": "partly used",
+    "full": "fully used"
+  },
+  "category": {
+    "substance": {
+      "name": "Substances",
+      "prompt": "Materials, parts, waste, by-products, atmosphere, contaminants …"
+    },
+    "field": {
+      "name": "Fields",
+      "prompt": "Mechanical, thermal, chemical, electrical, magnetic, acoustic, optical, gravitational …"
+    },
+    "space": {
+      "name": "Space",
+      "prompt": "Unused volumes, surfaces, gaps, cavities, contact regions …"
+    },
+    "time": {
+      "name": "Time",
+      "prompt": "Idle phases, transitions, pauses between cycles, lead/lag windows …"
+    },
+    "info": {
+      "name": "Information",
+      "prompt": "Sensor signals, indicators, naturally occurring data, by-product information …"
+    },
+    "function": {
+      "name": "Function / energy",
+      "prompt": "Existing functions usable for double duty; energy already flowing through the system …"
+    }
+  }
+}
