@@ -19,7 +19,8 @@
       "help": "Wählt die erreichte Stufe eines Trends, in der Oberfläche durch Klick auf eine Stufe der Karte oder mit den Pfeiltasten. Ein Klick auf die schon gewählte Stufe ändert nichts.",
       "params": {
         "trendId": "Der Trend, angegeben über seinen Schlüssel: aggregation (Aggregation), dynamism (Dynamisierung), scale (Skala), automation (Automatisierung), completeness (Vollständigkeit), controllability (Steuerbarkeit), matching (Anpassung an die Nische) oder uneven (Ungleichmäßige Entwicklung). Ein anderer Schlüssel wird abgelehnt.",
-        "stage": "Die erreichte Stufe, von 0 an gezählt (die erste Stufe ist 0); -1 nimmt die Einordnung zurück. Die Dynamisierung hat fünf Stufen (0 bis 4), die übrigen sechs Trends mit Leiter je vier (0 bis 3). Die ungleichmäßige Entwicklung hat keine Stufen und nimmt nur -1 an; jede Stufe außerhalb der Leiter wird abgelehnt und lässt den Stand unverändert."
+        "stage": "Die erreichte Stufe, von 0 an gezählt (die erste Stufe ist 0); -1 nimmt die Einordnung zurück. Die Dynamisierung hat fünf Stufen (0 bis 4), die übrigen sechs Trends mit Leiter je vier (0 bis 3). Die ungleichmäßige Entwicklung hat keine Stufen und nimmt nur -1 an; jede Stufe außerhalb der Leiter wird abgelehnt und lässt den Stand unverändert.",
+        "command": "Das Kommando als ein Objekt mit trendId und stage."
       }
     }
   }

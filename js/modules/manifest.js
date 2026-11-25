@@ -383,14 +383,6 @@ export default [
     },
   },
   {
-    id: 'triz-evolution-trends',
-    phase: 'improve',
-    load: () => import('./triz-evolution-trends/triz-evolution-trends.js'),
-    cycles: {
-      eightd: { phase: 'corrective' },
-    },
-  },
-  {
     id: 'triz-sufield',
     phase: 'improve',
     load: () => import('./triz-sufield/triz-sufield.js'),

@@ -19,7 +19,8 @@
       "help": "Chooses the stage a trend has reached, in the interface by clicking a stage on the card or with the arrow keys. Clicking the stage already chosen changes nothing.",
       "params": {
         "trendId": "The trend, given by its key: aggregation (Aggregation), dynamism (Dynamism), scale (Scale), automation (Automation), completeness (Completeness), controllability (Controllability), matching (Niche matching) or uneven (Uneven development). Any other key is rejected.",
-        "stage": "The stage reached, counted from 0 (the first stage is 0); -1 clears the placement. Dynamism has five stages (0 to 4), the other six trends with a ladder four each (0 to 3). Uneven development has no stages and only takes -1; any stage outside the ladder is rejected and leaves the state unchanged."
+        "stage": "The stage reached, counted from 0 (the first stage is 0); -1 clears the placement. Dynamism has five stages (0 to 4), the other six trends with a ladder four each (0 to 3). Uneven development has no stages and only takes -1; any stage outside the ladder is rejected and leaves the state unchanged.",
+        "command": "The command as one object with trendId and stage."
       }
     }
   }

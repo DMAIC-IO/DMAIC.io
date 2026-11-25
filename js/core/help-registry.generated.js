@@ -29,12 +29,11 @@ import h26 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
 import h27 from '../modules/todo/todo-help.js';
 import h28 from '../modules/triz-9-windows/triz-9-windows-help.js';
 import h29 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
-import h30 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h31 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h32 from '../modules/triz-resources/triz-resources-help.js';
-import h33 from '../modules/triz-sufield/triz-sufield-help.js';
-import h34 from '../modules/unit-converter/unit-converter-help.js';
-import h35 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h30 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h31 from '../modules/triz-resources/triz-resources-help.js';
+import h32 from '../modules/triz-sufield/triz-sufield-help.js';
+import h33 from '../modules/unit-converter/unit-converter-help.js';
+import h34 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -67,10 +66,9 @@ export const HELP = {
   "todo": h27,
   "triz-9-windows": h28,
   "triz-contradiction-matrix": h29,
-  "triz-evolution-trends": h30,
-  "triz-physical-contradiction": h31,
-  "triz-resources": h32,
-  "triz-sufield": h33,
-  "unit-converter": h34,
-  "voc-ctx-tree": h35,
+  "triz-physical-contradiction": h30,
+  "triz-resources": h31,
+  "triz-sufield": h32,
+  "unit-converter": h33,
+  "voc-ctx-tree": h34,
 };

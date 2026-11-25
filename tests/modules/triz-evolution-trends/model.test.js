@@ -3,7 +3,8 @@
  * Vorgaben, gespeicherte Stände '1.0' ohne Migrationsschritt (zeichengleich
  * zurück), Stände ohne `_schema` über '0→1.0', die Invariante `stageInScale`
  * beim Laden und Schreiben, das Kommando `setTrendStage`, Versionsprüfung,
- * Reparatur unlesbarer Stände, `hasContent` und das Beispiel am bisherigen Ort.
+ * Reparatur unlesbarer Stände und `hasContent`. Das Beispiel prüft
+ * examples.test.js.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/triz-evolution-trends/domain/model.js';
@@ -282,24 +283,5 @@ suite('triz-evolution-trends Model — hasContent', () => {
     const m = new State();
     m.setTrendStage({ trendId: 'aggregation', stage: -1 });
     assertEqual(m.hasContent(), false);
-  });
-});
-
-suite('triz-evolution-trends Model — Beispiel am bisherigen Ort', () => {
-  test('pkw-beleuchtung (ohne _schema, uneven ohne Stufe) lädt über 0→1.0', async () => {
-    const url = new URL('../../../examples/projects/triz-evolution-trends-pkw-beleuchtung.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch example: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file._schema, undefined);
-    assertEqual(Object.hasOwn(file.trends.uneven, 'stage'), false);
-    const { m, fields } = repaired(file);
-    assertDeepEqual(fields, []);
-    assertEqual(m.system, file.system);
-    assertDeepEqual(IDS.map((id) => m.trends[id].stage), [2, 1, 1, 2, 3, 2, 1, -1]);
-    for (const id of IDS) assertEqual(m.trends[id].notes, file.trends[id].notes, id);
-    const withStage = plain(file);
-    withStage.trends.uneven = { stage: -1, notes: file.trends.uneven.notes };
-    assertEqual(JSON.stringify(m.toJSON()), JSON.stringify({ ...SCHEMA, ...withStage }));
   });
 });

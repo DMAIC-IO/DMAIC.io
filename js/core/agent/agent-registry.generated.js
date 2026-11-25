@@ -19948,6 +19948,7 @@ export const AGENT_REGISTRY = {
   "triz-evolution-trends": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -19957,73 +19958,59 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "setSystem": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "Name oder kurze Beschreibung des Systems"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt das betrachtete System, dessen Entwicklung eingeordnet wird."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setTrendStage": {
+        "target": "model",
         "params": [
           {
-            "name": "trendId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Trends"
-          },
-          {
-            "name": "stage",
-            "type": "number",
-            "optional": false,
-            "help": "die Stufe, 0-basiert; `-1` nimmt die Einordnung zurück"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Setzt die erreichte Stufe eines Trends."
-      },
-      "setTrendNotes": {
-        "params": [
-          {
-            "name": "trendId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Trends"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Notiz"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Notiz eines Trends — was die Einordnung für dieses System konkret bedeutet."
+        "help": "",
+        "keysOf": "setTrendStage",
+        "keysHelp": "actions.setTrendStage.params",
+        "keys": {
+          "trendId": {
+            "type": "'aggregation'|'dynamism'|'scale'|'automation'|'completeness'|'controllability'|'matching'|'uneven'",
+            "help": ""
+          },
+          "stage": {
+            "type": "number",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "system": {
         "type": "string",
-        "help": "das betrachtete System, dessen Entwicklung eingeordnet wird",
+        "help": "",
         "bulk": false
       },
       "trends": {
-        "type": "Record<string, {stage: number, notes: string}>",
-        "help": "die acht Trends, nach ihrer id adressiert (aggregation, dynamism, scale, automation, completeness, controllability, matching, uneven). Jeder Eintrag trägt `stage` (die erreichte Stufe, 0-basiert; -1 heißt „keine gewählt\") und `notes`. `uneven` ist qualitativ und hat keine Stufenskala.",
+        "type": "Record<'aggregation'|'dynamism'|'scale'|'automation'|'completeness'|'controllability'|'matching'|'uneven', { stage: number, notes: string }>",
+        "help": "",
         "bulk": false
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "system",
+      "trends"
+    ],
+    "invariants": [
+      "stageInScale"
+    ]
   },
   "triz-function-analysis": {
     "tagged": true,

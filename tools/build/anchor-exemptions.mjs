@@ -148,9 +148,6 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'triz-cm__mx-col-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },
     { match: 'triz-cm__mx-row-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },
   ],
-  'triz-evolution-trends': [
-    { match: 'class="triz-evo__stage"', reason: 'Stufe je Trend (Optionsfeld je Stufe); der Trend selbst ist beschrieben', count: 1 },
-  ],
   'triz-sufield': [
     { match: 'triz-sf__standard-select', reason: 'Kästchen je Standardlösung (78), in aufklappbaren Klassen', count: 1 },
     { match: 'triz-sf__filter-label', reason: 'Optionsfeld-Paar: nur das letzte trägt den Anker (ein Kreis je Gruppe)', count: 1 },

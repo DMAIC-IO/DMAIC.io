@@ -1,4 +1,5 @@
 {
+  "_schema": { "name": "triz-evolution-trends", "version": "1.0" },
   "system": "Pkw-Beleuchtung (Hauptscheinwerfer)",
   "trends": {
     "aggregation": {
@@ -30,6 +31,7 @@
       "notes": "Einstellbar (Höhenkorrektur, Fahrmodus). Nächste Stufe: individuelle Lichtsignatur pro Fahrer, dann selbstadaptierend an Sehprofil."
     },
     "uneven": {
+      "stage": -1,
       "notes": "Das Bordnetz (12 V-Architektur) ist auf Stand von 1980 — limitiert Leistung und Schaltgeschwindigkeit moderner LED-Matrix-Systeme."
     }
   }

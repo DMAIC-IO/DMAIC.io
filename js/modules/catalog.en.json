@@ -185,6 +185,11 @@
     "description": "I-MR with Box-Cox transform for non-normal data",
     "whenToUse": "Control-chart skewed, strictly positive data: a Box-Cox transformation makes them near-normal before I-MR limits are computed."
   },
+  "triz-evolution-trends": {
+    "name": "Trends of Technical Evolution (TRIZ)",
+    "description": "Eight classical evolution trajectories — locate the system and identify the next stage jump",
+    "whenToUse": "When the question is where a system sits on the classical evolution trajectories and which stage jump comes next — not to resolve a specific contradiction or pick a variant."
+  },
   "triz-function-analysis": {
     "name": "Function Analysis (TRIZ)",
     "description": "Components, interactions and function model – the starting point for the other TRIZ tools",

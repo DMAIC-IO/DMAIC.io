@@ -185,6 +185,11 @@
     "description": "I-MR mit Box-Cox-Transformation für nicht-normale Daten",
     "whenToUse": "Schiefe, streng positive Daten in einer Regelkarte überwachen: eine Box-Cox-Transformation macht sie annähernd normal, bevor die I-MR-Grenzen gerechnet werden."
   },
+  "triz-evolution-trends": {
+    "name": "Trends der technischen Evolution (TRIZ)",
+    "description": "Acht klassische Evolutionslinien — verorte das System und identifiziere den nächsten Stufensprung",
+    "whenToUse": "Wenn gefragt ist, wo ein System auf den klassischen Entwicklungslinien steht und welcher Stufensprung als nächster ansteht — nicht, um einen konkreten Widerspruch zu lösen oder eine Variante auszuwählen."
+  },
   "triz-function-analysis": {
     "name": "Funktionsanalyse (TRIZ)",
     "description": "Komponenten, Interaktionen und Funktionsmodell – Ausgangspunkt für die übrigen TRIZ-Werkzeuge",
