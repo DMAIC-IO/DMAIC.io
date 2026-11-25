@@ -126,5 +126,21 @@
   "1.9.2": {
     "de": "Prozent- und Währungsspalten im XY-Plot, korrigierte Spaltenrolle im Datenblatt",
     "en": "Percent and currency columns in the XY plot, corrected column role in the worksheet"
+  },
+  "1.9.3": {
+    "de": "Feste Bezüge mit $ in Formeln, Legenden-Abschnitt im Diagramm-Editor",
+    "en": "Absolute references with $ in formulas, legend section in the chart editor"
+  },
+  "1.9.4": {
+    "de": "Fehlerbalken aus Spalten als Abstände oder Endpunkte, mitscrollendes Datenblatt beim Ziehen",
+    "en": "Error bars from columns as distances or end points, worksheet scrolls along while dragging"
+  },
+  "1.9.5": {
+    "de": "Zellblöcke per Drag & Drop verschieben, Diagramme folgen jeder Datenblatt-Änderung sofort",
+    "en": "Move cell blocks by drag and drop, charts follow every worksheet edit right away"
+  },
+  "1.9.6": {
+    "de": "Referenzlinien und -flächen in XY-Plot und Wahrscheinlichkeitsnetz bleiben gespeichert",
+    "en": "Reference lines and areas in XY plot and probability plot are saved again"
   }
 }

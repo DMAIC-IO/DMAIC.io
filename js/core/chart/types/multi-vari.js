@@ -37,6 +37,9 @@ const SERIES_SYMBOLS = ['circle', 'square', 'diamond', 'triangle', 'triangle-dow
 const BAND_H = 20;
 
 export default class MultiVariChartType extends ChartBase {
+  /** Chart-level settings the editor writes (persisted for module charts). */
+  static editorKeys = [...ChartBase.editorKeys, 'pointSize', 'pointStrokeWidth'];
+
   constructor(container, config, context) {
     const defaults = {
       /** @type {Array<{panelLevel: string, groups: Array<object>}>} one strip */

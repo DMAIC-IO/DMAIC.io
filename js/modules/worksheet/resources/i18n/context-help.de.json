@@ -48,7 +48,7 @@
         "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
         "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
         "row": "Nullbasierter Zeilenindex; die Zeilenzahl hängt eine Zeile an.",
-        "formula": "Formeltext mit führendem =, etwa =C1[2]*2 (Spalte 1, Zeile 2, beide ab 1 gezählt). Werte ohne = schreibt setCells.",
+        "formula": "Formeltext mit führendem =, etwa =C1[2]*2 (Spalte 1, Zeile 2, beide ab 1 gezählt). Ein $ hält beim Ziehen der Formel einen Teil des Bezugs fest, wie in Excel: $C1[2] die Spalte, C1[$2] die Zeile, $C1[$2] beides. Werte ohne = schreibt setCells.",
         "command": "Das Kommando als ein Objekt mit sheetId, columnId, row und formula."
       }
     },

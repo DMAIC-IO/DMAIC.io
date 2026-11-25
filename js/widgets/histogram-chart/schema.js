@@ -9,8 +9,11 @@ export default chartWidget({
   name: 'histogram-chart',
   type: 'histogram',
   keys: {
-    data: list(number(), opt), bins: list(object({ x0: number(), x1: number(), count: number() }), opt), showNormalCurve: boolean(opt), normalCurveColor: text(opt), orientation: oneOf(['vertical', 'horizontal'], opt), barColor: text(opt), binWidth: number({ ...opt, nullable: true, exclusiveMin: 0 }),
-    barGap: number({ ...ed, min: 0 }), pareto: boolean(ed), boxplotStrip: boolean(ed),
+    data: list(number(), opt), bins: list(object({ x0: number(), x1: number(), count: number() }), opt),
+    orientation: oneOf(['vertical', 'horizontal'], opt), binWidth: number({ ...opt, nullable: true, exclusiveMin: 0 }),
+    binMethod: oneOf(['sturges', 'scott', 'freedman-diaconis', 'manual'], ed), binCount: number({ ...ed, nullable: true, integer: true, min: 1 }),
+    showNormalCurve: boolean(ed), pareto: boolean(ed), boxplotStrip: boolean(ed), barGap: number({ ...ed, min: 0 }),
+    barColor: text({ ...ed, nullable: true }), barBorderColor: text({ ...ed, nullable: true }), normalCurveColor: text({ ...ed, nullable: true }),
   },
   series: {
     name: text(), values: list(number()),

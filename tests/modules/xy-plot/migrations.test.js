@@ -120,6 +120,11 @@ suite('xy-plot: Migration der Fehlerbalken (1.9.x → 1.1)', () => {
     assertDeepEqual(errorBarsFrom({ mode: 'columns', yPlus: 3 }), { mode: 'columns', columns: {} });
   });
 
+  test('errorBarsFrom: columnsAbsolute behält Spaltenbezüge, Zahlen fallen weg', () => {
+    assertDeepEqual(errorBarsFrom({ mode: 'columnsAbsolute', xPlus: null, xMinus: null, yPlus: ref('e'), yMinus: 3 }),
+      { mode: 'columnsAbsolute', columnsAbsolute: { yPlus: ref('e') } });
+  });
+
   test("'1.0→1.1' setzt none in jede Zeile", () => {
     assertDeepEqual(from10({ datasets: [{ x: null, y: null, group: null, size: null }] }).datasets[0].errorBars, NONE);
     const m = loadModel(State, { _schema: { name: 'xy-plot', version: '1.0' }, datasets: [{ x: ref('a'), y: ref('b'), group: null, size: null }] });

@@ -49,7 +49,7 @@ export function kanoScatterConfig(rows, { importance, sizeLabel }) {
   });
   return {
     series,
-    refLines: [
+    moduleRefLines: [
       { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
       { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
     ],

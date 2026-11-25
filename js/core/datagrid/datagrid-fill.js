@@ -22,16 +22,21 @@ import { isIsoDate, looksLikeIsoDate } from '../local-date.js';
  *   'Name'     → bare named column reference
  *   C2[5]:C2[9]   → range
  *   'Name'[5]:'Name'[9]
+ *
+ * Absolute markers (Excel's `$C$1`): a `$` pins the part it precedes.
+ *   $C2[5]  → column pinned     C2[$5]     → row pinned
+ *   $C2[$5] → both pinned       $C2        → bare column pinned
+ *   'Name'[$5] → row pinned
  */
 
-const RE_CELL_REF      = /(C(\d+))\[(\d+)\]/gi;          // C2[5]
-const RE_NAMED_REF     = /('(?:[^'\\]|\\.)+')\[(\d+)\]/g; // 'Name'[5]
-const RE_BARE_COL_REF  = /(?<![A-Za-z'])C(\d+)(?!\[)/gi;  // C2 not followed by [
+const RE_CELL_REF      = /(\$?)C(\d+)\[(\$?)(\d+)\]/gi;              // C2[5], $C2[$5]
+const RE_NAMED_REF     = /('(?:[^'\\]|\\.)+')\[(\$?)(\d+)\]/g;       // 'Name'[5], 'Name'[$5]
+const RE_BARE_COL_REF  = /(?<![A-Za-z'\d])(\$?)C(\d+)(?![\d[])/gi;   // C2 / $C2 not followed by [
 // Note: bare `'Name'` references are deliberately NOT shifted on horizontal
 // fills — there's no unambiguous way to map a name to a sibling column.
 
 /**
- * Shift relative references in a formula string.
+ * Shift relative references in a formula string; parts pinned with `$` stay.
  * @param {string} formula — original formula starting with '='
  * @param {number} dRow — row offset (positive = down)
  * @param {number} dCol — column offset (positive = right)
@@ -43,23 +48,23 @@ export function shiftFormulaRefs(formula, dRow, dCol, maxCols) {
   let out = formula;
 
   // C2[5] → adjust column index (1-based) and row index (1-based)
-  out = out.replace(RE_CELL_REF, (_m, _full, colStr, rowStr) => {
-    const newCol = clampCol(parseInt(colStr) + dCol, maxCols);
-    const newRow = Math.max(1, parseInt(rowStr) + dRow);
-    return `C${newCol}[${newRow}]`;
+  out = out.replace(RE_CELL_REF, (_m, colPin, colStr, rowPin, rowStr) => {
+    const newCol = colPin ? colStr : clampCol(parseInt(colStr) + dCol, maxCols);
+    const newRow = rowPin ? rowStr : Math.max(1, parseInt(rowStr) + dRow);
+    return `${colPin}C${newCol}[${rowPin}${newRow}]`;
   });
 
   // 'Name'[5] → row only (column name follows the name, not the position)
-  out = out.replace(RE_NAMED_REF, (_m, namePart, rowStr) => {
-    const newRow = Math.max(1, parseInt(rowStr) + dRow);
-    return `${namePart}[${newRow}]`;
+  out = out.replace(RE_NAMED_REF, (_m, namePart, rowPin, rowStr) => {
+    const newRow = rowPin ? rowStr : Math.max(1, parseInt(rowStr) + dRow);
+    return `${namePart}[${rowPin}${newRow}]`;
   });
 
   // Bare C2 → column shift only (used in range syntax like C2:C5)
   if (dCol !== 0) {
-    out = out.replace(RE_BARE_COL_REF, (_m, colStr) => {
-      const newCol = clampCol(parseInt(colStr) + dCol, maxCols);
-      return `C${newCol}`;
+    out = out.replace(RE_BARE_COL_REF, (m, colPin, colStr) => {
+      if (colPin) return m;
+      return `C${clampCol(parseInt(colStr) + dCol, maxCols)}`;
     });
   }
 

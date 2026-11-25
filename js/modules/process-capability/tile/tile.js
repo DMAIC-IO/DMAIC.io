@@ -82,7 +82,7 @@ export default createTile({
           showNormalCurve: true,
           barColor: 'var(--color-accent)',
           normalCurveColor: 'var(--color-info)',
-          refLines: specRefLines(r, (key) => ctx.i18n.t(key)),
+          moduleRefLines: specRefLines(r, (key) => ctx.i18n.t(key)),
           xLabel: this.t('histogramXLabel'),
           yLabel: this.t('histogramYLabel'),
           showTitle: false, showXLabel: false, showYLabel: false,

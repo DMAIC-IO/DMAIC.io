@@ -54,6 +54,7 @@
   "feRefCell": "Single cell",
   "feRefRange": "Column range (all rows)",
   "feRefCellRange": "Rectangular range",
+  "feRefAbsolute": "$ keeps the column, the row or both fixed when the formula is dragged (as in Excel)",
   "feRefExampleName": "Value",
   "feRefSep": "Separate arguments with semicolons",
   "feRefYes": "yes",

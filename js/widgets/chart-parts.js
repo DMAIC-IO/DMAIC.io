@@ -36,8 +36,11 @@ export const BASE = Object.freeze({
   showXLabel: boolean(ed), showYLabel: boolean(ed), showLegend: boolean(ed),
   titleSize: number({ ...ed, min: 6, max: 48 }), labelSize: number({ ...ed, min: 6, max: 48 }), tickSize: number({ ...ed, min: 6, max: 48 }),
   legendSize: number({ ...ed, min: 6, max: 48 }),
-  showXTicks: boolean(ed), showYTicks: boolean(ed), bgColor: text({ ...ed, nullable: true }),
+  showXTicks: boolean(ed), showYTicks: boolean(ed), showXGrid: boolean(ed), showYGrid: boolean(ed), bgColor: text({ ...ed, nullable: true }),
   refLines: list(REF_LINE, ed), refAreas: list(REF_AREA, ed),
+  // Vom Modul berechnete Linien/Bereiche: gezeichnet vor denen des Editors,
+  // nicht im Editor, nicht gespeichert (ChartBase._allRefLines).
+  moduleRefLines: list(REF_LINE, opt), moduleRefAreas: list(REF_AREA, opt),
   axisRange: AXIS_RANGE,
   chartWidth: number({ ...ed, nullable: true, min: 100, max: 4000 }), chartHeight: number({ ...ed, nullable: true, min: 100, max: 4000 }),
   sizeExportOnly: boolean(ed), legendOrder: list(text(), ed),

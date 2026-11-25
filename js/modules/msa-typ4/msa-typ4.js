@@ -573,7 +573,7 @@ const mod = createModule({
               },
             },
           ],
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: 0, label: '0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
           ],
         });
@@ -606,7 +606,7 @@ const mod = createModule({
               symbol: 'circle', strokeWidth: 1.5,
             },
           ],
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: 0,  label: '0',    dash: 'dash', width: 1,   color: 'var(--color-text-secondary)' },
             { dir: 'h', value: 5,  label: '+5 %', dash: 'dot',  width: 1.2, color: 'var(--color-success)' },
             { dir: 'h', value: -5, label: '−5 %', dash: 'dot',  width: 1.2, color: 'var(--color-success)' },
@@ -685,7 +685,7 @@ const mod = createModule({
               symbol: 'circle', strokeWidth: 1.5,
             },
           ],
-          refLines: [
+          moduleRefLines: [
             { dir: 'h', value: 0, label: '0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
           ],
         });
@@ -778,6 +778,9 @@ const mod = createModule({
         clearTimeout(this._debTimer);
         for (const picker of Object.values(this._pickers)) picker?.destroy();
         this._pickers = {};
+        // A create still awaited would otherwise land after this cleanup
+        // and leave an orphan chart in the host.
+        this._renderGen++;
         this._destroyCharts();
       },
     };

@@ -728,6 +728,30 @@ suite('StateManager revisions', () => {
     assertEqual(sm.getModuleRevision('nie-da', paths), undefined);
   });
 
+  test('setModuleState saves state that still holds reactive proxies', async () => {
+    // Alpine hands nested model values out as proxies; structuredClone throws
+    // on them. A module whose toJSON copies only shallowly must not lose its
+    // whole save (chart-editor reference lines vanished this way in 1.9.5).
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(baseDoc()));
+    await sm.load();
+    const deepProxy = (v) => (v && typeof v === 'object')
+      ? new Proxy(Array.isArray(v) ? v.map(deepProxy)
+        : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, deepProxy(x)])), {})
+      : v;
+    const state = {
+      refLines: [deepProxy({ dir: 'h', value: 2 })],
+      chartConfig: { ...deepProxy({ axis: { x: { label: 'X' } }, nan: NaN }) },
+      when: new Date(0),
+    };
+    sm.setModuleState('i1', state);
+    const saved = sm.getModuleState('i1');
+    assertEqual(saved.refLines[0].value, 2);
+    assertEqual(saved.chartConfig.axis.x.label, 'X');
+    assertTrue(Number.isNaN(saved.chartConfig.nan), 'NaN survives (no JSON round trip)');
+    assertTrue(saved.when instanceof Date, 'Date survives');
+    assertTrue(saved.refLines !== state.refLines, 'snapshot is decoupled');
+  });
+
   test('eine Fremdänderung (remote) ändert die Revision', async () => {
     const adapter = makeFakeAdapter(baseDoc());
     const sm = new StateManager(new EventBus(), adapter);

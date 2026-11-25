@@ -312,7 +312,7 @@ export default createModule({
           barColor: 'var(--color-accent)',
           normalCurveColor: 'var(--color-info)',
           showLegend: true,
-          refLines: specRefLines(/** @type {any} */ (r), this.t),
+          moduleRefLines: specRefLines(/** @type {any} */ (r), this.t),
         };
       },
       /** Schlüssel der Editor-Einstellungen in den alten `chartEdits`. */

@@ -686,7 +686,7 @@ export function residualCharts(result, t) {
   const charts = {
     fitted: {
       title: t('residualsVsFitted'), xLabel: t('fittedValues'), yLabel: t('residuals'),
-      showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
+      showLegend: false, moduleRefLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
     },
     prob: {
       title: t('residualsNormalPlot'), xLabel: t('residuals'), yLabel: t('residualsPercent'),
@@ -699,7 +699,7 @@ export function residualCharts(result, t) {
     },
     order: {
       title: t('residualsVsOrder'), xLabel: t('residualsVsOrderByGroup'), yLabel: t('residuals'),
-      showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
+      showLegend: false, moduleRefLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
     },
   };
   residualCache.set(result, { t, charts });

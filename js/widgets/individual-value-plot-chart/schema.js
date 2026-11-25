@@ -12,7 +12,7 @@ export default chartWidget({
     groups: list(object({ name: text(), values: list(number()), color: text(opt) }), opt),
     showMean: boolean(ed), showMedian: boolean(ed), connectMeans: boolean(ed), showOverallMean: boolean(ed),
     jitter: number({ ...ed, min: 0, max: 1 }),
-    pointSymbol: text(ed), pointSize: number({ ...ed, min: 0 }),
-    pointColors: list(text({ nullable: true }), ed),
+    pointColors: list(text({ nullable: true }), ed), pointStrokes: list(text({ nullable: true }), ed),
+    pointSize: number({ ...ed, min: 0 }), pointStrokeWidth: number({ ...ed, min: 0 }), pointSymbol: text(ed),
   },
 });

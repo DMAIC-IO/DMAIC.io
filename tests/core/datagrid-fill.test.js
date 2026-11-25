@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { detectPattern, withCtrlModifier, generateFill } from '../../js/core/datagrid/datagrid-fill.js';
+import { detectPattern, withCtrlModifier, generateFill, shiftFormulaRefs } from '../../js/core/datagrid/datagrid-fill.js';
 import { isIsoDate } from '../../js/core/local-date.js';
 
 /** Wrap raw values as source cells. */
@@ -123,5 +123,39 @@ suite('core/datagrid fill', () => {
   test('a single plain text cell is copied, even with Ctrl', () => {
     assertDeepEqual(fill(['A'], 'text', 2).values, ['A', 'A']);
     assertDeepEqual(fill(['A'], 'text', 2, 1, true).values, ['A', 'A']);
+  });
+});
+
+suite('core/datagrid fill — absolute references ($)', () => {
+  test('a relative cell reference moves with the fill', () => {
+    assertEqual(shiftFormulaRefs('=C1[2]*2', 3, 1, 10), '=C2[5]*2');
+  });
+
+  test('$ before the row pins the row on a downward fill', () => {
+    assertEqual(shiftFormulaRefs('=C1[2]/C3[$1]', 2, 0, 10), '=C1[4]/C3[$1]');
+  });
+
+  test('$ before the column pins the column on a sideways fill', () => {
+    assertEqual(shiftFormulaRefs('=$C1[2]+C2[2]', 0, 2, 10), '=$C1[2]+C4[2]');
+  });
+
+  test('$ before column and row pins the whole cell', () => {
+    assertEqual(shiftFormulaRefs('=C1[2]-$C3[$1]', 4, 3, 10), '=C4[6]-$C3[$1]');
+  });
+
+  test('a pinned column still lets the row move', () => {
+    assertEqual(shiftFormulaRefs('=$C3[1]', 2, 1, 10), '=$C3[3]');
+  });
+
+  test('a pinned bare column reference stays on a sideways fill', () => {
+    assertEqual(shiftFormulaRefs('=SUM($C1)+SUM(C2)', 0, 1, 10), '=SUM($C1)+SUM(C3)');
+  });
+
+  test('a pinned row of a named reference stays', () => {
+    assertEqual(shiftFormulaRefs("='Ist-Wert'[2]/'Soll'[$1]", 3, 0, 10), "='Ist-Wert'[5]/'Soll'[$1]");
+  });
+
+  test('a range with a pinned start grows when filled down', () => {
+    assertEqual(shiftFormulaRefs('=SUM(C1[$1]:C1[2])', 2, 0, 10), '=SUM(C1[$1]:C1[4])');
   });
 });

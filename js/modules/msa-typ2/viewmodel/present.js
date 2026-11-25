@@ -196,7 +196,7 @@ export function byPartChart(r, t) {
     xMin: -0.5,
     xMax: r.partLabels.length - 0.5,
     series,
-    refLines: [{ dir: 'h', value: r.grandMean, label: 'x̄', dash: 'dash', color: 'var(--color-info)' }],
+    moduleRefLines: [{ dir: 'h', value: r.grandMean, label: 'x̄', dash: 'dash', color: 'var(--color-info)' }],
   };
 }
 
@@ -219,7 +219,7 @@ export function byOperatorChart(r, t) {
     showOutliers: true,
     showLegend: false,
     xLabel: t('operatorLabel'),
-    refLines: [{ dir: 'v', value: r.grandMean, label: 'x̄', dash: 'dash', color: 'var(--color-info)' }],
+    moduleRefLines: [{ dir: 'v', value: r.grandMean, label: 'x̄', dash: 'dash', color: 'var(--color-info)' }],
   };
 }
 
@@ -284,7 +284,7 @@ function controlChart(name, pts, [ucl, cl, lcl]) {
       symbol: 'circle', strokeWidth: 1,
       connectLine: { show: true, width: 1, dash: 'solid', color: 'var(--color-text-secondary)' },
     }],
-    refLines: [
+    moduleRefLines: [
       { dir: 'h', value: ucl, label: 'UCL', dash: 'dash', color: 'var(--color-error)' },
       { dir: 'h', value: cl, label: 'CL', dash: 'dash', color: 'var(--color-success)' },
       { dir: 'h', value: lcl, label: 'LCL', dash: 'dash', color: 'var(--color-error)' },

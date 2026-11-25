@@ -637,6 +637,14 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // Recompute when worksheet data changes — the result must not keep the old values.
+        const onData = () => {
+          this._picker?.refresh();
+          if (this.model.columnRef) this._autoRun();
+        };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         const onTheme = () => {
           if (this.hasResults) this._drawCharts(++this._renderGen);
         };

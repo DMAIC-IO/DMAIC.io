@@ -107,7 +107,7 @@ function mainEffects(cols, labels) {
       title: factor.name || '', titleSize: 12, labelSize: 11, tickSize: 10,
       xLabel: '', yLabel: yCol.name || '', showLegend: false,
       xMin: -0.5, xMax: gm.levels.length - 0.5, yMin: y.min, yMax: y.max, xTicks: xs, xTickLabels: gm.levels,
-      refLines: Number.isFinite(overallY) ? [{ dir: 'h', value: overallY, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' }] : [],
+      moduleRefLines: Number.isFinite(overallY) ? [{ dir: 'h', value: overallY, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' }] : [],
       series: [{
         name: factor.name || '', color: CHART_COLORS[0], markerSize: 5,
         x: xs, y: gm.means.map(finiteOrNull),

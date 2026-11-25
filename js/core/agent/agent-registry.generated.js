@@ -22756,7 +22756,7 @@ export const AGENT_REGISTRY = {
             "help": ""
           },
           "spec": {
-            "type": "{ mode: 'none' }|{ mode: 'constant', constant?: { xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null } }|{ mode: 'columns', columns?: { xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null } }",
+            "type": "{ mode: 'none' }|{ mode: 'constant', constant?: { xMinus?: number|null, xPlus?: number|null, yMinus?: number|null, yPlus?: number|null } }|{ mode: 'columns', columns?: { xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null } }|{ mode: 'columnsAbsolute', columnsAbsolute?: { xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null } }",
             "help": ""
           }
         }
@@ -22764,7 +22764,7 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "datasets": {
-        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, size: { instanceId: string, sheetId?: string, columnId: string }|null, errorBars: { mode: 'none' }|{ mode: 'constant', constant?: { xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null } }|{ mode: 'columns', columns?: { xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null } } }>",
+        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, size: { instanceId: string, sheetId?: string, columnId: string }|null, errorBars: { mode: 'none' }|{ mode: 'constant', constant?: { xMinus?: number|null, xPlus?: number|null, yMinus?: number|null, yPlus?: number|null } }|{ mode: 'columns', columns?: { xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null } }|{ mode: 'columnsAbsolute', columnsAbsolute?: { xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null } } }>",
         "help": "",
         "bulk": false,
         "rules": [
@@ -22797,10 +22797,14 @@ export const AGENT_REGISTRY = {
         "extension": {
           "errorBars": [
             "variantKey:mode",
-            "columns.xPlus: columnRef, types:numeric,currency,percent, minCount:1",
             "columns.xMinus: columnRef, types:numeric,currency,percent, minCount:1",
+            "columns.xPlus: columnRef, types:numeric,currency,percent, minCount:1",
+            "columns.yMinus: columnRef, types:numeric,currency,percent, minCount:1",
             "columns.yPlus: columnRef, types:numeric,currency,percent, minCount:1",
-            "columns.yMinus: columnRef, types:numeric,currency,percent, minCount:1"
+            "columnsAbsolute.xMinus: columnRef, types:numeric,currency,percent, minCount:1",
+            "columnsAbsolute.xPlus: columnRef, types:numeric,currency,percent, minCount:1",
+            "columnsAbsolute.yMinus: columnRef, types:numeric,currency,percent, minCount:1",
+            "columnsAbsolute.yPlus: columnRef, types:numeric,currency,percent, minCount:1"
           ]
         },
         "keysOf": "fields.datasets",
@@ -22845,40 +22849,40 @@ export const AGENT_REGISTRY = {
             ]
           },
           "errorBars": {
-            "type": "{ mode: 'none' }|{ mode: 'constant', constant?: { xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null } }|{ mode: 'columns', columns?: { xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null } }",
+            "type": "{ mode: 'none' }|{ mode: 'constant', constant?: { xMinus?: number|null, xPlus?: number|null, yMinus?: number|null, yPlus?: number|null } }|{ mode: 'columns', columns?: { xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null } }|{ mode: 'columnsAbsolute', columnsAbsolute?: { xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null } }",
             "help": "",
             "keysOf": "fields.datasets.errorBars",
             "keysHelp": "fields.datasets.errorBars",
             "keysHelpSuffix": "help",
             "keys": {
               "mode": {
-                "type": "'none'|'constant'|'columns'",
+                "type": "'none'|'constant'|'columns'|'columnsAbsolute'",
                 "help": ""
               },
               "constant": {
-                "type": "{ xPlus?: number|null, xMinus?: number|null, yPlus?: number|null, yMinus?: number|null }",
+                "type": "{ xMinus?: number|null, xPlus?: number|null, yMinus?: number|null, yPlus?: number|null }",
                 "help": "",
                 "optional": true,
                 "keysOf": "fields.datasets.errorBars.constant",
                 "keysHelp": "fields.datasets.errorBars.constant",
                 "keysHelpSuffix": "help",
                 "keys": {
-                  "xPlus": {
-                    "type": "number|null",
-                    "help": "",
-                    "optional": true
-                  },
                   "xMinus": {
                     "type": "number|null",
                     "help": "",
                     "optional": true
                   },
-                  "yPlus": {
+                  "xPlus": {
                     "type": "number|null",
                     "help": "",
                     "optional": true
                   },
                   "yMinus": {
+                    "type": "number|null",
+                    "help": "",
+                    "optional": true
+                  },
+                  "yPlus": {
                     "type": "number|null",
                     "help": "",
                     "optional": true
@@ -22886,13 +22890,23 @@ export const AGENT_REGISTRY = {
                 }
               },
               "columns": {
-                "type": "{ xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null }",
+                "type": "{ xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null }",
                 "help": "",
                 "optional": true,
                 "keysOf": "fields.datasets.errorBars.columns",
                 "keysHelp": "fields.datasets.errorBars.columns",
                 "keysHelpSuffix": "help",
                 "keys": {
+                  "xMinus": {
+                    "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+                    "help": "",
+                    "optional": true,
+                    "rules": [
+                      "columnRef",
+                      "types:numeric,currency,percent",
+                      "minCount:1"
+                    ]
+                  },
                   "xPlus": {
                     "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
                     "help": "",
@@ -22903,7 +22917,7 @@ export const AGENT_REGISTRY = {
                       "minCount:1"
                     ]
                   },
-                  "xMinus": {
+                  "yMinus": {
                     "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
                     "help": "",
                     "optional": true,
@@ -22922,8 +22936,48 @@ export const AGENT_REGISTRY = {
                       "types:numeric,currency,percent",
                       "minCount:1"
                     ]
+                  }
+                }
+              },
+              "columnsAbsolute": {
+                "type": "{ xMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, xPlus?: { instanceId: string, sheetId?: string, columnId: string }|null, yMinus?: { instanceId: string, sheetId?: string, columnId: string }|null, yPlus?: { instanceId: string, sheetId?: string, columnId: string }|null }",
+                "help": "",
+                "optional": true,
+                "keysOf": "fields.datasets.errorBars.columnsAbsolute",
+                "keysHelp": "fields.datasets.errorBars.columnsAbsolute",
+                "keysHelpSuffix": "help",
+                "keys": {
+                  "xMinus": {
+                    "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+                    "help": "",
+                    "optional": true,
+                    "rules": [
+                      "columnRef",
+                      "types:numeric,currency,percent",
+                      "minCount:1"
+                    ]
+                  },
+                  "xPlus": {
+                    "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+                    "help": "",
+                    "optional": true,
+                    "rules": [
+                      "columnRef",
+                      "types:numeric,currency,percent",
+                      "minCount:1"
+                    ]
                   },
                   "yMinus": {
+                    "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+                    "help": "",
+                    "optional": true,
+                    "rules": [
+                      "columnRef",
+                      "types:numeric,currency,percent",
+                      "minCount:1"
+                    ]
+                  },
+                  "yPlus": {
                     "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
                     "help": "",
                     "optional": true,

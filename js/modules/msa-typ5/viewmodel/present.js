@@ -438,7 +438,7 @@ export function kappaChart(r, t, lang) {
         yMinus: entries.map(([, k]) => (Number.isFinite(k.ci95?.[0]) ? orNull(Math.max(0, k.kappa - k.ci95[0])) : 0)),
       },
     }],
-    refLines,
+    moduleRefLines: refLines,
   };
 }
 
@@ -477,7 +477,7 @@ export function effectivenessChart(r, t) {
         yMinus: entries.map(([, v]) => orNull(Math.max(0, v.vsReference.effectiveness.rate - (v.vsReference.effectiveness.ci95?.[0] ?? y[0])))),
       },
     }],
-    refLines: [
+    moduleRefLines: [
       { dir: 'h', value: 0.90, label: '90 %', dash: 'dash', width: 1, color: 'var(--color-success)' },
       { dir: 'h', value: 0.80, label: '80 %', dash: 'dash', width: 1, color: 'var(--color-warning)' },
     ],
@@ -509,7 +509,7 @@ export function sdtChart(r, t) {
         strokeWidth: 1.5,
       };
     }),
-    refLines: [
+    moduleRefLines: [
       { dir: 'v', value: 0, label: 'c = 0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
       { dir: 'h', value: 0, label: "d' = 0", dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
     ],

@@ -51,8 +51,8 @@ suite('kano-chart — kanoScatterConfig', () => {
   });
 
   test('two dashed reference lines at 0.5', () => {
-    const { refLines } = kanoScatterConfig([], { importance: false, sizeLabel: '' });
-    assertDeepEqual(refLines, [
+    const { moduleRefLines } = kanoScatterConfig([], { importance: false, sizeLabel: '' });
+    assertDeepEqual(moduleRefLines, [
       { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
       { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
     ]);

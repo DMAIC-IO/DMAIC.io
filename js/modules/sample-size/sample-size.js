@@ -516,7 +516,7 @@ export default createModule({
             yMax: 100,
             yDec: 0,
             xDec: 0,
-            refLines: [
+            moduleRefLines: [
               {
                 dir: 'h',
                 value: power * 100,
@@ -660,6 +660,7 @@ export default createModule({
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
+        this._renderGen++;
         this._destroyChart();
       },
     };

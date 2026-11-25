@@ -74,13 +74,18 @@
         },
         {
           "type": "definition",
-          "term": "Columns",
-          "content": "One worksheet column per direction holding an amount per row — for example the standard deviation or the half-width of a confidence interval at each point."
+          "term": "Columns (relative)",
+          "content": "One worksheet column per direction holding the distance from the point per row — for example the standard deviation or the half-width of a confidence interval at each point. Example: value 100, bar from 95 to 110 → −Y = 5, +Y = 10."
+        },
+        {
+          "type": "definition",
+          "term": "Columns (absolute)",
+          "content": "One worksheet column per direction holding the end point of the bar per row — for example the lower and upper limit of a confidence interval. Example: value 100, bar from 95 to 110 → −Y = 95, +Y = 110."
         },
         {
           "type": "list",
           "items": [
-            "Values are distances from the point, not end points. A negative value is read as its absolute value.",
+            "With “Columns (relative)” and “Constant” the values are distances from the point; a negative value is read as its absolute value (−5 and 5 give the same bar). With “Columns (absolute)” they are coordinates on the axis.",
             "An empty field or an empty or non-numeric cell means: no bar in that direction. The point itself always stays visible.",
             "For symmetric bars enter the same column (or the same amount) for + and −.",
             "With grouping (G) each group carries the errors of exactly its own rows; skipped rows (invalid X, Y or size) take their errors with them."

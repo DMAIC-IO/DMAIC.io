@@ -30,3 +30,10 @@
 }
 
 /* Statistics table — uses shared dmike-stats-panel (js/core/stats-panel.css) */
+
+/* Fehlerbalken (Erweiterung der Datensatz-Zeile): ein Feld je Zeile — die
+   Seitenleiste ist schmal, Spaltennamen in den Auswahlen bleiben nur in
+   voller Breite lesbar. */
+.xyplot__picker .ds-picker__ext-fields {
+  grid-template-columns: 1fr;
+}

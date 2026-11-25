@@ -4,7 +4,7 @@
 import { checkValue } from '../../../core/model.js';
 import { columnRefFromJSON } from '../../../core/chart/chart-data-prep.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
-import { ERROR_BAR_KEYS } from './error-bars.js';
+import { ERROR_BAR_KEYS, isColumnMode } from './error-bars.js';
 
 /** Form der Diagrammfelder und einer Reihe (mit `name`). */
 const CHART_SHAPE = /** @type {Record<string, any>} */ (scatterChart.edits().shape);
@@ -81,14 +81,14 @@ export function legacySeriesFrom(old) {
  * Fehlerbalken der Altform 1.9 (`{ mode, xPlus, xMinus, yPlus, yMinus }`, flach)
  * in der verschachtelten Form. Wie `errorBarsFromJSON` der Altform: ein
  * unbekannter Modus wird `none`; bei `constant` gelten nur endliche Zahlen,
- * bei `columns` nur gültige Bezüge. Unpassende Werte fehlen.
+ * bei `columns` und `columnsAbsolute` nur gültige Bezüge. Unpassende Werte fehlen.
  * @param {unknown} d
  * @returns {Record<string, any>}
  */
 export function errorBarsFrom(d) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return { mode: 'none' };
   const o = /** @type {Record<string, unknown>} */ (d);
-  if (o.mode !== 'constant' && o.mode !== 'columns') return { mode: 'none' };
+  if (o.mode !== 'constant' && !isColumnMode(o.mode)) return { mode: 'none' };
   /** @type {Record<string, any>} */
   const values = {};
   for (const key of ERROR_BAR_KEYS) {

@@ -16,6 +16,9 @@ import { icon } from '../../icon.js';
 import { svgEl, resolveColor, formatNum, drawMarker } from '../chart-core.js';
 
 export default class RunChartType extends ChartBase {
+  /** Chart-level settings the editor writes (persisted for module charts). */
+  static editorKeys = [...ChartBase.editorKeys, 'pointColor', 'aboveColor', 'pointStroke', 'pointSize', 'pointStrokeWidth', 'pointSymbol'];
+
   constructor(container, config, context) {
     const defaults = {
       /** @type {number[]} */

@@ -868,7 +868,7 @@ export default createModule({
 
         // Eine Serie je Item, Legende aus: siehe kano-chart.js. Achsenbereich
         // und Tooltip-Trefferauswahl arbeiten unverändert über alle Serien.
-        const { series, refLines } = kanoScatterConfig(this.result().rows, {
+        const { series, moduleRefLines } = kanoScatterConfig(this.result().rows, {
           importance: this.model.options.importance,
           sizeLabel: _t('colImportanceMean'),
         });
@@ -880,7 +880,7 @@ export default createModule({
           showLegend: false,
           fileName: 'kano',
           series,
-          refLines,
+          moduleRefLines,
         });
         // `_destroyed` mitprüfen, nicht nur die Generation: läuft destroy()
         // während `create()` noch im await hängt, ist `_charts` beim

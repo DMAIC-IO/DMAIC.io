@@ -16,7 +16,7 @@ function refOrNull(v) {
 const numberOr = (v, ok) => (typeof v === 'number' && Number.isFinite(v) && ok(v) ? v : undefined);
 
 /** Vorgaben der alten Diagrammfelder: gleich → entfällt. */
-const CHART_DEFAULTS = { showTitle: true, titleSize: 15, labelSize: 12, tickSize: 11, showXLabel: true, showYLabel: true, showXTicks: true, showYTicks: true, barGap: 1 };
+const CHART_DEFAULTS = { showTitle: true, titleSize: 15, labelSize: 12, tickSize: 11, showXLabel: true, showYLabel: true, showXTicks: true, showYTicks: true, showXGrid: true, showYGrid: true, barGap: 1 };
 const TEXTS = { chartTitleText: 'title', chartXLabelText: 'xLabel', chartYLabelText: 'yLabel' };
 
 /** Bearbeitbare Schlüssel einer Reihe und ihre Feldbeschreibungen (ohne `name`). */

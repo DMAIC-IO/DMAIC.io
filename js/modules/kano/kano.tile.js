@@ -54,14 +54,14 @@ export default {
 
     let chart = null;
     if (settings.showChart) {
-      const { series, refLines } = kanoScatterConfig(rows, {
+      const { series, moduleRefLines } = kanoScatterConfig(rows, {
         importance: model.options.importance,
         sizeLabel: i18n.t('modules.kano.colImportanceMean'),
       });
       if (series.length > 0) {
         chart = {
           series,
-          refLines,
+          moduleRefLines,
           xLabel: i18n.t('modules.kano.chartX'),
           yLabel: i18n.t('modules.kano.chartY'),
           showTitle: false, showXLabel: false, showYLabel: false,

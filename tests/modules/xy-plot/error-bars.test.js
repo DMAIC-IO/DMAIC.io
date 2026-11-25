@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/xy-plot/domain/model.js';
-import { buildErrorBars, ERROR_BAR_KEYS } from '../../../js/modules/xy-plot/domain/error-bars.js';
+import { buildErrorBars, ERROR_BAR_KEYS, ERROR_BARS_SHAPE } from '../../../js/modules/xy-plot/domain/error-bars.js';
 import { buildSeries } from '../../../js/modules/xy-plot/domain/series.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -16,6 +16,23 @@ const row = (o) => ({ x: ref('x'), y: ref('y'), group: null, size: null, errorBa
 suite('xy-plot: Fehlerbalken — Feld', () => {
   test('Richtungen', () => {
     assertDeepEqual([...ERROR_BAR_KEYS], ['xPlus', 'xMinus', 'yPlus', 'yMinus']);
+  });
+
+  test('Modi: Spalten als Abstände oder als Endpunkte', () => {
+    assertDeepEqual([...ERROR_BARS_SHAPE.mode.values], ['none', 'constant', 'columns', 'columnsAbsolute']);
+  });
+
+  test('Feldreihenfolge: die negative Seite vor der positiven', () => {
+    for (const v of ['constant', 'columns', 'columnsAbsolute']) {
+      assertDeepEqual(Object.keys(ERROR_BARS_SHAPE[v].shape), ['xMinus', 'xPlus', 'yMinus', 'yPlus']);
+    }
+  });
+
+  test('Rundlauf columnsAbsolute', () => {
+    const m = new State();
+    const eb = { mode: 'columnsAbsolute', columnsAbsolute: { yMinus: ref('f'), yPlus: ref('e') } };
+    m.datasets = [row({ errorBars: eb })];
+    assertDeepEqual(State.fromJSON(m.toJSON()).datasets[0].errorBars, eb);
   });
 
   test('Vorgabe none', () => {
@@ -74,6 +91,23 @@ suite('xy-plot: buildErrorBars', () => {
   test('nicht auflösbare Spalte und leere Spalte ergeben keinen Balken', () => {
     assertEqual(buildErrorBars({ mode: 'columns', columns: { yPlus: ref('weg') } }, [0], read), null);
     assertEqual(buildErrorBars({ mode: 'columns', columns: { yPlus: ref('blank') } }, [0, 1], read), null);
+  });
+
+  test('Spalten (relativ) ergeben Abstände', () => {
+    const eb = buildErrorBars({ mode: 'columns', columns: { yPlus: ref('f'), yMinus: ref('f') } }, [0], read);
+    assertEqual(eb.yMode, 'relative');
+  });
+
+  test('Spalten (absolut) ergeben Endpunkte', () => {
+    const abs = { lo: [95, 90], hi: [110, 120], xl: [1, 2] };
+    const r = { values: (c) => abs[c.columnId] ?? null };
+    const eb = buildErrorBars({ mode: 'columnsAbsolute', columnsAbsolute: { xMinus: ref('xl'), yPlus: ref('hi'), yMinus: ref('lo') } }, [0, 1], r);
+    assertEqual(eb.yMode, 'absolute');
+    assertEqual(eb.xMode, 'absolute');
+    assertDeepEqual(eb.yPlus, [110, 120]);
+    assertDeepEqual(eb.yMinus, [95, 90]);
+    assertDeepEqual(eb.xPlus, [null, null]);
+    assertDeepEqual(eb.xMinus, [1, 2]);
   });
 
   test('none und null ergeben null', () => {
@@ -135,7 +169,7 @@ suite('xy-plot: setErrorBars', () => {
   test('lehnt Index, Modus, Zahl und fremde Variante ab', () => {
     const m = two();
     assertThrows(() => m.setErrorBars({ index: 2, spec: { mode: 'none' } }), /0\.\.1/);
-    assertThrows(() => m.setErrorBars({ index: 0, spec: { mode: 'bogus' } }), /allowed: none, constant, columns/);
+    assertThrows(() => m.setErrorBars({ index: 0, spec: { mode: 'bogus' } }), /allowed: none, constant, columns, columnsAbsolute/);
     assertThrows(() => m.setErrorBars({ index: 0, spec: { mode: 'constant', constant: { yPlus: 'abc' } } }), /yPlus/);
     assertThrows(() => m.setErrorBars({ index: 0, spec: { mode: 'columns', constant: {} } }), /allowed: columns \(mode columns\)/);
     assertTrue(m.datasets.every((d) => d.errorBars.mode === 'none'));

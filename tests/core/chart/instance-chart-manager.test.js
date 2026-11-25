@@ -409,6 +409,23 @@ suite('InstanceChartManager — editor keys', () => {
     assertDeepEqual(store.data.i1.scatter.refAreas, [{ from: 1, to: 2 }]);
   });
 
+  test('moduleRefLines stay the module\'s; editor refLines next to them are stored and laid over', async () => {
+    const store = fakeStore();
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const usl = [{ dir: 'h', value: 10, label: 'USL' }];
+    const c = await f.create({}, 'scatter', { moduleRefLines: usl });
+    c.config.refLines = [{ dir: 'h', value: 3, label: 'Mine' }];
+    c._onEditorChange();
+    assertDeepEqual(store.data.i1.scatter, { refLines: [{ dir: 'h', value: 3, label: 'Mine' }] });
+    f.update(c, { moduleRefLines: [{ dir: 'h', value: 12, label: 'USL' }] });
+    assertDeepEqual(c.config.moduleRefLines, [{ dir: 'h', value: 12, label: 'USL' }]);
+    assertDeepEqual(c.config.refLines, [{ dir: 'h', value: 3, label: 'Mine' }]);
+    c.destroy();
+    const again = await f.create({}, 'scatter', { moduleRefLines: usl });
+    assertDeepEqual(again.config.moduleRefLines, usl);
+    assertDeepEqual(again.config.refLines, [{ dir: 'h', value: 3, label: 'Mine' }]);
+  });
+
   test('aggregation and stacked are never stored (no editor keys)', async () => {
     const store = fakeStore({ i1: { bar: { aggregation: 'sum', stacked: true } } });
     const f = createInstanceChartManager(fakeManager(), store, 'i1');

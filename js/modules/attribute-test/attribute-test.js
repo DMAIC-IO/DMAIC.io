@@ -812,6 +812,11 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
+        // A worksheet edit changes the data, not the model: recompute in place.
+        const onData = () => onActivated({ instanceId: module._context.instanceId });
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         this._runIfChanged();
       },
       /** @noagent lifecycle */

@@ -3,8 +3,10 @@
  *
  * Gespeichert an der Zeile der Datensätze (`datasets[i].errorBars`):
  * `{ mode: 'none' }`, `{ mode: 'constant', constant: { yPlus: 1, … } }` oder
- * `{ mode: 'columns', columns: { yPlus: ref, … } }`. Eine fehlende Richtung
- * oder `null` heißt „kein Balken“; ein negativer Betrag zählt als Betrag.
+ * `{ mode: 'columns', columns: { yPlus: ref, … } }` (Abstände vom Punkt) oder
+ * `{ mode: 'columnsAbsolute', columnsAbsolute: { yPlus: ref, … } }` (Endpunkte
+ * der Balken, etwa 95 und 110 um den Wert 100). Eine fehlende Richtung oder
+ * `null` heißt „kein Balken“; ein negativer Abstand zählt als Betrag.
  */
 import { object, oneOf, number, columnRef } from '../../../core/model.js';
 
@@ -20,20 +22,36 @@ const NUMBER_TYPES = ['numeric', 'currency', 'percent'];
  * im Schema nennen; darum als Literal ausgeschrieben.
  */
 export const ERROR_BARS_SHAPE = {
-  mode: oneOf(['none', 'constant', 'columns']),
+  mode: oneOf(['none', 'constant', 'columns', 'columnsAbsolute']),
+  // Richtungen in Anzeigereihenfolge: die negative Seite vor der positiven.
   constant: object({
-    xPlus: number({ nullable: true, optional: true }),
     xMinus: number({ nullable: true, optional: true }),
-    yPlus: number({ nullable: true, optional: true }),
+    xPlus: number({ nullable: true, optional: true }),
     yMinus: number({ nullable: true, optional: true }),
+    yPlus: number({ nullable: true, optional: true }),
   }, { optional: true }),
   columns: object({
-    xPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
     xMinus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
-    yPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    xPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
     yMinus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    yPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+  }, { optional: true }),
+  columnsAbsolute: object({
+    xMinus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    xPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    yMinus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
+    yPlus: columnRef({ types: NUMBER_TYPES, minCount: 1, optional: true }),
   }, { optional: true }),
 };
+
+/**
+ * Ob ein Modus je Richtung eine Spalte liest: `columns` hält Abstände vom
+ * Punkt, `columnsAbsolute` die Endpunkte der Balken.
+ * @param {unknown} mode @returns {boolean}
+ */
+export function isColumnMode(mode) {
+  return mode === 'columns' || mode === 'columnsAbsolute';
+}
 
 /**
  * Ein Zellwert als Fehlerbetrag; leer oder nicht numerisch → `null`.
@@ -50,13 +68,13 @@ function toErrorValue(v) {
  * @param {any} spec Fehlerbalken der Zeile
  * @param {number[]} rows Quellzeile jedes gezeichneten Punkts der Reihe
  * @param {{ values: (ref: object) => any[]|null }} read Leser des Arbeitsblatts
- * @returns {{ show: true, xMode: 'relative'|'none', yMode: 'relative'|'none',
+ * @returns {{ show: true, xMode: 'relative'|'absolute'|'none', yMode: 'relative'|'absolute'|'none',
  *   xPlus?: (number|null)[], xMinus?: (number|null)[], yPlus?: (number|null)[], yMinus?: (number|null)[] }|null}
  *   `null`, wenn kein Punkt einen Balken bekommt
  */
 export function buildErrorBars(spec, rows, read) {
-  if (!spec || (spec.mode !== 'constant' && spec.mode !== 'columns')) return null;
-  const given = spec.mode === 'constant' ? spec.constant : spec.columns;
+  if (!spec || (spec.mode !== 'constant' && !isColumnMode(spec.mode))) return null;
+  const given = spec[spec.mode];
   /** @type {Record<string, (number|null)[]|null>} */
   const arrays = {};
   for (const key of ERROR_BAR_KEYS) {
@@ -78,11 +96,13 @@ export function buildErrorBars(spec, rows, read) {
   const hasY = arrays.yPlus !== null || arrays.yMinus !== null;
   if (!hasX && !hasY) return null;
   const fill = (arr) => arr ?? rows.map(() => null);
+  // `columnsAbsolute` reicht Endpunkte durch: der Renderer kennt dafür den Modus `absolute`.
+  const kind = spec.mode === 'columnsAbsolute' ? 'absolute' : 'relative';
   // Eine Achse ohne Balken nennt nur ihren Modus `none` (die Listen des Widgets sind nicht nullbar).
   return {
     show: true,
-    xMode: hasX ? 'relative' : 'none',
-    yMode: hasY ? 'relative' : 'none',
+    xMode: hasX ? kind : 'none',
+    yMode: hasY ? kind : 'none',
     ...(hasX ? { xPlus: fill(arrays.xPlus), xMinus: fill(arrays.xMinus) } : {}),
     ...(hasY ? { yPlus: fill(arrays.yPlus), yMinus: fill(arrays.yMinus) } : {}),
   };

@@ -97,6 +97,19 @@ suite('histogram: Migration', () => {
       assertTrue(seen[0].includes('binMode'));
     } finally { console.warn = warn; }
   });
+  test('ausgeschaltete Gitterlinien eines Altstands bleiben aus, Vorgabe an entfällt', () => {
+    assertDeepEqual(from0({ showXGrid: false, showYGrid: false }).histogramChart, { showXGrid: false, showYGrid: false });
+    assertDeepEqual(from0({ showXGrid: true, showYGrid: true }).histogramChart, {});
+    assertDeepEqual(from0({}).histogramChart, {}, 'alte Daten ohne Schalter: Gitter an');
+  });
+  test('Gitterschalter überstehen toJSON → fromJSON', () => {
+    const m = loadModel(State, { datasets: [{ valueRef: r, groupRef: null }], binMode: 'auto', binWidth: null, confLevel: 95, showXGrid: false });
+    assertEqual(m.histogramChart.showXGrid, false);
+    m.histogramChart = { ...m.histogramChart, showYGrid: false };
+    const back = loadModel(State, JSON.parse(JSON.stringify(m.toJSON())));
+    assertEqual(back.histogramChart.showXGrid, false);
+    assertEqual(back.histogramChart.showYGrid, false);
+  });
   test('legacySeries führt genau die editierbaren Reihenschlüssel des Diagramms (ohne name)', () => {
     const item = State.schema.fields.legacySeries?.item ?? State.schema.view?.legacySeries?.item;
     const keys = Object.keys(item.shape).sort();

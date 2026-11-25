@@ -162,7 +162,7 @@ export default createModule({
             showLegend: false,
             // Eine halbe Einheit Rand: ein Punkt bei 0 oder 10 wird nicht abgeschnitten.
             xMin: -0.5, xMax: 10.5, yMin: -0.5, yMax: 10.5,
-            refLines: [{ dir: /** @type {'v'} */ ('v'), ...split }, { dir: /** @type {'h'} */ ('h'), ...split }],
+            moduleRefLines: [{ dir: /** @type {'v'} */ ('v'), ...split }, { dir: /** @type {'h'} */ ('h'), ...split }],
             series: [{
               name: this.t('vc.cost'),
               x: rows.map((r) => r.normValue),

@@ -13,7 +13,11 @@
  * one key at a time (`chart._onLabelEdit`); every other editor setting is
  * found by comparing the chart config with a snapshot taken at the last
  * create/update/write (`chart._onEditorChange`). `refLines`/`refAreas` the
- * module itself supplies stay the module's: never laid over, never stored.
+ * module itself supplies stay the module's: never laid over, never stored —
+ * for modules that keep editor lines in their own model (xy-plot, boxplot, …).
+ * Modules with computed lines (USL/LSL, zero lines, …) pass them as
+ * `moduleRefLines`/`moduleRefAreas` instead: not editor keys, drawn together
+ * with the editor's `refLines`/`refAreas`, which are then stored here.
  * Every other method and property is inherited from the shared manager.
  */
 

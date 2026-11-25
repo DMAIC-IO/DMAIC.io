@@ -68,7 +68,8 @@ suite('chart-suggestion domain — buildPreview', () => {
     assertEqual(Math.round(c1.config.yMin * 100) / 100, 0.9);
     assertEqual(Math.round(c1.config.yMax * 100) / 100, 6.1);
     assertDeepEqual(c1.config.xTickLabels, ['a', 'b', 'c']);
-    assertEqual(c1.config.refLines[0].value, 3.5);
+    assertEqual(c1.config.moduleRefLines[0].value, 3.5);
+    assertEqual(c1.config.refLines, undefined);
   });
 
   test('main-effects: Faktor ohne Stufen ergibt eine Platzhalterzelle', () => {

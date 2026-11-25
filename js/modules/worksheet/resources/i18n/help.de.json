@@ -26,7 +26,12 @@
         {
           "type": "definition",
           "term": "Formeln",
-          "content": "Zellen, die mit „=\" beginnen, sind Formeln (z. B. =A1+B1, =MEAN(A:A)). Die Berechnung erfolgt sofort und wird beim Öffnen automatisch aktualisiert."
+          "content": "Zellen, die mit „=\" beginnen, sind Formeln (z. B. =C1[1]+C2[1] für Zeile 1 der Spalten C1 und C2, =AVG(C1) für den Mittelwert der Spalte C1). Die Berechnung erfolgt sofort und wird beim Öffnen automatisch aktualisiert."
+        },
+        {
+          "type": "definition",
+          "term": "Feste Bezüge ($)",
+          "content": "Beim Ziehen einer Formel verschieben sich ihre Zellbezüge mit. Ein $ hält einen Teil fest, wie in Excel: C1[$2] behält die Zeile 2, $C1[2] die Spalte C1, $C1[$2] beides. Beispiel: =C1[2]/C2[$1] nach unten ziehen teilt jede Zeile durch denselben Bezugswert in C2, Zeile 1."
         }
       ]
     },

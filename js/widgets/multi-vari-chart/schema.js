@@ -3,6 +3,7 @@ import { text, number, boolean, list, object } from '../../core/model.js';
 import { chartWidget } from '../chart-parts.js';
 
 const opt = { optional: true };
+const ed = { optional: true, editable: true };
 
 export default chartWidget({
   name: 'multi-vari-chart',
@@ -25,5 +26,6 @@ export default chartWidget({
     showPoints: boolean(opt),
     connectMeans: boolean(opt),
     showGroupMean: boolean(opt),
+    pointSize: number({ ...ed, min: 0 }), pointStrokeWidth: number({ ...ed, min: 0 }),
   },
 });

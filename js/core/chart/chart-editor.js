@@ -701,6 +701,7 @@ export function edBgColorSection(config, onChange, onOpenColorPicker, t) {
  */
 export function edRefLinesSection(refLines, callbacks, t) {
   const sec = edSection(t('refLines'));
+  sec.dataset.edSection = 'refLines';
 
   (refLines || []).forEach((line, idx) => {
     const item = document.createElement('div');
@@ -871,6 +872,7 @@ export function edMarkerSection(title, a, t, opts = {}) {
  */
 export function edRefAreasSection(refAreas, callbacks, t) {
   const sec = edSection(t('refAreas'));
+  sec.dataset.edSection = 'refAreas';
 
   (refAreas || []).forEach((area, idx) => {
     const item = document.createElement('div');

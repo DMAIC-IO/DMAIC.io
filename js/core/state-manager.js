@@ -98,6 +98,31 @@ export function withChartEdit(all, ownerId, chartKey, key, value) {
   return next;
 }
 
+/**
+ * Copy plain objects and arrays, reading through any proxy, so that
+ * structuredClone accepts the result. Everything else (Date, Map, typed
+ * arrays, primitives incl. NaN) is passed on unchanged for structuredClone.
+ * @param {*} value
+ * @param {WeakMap<object, *>} [seen] cycle guard
+ * @returns {*}
+ */
+function unwrapProxies(value, seen = new WeakMap()) {
+  if (value === null || typeof value !== 'object') return value;
+  if (seen.has(value)) return seen.get(value);
+  if (Array.isArray(value)) {
+    const out = [];
+    seen.set(value, out);
+    for (const item of value) out.push(unwrapProxies(item, seen));
+    return out;
+  }
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return value;
+  const out = {};
+  seen.set(value, out);
+  for (const [k, v] of Object.entries(value)) out[k] = unwrapProxies(v, seen);
+  return out;
+}
+
 export class StateManager {
   /**
    * @param {EventBus} eventBus
@@ -356,9 +381,17 @@ export class StateManager {
     let snapshot;
     try {
       snapshot = structuredClone(state);
-    } catch (err) {
-      console.error('[StateManager] structuredClone failed for', instanceId, err);
-      return;
+    } catch {
+      // A module's toJSON that copies only shallowly leaves Alpine's reactive
+      // proxies in the state, and structuredClone throws on proxies. Losing
+      // the whole save over that wiped chart-editor reference lines on reload,
+      // so unwrap plain objects and arrays first and clone again.
+      try {
+        snapshot = structuredClone(unwrapProxies(state));
+      } catch (err) {
+        console.error('[StateManager] structuredClone failed for', instanceId, err);
+        return;
+      }
     }
     this._moduleCache.set(instanceId, snapshot);
     this._adapter.putModule(this._projectId, instanceId, snapshot);

@@ -178,7 +178,8 @@ suite('process-capability: Viewmodel im Browser', () => {
     assertEqual(vm.chart.barColor, 'var(--color-accent)');
     assertEqual(vm.chart.showNormalCurve, true);
     assertEqual(vm.chart.showLegend, true);
-    assertEqual(vm.chart.refLines.length, 3);
+    assertEqual(vm.chart.moduleRefLines.length, 3);
+    assertEqual(vm.chart.refLines, undefined, "Spezifikationsgrenzen sind Modul-Linien, keine Editor-Linien");
     assertEqual(vm.legacyEditKey, 'histogram');
     assertEqual(h.charts.at(-1)?.type, 'histogram');
     assertTrue(!!h.container.querySelector('[data-ref="kpi-main"] [data-kpi="cpk"]'), 'Cpk-Kachel fehlt');

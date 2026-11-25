@@ -80,7 +80,7 @@ export default class ChartBase {
   static editorKeys = [
     'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
     'showLegend', 'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks',
-    'bgColor', 'refLines', 'refAreas', 'axisRange',
+    'showXGrid', 'showYGrid', 'bgColor', 'refLines', 'refAreas', 'axisRange',
     'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder',
   ];
 
@@ -106,7 +106,11 @@ export default class ChartBase {
       xDec: null, yDec: null,
       titleSize: 15, labelSize: 12, tickSize: 11, legendSize: 11,
       markerSize: 8,
+      // Editor lines/areas (persisted per instance) — `moduleRefLines` /
+      // `moduleRefAreas` are the module's computed ones: drawn first, never
+      // shown in the editor, never persisted (see _allRefLines).
       refLines: [], refAreas: [],
+      moduleRefLines: [], moduleRefAreas: [],
     }, config);
 
     /** @type {Object} */
@@ -347,7 +351,7 @@ export default class ChartBase {
     inner.appendChild(edTitleSection(cfg, onChange, t, onEdit, auto));
 
     // Legend: show toggle and entry order
-    const hasLegend = this._getLegendItems().length > 0 || !!(cfg.refLines && cfg.refLines.length) || !!(cfg.refAreas && cfg.refAreas.length);
+    const hasLegend = this._getLegendItems().length > 0 || this._allRefLines().length > 0 || this._allRefAreas().length > 0;
     if (hasLegend) {
       const show = cfg.showLegend !== false;
       inner.appendChild(edLegendSection({
@@ -785,17 +789,35 @@ export default class ChartBase {
 
   // ── Axis Bounds ──────────────────────────────────────────────────
 
+  /**
+   * Reference lines to draw: the module's computed ones, then the editor's.
+   * @protected
+   * @returns {Array<Object>}
+   */
+  _allRefLines() {
+    return [...(this.config.moduleRefLines || []), ...(this.config.refLines || [])];
+  }
+
+  /**
+   * Reference areas to draw: the module's computed ones, then the editor's.
+   * @protected
+   * @returns {Array<Object>}
+   */
+  _allRefAreas() {
+    return [...(this.config.moduleRefAreas || []), ...(this.config.refAreas || [])];
+  }
+
   /** @private */
   _getAxisBounds() {
     const ext = this._getDataExtent();
     let { xMin, xMax, yMin, yMax } = ext;
 
     // Include ref lines/areas
-    (this.config.refLines || []).forEach((l) => {
+    this._allRefLines().forEach((l) => {
       if (l.dir === 'h') { yMin = Math.min(yMin, l.value); yMax = Math.max(yMax, l.value); }
       else { xMin = Math.min(xMin, l.value); xMax = Math.max(xMax, l.value); }
     });
-    (this.config.refAreas || []).forEach((a) => {
+    this._allRefAreas().forEach((a) => {
       if (a.dir === 'y') { yMin = Math.min(yMin, a.min); yMax = Math.max(yMax, a.max); }
       else { xMin = Math.min(xMin, a.min); xMax = Math.max(xMax, a.max); }
     });
@@ -1214,7 +1236,7 @@ export default class ChartBase {
     svgEl('rect', { x: pa.x, y: pa.y, width: pa.w, height: pa.h }, clip);
 
     // Hatch patterns for ref areas
-    (this.config.refAreas || []).forEach((area, i) => {
+    this._allRefAreas().forEach((area, i) => {
       if (area.pattern && area.pattern !== '') {
         createPattern(defs, `area-pat-${this._uid}-${i}`, area);
       }
@@ -1228,7 +1250,7 @@ export default class ChartBase {
 
     // Reference areas (behind grid)
     const areaGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);
-    (this.config.refAreas || []).forEach((area, i) => {
+    this._allRefAreas().forEach((area, i) => {
       this._drawRefArea(areaGroup, area, i, xScale, yScale, pa);
     });
 
@@ -1255,7 +1277,7 @@ export default class ChartBase {
 
     // Reference lines
     const refLineGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);
-    (this.config.refLines || []).forEach((line) => {
+    this._allRefLines().forEach((line) => {
       this._drawRefLine(refLineGroup, line, xScale, yScale, pa);
     });
 
@@ -1440,10 +1462,10 @@ export default class ChartBase {
       });
     }
     // ref lines + ref areas
-    (this.config.refLines || []).forEach(l => {
+    this._allRefLines().forEach(l => {
       labels.push(l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value);
     });
-    (this.config.refAreas || []).forEach(a => {
+    this._allRefAreas().forEach(a => {
       labels.push(a.label || this._refAreaDefaultLabel());
     });
     return labels;
@@ -1526,14 +1548,14 @@ export default class ChartBase {
    */
   _legendEntries() {
     const entries = this._getLegendItems().map(it => ({ ...it, key: it.key ?? `s:${it.label}` }));
-    (this.config.refLines || []).forEach((l) => {
+    this._allRefLines().forEach((l) => {
       const label = l.label || (l.dir === 'h' ? 'Y=' : 'X=') + l.value;
       entries.push({
         type: 'line', color: resolveColor(l.color), dash: l.dash, width: l.width,
         label, key: `l:${label}`,
       });
     });
-    (this.config.refAreas || []).forEach((a) => {
+    this._allRefAreas().forEach((a) => {
       const label = a.label || this._refAreaDefaultLabel();
       entries.push({ type: 'rect', color: resolveColor(a.color), label, key: `a:${a.label || ''}` });
     });

@@ -18,7 +18,11 @@ import Bar from '../../js/core/chart/types/bar.js';
 import Mosaic from '../../js/core/chart/types/mosaic.js';
 import RunChart from '../../js/core/chart/types/run-chart.js';
 import Pareto from '../../js/core/chart/types/pareto.js';
+import Histogram from '../../js/core/chart/types/histogram.js';
+import MultiVari from '../../js/core/chart/types/multi-vari.js';
+import GageRun from '../../js/core/chart/types/gage-run-chart.js';
 import ChartBase from '../../js/core/chart/chart-base.js';
+import ControlChartType from '../../js/core/chart/types/control-chart.js';
 import contourChart, { CONTOUR_DEFAULTS } from '../../js/widgets/contour-chart/schema.js';
 import ContourChart from '../../js/core/chart/types/contour.js';
 import { COLOR_SCHEMES } from '../../js/core/chart/color-schemes.js';
@@ -50,11 +54,12 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => checkValue(histogramChart.props.config, 'c', { series: [{ name: 'A', values: ['x'] }] }), /c\.series\[0\]\.values\[0\]/);
   });
 
-  test('normalCurveColor wird angenommen, ist aber nicht editable', () => {
+  test('normalCurveColor wird angenommen und ist editable (Editor schreibt ihn)', () => {
     const cfg = { data: [1, 2, 3], showNormalCurve: true, normalCurveColor: 'var(--color-info)' };
     assertDeepEqual(checkValue(histogramChart.props.config, 'c', cfg), cfg);
-    assertTrue(!histogramChart.editable.base.includes('normalCurveColor'));
-    assertDeepEqual(Object.keys(histogramChart.edits().fields || {}).filter((k) => k === 'normalCurveColor'), []);
+    assertTrue(histogramChart.editable.base.includes('normalCurveColor'));
+    const e = { binMethod: 'manual', binCount: 12, barColor: '#123456', barBorderColor: null, normalCurveColor: '#654321' };
+    assertDeepEqual(checkValue(histogramChart.edits(), 'e', e), e);
   });
 
   test('bins und showLabel werden angenommen, bins ist nicht editable', () => {
@@ -76,8 +81,10 @@ suite('Diagramm-Widgets: Schemas', () => {
     const e = histogramChart.edits();
     assertDeepEqual(defaultOf(e), {});
     assertDeepEqual(histogramChart.editable.base, ['title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel', 'showLegend',
-      'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks', 'bgColor', 'refLines', 'refAreas',
-      'axisRange', 'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder', 'barGap', 'pareto', 'boxplotStrip']);
+      'titleSize', 'labelSize', 'tickSize', 'legendSize', 'showXTicks', 'showYTicks', 'showXGrid', 'showYGrid', 'bgColor', 'refLines', 'refAreas',
+      'axisRange', 'chartWidth', 'chartHeight', 'sizeExportOnly', 'legendOrder',
+      'binMethod', 'binCount', 'showNormalCurve', 'pareto', 'boxplotStrip', 'barGap', 'barColor', 'barBorderColor', 'normalCurveColor']);
+    assertDeepEqual(histogramChart.editable.base, Histogram.editorKeys);
     assertDeepEqual(histogramChart.editable.series, ['fillColor', 'borderColor', 'borderWidth', 'borderStyle', 'pattern', 'patternColor', 'patternSolidity', 'visible', 'showNormalCurve']);
     assertDeepEqual(checkValue(e, 'e', { title: 'X', series: [{ name: 'A', fillColor: 'red' }] }), { title: 'X', series: [{ name: 'A', fillColor: 'red' }] });
     assertThrows(() => checkValue(e, 'e', { binWidth: 2 }), /unknown e key "binWidth"/);
@@ -99,6 +106,7 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(checkValue(controlChart.props.config, 'c', cfg), cfg);
     assertDeepEqual(controlChart.editable.series, []);
     assertTrue(controlChart.editable.base.includes('pointColor'));
+    assertDeepEqual(controlChart.editable.base, ControlChartType.editorKeys);
   });
 
   test('Regelkarte: values dürfen Lücken haben (null), Grenzlisten nicht', () => {
@@ -230,8 +238,8 @@ suite('Diagramm-Widgets: Schemas', () => {
   });
 
   test('Boxplot, Einzelwertdiagramm, Heatmap: bearbeitbar sind Basis plus editorKeys', () => {
-    assertDeepEqual(boxplotChart.editable.base, [...Boxplot.editorKeys, 'boxColors']);
-    assertDeepEqual(individualValuePlotChart.editable.base, [...IndividualValuePlot.editorKeys, 'pointSymbol', 'pointSize', 'pointColors']);
+    assertDeepEqual(boxplotChart.editable.base, Boxplot.editorKeys);
+    assertDeepEqual(individualValuePlotChart.editable.base, IndividualValuePlot.editorKeys);
     assertDeepEqual(heatmapChart.editable.base, Heatmap.editorKeys);
     for (const w of [boxplotChart, individualValuePlotChart, heatmapChart]) assertDeepEqual(w.editable.series, []);
   });
@@ -257,7 +265,7 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => chartWidget({ name: 'x', type: 'pie', editable: ['title', 'nope'] }), /nope/);
   });
 
-  test('Multi-Vari: Name, Typ, Konfiguration des Moduls, Basis bearbeitbar', () => {
+  test('Multi-Vari: Name, Typ, Konfiguration des Moduls, Basis plus editorKeys bearbeitbar', () => {
     assertDeepEqual([multiVariChart.name, multiVariChart.chartType], ['multi-vari-chart', 'multi-vari']);
     const cfg = {
       title: '', showTitle: false, xLabel: 'A', showXLabel: true, yLabel: 'Y', showLegend: true,
@@ -270,11 +278,11 @@ suite('Diagramm-Widgets: Schemas', () => {
     };
     assertDeepEqual(checkValue(multiVariChart.props.config, 'c', cfg), cfg);
     assertThrows(() => checkValue(multiVariChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
-    assertDeepEqual(multiVariChart.editable.base, ChartBase.editorKeys);
+    assertDeepEqual(multiVariChart.editable.base, MultiVari.editorKeys);
     assertDeepEqual(multiVariChart.editable.series, []);
   });
 
-  test('Gage-Run: Name, Typ, Streifenkonfiguration mit leerer Zelle, Basis bearbeitbar', () => {
+  test('Gage-Run: Name, Typ, Streifenkonfiguration mit leerer Zelle, Basis plus editorKeys bearbeitbar', () => {
     assertDeepEqual([gageRunChart.name, gageRunChart.chartType], ['gage-run-chart', 'gage-run-chart']);
     const cfg = {
       title: '', showTitle: false, xLabel: 'Teil', showXLabel: true, yLabel: 'Y', showLegend: true,
@@ -287,7 +295,7 @@ suite('Diagramm-Widgets: Schemas', () => {
     };
     assertDeepEqual(checkValue(gageRunChart.props.config, 'c', cfg), cfg);
     assertThrows(() => checkValue(gageRunChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
-    assertDeepEqual(gageRunChart.editable.base, ChartBase.editorKeys);
+    assertDeepEqual(gageRunChart.editable.base, GageRun.editorKeys);
     assertDeepEqual(gageRunChart.editable.series, []);
   });
   test('Kontur: Name und Typ, Konfiguration des Moduls besteht', () => {

@@ -116,3 +116,22 @@ suite('xy-plot: Model — Kommandos', () => {
     assertDeepEqual(m.legacySeries, []);
   });
 });
+
+suite('xy-plot: toJSON trotz reaktiver Einträge klonbar (66aac554)', () => {
+  // Alpine reicht Array-Einträge als reaktive Proxys heraus. Bleiben sie in
+  // toJSON stehen, wirft structuredClone im stateManager und die Speicherung
+  // entfällt still — Bezugslinien und -bereiche aus dem Editor gingen verloren.
+  test('Proxy-Einträge in chart.refLines/refAreas/series landen als einfache Objekte', () => {
+    const s = new State();
+    s.chart = {
+      refLines: [new Proxy({ dir: 'h', value: 2, color: 'red', width: 1, dash: 'dash' }, {})],
+      refAreas: [new Proxy({ dir: 'x', min: 0, max: 1, color: 'blue' }, {})],
+      series: [new Proxy({ name: 'A', color: 'green' }, {})],
+    };
+    const cloned = structuredClone(s.toJSON());
+    const chart = cloned.chart ?? cloned.view?.chart;
+    assertEqual(chart.refLines[0].value, 2);
+    assertEqual(chart.refAreas[0].max, 1);
+    assertEqual(chart.series[0].color, 'green');
+  });
+});

@@ -1273,7 +1273,7 @@ suite('dashboard tiles: process-capability', () => {
     }
     assertEqual(cfg.showNormalCurve, true);
     assertEqual(cfg.normalCurveColor, 'var(--color-info)');
-    assertDeepEqual(cfg.refLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
+    assertDeepEqual(cfg.moduleRefLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
     assertEqual(cfg.data.length, CAP_VALUES.length);
     host.remove();
   });
@@ -1374,7 +1374,7 @@ suite('dashboard tiles: process-capability', () => {
     assertEqual(vm.stats[1].value, '10');
     assertEqual(vm.chart.data.length, CAP_VALUES.length);
     assertEqual(vm.chart.binMethod, undefined);
-    assertDeepEqual(vm.chart.refLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
+    assertDeepEqual(vm.chart.moduleRefLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
     checkValue(histogramWidget.props.config, 'chart', vm.chart);
   });
 
@@ -1843,7 +1843,7 @@ suite('dashboard tiles: kano', () => {
     assertEqual(cm.made[0].type, 'scatter');
     const cfg = cm.made[0].cfg;
     assertEqual(cfg.series.length, 3);
-    assertEqual(cfg.refLines.length, 2);
+    assertEqual(cfg.moduleRefLines.length, 2);
     for (const k of ['showTitle', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'showLegend']) {
       assertEqual(cfg[k], false, k);
     }
@@ -1913,7 +1913,7 @@ suite('dashboard tiles: kano', () => {
     ]);
     assertEqual(vm.warn, null);
     assertEqual(vm.chart.series.length, 3);
-    assertEqual(vm.chart.refLines.length, 2);
+    assertEqual(vm.chart.moduleRefLines.length, 2);
     assertEqual(vm.chart.xLabel, 'modules.kano.chartX');
     assertEqual(vm.chart.yLabel, 'modules.kano.chartY');
     assertEqual(vm.chart.showLegend, false);

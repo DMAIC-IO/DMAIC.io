@@ -19,7 +19,7 @@ export default chartWidget({
     violationIndices: list(number({ integer: true, min: 0 }), opt), excludedIndices: list(number({ integer: true, min: 0 }), opt),
     baselineEnd: number({ ...opt, nullable: true }), stageBoundaries: list(number(), opt), showZones: boolean(opt),
     usl: number({ ...opt, nullable: true }), lsl: number({ ...opt, nullable: true }),
-    pointColor: text(ed), pointSymbol: text(ed), pointSize: number({ ...ed, min: 0 }),
-    pointStroke: text(ed), pointStrokeWidth: number({ ...ed, min: 0 }),
+    pointColor: text(ed), pointStroke: text({ ...ed, nullable: true }), pointSize: number({ ...ed, min: 0 }),
+    pointStrokeWidth: number({ ...ed, min: 0 }), pointSymbol: text(ed),
   },
 });

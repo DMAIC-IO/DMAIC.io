@@ -1,6 +1,6 @@
 /**
  * D.Mike — Widget histogram-chart: Konfigurationsschlüssel normalCurveColor
- * (nicht editierbar) und seine Wirkung auf die gezeichnete Normalkurve.
+ * (editierbar, seit cc964894 schreibt der Diagramm-Editor ihn) und seine Wirkung auf die gezeichnete Normalkurve.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { checkValue } from '../../js/core/model.js';
@@ -13,9 +13,9 @@ suite('histogram-chart: normalCurveColor', () => {
     assertDeepEqual(checkValue(histogramChart.props.config, 'c', cfg), cfg);
   });
 
-  test('normalCurveColor ist nicht editierbar', () => {
-    assertTrue(!histogramChart.editable.base.includes('normalCurveColor'));
-    assertDeepEqual(Object.keys(histogramChart.edits().fields || {}).filter((k) => k === 'normalCurveColor'), []);
+  test('normalCurveColor ist editierbar (der Diagramm-Editor schreibt ihn)', () => {
+    assertTrue(histogramChart.editable.base.includes('normalCurveColor'));
+    assertDeepEqual(checkValue(histogramChart.edits(), 'e', { normalCurveColor: '#654321' }), { normalCurveColor: '#654321' });
   });
 
   test('der Pfad der Normalkurve trägt die konfigurierte Farbe', () => {
