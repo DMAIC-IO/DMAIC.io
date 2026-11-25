@@ -1,0 +1,82 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Altschullers Patentanalyse zeigt: technische Systeme entwickeln sich nicht zufällig, sondern entlang einer kleinen Zahl wiederkehrender **Evolutionslinien**. Wer das aktuelle System auf diesen {{term:evolutionsgesetze|Evolutionslinien}} verortet, kann mit hoher Trefferquote vorhersagen, wohin die nächste Generation gehen wird."
+        },
+        {
+          "type": "paragraph",
+          "content": "Das Modul versammelt **acht klassische Trends**. Jede Linie hat klar benannte Stufen — der Sprung zur nächsten Stufe ist eine Innovations-Hypothese, die das Team systematisch prüfen kann."
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Aggregation:** Mono → Bi → Poly → integriertes System (z.B. ein Scheinwerfer → Doppelscheinwerfer → LED-Matrix → adaptives Beleuchtungssystem).",
+            "**Dynamisierung:** starr → gelenkig → elastisch → flüssig → Feld (z.B. Stahlträger → Federelement → Hydraulik → Elektromagnet).",
+            "**Skala:** Makro → Meso → Mikro → Nano (z.B. mechanische Pumpe → MEMS-Pumpe → molekularer Transport).",
+            "**Automatisierung:** manuell → mechanisiert → automatisch → autonom (z.B. Drehknopf → Stellmotor → Regler → KI-Steuerung).",
+            "**Vollständigkeit:** Motor → Übertragung → Werkzeug → Steuerung — das System bekommt nacheinander alle vier Subfunktionen integriert.",
+            "**Steuerbarkeit:** offene Steuerung → Messung → Anpassung → smart (z.B. fester Vorschub → Vorschubsensor → adaptive Regelung → lernend).",
+            "**Anpassung an die Nische:** Universal → einstellbar → individuell → selbstadaptierend (z.B. Standard-Schuh → orthopädischer Schuh → Maßschuh → selbstanpassende Sohle).",
+            "**Ungleichmäßige Entwicklung:** welches Subsystem hinkt nach? Klassisches Bottleneck-Phänomen — eine Komponente bestimmt den Fortschritt des ganzen Systems."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Das achte Element („Ungleichmäßige Entwicklung“) ist qualitativ — keine festen Stufen, nur eine Notiz. Es ergänzt die anderen sieben, indem es nach dem **schwächsten Glied** fragt."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "System benennen — eine konkrete technische Einheit, kein ganzes Produkt-Portfolio.",
+            "Jeden Trend durchgehen und das System auf der Stufenleiter verorten. Bei Zweifel die naheliegende Stufe wählen — die Bewertung ist nicht der Punkt, der vollständige Durchgang ist es.",
+            "Pro Trend eine Notiz zur **nächsten Stufe** schreiben: was würde der Sprung konkret bedeuten? Welche Komponente / welches Verhalten müsste geändert werden?",
+            "Für den achten Trend (ungleichmäßige Entwicklung) das schwächste Subsystem identifizieren — meist die Komponente, die den Sprung in einem der anderen sieben Trends blockiert.",
+            "Die so entstandene Liste der „nächste-Stufe-Möglichkeiten“ priorisieren (mit anderen TRIZ-Werkzeugen oder schlicht nach Kosten / Wirkung)."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Trends können nicht beliebig weit getrieben werden: jede Linie sättigt sich. Ein System auf der höchsten Stufe einer Linie hat in dieser Dimension keine Reserven mehr — der Fortschritt verlagert sich auf andere Trends. Das Erkennen dieser **Sättigung** ist oft wichtiger als der nächste Stufensprung."
+        }
+      ]
+    },
+    "crossLinks": {
+      "title": "Bezug zu anderen TRIZ-Werkzeugen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**9-Fenster-Werkzeug** — die Zukunfts-Spalte der 9-Fenster ist die freitextliche Schwester dieser Checkliste. Die Verortung auf den acht Trends gibt der Zukunfts-Spalte Struktur.",
+            "**Ideales Endresultat (IFR)** — der nächste Stufensprung in einem Trend ist oft ein guter Kandidat für einen IFR.",
+            "**Ressourcen-Checkliste** — viele Stufensprünge brauchen eine konkrete Ressource (z.B. der Sprung von „mechanisiert“ auf „automatisch“ braucht ein Sensorsignal).",
+            "**Widerspruchsmatrix** — wenn der Stufensprung an einem technischen Widerspruch scheitert, formalisiere ihn dort."
+          ]
+        }
+      ]
+    },
+    "references": {
+      "title": "Quellen & Weiterlesen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "G. S. Altschuller: „Erfinden — Wege zur Lösung technischer Probleme“ (1973, dt. 1984) — Kapitel zu Gesetzmäßigkeiten der Technik-Entwicklung.",
+            "D. Mann: „Hands-On Systematic Innovation“ — Kapitel „Trends of Evolution“ (umfangreichste moderne Aufbereitung).",
+            "V. Souchkov: „TRIZ Body of Knowledge“ — Definition Patterns of Evolution.",
+            "Y. Salamatov: „TRIZ — The Right Solution at the Right Time“ — gut illustrierte Industriebeispiele pro Trend."
+          ]
+        }
+      ]
+    }
+  }
+}

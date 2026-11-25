@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Trends der technischen Evolution (TRIZ)",
+  "description": "Acht klassische Evolutionslinien — verorte das System und identifiziere den nächsten Stufensprung",
+  "whenToUse": "Wenn gefragt ist, wo ein System auf den klassischen Entwicklungslinien steht und welcher Stufensprung als nächster ansteht — nicht, um einen konkreten Widerspruch zu lösen oder eine Variante auszuwählen.",
+  "invariants": {
+    "stageInScale": "Die Stufe eines Trends ist -1 (keine gewählt) oder eine Stufe seiner Skala; die ungleichmäßige Entwicklung hat keine Stufen."
+  },
+  "systemLabel": "System",
+  "systemPlaceholder": "z.B. Pkw-Beleuchtung",
+  "notesPlaceholder": "Heutige Stufe begründen + nächste Stufe skizzieren …",
+  "trend": {
+    "aggregation": {
+      "name": "Aggregation",
+      "description": "Ein System entwickelt sich von einem Einzel-Element zu mehreren, dann zu vielen, schließlich zu einem integrierten Gesamtsystem.",
+      "stages": [
+        "Mono — ein einzelnes Element erfüllt die Funktion.",
+        "Bi — zwei gleichartige Elemente arbeiten zusammen.",
+        "Poly — viele gleichartige oder verschiedenartige Elemente.",
+        "Integriertes System — die Elemente verschmelzen funktional zu einer Einheit."
+      ]
+    },
+    "dynamism": {
+      "name": "Dynamisierung",
+      "description": "Starre Systeme werden zunehmend beweglich — bis hin zur Auflösung in ein Feld.",
+      "stages": [
+        "Starr — feste Form, keine Bewegung.",
+        "Gelenkig — diskrete Gelenke ermöglichen einzelne Freiheitsgrade.",
+        "Elastisch — kontinuierliche Verformung (Federn, Membranen).",
+        "Flüssig / pulverförmig — formlos beweglich.",
+        "Feld — die mechanische Substanz verschwindet, ein Feld wirkt (magnetisch, elektrisch, akustisch …)."
+      ]
+    },
+    "scale": {
+      "name": "Skala",
+      "description": "Die Arbeitsebene des Systems verschiebt sich zu immer kleineren Strukturen.",
+      "stages": [
+        "Makro — Bauteile im cm- bis m-Bereich.",
+        "Meso — Strukturen im mm-Bereich.",
+        "Mikro — μm-Strukturen (MEMS, Mikrofluidik).",
+        "Nano / molekular — direkte Manipulation einzelner Moleküle / Atome."
+      ]
+    },
+    "automation": {
+      "name": "Automatisierung",
+      "description": "Menschliche Eingriffe werden schrittweise durch Maschine, Regelung und schließlich Autonomie ersetzt.",
+      "stages": [
+        "Manuell — Mensch bedient direkt.",
+        "Mechanisiert — Werkzeug verstärkt menschliche Kraft / Präzision.",
+        "Automatisch — fester Ablauf ohne Eingriff im Normalfall.",
+        "Autonom — System trifft selbst Entscheidungen, lernt, passt sich an."
+      ]
+    },
+    "completeness": {
+      "name": "Vollständigkeit",
+      "description": "Ein technisches System bekommt nacheinander alle vier Subfunktionen Motor / Übertragung / Werkzeug / Steuerung integriert.",
+      "stages": [
+        "Werkzeug — passive Komponente, externe Energiequelle.",
+        "+ Übertragung — Kraftübertragung integriert.",
+        "+ Motor — eigene Energieumsetzung an Bord.",
+        "+ Steuerung — vollständiges System mit Regelkreis."
+      ]
+    },
+    "controllability": {
+      "name": "Steuerbarkeit",
+      "description": "Vom offenen, unkalibrierten Ablauf hin zu lernenden Regelkreisen.",
+      "stages": [
+        "Offene Steuerung — kein Feedback, fester Sollwert.",
+        "Messung — Sensor liefert Ist-Wert, Operator korrigiert.",
+        "Adaptive Regelung — geschlossener Kreis passt Stellgröße automatisch an.",
+        "Smart — lernender Regelkreis, Modell-prädiktiv, kontextabhängig."
+      ]
+    },
+    "matching": {
+      "name": "Anpassung an die Nische",
+      "description": "Vom universellen Massenprodukt zum selbst-anpassenden System.",
+      "stages": [
+        "Universal — eine Größe für alle.",
+        "Einstellbar — diskrete Einstellungen, vom Nutzer gewählt.",
+        "Individuell angepasst — pro Nutzer / Anwendung maßgefertigt.",
+        "Selbstadaptierend — System passt sich Nutzer / Umgebung automatisch an."
+      ]
+    },
+    "uneven": {
+      "name": "Ungleichmäßige Entwicklung",
+      "description": "Welches Subsystem hinkt nach und limitiert das Gesamtsystem? Klassisches Bottleneck-Phänomen.",
+      "notesPlaceholder": "Welche Komponente ist auf einem älteren Entwicklungsstand als der Rest und limitiert dadurch den Sprung in einem anderen Trend?"
+    }
+  }
+}

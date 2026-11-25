@@ -1,0 +1,43 @@
+<section class="module-container triz-evo" x-data="trizEvolutionTrends">
+  <div class="module-container__body triz-evo__body">
+    <section class="triz-evo__topbar">
+      <label data-help-key="modules.triz-evolution-trends.fields.system.help" class="triz-evo__label" :for="fieldId('system')" x-text="t('systemLabel')"></label>
+      <input :id="fieldId('system')" class="field triz-evo__system-input" type="text" data-role="system"
+        x-model="model.system"
+        :placeholder="t('systemPlaceholder')">
+    </section>
+
+    <template x-for="trendId in trendIds" :key="trendId">
+      <section class="triz-evo__trend" :class="qualClass(trendId)">
+        <header class="triz-evo__trend-head">
+          <span class="triz-evo__trend-num" x-text="trendNum(trendId)"></span>
+          <h3 data-help-key="modules.triz-evolution-trends.fields.trends.help" class="triz-evo__trend-title" x-text="trendName(trendId)"></h3>
+        </header>
+        <p class="triz-evo__trend-desc" x-text="trendDesc(trendId)"></p>
+
+        <template x-if="hasStages(trendId)"><div data-help-key="modules.triz-evolution-trends.actions.setTrendStage.help" class="triz-evo__stages" role="radiogroup"
+          :aria-label="trendName(trendId)">
+          <template x-for="s in stages(trendId)" :key="s">
+            <label class="triz-evo__stage" :class="stageClass(trendId, s)"
+              :data-trend="trendId" :data-idx="s">
+              <input type="radio" data-help-key=""
+                :name="radioName(trendId)"
+                :value="s"
+                data-role="stage"
+                :data-trend="trendId"
+                :checked="isSelected(trendId, s)"
+                x-command="setTrendStage" :data-arg-trend-id="trendId" :data-arg-stage="s">
+              <span class="triz-evo__stage-idx" x-text="stageNum(s)"></span>
+              <span class="triz-evo__stage-label" x-text="stageName(trendId, s)"></span>
+            </label>
+          </template>
+        </div></template>
+
+        <textarea class="field triz-evo__notes" rows="3" data-role="notes"
+          :data-trend="trendId"
+          :placeholder="notesPlaceholder(trendId)"
+          x-model="model.trends[trendId].notes"></textarea>
+      </section>
+    </template>
+  </div>
+</section>

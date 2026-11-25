@@ -6,7 +6,10 @@
  * Migration nicht).
  */
 
-/** Trends im Formatstand 1.0 mit ihrer Stufenzahl, in gespeicherter Reihenfolge. */
+/**
+ * Trends im Formatstand 1.0 mit ihrer Stufenzahl, in gespeicherter Reihenfolge.
+ * @type {ReadonlyArray<[string, number]>}
+ */
 const TRENDS_1_0 = [
   ['aggregation', 4], ['dynamism', 5], ['scale', 4], ['automation', 4],
   ['completeness', 4], ['controllability', 4], ['matching', 4], ['uneven', 0],

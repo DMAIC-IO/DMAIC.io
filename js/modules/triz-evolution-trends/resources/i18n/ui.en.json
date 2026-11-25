@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Trends of Technical Evolution (TRIZ)",
+  "description": "Eight classical evolution trajectories — locate the system and identify the next stage jump",
+  "whenToUse": "When the question is where a system sits on the classical evolution trajectories and which stage jump comes next — not to resolve a specific contradiction or pick a variant.",
+  "invariants": {
+    "stageInScale": "The stage of a trend is -1 (none chosen) or a stage on its scale; uneven development has no stages."
+  },
+  "systemLabel": "System",
+  "systemPlaceholder": "e.g. passenger-car headlight",
+  "notesPlaceholder": "Justify the current stage + sketch the next one …",
+  "trend": {
+    "aggregation": {
+      "name": "Aggregation",
+      "description": "A system evolves from a single element to several, then many, finally an integrated whole.",
+      "stages": [
+        "Mono — a single element performs the function.",
+        "Bi — two similar elements cooperate.",
+        "Poly — many similar or diverse elements.",
+        "Integrated system — the elements functionally merge into one unit."
+      ]
+    },
+    "dynamism": {
+      "name": "Dynamism",
+      "description": "Rigid systems become increasingly mobile — up to dissolution into a field.",
+      "stages": [
+        "Rigid — fixed shape, no motion.",
+        "Jointed — discrete joints enable single degrees of freedom.",
+        "Elastic — continuous deformation (springs, membranes).",
+        "Fluid / powdery — formless, freely flowing.",
+        "Field — the mechanical substance disappears, a field acts (magnetic, electric, acoustic …)."
+      ]
+    },
+    "scale": {
+      "name": "Scale",
+      "description": "The working level of the system shifts to ever smaller structures.",
+      "stages": [
+        "Macro — parts in cm to m range.",
+        "Meso — structures in mm range.",
+        "Micro — μm structures (MEMS, microfluidics).",
+        "Nano / molecular — direct manipulation of individual molecules / atoms."
+      ]
+    },
+    "automation": {
+      "name": "Automation",
+      "description": "Human intervention is progressively replaced by machine, control loop, and finally autonomy.",
+      "stages": [
+        "Manual — human operates directly.",
+        "Mechanised — tool amplifies human force / precision.",
+        "Automatic — fixed sequence without intervention in normal operation.",
+        "Autonomous — system decides on its own, learns, adapts."
+      ]
+    },
+    "completeness": {
+      "name": "Completeness",
+      "description": "A technical system gradually internalises all four sub-functions: engine / transmission / tool / control.",
+      "stages": [
+        "Tool — passive component, external energy source.",
+        "+ Transmission — power transmission integrated.",
+        "+ Engine — energy conversion on board.",
+        "+ Control — complete system with feedback loop."
+      ]
+    },
+    "controllability": {
+      "name": "Controllability",
+      "description": "From open, uncalibrated operation to learning feedback loops.",
+      "stages": [
+        "Open loop — no feedback, fixed set-point.",
+        "Measured — sensor delivers actual value, operator corrects.",
+        "Adaptive control — closed loop adjusts actuation automatically.",
+        "Smart — learning loop, model-predictive, context-aware."
+      ]
+    },
+    "matching": {
+      "name": "Niche matching",
+      "description": "From universal mass product to self-adapting system.",
+      "stages": [
+        "Universal — one size fits all.",
+        "Adjustable — discrete settings chosen by the user.",
+        "Individually fitted — custom-made per user / application.",
+        "Self-adapting — system adjusts to user / environment automatically."
+      ]
+    },
+    "uneven": {
+      "name": "Uneven development",
+      "description": "Which subsystem lags and limits the whole? The classical bottleneck phenomenon.",
+      "notesPlaceholder": "Which component is at an older stage than the rest and thereby blocks the jump on another trend?"
+    }
+  }
+}
