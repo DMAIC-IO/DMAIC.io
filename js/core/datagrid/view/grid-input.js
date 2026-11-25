@@ -471,7 +471,9 @@ export function createGridInput(view, {
    */
   function pasteText(text) {
     if (!can('pasteBlock') || !nCols()) return;
-    const own = text != null && text === lastGridCopy;
+    // Zeilenenden wie die eigene Kopie (\n): die Zwischenablage liefert unter Windows \r\n.
+    const eol = (/** @type {string} */ t) => t.replace(/\r\n?/g, '\n');
+    const own = text != null && lastGridCopy != null && eol(text) === eol(lastGridCopy);
     const rows = parseClipboard(text || '', { keepBlank: own });
     if (!rows.length) return;
     const { c0, r0 } = sel ? S.rangeOf(sel) : { c0: 0, r0: 0 };

@@ -430,6 +430,37 @@ function retypeHead(head, values) {
   return out;
 }
 
+/**
+ * Wie `retypeHead`, aber für das Verschieben (Ruling F1): der Typ bleibt, solange
+ * er alle Werte hält; neu erkannt wird nur, wenn er es nicht mehr kann. Dabei
+ * geht kein Wert verloren (sonst wird die Spalte Text), und ein Zahlentyp wie
+ * Währung oder Prozent fällt nicht auf schlichte Zahl zurück.
+ * @param {any} head @param {any[]} values @returns {any[]}
+ */
+function retypeMovedHead(head, values) {
+  let out = values;
+  if (!values.every((v) => fitsType(head.type, v))) {
+    const detected = detectColumnType(values, { format: head.format });
+    const lost = detected && values.some((v, i) => isCell(v) && !isCell(detected.values[i]));
+    if (!detected || lost) {
+      head.type = 'text';
+      out = values.map((v) => (isCell(v) ? String(v) : null));
+    } else {
+      const keep = detected.type === 'numeric' && isNumericType(head.type) && head.type !== 'binary';
+      if (!keep) {
+        head.type = detected.type;
+        head.format = detected.format;
+      }
+      out = detected.values.map((/** @type {any} */ v) => (isCell(v) ? v : null));
+    }
+  }
+  const col = { ...head, values: out };
+  reinferRoleAfterRetype(col);
+  head.role = col.role;
+  head.roleManual = col.roleManual;
+  return out;
+}
+
 // ─── Bereiche ────────────────────────────────────────────────────
 
 /**
@@ -827,10 +858,14 @@ export const cellCommands = {
       c0: number({ integer: true, min: 0 }), r0: number({ integer: true, min: 0 }),
       c1: number({ integer: true, min: 0 }), r1: number({ integer: true, min: 0 }),
     }, { nullable: true }),
-    run({ sheetId, source: s, toCol, toRow }) {
+    run({ sheetId, source: raw, toCol, toRow }) {
       const sheet = sheetOf(this, sheetId);
       const heads = sheet.columns;
       const rows = sheet.data.rowCount;
+      const s = {
+        c0: Math.min(raw.c0, raw.c1), r0: Math.min(raw.r0, raw.r1),
+        c1: Math.max(raw.c0, raw.c1), r1: Math.max(raw.r0, raw.r1),
+      };
       requireRect('source.', s, heads.length, rows);
       const w = s.c1 - s.c0 + 1;
       const h = s.r1 - s.r0 + 1;
@@ -899,10 +934,13 @@ export const cellCommands = {
         for (const m of moved) {
           if (m.c !== c) continue;
           values[m.r] = m.value;
-          fs[m.r] = m.formula;
+          // Nur wo eine Formel hinkommt; eine alte am Ziel ist oben schon geleert.
+          if (m.formula) fs[m.r] = m.formula;
         }
+        // Unveränderte Spalten bleiben, wie sie sind (kein leerer Verlaufsschritt).
+        if (!changedRun(cur, values)) continue;
         const head = copyHead(heads[c]);
-        values = retypeHead(head, values);
+        values = retypeMovedHead(head, values);
         if (JSON.stringify(head) !== JSON.stringify(heads[c])) e.head = head;
         const run = changedRun(cur, values);
         if (run) Object.assign(e, run);

@@ -763,6 +763,59 @@ suite('worksheet: moveCells (Verhalten aus DataGrid.moveCells)', () => {
     assertEqual(join(w, 1), 'a|b||');
   });
 
+  test('Textspalte mit Zahlen: Verschieben löscht keinen Wert außerhalb des Blocks', () => {
+    const w = setup({
+      heads: [col('x', { type: 'text', role: 'categorical', shortName: 'C1' }), col('y', { shortName: 'C2' })],
+      cells: [['A', 'B', '1', '2', '3'], [null, null, null, null, null]],
+    });
+    mv(w, { c0: 0, r0: 0, c1: 0, r1: 0 }, 1, 0);
+    assertEqual(values(w, 0)[1], 'B');
+    assertEqual(sheet(w).columns[0].type, 'text');
+    assertEqual(join(w, 0), '|B|1|2|3');
+    assertEqual(values(w, 1)[0], 'A');
+  });
+
+  test('Prozentspalte: Verschieben innerhalb behält Typ und Format', () => {
+    const w = setup({
+      heads: [col('x', { type: 'percent', format: { decimals: 2 }, shortName: 'C1' })],
+      cells: [[0.25, 0.5, null, null]],
+    });
+    mv(w, { c0: 0, r0: 0, c1: 0, r1: 1 }, 0, 2);
+    assertEqual(sheet(w).columns[0].type, 'percent');
+    assertDeepEqual(sheet(w).columns[0].format, { decimals: 2 });
+    assertEqual(join(w, 0), '||0.25|0.5');
+  });
+
+  test('Währungsspalte: Verschieben behält Typ und Symbol', () => {
+    const w = setup({
+      heads: [col('x', { type: 'currency', format: { decimals: 2, currencySymbol: '€' }, shortName: 'C1' })],
+      cells: [[12.5, 3, null]],
+    });
+    mv(w, { c0: 0, r0: 0, c1: 0, r1: 0 }, 0, 2);
+    assertEqual(sheet(w).columns[0].type, 'currency');
+    assertEqual(sheet(w).columns[0].format.currencySymbol, '€');
+  });
+
+  test('leerer Block ins Leere → Ziel zurück, kein Verlaufsschritt', () => {
+    const w = setup({ cells: [[1, null, null, null], [null, null, null, null], [null, null, null, null]] });
+    const before = w.json();
+    const rev = w.m.$tableRev;
+    w.seen.inverses = null;
+    assertDeepEqual(mv(w, { c0: 1, r0: 0, c1: 2, r1: 1 }, 1, 2), { c0: 1, r0: 2, c1: 2, r1: 3 });
+    assertEqual(w.seen.inverses?.length ?? 0, 0);
+    assertEqual(w.m.$tableRev, rev);
+    assertEqual(w.json(), before);
+  });
+
+  test('umgekehrte Quelle verschiebt wie die geordnete', () => {
+    const a = moveSheet();
+    const b = moveSheet();
+    const ra = mv(a, { c0: 0, r0: 0, c1: 1, r1: 1 }, 0, 4);
+    const rb = mv(b, { c0: 1, r0: 1, c1: 0, r1: 0 }, 0, 4);
+    assertDeepEqual(rb, ra);
+    assertEqual(b.json(), a.json());
+  });
+
   test('überlappendes Ziel: Quelle zuerst gelesen, Bezug auf Quellzelle folgt', () => {
     const w = setup({
       heads: [col('x', { shortName: 'C1' }), col('y', { shortName: 'C2' })],

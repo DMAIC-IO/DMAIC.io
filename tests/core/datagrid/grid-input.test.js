@@ -648,6 +648,17 @@ suite('GridInput — eigene Kopie einfügen', () => {
     } finally { s.done(); }
   });
 
+  test('eigene Kopie mit CRLF-Zeilenenden zurück → header: false', async () => {
+    const s = await setup();
+    try {
+      selectBlock(s, 0, 1, 1, 2);
+      const text = clip(s, 'copy');
+      clickCell(s, 0, 7);
+      clip(s, 'paste', text.replace(/\n/g, '\r\n'));
+      assertDeepEqual(pastes(s), [['pasteBlock', { columnId: 'a', startRow: 7, rows: [['1', 't1'], ['2', 't2']], header: false }]]);
+    } finally { s.done(); }
+  });
+
   test('fremder Text nach eigener Kopie rät wieder', async () => {
     const s = await setup();
     try {
