@@ -47,7 +47,7 @@ export const ERROR_BARS_SHAPE = {
 /**
  * Ob ein Modus je Richtung eine Spalte liest: `columns` hält Abstände vom
  * Punkt, `columnsAbsolute` die Endpunkte der Balken.
- * @param {unknown} mode @returns {boolean}
+ * @param {unknown} mode @returns {mode is 'columns'|'columnsAbsolute'}
  */
 export function isColumnMode(mode) {
   return mode === 'columns' || mode === 'columnsAbsolute';
