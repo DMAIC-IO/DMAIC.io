@@ -515,6 +515,37 @@ suite('worksheet: pasteBlock (Verhalten aus importFromClipboard)', () => {
     assertDeepEqual(values(w, 1), [7, 8, 3]);
   });
 
+  const one = () => setup({ heads: [col('a', { shortName: 'C1' })], cells: [[null, null, null]] });
+
+  test('eine Kopfzeile aus Namen wird weiter als Spaltenname genommen', () => {
+    const w = one();
+    w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 0, rows: [['Durchmesser'], ['1,5'], ['2,5']] });
+    assertEqual(sheet(w).columns[0].name, 'Durchmesser');
+    assertDeepEqual(values(w, 0).slice(0, 2), [1.5, 2.5]);
+  });
+
+  test('eine erste Zeile aus Text und Zahl ist Daten, keine Kopfzeile', () => {
+    const w = one();
+    w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 0, rows: [['A', '1'], ['B', '2']] });
+    assertEqual(sheet(w).columns[0].name, '');
+    assertDeepEqual(values(w, 0).slice(0, 2), ['A', 'B']);
+  });
+
+  test('header: false nimmt alle Zeilen als Daten', () => {
+    const w = one();
+    const r = w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 0, rows: [['Teil', 'Wert'], ['A', '1']], header: false });
+    assertEqual(r.rows, 2);
+    assertEqual(sheet(w).columns[0].name, '');
+    assertDeepEqual(values(w, 0).slice(0, 2), ['Teil', 'A']);
+  });
+
+  test('header: true nimmt die erste Zeile als Kopf, auch ohne Zahl darunter', () => {
+    const w = one();
+    w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 0, rows: [['N'], ['x']], header: true });
+    assertEqual(sheet(w).columns[0].name, 'N');
+    assertEqual(values(w, 0)[0], 'x');
+  });
+
   test('startRow hinter dem Blattende und unbekannte Spalte werden abgelehnt', () => {
     const w = setup();
     rejects(w, () => w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 4, rows: [['1']] }), 'invalid startRow 4; allowed: 0..3');

@@ -69,13 +69,14 @@
       }
     },
     "pasteBlock": {
-      "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If the first row is text and the second holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. Locked columns in the block stay unchanged as with fill, the others are written; if the block hits only locked columns, the command is rejected. Returns the number of written columns and of rows without the header.",
+      "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If every cell of the first row is text and the second row holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. Locked columns in the block stay unchanged as with fill, the others are written; if the block hits only locked columns, the command is rejected. Returns the number of written columns and of rows without the header.",
       "params": {
         "sheetId": "The id of the sheet, as read().sheets[].id names it.",
         "columnId": "The id of the column at the top left of the block, as read().columns[].id names it.",
         "startRow": "Zero-based row of the top left cell; the row count appends below the last row.",
         "rows": "The block as rows of cell texts, each row in column order, e.g. [[\"Length\", \"Site\"], [\"1.5\", \"A\"]]. Empty texts become empty cells.",
-        "command": "The command as one object with sheetId, columnId, startRow and rows."
+        "header": "false treats every row as data, true makes the first row the header; if omitted it is guessed.",
+        "command": "The command as one object with sheetId, columnId, startRow, rows and header."
       }
     },
     "fillRange": {

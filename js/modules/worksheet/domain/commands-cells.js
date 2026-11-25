@@ -646,17 +646,24 @@ export const cellCommands = {
    * unverändert wie bei `fillRange`; die übrigen werden geschrieben. Trifft
    * der Block nur gesperrte Spalten, wirft es. Liefert die Zahl geschriebener
    * Spalten und der Zeilen ohne Kopfzeile.
+   *
+   * `header`: fehlt es, wird geraten (erste Zeile Kopf, wenn jede Zelle nicht
+   * leer und keine Zahl ist und die zweite Zeile eine Zahl enthält); `false`
+   * nimmt alle Zeilen als Daten, `true` die erste Zeile als Kopf.
    * @agent
    */
   pasteBlock: command({
-    params: { sheetId: text(), columnId: text(), startRow: number(), rows: list(list(text())) },
+    params: {
+      sheetId: text(), columnId: text(), startRow: number(), rows: list(list(text())), header: boolean({ optional: true }),
+    },
     returns: object({ columns: number(), rows: number() }),
-    run({ sheetId, columnId, startRow, rows }) {
+    run({ sheetId, columnId, startRow, rows, header: asHeader }) {
       const sheet = sheetOf(this, sheetId);
       const ci = columnIndex(sheet, columnId);
       requireIndex('startRow', startRow, sheet.data.rowCount);
       if (rows.length === 0) return { columns: 0, rows: 0 };
-      const { header, rows: valueRows } = splitHeader(rows);
+      const { header, rows: valueRows } = asHeader === undefined ? splitHeader(rows)
+        : asHeader ? { header: rows[0], rows: rows.slice(1) } : { header: null, rows };
       const width = Math.max(...rows.map((r) => r.length));
       const heads = sheet.columns;
       const isLocked = (/** @type {number} */ i) => i < heads.length && Boolean(heads[i].meta?.lock);

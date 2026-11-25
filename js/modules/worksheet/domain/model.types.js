@@ -51,6 +51,7 @@
  * @property {string} columnId
  * @property {number} startRow
  * @property {string[][]} rows
+ * @property {boolean} [header]
  */
 
 /**

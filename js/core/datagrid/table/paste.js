@@ -7,24 +7,36 @@ import { parseNumeric } from '../datagrid-utils.js';
 import { detectPattern, generateFill, shiftFormulaRefs, withCtrlModifier } from '../datagrid-fill.js';
 
 /**
- * Zerlegt TSV wie `DataGrid.importFromClipboard`: Zeilenenden vereinheitlicht,
- * Zeilen ohne Inhalt entfallen.
- * @param {string} text @returns {string[][]} Zeilen von Zellentexten
+ * Zerlegt TSV wie `DataGrid.importFromClipboard`: Zeilenenden vereinheitlicht.
+ * Führende und abschließende Zeilen ohne Inhalt entfallen, Leerzeilen mitten im
+ * Text bleiben. Mit `keepBlank` bleibt alles stehen (eigene Kopie des Rasters:
+ * leere Zeilen im Block sind Daten).
+ * @param {string} text
+ * @param {{ keepBlank?: boolean }} [opts]
+ * @returns {string[][]} Zeilen von Zellentexten
  */
-export function parseClipboard(text) {
-  const rows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  return rows.map((r) => r.split('\t')).filter((r) => r.some((c) => c.trim() !== ''));
+export function parseClipboard(text, { keepBlank = false } = {}) {
+  const rows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map((r) => r.split('\t'));
+  if (keepBlank) return rows;
+  const blank = (/** @type {string[]} */ r) => r.every((c) => c.trim() === '');
+  let from = 0;
+  let to = rows.length;
+  while (from < to && blank(rows[from])) from++;
+  while (to > from && blank(rows[to - 1])) to--;
+  return rows.slice(from, to);
 }
 
 /**
- * Erkennt eine Kopfzeile (erste Zeile nicht rein numerisch, zweite mit Zahl).
+ * Erkennt eine Kopfzeile: jede Zelle der ersten Zeile ist nicht leer und keine
+ * Zahl, die zweite Zeile enthält eine Zahl (wie `looksLikeHeaderRow`). Eine
+ * erste Zeile aus Text und Zahl gemischt sind Daten.
  * @param {string[][]} rows @returns {{ header: string[]|null, rows: string[][] }}
  */
 export function splitHeader(rows) {
   if (rows.length < 2) return { header: null, rows };
-  const firstNumeric = rows[0].every((v) => parseNumeric(v) !== null);
+  const namesOnly = rows[0].every((v) => v.trim() !== '' && parseNumeric(v) === null);
   const restNumeric = rows[1].some((v) => parseNumeric(v) !== null);
-  return !firstNumeric && restNumeric ? { header: rows[0], rows: rows.slice(1) } : { header: null, rows };
+  return namesOnly && restNumeric ? { header: rows[0], rows: rows.slice(1) } : { header: null, rows };
 }
 
 /**

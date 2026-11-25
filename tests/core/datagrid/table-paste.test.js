@@ -3,15 +3,33 @@ import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { parseClipboard, splitHeader, fillBlock } from '../../../js/core/datagrid/table/paste.js';
 
 suite('Tabellen-Einfügen', () => {
-  test('parseClipboard zerlegt TSV, vereinheitlicht Zeilenenden, lässt Leerzeilen weg', () => {
-    assertDeepEqual(parseClipboard('a\tb\r\n1\t2\r\n\r\n3\t4\n'), [['a', 'b'], ['1', '2'], ['3', '4']]);
+  test('parseClipboard zerlegt TSV, vereinheitlicht Zeilenenden, lässt nur Leerzeilen am Rand weg', () => {
+    assertDeepEqual(parseClipboard('a\tb\r\n1\t2\r\n\r\n3\t4\n'), [['a', 'b'], ['1', '2'], [''], ['3', '4']]);
     assertDeepEqual(parseClipboard('  \t \n'), []);
+  });
+
+  test('parseClipboard mit keepBlank filtert nichts', () => {
+    assertDeepEqual(parseClipboard('\n1\n\n2\n', { keepBlank: true }), [[''], ['1'], [''], ['2'], ['']]);
   });
 
   test('splitHeader erkennt Kopfzeile', () => {
     assertDeepEqual(splitHeader([['x', 'y'], ['1', '2']]), { header: ['x', 'y'], rows: [['1', '2']] });
     const rows = [['1', '2'], ['3', '4']];
     assertEqual(splitHeader(rows).header, null);
+  });
+
+  test('splitHeader: Namen über Zahlenzeile ist Kopf', () => {
+    assertDeepEqual(splitHeader([['Teil', 'Wert'], ['A', '1']]), { header: ['Teil', 'Wert'], rows: [['A', '1']] });
+  });
+
+  test('splitHeader: erste Zeile aus Text und Zahl ist Daten', () => {
+    const rows = [['A', '1'], ['B', '2']];
+    assertDeepEqual(splitHeader(rows), { header: null, rows });
+  });
+
+  test('splitHeader: leere Zelle in der ersten Zeile ist kein Kopf', () => {
+    const rows = [['', 'Y'], ['1', '2']];
+    assertDeepEqual(splitHeader(rows), { header: null, rows });
   });
 
   test('fillBlock: lineare Reihe vorwärts und rückwärts', () => {
