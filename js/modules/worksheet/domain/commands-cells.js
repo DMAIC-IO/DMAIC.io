@@ -409,6 +409,27 @@ function isBlankColumn(sheet, i) {
   return sheet.data.columns[i].every((/** @type {any} */ v) => v === null || v === '');
 }
 
+/**
+ * Typ, Format und Rolle eines Kopfs nach geänderten Werten neu erkennen (wie
+ * das Einfügen): `head` wird verändert, geliefert werden die Werte, bei
+ * erkanntem Typ in dessen Form.
+ * @param {any} head @param {any[]} values @returns {any[]}
+ */
+function retypeHead(head, values) {
+  let out = values;
+  const detected = detectColumnType(values, { format: head.format });
+  if (detected) {
+    head.type = detected.type;
+    head.format = detected.format;
+    out = detected.values.map((/** @type {any} */ v) => (isCell(v) ? v : null));
+  }
+  const col = { ...head, values: out };
+  reinferRoleAfterRetype(col);
+  head.role = col.role;
+  head.roleManual = col.roleManual;
+  return out;
+}
+
 // ─── Bereiche ────────────────────────────────────────────────────
 
 /**
@@ -670,16 +691,7 @@ export const cellCommands = {
           head.name = unique(header[k].trim(), i);
           names[i] = head.name;
         }
-        const detected = detectColumnType(values, { format: head.format });
-        if (detected) {
-          head.type = detected.type;
-          head.format = detected.format;
-          values = detected.values.map((v) => (isCell(v) ? v : null));
-        }
-        const col = { ...head, values };
-        reinferRoleAfterRetype(col);
-        head.role = col.role;
-        head.roleManual = col.roleManual;
+        values = retypeHead(head, values);
         /** @type {ColumnChange} */ const e = { index: i, head };
         if (existed) {
           const run = changedRun(cur, values);
@@ -883,16 +895,7 @@ export const cellCommands = {
           fs[m.r] = m.formula;
         }
         const head = copyHead(heads[c]);
-        const detected = detectColumnType(values, { format: head.format });
-        if (detected) {
-          head.type = detected.type;
-          head.format = detected.format;
-          values = detected.values.map((v) => (isCell(v) ? v : null));
-        }
-        const col = { ...head, values };
-        reinferRoleAfterRetype(col);
-        head.role = col.role;
-        head.roleManual = col.roleManual;
+        values = retypeHead(head, values);
         if (JSON.stringify(head) !== JSON.stringify(heads[c])) e.head = head;
         const run = changedRun(cur, values);
         if (run) Object.assign(e, run);
