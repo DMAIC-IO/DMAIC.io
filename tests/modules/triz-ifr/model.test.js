@@ -1,8 +1,8 @@
 /**
  * Tests for modules/triz-ifr/domain/model.js — Vorgaben, gespeicherte Stände
  * '1.0' ohne Migrationsschritt (zeichengleich zurück), Stände ohne `_schema`
- * über '0→1.0', Reparatur beim Laden, Versionsprüfung, `hasContent`, Rundweg
- * und das Beispiel des Moduls.
+ * über '0→1.0', Reparatur beim Laden, Versionsprüfung, `hasContent` und
+ * Rundweg. Das Beispiel prüft examples.test.js.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/triz-ifr/domain/model.js';
@@ -13,7 +13,6 @@ setModelName(State, 'triz-ifr');
 
 const FIELDS = ['system', 'usefulFunction', 'harmfulEffect', 'ifr1', 'ifr2', 'ifr3', 'obstacles'];
 const SCHEMA = { _schema: { name: 'triz-ifr', version: '1.0' } };
-const EXAMPLES = new URL('../../../examples/', import.meta.url);
 
 /** Zustand der Instanz aus der Fixture „Altprojekt“ (`legacy-project.json`). */
 const LEGACY = {
@@ -137,21 +136,5 @@ suite('triz-ifr Model — hasContent und Rundweg', () => {
     const m = State.fromJSON(JSON.parse(JSON.stringify(LEGACY)));
     const again = State.fromJSON(JSON.parse(JSON.stringify(m.toJSON())));
     assertDeepEqual(again.toJSON(), m.toJSON());
-  });
-});
-
-suite('triz-ifr Model — Beispiele', () => {
-  test('alle Beispiele des Moduls laden streng und ohne Reparatur, Texte gleich der Datei', async () => {
-    const index = await (await fetch(new URL('index.json', EXAMPLES), { cache: 'no-cache' })).json();
-    const own = index.examples.filter((e) => (e.modules || []).includes('triz-ifr'));
-    assertDeepEqual(own.map((e) => e.id), ['triz-ifr-bandfoerderer']);
-    for (const e of own) {
-      const raw = await (await fetch(new URL(e.file, EXAMPLES), { cache: 'no-cache' })).json();
-      const { m, fields } = repaired(JSON.parse(JSON.stringify(raw)));
-      assertDeepEqual(fields, [], e.id);
-      assertEqual(thrown(() => State.fromJSON(JSON.parse(JSON.stringify(raw)))), null, e.id);
-      const { _schema, ...read } = m.toJSON();
-      assertDeepEqual(read, raw, e.id);
-    }
   });
 });

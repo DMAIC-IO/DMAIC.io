@@ -1384,31 +1384,6 @@
       ]
     },
     {
-      "id": "triz-ifr-bandfoerderer",
-      "type": "project",
-      "title": {
-        "de": "TRIZ IFR: Bandförderer",
-        "en": "TRIZ IFR: Belt Conveyor"
-      },
-      "description": {
-        "de": "Drei IFR-Stufen für einen verklemmenden Bandförderer-Übergabe-Trichter, mit Hindernis-Analyse als Aufgabenliste.",
-        "en": "Three IFR levels for a jamming belt-conveyor transfer chute, with an obstacle list as the task backlog."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/triz-ifr-bandfoerderer.json",
-      "format": "json",
-      "modules": [
-        "triz-ifr"
-      ],
-      "tags": [
-        "improve",
-        "triz",
-        "ifr",
-        "bandfoerderer"
-      ]
-    },
-    {
       "id": "triz-resources-bandfoerderer",
       "type": "project",
       "title": {

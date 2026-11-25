@@ -27,6 +27,13 @@
   margin: 0;
 }
 
+/* Überschrift als Kontexthilfe-Anker: schrumpfbreit, damit der Kreis neben dem
+   Text sitzt statt jenseits der rechten Kante des Abschnitts. */
+.triz-ifr__section-title.context-help-anchor {
+  width: fit-content;
+  max-width: 100%;
+}
+
 .triz-ifr__hint {
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);

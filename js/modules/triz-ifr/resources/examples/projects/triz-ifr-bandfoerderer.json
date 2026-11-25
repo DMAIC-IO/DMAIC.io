@@ -1,4 +1,5 @@
 {
+  "_schema": { "name": "triz-ifr", "version": "1.0" },
   "system": "Bandförderer für lose Schüttgut",
   "usefulFunction": "Transportiert Schüttgut zuverlässig von A nach B",
   "harmfulEffect": "Partikel verklemmen am Übergabe-Trichter und blockieren den Förderer",

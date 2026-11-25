@@ -20549,6 +20549,7 @@ export const AGENT_REGISTRY = {
   "triz-ifr": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -20558,134 +20559,62 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "setSystem": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "Name oder kurze Beschreibung des Systems"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt das betrachtete System, auf das sich alle IFR-Formulierungen beziehen."
-      },
-      "setUsefulFunction": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die nützliche Funktion"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die nützliche Funktion, die das System erfüllen soll."
-      },
-      "setHarmfulEffect": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die schädliche Wirkung"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die schädliche Wirkung oder den Kompromiss, den das System heute mitbringt."
-      },
-      "setIfr1": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die IFR-1-Formulierung"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die IFR-1-Formulierung: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus."
-      },
-      "setIfr2": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die IFR-2-Formulierung"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert."
-      },
-      "setIfr3": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die IFR-3-Formulierung"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die IFR-3-Formulierung: eine bereits vorhandene Ressource aus dem Supersystem übernimmt die Funktion."
-      },
-      "setObstacles": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Hindernisse, eines je Zeile"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Liste der Hindernisse, die das System heute vom IFR trennen — sie ist die eigentliche Aufgabenliste."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       }
     },
     "fields": {
       "system": {
         "type": "string",
-        "help": "das betrachtete System — Name oder kurze Beschreibung",
+        "help": "",
         "bulk": false
       },
       "usefulFunction": {
         "type": "string",
-        "help": "die nützliche Funktion, die das System erfüllen soll",
+        "help": "",
         "bulk": false
       },
       "harmfulEffect": {
         "type": "string",
-        "help": "die schädliche Wirkung oder der Kompromiss, den das System heute mitbringt",
+        "help": "",
         "bulk": false
       },
       "ifr1": {
         "type": "string",
-        "help": "IFR-1: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus",
+        "help": "",
         "bulk": false
       },
       "ifr2": {
         "type": "string",
-        "help": "IFR-2: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert",
+        "help": "",
         "bulk": false
       },
       "ifr3": {
         "type": "string",
-        "help": "IFR-3: eine vorhandene Ressource aus dem Supersystem übernimmt die Funktion",
+        "help": "",
         "bulk": false
       },
       "obstacles": {
         "type": "string",
-        "help": "die Hindernisse, die das System heute vom IFR trennen — eines je Zeile",
+        "help": "",
         "bulk": false
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "system",
+      "usefulFunction",
+      "harmfulEffect",
+      "ifr1",
+      "ifr2",
+      "ifr3",
+      "obstacles"
+    ],
+    "invariants": []
   },
   "triz-physical-contradiction": {
     "tagged": true,

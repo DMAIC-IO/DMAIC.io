@@ -190,6 +190,11 @@
     "description": "Komponenten, Interaktionen und Funktionsmodell – Ausgangspunkt für die übrigen TRIZ-Werkzeuge",
     "whenToUse": "Wenn ein technisches System Komponente für Komponente zerlegt werden soll, um schädliche, unzureichende und übermäßige Funktionen zu finden und Trimmkandidaten über Wert und Kosten zu erkennen — nicht für einen bereits benannten Widerspruch, dafür sind Widerspruchsmatrix und physikalischer Widerspruch da."
   },
+  "triz-ifr": {
+    "name": "Ideales Endresultat (TRIZ)",
+    "description": "Formuliere den Idealzustand und arbeite rückwärts zur Lösung",
+    "whenToUse": "Wenn ein Zielbild gebraucht wird, von dem aus rückwärts zur Lösung gearbeitet wird — nicht, um eine bereits gefundene Lösung zu bewerten oder zwischen Varianten zu wählen."
+  },
   "worksheet": {
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",

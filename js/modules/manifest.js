@@ -375,14 +375,6 @@ export default [
     },
   },
   {
-    id: 'triz-ifr',
-    phase: 'improve',
-    load: () => import('./triz-ifr/triz-ifr.js'),
-    cycles: {
-      eightd: { phase: 'corrective' },
-    },
-  },
-  {
     id: 'triz-resources',
     phase: 'improve',
     load: () => import('./triz-resources/triz-resources.js'),

@@ -190,6 +190,11 @@
     "description": "Components, interactions and function model – the starting point for the other TRIZ tools",
     "whenToUse": "When a technical system is to be broken down component by component to find harmful, insufficient and excessive functions and to spot trimming candidates by value and cost — not for a contradiction that is already named; the contradiction matrix and the physical contradiction cover that."
   },
+  "triz-ifr": {
+    "name": "Ideal Final Result (TRIZ)",
+    "description": "State the ideal and work backwards to a solution",
+    "whenToUse": "When a target image is needed to work backwards from towards a solution — not to judge a solution already found or to pick between variants."
+  },
   "worksheet": {
     "name": "Data Collection",
     "description": "Spreadsheet for data entry and management",
