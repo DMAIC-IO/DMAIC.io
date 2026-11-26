@@ -117,6 +117,13 @@
         "duration": "Optional die Dauer des Aufgabentermins in ganzen Minuten, mindestens fünf.",
         "command": "Das Kommando als ein Objekt mit itemId und den Angaben, die sich ändern."
       }
+    },
+    "sortBy": {
+      "help": "Sortiert die Liste nach einer Spalte, wie ein Klick auf den Spaltenkopf: eine neue Spalte aufsteigend, dieselbe Spalte noch einmal absteigend. Ändert keine Aufgabe.",
+      "params": {
+        "column": "Die Spalte: text (Aufgabe), owner (Verantwortlicher), due (Zieldatum) oder status.",
+        "command": "Das Kommando als ein Objekt mit column."
+      }
     }
   },
   "tile": {

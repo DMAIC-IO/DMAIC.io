@@ -1,0 +1,104 @@
+<section class="module-container module-todo" x-data="todo">
+  <div class="todo__toolbar">
+    <span class="todo__counter" x-text="counterText"></span>
+    <div class="todo__filter-group">
+      <span class="todo__filter-label context-help-anchor--overlay" data-help-key="modules.todo.fields.filterStatus.help" x-text="filterLabel"></span>
+      <select class="field todo__filter-select" data-filter="status" :aria-label="t('colStatus')" x-field="model.filterStatus" data-help-key="">
+        <option value="all" x-text="t('allStatuses')"></option>
+        <template x-for="s in statuses" :key="s">
+          <option :value="s" x-text="statusName(s)"></option>
+        </template>
+      </select>
+      <select class="field todo__filter-select" data-filter="owner" :aria-label="t('colOwner')" x-model="model.filterOwner" data-help-key="">
+        <option value="all" x-text="t('allOwners')"></option>
+        <template x-for="o in owners" :key="o">
+          <option :value="o" x-text="o"></option>
+        </template>
+      </select>
+      <input type="text" class="field todo__search" data-filter="search" data-help-key=""
+             x-model="model.search" :aria-label="t('searchPlaceholder')" :placeholder="t('searchPlaceholder')">
+    </div>
+  </div>
+
+  <div class="dmike-table-wrap todo__table-wrap">
+    <div class="todo__empty" x-show="isEmpty" x-text="t('emptyState')"></div>
+    <div class="todo__empty" x-show="noMatch" x-text="t('noMatch')"></div>
+
+    <table class="dmike-table dmike-table--sticky todo__table" x-show="hasShown">
+      <thead>
+        <tr>
+          <th class="dmike-table__grip-col"></th>
+          <th class="todo__col-check"></th>
+          <th class="todo__col-text" data-sort="text" x-command="sortBy" data-arg-column="text" data-help-key="">
+            <span class="context-help-anchor--overlay" data-help-key="modules.todo.fields.items.text.help" x-text="t('colText')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('text')" :data-icon="sortArrowIcon('text')" aria-hidden="true"></span>
+          </th>
+          <th class="todo__col-owner" data-sort="owner" x-command="sortBy" data-arg-column="owner" data-help-key="">
+            <span class="context-help-anchor--overlay" data-help-key="modules.todo.fields.items.owner.help" x-text="t('colOwner')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('owner')" :data-icon="sortArrowIcon('owner')" aria-hidden="true"></span>
+          </th>
+          <th class="todo__col-due" data-sort="due" x-command="sortBy" data-arg-column="due" data-help-key="">
+            <span class="context-help-anchor--overlay" data-help-key="modules.todo.fields.items.due.help" x-text="t('colDue')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('due')" :data-icon="sortArrowIcon('due')" aria-hidden="true"></span>
+          </th>
+          <th class="todo__col-status" data-sort="status" x-command="sortBy" data-arg-column="status" data-help-key="">
+            <span class="context-help-anchor--overlay" data-help-key="modules.todo.fields.items.status.help" x-text="t('colStatus')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('status')" :data-icon="sortArrowIcon('status')" aria-hidden="true"></span>
+          </th>
+          <template x-if="state.hasCalendar">
+            <th class="todo__col-cal" :title="t('showInCalendar')">
+              <span data-help-key="modules.todo.fields.items.cal.help"><span class="icon icon--sm" data-icon="module.dmaic-calendar" aria-hidden="true"></span><span class="dmike-sr-only" x-text="t('showInCalendar')"></span></span>
+            </th>
+          </template>
+          <th class="todo__col-actions"></th>
+        </tr>
+      </thead>
+      <tbody data-reorder-group="todos" data-reorder-closed :data-reorder-group-label="t('colText')">
+        <template x-for="(item, idx) in shownItems" :key="item.id">
+          <tr class="todo__row dmike-del-btn-host" :class="rowClass(item, idx)" :data-id="item.id" :data-reorder-index="idx">
+            <td class="dmike-table__grip-col">
+              <button class="dmike-table__grip todo__grip" type="button" :aria-label="t('common.reorder')"></button>
+            </td>
+            <td class="todo__col-check">
+              <input type="checkbox" class="todo__check" data-action="toggle" data-help-key=""
+                     :checked="isDone(item)" :aria-label="statusName('done')"
+                     @change="doneChanged(item, $event)">
+            </td>
+            <td class="todo__cell-text">
+              <input type="text" class="field field--sm field--ghost todo__inline-input" data-field="text" data-help-key=""
+                     x-model="item.text" :aria-label="t('colText')" :placeholder="t('textPlaceholder')">
+            </td>
+            <td>
+              <input type="text" class="field field--sm field--ghost todo__inline-input" data-field="owner" data-help-key=""
+                     x-model="item.owner" :aria-label="t('colOwner')" :placeholder="t('ownerPlaceholder')">
+            </td>
+            <td class="todo__cell-due">
+              <input type="date" class="field field--sm field--ghost todo__inline-date" data-field="due" data-help-key=""
+                     x-model="item.due" :aria-label="t('colDue')">
+            </td>
+            <td>
+              <select class="field field--sm todo__inline-select" data-field="status" data-help-key=""
+                      :aria-label="t('colStatus')" @change="statusChanged(item, $event)">
+                <template x-for="s in statuses" :key="s">
+                  <option :value="s" :selected="isStatus(item, s)" x-text="statusName(s)"></option>
+                </template>
+              </select>
+            </td>
+            <template x-if="state.hasCalendar">
+              <td class="todo__col-cal">
+                <button class="todo__cal-btn" :class="calClass(item)" type="button" data-help-key=""
+                        data-action="cal" :title="t('showInCalendar')" :aria-label="t('showInCalendar')"
+                        :aria-pressed="calPressed(item)"
+                        @click="calendarToggled(item)"><span class="icon icon--sm" data-icon="module.dmaic-calendar" aria-hidden="true"></span></button>
+              </td>
+            </template>
+            <td>
+              <button class="dmike-del-btn" type="button" data-action="delete" data-help-key=""
+                      :title="t('delete')" x-command="removeTodo" :data-arg-item-id="item.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</section>

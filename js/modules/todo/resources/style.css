@@ -2,6 +2,157 @@
    Todo — Module Styles
    ═══════════════════════════════════════════════════════════ */
 
+.module-todo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+}
+
+/* ─── Toolbar ─────────────────────────────────────────── */
+
+.todo__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.todo__filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+}
+
+.todo__filter-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.todo__filter-select {
+  min-width: 120px;
+}
+
+.todo__search {
+  min-width: 160px;
+}
+
+.todo__counter {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ─── Table ───────────────────────────────────────────── */
+
+/* Panel, borders, sticky headers and cell padding come from .dmike-table-wrap
+   / .dmike-table / .dmike-table--sticky. Only the sortable-header affordance
+   is specific to this module. */
+.todo__table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+
+.todo__table th {
+  cursor: pointer;
+  user-select: none;
+}
+
+.todo__table th:hover {
+  color: var(--color-accent);
+}
+
+.todo__sort-arrow {
+  font-size: 10px;
+  margin-left: var(--spacing-xs);
+  opacity: 0.5;
+}
+
+.todo__sort-arrow--active {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
+.todo__col-check { width: 32px; text-align: center; }
+.todo__col-text  { min-width: 200px; }
+.todo__col-owner { width: 140px; }
+.todo__col-due   { width: 120px; }
+
+/* Wide enough for the longest status label plus the select's arrow. */
+.todo__col-status { width: 150px; }
+.todo__col-cal    { width: 36px; text-align: center; }
+.todo__col-actions { width: 56px; text-align: center; }
+
+/* ─── Inline editing ──────────────────────────────────── */
+
+.todo__inline-date {
+  width: auto;
+}
+
+/* ─── Row states ──────────────────────────────────────── */
+
+.todo__row--done .todo__cell-text {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.todo__row--overdue .todo__cell-due {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* ─── Checkbox ────────────────────────────────────────── */
+
+.todo__check {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+/* ─── Calendar toggle ────────────────────────────────── */
+
+.todo__cal-btn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
+}
+
+.todo__table tr:hover .todo__cal-btn {
+  opacity: 0.7;
+}
+
+/* Same specificity as the row-hover rule above, so an active toggle never
+   dims while its row is hovered. */
+.todo__table tr .todo__cal-btn:hover,
+.todo__table tr .todo__cal-btn--active,
+.todo__table tr:hover .todo__cal-btn--active {
+  opacity: 1;
+}
+
+.todo__cal-btn--active {
+  color: var(--color-accent);
+}
+
+/* ─── Empty state ─────────────────────────────────────── */
+
+.todo__empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
 /* Todo-Kachel im Dashboard */
 .dashboard-todo__owner,
 .dashboard-todo__due {

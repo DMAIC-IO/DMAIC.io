@@ -46,7 +46,6 @@ suite('todo Kontexthilfe in context-help.<lang>.json', () => {
     for (const lang of LANGS) {
       const { actions } = await ctx(lang);
       for (const [name, def] of Object.entries(commands)) {
-        if (name === 'sortBy') continue;
         assertTrue(nonEmpty(actions[name]?.help), `${lang} actions.${name}.help`);
         assertTrue(nonEmpty(actions[name]?.params?.command), `${lang} actions.${name}.params.command`);
         for (const p of Object.keys(def.params ?? {})) assertTrue(nonEmpty(actions[name].params[p]), `${lang} actions.${name}.params.${p}`);

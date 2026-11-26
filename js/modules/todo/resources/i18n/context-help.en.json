@@ -117,6 +117,13 @@
         "duration": "Optionally the length of the task's appointment in whole minutes, at least five.",
         "command": "The command as an object with itemId and the values that change."
       }
+    },
+    "sortBy": {
+      "help": "Sorts the list by a column, like a click on the column header: a new column ascending, the same column again descending. Changes no task.",
+      "params": {
+        "column": "The column: text (task), owner, due (due date) or status.",
+        "command": "The command as an object with column."
+      }
     }
   },
   "tile": {

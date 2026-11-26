@@ -62,6 +62,11 @@
  */
 
 /**
+ * @typedef {object} SortByCommand
+ * @property {'text'|'owner'|'due'|'status'} column
+ */
+
+/**
  * @typedef {object} UpdateTodoCommand
  * @property {string} itemId
  * @property {string} [text]
@@ -80,8 +85,9 @@
  *   setTodoCalendar(cmd: SetTodoCalendarCommand): void,
  *   removeTodo(cmd: RemoveTodoCommand): void,
  *   moveTodo(cmd: MoveTodoCommand): void,
+ *   sortBy(cmd: SortByCommand): void,
  *   updateTodo(cmd: UpdateTodoCommand): void,
- *   execute(cmd: ({ type: 'addTodo' } & AddTodoCommand) | ({ type: 'setTodoText' } & SetTodoTextCommand) | ({ type: 'setTodoOwner' } & SetTodoOwnerCommand) | ({ type: 'setTodoDue' } & SetTodoDueCommand) | ({ type: 'setTodoStatus' } & SetTodoStatusCommand) | ({ type: 'setTodoCalendar' } & SetTodoCalendarCommand) | ({ type: 'removeTodo' } & RemoveTodoCommand) | ({ type: 'moveTodo' } & MoveTodoCommand) | ({ type: 'updateTodo' } & UpdateTodoCommand)): unknown,
+ *   execute(cmd: ({ type: 'addTodo' } & AddTodoCommand) | ({ type: 'setTodoText' } & SetTodoTextCommand) | ({ type: 'setTodoOwner' } & SetTodoOwnerCommand) | ({ type: 'setTodoDue' } & SetTodoDueCommand) | ({ type: 'setTodoStatus' } & SetTodoStatusCommand) | ({ type: 'setTodoCalendar' } & SetTodoCalendarCommand) | ({ type: 'removeTodo' } & RemoveTodoCommand) | ({ type: 'moveTodo' } & MoveTodoCommand) | ({ type: 'sortBy' } & SortByCommand) | ({ type: 'updateTodo' } & UpdateTodoCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,
