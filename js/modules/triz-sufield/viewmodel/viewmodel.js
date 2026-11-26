@@ -10,7 +10,8 @@
  * `setStandardSelected` schreibt, und der Aufklappstand der Klassen: eine
  * Instanz ohne gespeicherten Stand zeigt die empfohlenen Klassen offen, ohne
  * zu speichern; das erste Auf- oder Zuklappen schreibt den sichtbaren Stand
- * über `setExpandedClasses`.
+ * über `setExpandedClasses`, jede andere Änderung des Stands verwirft die
+ * Vorbelegung.
  */
 import { createModule } from '../../../core/template-module.js';
 import descriptor from '../module.js';
@@ -43,6 +44,8 @@ export default createModule({
   history: true,
   /** @type {import('./state.types.js').TrizSufieldViewFn} */
   view(ctx) {
+    /** @type {((e: { instanceId?: string, command?: string }) => void)|null} */
+    let onCommand = null;
     return {
       /** Die Feldarten (Optionen der Auswahlliste). @returns {ReadonlyArray<string>} */
       get fieldTypes() { return FIELD_TYPES; },
@@ -150,10 +153,26 @@ export default createModule({
       /**
        * Hat die Instanz keinen gespeicherten Aufklappstand, zeigt sie die
        * empfohlenen Klassen offen. Nur UI-State: gespeichert wird erst durch
-       * das Auf- oder Zuklappen.
+       * das Auf- oder Zuklappen. Ändert sich der gespeicherte Stand auf
+       * anderem Weg (Agent, Rückgängig, Stand von außen), entfällt die
+       * Vorbelegung für den Rest der Instanz: die Anzeige zeigt dann genau
+       * den gespeicherten Stand, auch wenn er leer wird. Ein Aufruf von
+       * `setExpandedClasses` zählt auch, wenn er den Stand nicht ändert.
        */
       init() {
         this.state.autoOpen = this.model.expandedClasses.length ? [] : [...this.diagnosis.suggestedClasses];
+        const drop = () => { if (this.state.autoOpen.length) this.state.autoOpen = []; };
+        this.$watch(() => this.model.expandedClasses.join(','), drop);
+        onCommand = (e) => {
+          if (e?.instanceId === ctx.instanceId && e.command === 'setExpandedClasses') drop();
+        };
+        ctx.eventBus?.on?.('command:executed', onCommand);
+      },
+
+      /** Meldet den Beobachter der Kommandos ab. */
+      destroy() {
+        if (onCommand) ctx.eventBus?.off?.('command:executed', onCommand);
+        onCommand = null;
       },
 
       /**

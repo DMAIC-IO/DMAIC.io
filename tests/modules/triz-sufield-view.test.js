@@ -16,6 +16,7 @@ import { WIDGETS } from '../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
 import mod from '../../js/modules/triz-sufield/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/triz-sufield/domain/model.js';
+import { setFields } from '../../js/core/model.js';
 
 const ID = 'triz-sufield';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -440,6 +441,71 @@ suite('triz-sufield: Viewmodel im Browser', () => {
     const again = await mount('sf-1', saved ? plain(saved) : null);
     assertDeepEqual(again.open(), [1]);
     assertEqual(again.inst.historyCan('undo'), false);
+    unmountAll();
+  });
+
+  test('Aufklappstand von außen (Agent): die Anzeige zeigt genau den gespeicherten Stand, die Vorbelegung entfällt; Rückgängig und Wiederholen ebenso', async () => {
+    const h = await mount('sf-1', null);
+    const vm = h.vm();
+    assertDeepEqual(h.open(), [1]);
+    vm.model.setExpandedClasses({ classes: [4] });
+    await settle();
+    assertDeepEqual(h.open(), [4]);
+    assertDeepEqual(plain(vm.state.autoOpen), []);
+    assertDeepEqual(h.states['sf-1'].expandedClasses, [4]);
+    assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Agent) ohne Wirkung');
+    await settle();
+    // Zurück auf den leeren Stand: die Vorbelegung kehrt nicht zurück.
+    assertDeepEqual(plain(vm.model.expandedClasses), []);
+    assertDeepEqual(h.open(), []);
+    assertTrue(h.inst.historyStep('redo'), 'Wiederholen (Agent) ohne Wirkung');
+    await settle();
+    assertDeepEqual(h.open(), [4]);
+    // Neu eingehängt mit gespeichertem Stand: genau dieser offen.
+    const again = await mount('sf-1', plain(h.states['sf-1']));
+    assertDeepEqual(again.open(), [4]);
+    unmountAll();
+  });
+
+  test('Aufklappstand von außen: leerer Agentenaufruf, Rückgängig, Fremdstand und instance.set; ohne Änderung bleibt die Vorbelegung', async () => {
+    // Agent setzt [] in einer frischen Instanz: kein geänderter Stand, aber die Anzeige folgt dem Aufruf.
+    let h = await mount('sf-1', null);
+    let vm = h.vm();
+    vm.model.setExpandedClasses({ classes: [] });
+    await settle();
+    assertDeepEqual(h.open(), []);
+    assertDeepEqual(plain(vm.model.expandedClasses), []);
+    // Rückgängig eines Agentenaufrufs nach dem Filter: der Filter allein lässt die Vorbelegung stehen.
+    h = await mount('sf-1', null);
+    vm = h.vm();
+    await h.click(h.radio('all'));
+    assertDeepEqual(h.open(), [1]);
+    vm.model.setExpandedClasses({ classes: [2, 3] });
+    await settle();
+    assertDeepEqual(h.open(), [2, 3]);
+    assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Agent) ohne Wirkung');
+    await settle();
+    assertDeepEqual(h.open(), []);
+    assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Filter) ohne Wirkung');
+    await settle();
+    assertDeepEqual(h.open(), []);
+    // Fremdstand in der laufenden Instanz (ohne Neueinhängen).
+    h = await mount('sf-1', null);
+    vm = h.vm();
+    h.inst.applyRemoteState({ ...plain(h.inst.getState()), expandedClasses: [3] });
+    await settle();
+    assertDeepEqual(h.open(), [3]);
+    assertDeepEqual(plain(h.vm().state.autoOpen), []);
+    // instance.set: der Aufklappstand ist ein Ansichtsfeld und nicht setzbar; Inhaltsfelder lassen die Vorbelegung stehen.
+    h = await mount('sf-1', null);
+    vm = h.vm();
+    let err = null;
+    try { setFields(vm.model, { expandedClasses: [4] }); } catch (e) { err = e; }
+    assertTrue(err instanceof Error, 'Ansichtsfeld über instance.set gesetzt');
+    setFields(vm.model, { s1: 'Bohrer' });
+    await settle();
+    assertDeepEqual(h.open(), [1]);
+    assertDeepEqual(plain(vm.model.expandedClasses), []);
     unmountAll();
   });
 

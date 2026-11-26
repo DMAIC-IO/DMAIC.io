@@ -4,7 +4,8 @@
  * Die Standardklassen, die eine Instanz ohne gespeicherten Aufklappstand beim
  * Einhängen offen zeigt (die empfohlenen der Diagnose). Je Komponente, nie
  * gespeichert; das erste Auf- oder Zuklappen übernimmt den sichtbaren Stand
- * ins Model und leert die Liste.
+ * ins Model und leert die Liste, jede andere Änderung des gespeicherten
+ * Stands leert sie ebenfalls.
  */
 import { defineState, list, number } from '../../../core/model.js';
 
