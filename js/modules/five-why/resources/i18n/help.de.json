@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:five-why|5-Why-Methode}} (auch 5×Warum) ist eine einfache, aber wirkungsvolle Technik zur {{term:ursachenanalyse|Wurzelursachenanalyse}}. Ausgehend von einem konkreten Problem wird wiederholt „Warum?“ gefragt — typischerweise fünfmal — bis eine grundlegende Ursache erreicht ist, deren Beseitigung das Problem nachhaltig löst."
+        },
+        {
+          "type": "definition",
+          "term": "Problemstellung",
+          "content": "Der Ausgangspunkt: ein konkretes, beobachtetes Problem oder eine Abweichung. Je präziser formuliert, desto zielführender die nachfolgenden „Warum?“-Fragen."
+        },
+        {
+          "type": "definition",
+          "term": "„Warum?“-Kette",
+          "content": "Auf jede Antwort folgt erneut die Frage „Warum?“. Jede Ebene führt eine Stufe näher an die Wurzel. Die Zahl 5 ist eine Faustregel — manche Probleme lösen sich nach 3, andere brauchen 7 oder mehr."
+        },
+        {
+          "type": "definition",
+          "term": "Wurzelursache",
+          "content": "Die letzte Antwort, jenseits derer „Warum?“ keine technisch oder organisatorisch beeinflussbare Antwort mehr liefert. Hier setzt die Verbesserungsmaßnahme an."
+        },
+        {
+          "type": "definition",
+          "term": "Verzweigungen",
+          "content": "Manchmal gibt es zu einer Frage mehrere plausible Antworten. Dann verzweigt sich die Kette in mehrere parallele Stränge — jeder davon kann zu einer eigenen Wurzelursache führen."
+        },
+        {
+          "type": "paragraph",
+          "content": "5-Why ist günstig, schnell und team-tauglich. Es eignet sich besonders für klar abgegrenzte Einzelvorfälle. Bei komplexen, mehrfaktoriellen Problemen sind {{term:ishikawa|Ishikawa}} und {{term:fmea|FMEA}} besser geeignet."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Problem konkret beschreiben — was ist passiert, wo, wann, wie oft?",
+            "„Warum?“ fragen und die plausibelste Antwort eintragen.",
+            "Auf die Antwort erneut „Warum?“ anwenden — und so weiter.",
+            "Wenn sich mehrere Antworten anbieten, verzweigen — jeder Strang wird einzeln verfolgt.",
+            "Stoppen, sobald eine technisch oder organisatorisch adressierbare Wurzel erreicht ist.",
+            "Maßnahme an der Wurzel ableiten — nicht an einem Symptom auf einer höheren Ebene.",
+            "Wirksamkeit der Maßnahme nach Umsetzung mit Daten überprüfen."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Schuldzuweisung statt Ursache",
+          "content": "Antworten wie „Mitarbeiter hat nicht aufgepasst“ sind keine Wurzelursachen, sondern Schuldzuweisungen. Weiterfragen: Warum konnte es passieren, dass eine Unaufmerksamkeit zum Problem wird? Liegt es an Schulung, Standardarbeit, Sichtprüfung?"
+        },
+        {
+          "type": "definition",
+          "term": "Zu früh aufhören",
+          "content": "Die erste plausible Antwort ist selten die Wurzel. Wer nach „Warum 2“ stoppt, behandelt ein Symptom. Mindestens so weit gehen, bis die Antwort etwas im Prozess oder System beschreibt."
+        },
+        {
+          "type": "definition",
+          "term": "Zu lang weiterfragen",
+          "content": "Irgendwann landet man bei „weil es so viel kostet“ oder „weil die Branche so ist“ — Antworten, die das Team nicht ändern kann. An dieser Stelle stoppen und auf der vorherigen Ebene ansetzen."
+        },
+        {
+          "type": "definition",
+          "term": "Nur ein Strang",
+          "content": "Bei komplexen Problemen führt nicht eine einzige Kette zur Lösung. Wenn mehrere Antworten plausibel sind, verzweigen — sonst werden wichtige Ursachen übersehen."
+        },
+        {
+          "type": "definition",
+          "term": "Ohne Daten verifizieren",
+          "content": "Die Antworten in einer Why-Kette sind Hypothesen. Vor der Maßnahme — oder spätestens danach — mit Daten prüfen, ob die identifizierte Wurzel tatsächlich der Treiber war."
+        },
+        {
+          "type": "definition",
+          "term": "Allein gemacht",
+          "content": "Eine Why-Kette von einer einzelnen Person reproduziert deren Vorannahmen. Im Team und mit den Personen, die den Prozess kennen, ist das Ergebnis robuster."
+        }
+      ]
+    }
+  }
+}

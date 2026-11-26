@@ -1,0 +1,79 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "problem": {
+      "help": "Der beobachtete Problemtext, von dem die Fragekette ausgeht."
+    },
+    "nodes": {
+      "help": "Der verzweigte Fragebaum. Jede Frage hat eine Kennung, ihre Ebene von 1 bis 5, die Kennung der Frage, unter der sie steht (auf Ebene 1 keine), ihre Antwort und ihre Unterfragen. Ebene 5 ist die Grundursache und hat keine Unterfragen. Massendaten: ohne ausdrückliche Anforderung dieses Felds liefert das Lesen nur den Umfang, die Zahl der Fragen und die Tiefe.",
+      "id": {
+        "help": "Die Kennung der Frage, eine ganze Zahl ab 1; über sie sprechen die Kommandos eine Frage an."
+      },
+      "level": {
+        "help": "Die Ebene der Frage: 1 für die erste Why-Frage, 5 für die Grundursache."
+      },
+      "parentId": {
+        "help": "Die Kennung der Frage, unter der diese steht; auf Ebene 1 keine."
+      },
+      "answer": {
+        "help": "Die Antwort auf die Why-Frage, eine Ursache, keine Schuldzuweisung."
+      },
+      "children": {
+        "help": "Die Unterfragen der nächsten Ebene, in Anzeigereihenfolge; auf Ebene 5 gibt es keine."
+      }
+    },
+    "stats": {
+      "help": "Kennzahlen des Baums wie in der Statistikleiste: Zahl der Fragen, größte Tiefe, Verzweigungen und beantwortete Fragen."
+    }
+  },
+  "actions": {
+    "addRoot": {
+      "help": "Legt am Ende eine neue Why-Frage der ersten Ebene an und liefert ihre Kennung.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt."
+      }
+    },
+    "addChild": {
+      "help": "Legt unter einer Frage die nächste Why-Ebene an und liefert deren Kennung; die Frage klappt dabei auf. Auf der Grundursachen-Ebene (Ebene 5) abgelehnt.",
+      "params": {
+        "parentId": "Die Kennung der Frage, unter der die neue Ebene entsteht. Eine unbekannte Kennung oder eine Frage auf Ebene 5 ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit parentId."
+      }
+    },
+    "setAnswer": {
+      "help": "Schreibt die Antwort auf eine Why-Frage.",
+      "params": {
+        "nodeId": "Die Kennung der Frage, deren Antwort gesetzt wird. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Die Antwort — eine Ursache, keine Schuldzuweisung.",
+        "command": "Das Kommando als ein Objekt mit nodeId und text."
+      }
+    },
+    "removeNode": {
+      "help": "Entfernt eine Frage samt allen darunter liegenden Fragen.",
+      "params": {
+        "nodeId": "Die Kennung der zu entfernenden Frage. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit nodeId."
+      }
+    },
+    "toggleCollapse": {
+      "help": "Klappt eine Frage mit ihren Unterfragen ein oder auf.",
+      "params": {
+        "nodeId": "Die Kennung der Frage. Eine unbekannte Kennung ist ein Fehler."
+      }
+    },
+    "setCollapseAll": {
+      "help": "Klappt alle Fragen mit Unterfragen ein oder auf.",
+      "params": {
+        "collapsed": "Wahr klappt alle ein, falsch klappt alle auf."
+      }
+    }
+  },
+  "types": {
+    "FiveWhyStats": {
+      "totalNodes": "Die Zahl der Fragen im Baum.",
+      "maxDepth": "Die tiefste Ebene mit einer Frage; ohne Fragen 0.",
+      "branches": "Die Verzweigungen: je Frage mit mehr als einer Unterfrage deren Zahl weniger eins, zusammengezählt.",
+      "answered": "Die Zahl der Fragen mit Antwort."
+    }
+  }
+}

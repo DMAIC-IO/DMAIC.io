@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:five-why|5-Why method}} (also \"5 Whys\") is a simple but powerful technique for {{term:ursachenanalyse|root-cause analysis}}. Starting from a concrete problem, you repeatedly ask \"why?\" — typically five times — until you reach a fundamental cause whose removal solves the problem sustainably."
+        },
+        {
+          "type": "definition",
+          "term": "Problem statement",
+          "content": "The starting point: a concrete, observed problem or deviation. The more precisely it is phrased, the better the following \"why?\" questions work."
+        },
+        {
+          "type": "definition",
+          "term": "\"Why?\" chain",
+          "content": "Every answer is followed by another \"why?\". Each level moves one step closer to the root. The number 5 is a rule of thumb — some problems resolve after 3, others need 7 or more."
+        },
+        {
+          "type": "definition",
+          "term": "Root cause",
+          "content": "The last answer beyond which \"why?\" no longer yields a technically or organizationally actionable answer. This is where the improvement action attaches."
+        },
+        {
+          "type": "definition",
+          "term": "Branches",
+          "content": "Sometimes a question has several plausible answers. The chain then branches into parallel strands — each may lead to its own root cause."
+        },
+        {
+          "type": "paragraph",
+          "content": "5-Why is cheap, fast, and team-friendly. It suits clearly bounded individual incidents. For complex, multi-factor problems, {{term:ishikawa|Ishikawa}} and {{term:fmea|FMEA}} are better tools."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Describe the problem concretely — what happened, where, when, how often?",
+            "Ask \"why?\" and enter the most plausible answer.",
+            "Apply \"why?\" to the answer — and so on.",
+            "If several answers fit, branch — each strand is followed individually.",
+            "Stop as soon as a technically or organizationally actionable root is reached.",
+            "Derive the action at the root — not at a symptom on a higher level.",
+            "Verify the effectiveness of the action with data after implementation."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Blame instead of cause",
+          "content": "Answers like \"the operator was not paying attention\" are not root causes but blame. Keep asking: why could inattention turn into a problem? Is it training, standard work, visual inspection?"
+        },
+        {
+          "type": "definition",
+          "term": "Stopping too early",
+          "content": "The first plausible answer is rarely the root. Stopping after \"why 2\" treats a symptom. Go at least until the answer describes something in the process or system."
+        },
+        {
+          "type": "definition",
+          "term": "Asking too long",
+          "content": "Eventually you arrive at \"because it costs so much\" or \"because that's how the industry is\" — answers the team cannot change. Stop here and act on the previous level."
+        },
+        {
+          "type": "definition",
+          "term": "Only one strand",
+          "content": "For complex problems, one chain rarely produces the full solution. When several answers are plausible, branch — otherwise important causes are missed."
+        },
+        {
+          "type": "definition",
+          "term": "Not verified with data",
+          "content": "Answers in a why chain are hypotheses. Before — or at the latest after — the action, check with data whether the identified root was actually the driver."
+        },
+        {
+          "type": "definition",
+          "term": "Done alone",
+          "content": "A why chain from one person reproduces that person's assumptions. In a team with the people who know the process, the result is more robust."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "5-Why Analyse",
+  "description": "Ursachenanalyse mit verzweigten Fragepfaden",
+  "whenToUse": "Wenn ein konkreter Einzelvorfall bis zur Wurzel verfolgt werden soll und das Fachwissen im Raum ist — nicht für statistische Zusammenhänge über viele Fälle.",
+  "problem": "Problemstellung",
+  "problemPlaceholder": "Was ist das beobachtete Problem?",
+  "addWhy": "Why hinzufügen",
+  "addWhyN": "Why {n} hinzufügen",
+  "addSubQuestion": "Sub-Frage hinzufügen",
+  "rootCause": "Grundursache",
+  "rootCausePlaceholder": "Grundursache beschreiben…",
+  "answerPlaceholder": "Antwort / Erkenntnis…",
+  "collapse": "Einklappen",
+  "expand": "Aufklappen",
+  "collapseAll": "Einklappen",
+  "expandAll": "Aufklappen",
+  "deleteConfirm": "Frage und alle Unter-Fragen löschen?",
+  "statsNodes": "Fragen",
+  "statsDepth": "Max. Tiefe",
+  "statsBranches": "Verzweigungen",
+  "statsAnswered": "Beantwortet",
+  "invariants": {
+    "uniqueIds": "Jede Frage im Baum hat eine eigene Kennung.",
+    "parentLinks": "Eine Frage der ersten Ebene steht unter keiner anderen; jede weitere nennt die Kennung der Frage, unter der sie steht.",
+    "knownCollapsed": "Eingeklappt sein kann nur eine vorhandene Frage."
+  }
+}

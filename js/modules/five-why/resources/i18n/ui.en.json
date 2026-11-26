@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "5-Why Analysis",
+  "description": "Root cause analysis with branching question paths",
+  "whenToUse": "When a single concrete incident is to be traced to its root and the domain knowledge is in the room — not for statistical relationships across many cases.",
+  "problem": "Problem Statement",
+  "problemPlaceholder": "What is the observed problem?",
+  "addWhy": "Add Why",
+  "addWhyN": "Add Why {n}",
+  "addSubQuestion": "Add sub-question",
+  "rootCause": "Root Cause",
+  "rootCausePlaceholder": "Describe root cause…",
+  "answerPlaceholder": "Answer / Insight…",
+  "collapse": "Collapse",
+  "expand": "Expand",
+  "collapseAll": "Collapse",
+  "expandAll": "Expand",
+  "deleteConfirm": "Delete question and all sub-questions?",
+  "statsNodes": "Questions",
+  "statsDepth": "Max Depth",
+  "statsBranches": "Branches",
+  "statsAnswered": "Answered",
+  "invariants": {
+    "uniqueIds": "Every question in the tree has its own id.",
+    "parentLinks": "A first-level question sits under no other; every other question names the id of the question it sits under.",
+    "knownCollapsed": "Only an existing question can be collapsed."
+  }
+}

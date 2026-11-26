@@ -1,0 +1,79 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "problem": {
+      "help": "The observed problem statement the question chain starts from."
+    },
+    "nodes": {
+      "help": "The branching question tree. Each question has an identifier, its level from 1 to 5, the identifier of the question it sits under (none on level 1), its answer and its sub-questions. Level 5 is the root cause and has no sub-questions. Bulk data: unless this field is requested explicitly, reading returns only the extent, the number of questions and the depth.",
+      "id": {
+        "help": "The identifier of the question, a whole number from 1; the commands address a question by it."
+      },
+      "level": {
+        "help": "The level of the question: 1 for the first Why question, 5 for the root cause."
+      },
+      "parentId": {
+        "help": "The identifier of the question this one sits under; none on level 1."
+      },
+      "answer": {
+        "help": "The answer to the Why question — a cause, not a culprit."
+      },
+      "children": {
+        "help": "The sub-questions of the next level, in display order; level 5 has none."
+      }
+    },
+    "stats": {
+      "help": "Key figures of the tree as in the statistics bar: number of questions, maximum depth, branches and answered questions."
+    }
+  },
+  "actions": {
+    "addRoot": {
+      "help": "Adds a new first-level Why question at the end and returns its identifier.",
+      "params": {
+        "command": "The command as an empty object."
+      }
+    },
+    "addChild": {
+      "help": "Adds the next Why level below a question and returns its identifier; the question expands. Refused on the root-cause level (level 5).",
+      "params": {
+        "parentId": "Identifier of the question the new level is added to. An unknown identifier or a question on level 5 is an error.",
+        "command": "The command as an object with parentId."
+      }
+    },
+    "setAnswer": {
+      "help": "Writes the answer to a Why question.",
+      "params": {
+        "nodeId": "Identifier of the question whose answer is set. An unknown identifier is an error.",
+        "text": "The answer — a cause, not a culprit.",
+        "command": "The command as an object with nodeId and text."
+      }
+    },
+    "removeNode": {
+      "help": "Removes a question together with every question below it.",
+      "params": {
+        "nodeId": "Identifier of the question to remove. An unknown identifier is an error.",
+        "command": "The command as an object with nodeId."
+      }
+    },
+    "toggleCollapse": {
+      "help": "Collapses or expands a question with its sub-questions.",
+      "params": {
+        "nodeId": "Identifier of the question. An unknown identifier is an error."
+      }
+    },
+    "setCollapseAll": {
+      "help": "Collapses or expands every question that has sub-questions.",
+      "params": {
+        "collapsed": "True collapses all, false expands all."
+      }
+    }
+  },
+  "types": {
+    "FiveWhyStats": {
+      "totalNodes": "The number of questions in the tree.",
+      "maxDepth": "The deepest level holding a question; 0 without questions.",
+      "branches": "The branches: for every question with more than one sub-question, their count minus one, summed.",
+      "answered": "The number of questions with an answer."
+    }
+  }
+}
