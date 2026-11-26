@@ -18,7 +18,7 @@ setModelName(State, 'stakeholder-analysis');
 const SCHEMA = { _schema: { name: 'stakeholder-analysis', version: '1.1' } };
 const V1_0 = { name: 'stakeholder-analysis', version: '1.0' };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLES = new URL('../../../examples/projects/', import.meta.url);
+const EXAMPLES = new URL('../../../js/modules/stakeholder-analysis/resources/examples/projects/', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 

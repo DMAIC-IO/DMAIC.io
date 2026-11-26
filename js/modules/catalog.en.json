@@ -190,6 +190,11 @@
     "description": "Supplier-Input-Process-Output-Customer diagram",
     "whenToUse": "When the boundaries of a process need clarifying — who supplies, what goes in, which steps run, what comes out and who receives it; not for the flow itself with its decisions and branches, which is what a flowchart is for."
   },
+  "stakeholder-analysis": {
+    "name": "Stakeholder Analysis",
+    "description": "Identify, assess, and plan communication with project stakeholders",
+    "whenToUse": "When the stakeholders of a project need recording and placing by power and interest so that communication can follow that order; not for assigning responsibility to activities, which is what the RACI matrix is for."
+  },
   "survey-builder": {
     "name": "Survey builder",
     "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",

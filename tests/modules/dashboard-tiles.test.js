@@ -9,7 +9,7 @@ import raciTile from '../../js/modules/raci-matrix/tile/tile.js';
 import spcTile from '../../js/modules/control-chart/tile/tile.js';
 import todoTile from '../../js/modules/todo/todo.tile.js';
 import calendarTile from '../../js/modules/dmaic-calendar/tile/tile.js';
-import stakeholderTile from '../../js/modules/stakeholder-analysis/stakeholder-analysis.tile.js';
+import stakeholderTile from '../../js/modules/stakeholder-analysis/tile/tile.js';
 import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.js';
 import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
@@ -1082,8 +1082,8 @@ suite('dashboard tiles: stakeholder-analysis', () => {
 
   test('viewModel: quadrant cells, support row and critics as display data', () => {
     const vm = vmOf(stakeholderTile, SH_STATE);
-    assertPlain(vm);
-    assertDeepEqual(vm.quadrants[0], { quadrant: 'manage-closely', modifier: 'dashboard-stakeholder__cell--manage-closely',
+    assertEqual(vm._templateTile, true);
+    assertDeepEqual(vm.quadCells[0], { quadrant: 'manage-closely', modifier: 'dashboard-stakeholder__cell--manage-closely',
       count: '2', label: 'modules.stakeholder-analysis.quadManageClosely' });
     assertDeepEqual(vm.support.map(s => s.key), ['supporter', 'neutral', 'critic', 'other']);
     assertEqual(vm.support[0].label, 'modules.stakeholder-analysis.supportSupporter: ');

@@ -190,6 +190,11 @@
     "description": "Supplier-Input-Process-Output-Customer Diagramm",
     "whenToUse": "Wenn die Grenzen eines Prozesses geklärt werden sollen — wer liefert, was geht hinein, welche Schritte laufen, was kommt heraus und wer empfängt es; nicht für den Ablauf selbst mit Entscheidungen und Verzweigungen, dafür ist ein Flussdiagramm da."
   },
+  "stakeholder-analysis": {
+    "name": "Stakeholder-Analyse",
+    "description": "Identifikation, Bewertung und Kommunikationsplanung für Stakeholder",
+    "whenToUse": "Wenn die Beteiligten eines Projekts erfasst und nach Macht und Interesse eingeordnet werden sollen, um die Kommunikation darauf auszurichten; nicht für die Verteilung von Verantwortung auf Aufgaben, dafür ist die RACI-Matrix da."
+  },
   "survey-builder": {
     "name": "Fragebogen-Generator",
     "description": "VoC-Fragebogen erstellen, als HTML verschicken, Antworten einlesen und auswerten",

@@ -18181,6 +18181,7 @@ export const AGENT_REGISTRY = {
   "stakeholder-analysis": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -18197,99 +18198,185 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addStakeholder": {
+        "target": "model",
         "params": [
           {
-            "name": "data",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "der Beteiligte: `name` (nötig), und wahlweise `role`, `power`, `interest`, `support`, `category` und `notes`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string|null",
-        "help": "Legt einen Beteiligten an."
+        "returns": "string",
+        "help": "",
+        "keysOf": "addStakeholder",
+        "keysHelp": "actions.addStakeholder.params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "power": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "interest": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "support": {
+            "type": "'supporter'|'neutral'|'critic'",
+            "help": "",
+            "optional": true
+          },
+          "category": {
+            "type": "'intern'|'extern'|'kunde'|'lieferant'|'behoerde'",
+            "help": "",
+            "optional": true
+          },
+          "notes": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          }
+        }
       },
       "updateStakeholder": {
+        "target": "model",
         "params": [
           {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id des Beteiligten"
-          },
-          {
-            "name": "data",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "die zu ändernden Felder — `name`, `role`, `power`, `interest`, `support`, `category` oder `notes`"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Ändert die genannten Felder eines Beteiligten; alle übrigen bleiben stehen."
-      },
-      "removeStakeholder": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id des Beteiligten"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Beteiligten."
+        "help": "",
+        "keysOf": "updateStakeholder",
+        "keysHelp": "actions.updateStakeholder.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "power": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "interest": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "support": {
+            "type": "'supporter'|'neutral'|'critic'",
+            "help": "",
+            "optional": true
+          },
+          "category": {
+            "type": "'intern'|'extern'|'kunde'|'lieferant'|'behoerde'",
+            "help": "",
+            "optional": true
+          },
+          "notes": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          }
+        }
+      },
+      "removeStakeholder": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeStakeholder",
+        "keysHelp": "actions.removeStakeholder.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "stakeholders": {
-        "type": "StakeholderEntry[]",
-        "help": "die Beteiligten in Anlegereihenfolge",
+        "type": "{ id: string, name: string, role: string, power: number, interest: number, support: string, category: string, notes: string }[]",
+        "help": "",
+        "bulk": true
+      },
+      "quadrants": {
+        "type": "object[]",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
         "derived": true,
-        "keysOf": "StakeholderEntry",
+        "keysOf": "QuadrantEntry",
         "keys": {
           "id": {
             "type": "string",
-            "help": "Kennung"
+            "help": "id of the stakeholder"
           },
-          "name": {
+          "quadrant": {
             "type": "string",
-            "help": "Name"
-          },
-          "role": {
-            "type": "string",
-            "help": "Rolle bzw. Funktion"
-          },
-          "power": {
-            "type": "number",
-            "help": "Macht, 1–5"
-          },
-          "interest": {
-            "type": "number",
-            "help": "Interesse, 1–5"
-          },
-          "support": {
-            "type": "'supporter'|'neutral'|'critic'",
-            "help": "Haltung zum Projekt (aus Importen auch andere Werte)"
-          },
-          "category": {
-            "type": "'intern'|'extern'|'kunde'|'lieferant'|'behoerde'",
-            "help": "Kategorie (aus Importen auch andere Werte)"
-          },
-          "notes": {
-            "type": "string",
-            "help": "Notizen"
+            "help": "manage-closely, keep-satisfied, keep-informed or monitor"
           }
         }
-      },
-      "quadrants": {
-        "type": "Array<{id: string, quadrant: string}>",
-        "help": "Quadrant je Eintrag",
-        "bulk": true,
-        "bulkKind": "table",
-        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [],
+    "invariants": [
+      "uniqueIds"
+    ]
   },
   "survey-builder": {
     "tagged": true,

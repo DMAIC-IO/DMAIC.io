@@ -74,19 +74,6 @@ export default [
     },
   },
   {
-    id: 'stakeholder-analysis',
-    phase: 'define',
-    group: 'team',
-    allowedPhases: ['define'],
-    load: () => import('./stakeholder-analysis/stakeholder-analysis.js'),
-    loadTile: () => import('./stakeholder-analysis/stakeholder-analysis.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define', allowedPhases: ['define'] },
-      dmadv:  { phase: 'define', allowedPhases: ['define'] },
-      eightd: { phase: 'team',   allowedPhases: ['team']   },
-    },
-  },
-  {
     id: 'voc-ctx-tree',
     phase: 'define',
     group: 'customer',

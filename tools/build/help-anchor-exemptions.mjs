@@ -115,6 +115,9 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.pairs', reason: 'die Paarfolge zeigt die Oberfläche nur als das aktuelle Paar auf der Vergleichskarte; verankert sind die Wahlknöpfe' },
     { name: 'fields.currentPair', reason: 'die Oberfläche zeigt den Fortschritt als Balken und „n / m“ ohne Beschriftung; verankert sind die Wahlknöpfe' },
   ],
+  'stakeholder-analysis': [
+    { name: 'fields.stakeholders', reason: 'die Liste selbst hat keine Beschriftung (Karten, Matrix, Tabelle); verankert sind ihre Spalten und Formularfelder an fields.stakeholders.<feld>' },
+  ],
   'raci-matrix': [
     { name: 'actions.setRole', reason: 'kein Bedienelement; die Oberfläche schaltet die Zelle über cycleRole' },
     { name: 'actions.renameActivity', reason: 'die Oberfläche benennt per Doppelklick auf den Namen um' },

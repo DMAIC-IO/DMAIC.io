@@ -235,7 +235,7 @@ suite('dialog service — confirm / alert / show', () => {
   });
 
   test('Escape does not reach window listeners behind the dialog', async () => {
-    // Module popouts (fmea, stakeholder-analysis) close on @keydown.escape.window.
+    // Module popouts (fmea) close on @keydown.escape.window.
     const d = await service();
     let reached = 0;
     const behind = (e) => { if (e.key === 'Escape') reached += 1; };
