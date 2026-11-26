@@ -2151,66 +2151,6 @@
         }
       }
     },
-    "five-why": {
-      "name": "5-Why Analysis",
-      "description": "Root cause analysis with branching question paths",
-      "whenToUse": "When a single concrete incident is to be traced to its root and the domain knowledge is in the room — not for statistical relationships across many cases.",
-      "actions": {
-        "read": { "help": "Returns the problem statement and the question tree as read state." },
-        "setProblem": {
-          "help": "Sets the observed problem statement the question chain starts from.",
-          "params": { "text": "The problem in one sentence, descriptive rather than judgemental." }
-        },
-        "addRoot": { "help": "Adds a new level-1 Why question and returns its id." },
-        "addChild": {
-          "help": "Adds the next Why level below a question and returns its id. Returns null when the question is already at level 5 (root cause) — that is a domain refusal, not an error. A parentId that matches no question is an error.",
-          "params": { "parentId": "Id of the question the new level is added to." }
-        },
-        "setAnswer": {
-          "help": "Writes the answer to a Why question.",
-          "params": {
-            "nodeId": "Id of the question whose answer is set. An unknown id is an error.",
-            "text": "The answer — a cause, not a culprit."
-          }
-        },
-        "removeNode": {
-          "help": "Removes a question together with every question below it.",
-          "params": { "nodeId": "Id of the question to remove. An unknown id is an error." }
-        },
-        "collapseAll": { "help": "Collapses every question that has sub-questions." },
-        "expandAll": { "help": "Expands every question." }
-      },
-      "fields": {
-        "problem": { "help": "The observed problem statement the question chain starts from." },
-        "nodes": { "help": "The branching question tree. Each node carries id, level (1 to 5), parentId, question, answer, children and collapsed; level 5 is the root cause. Bulk data: without options.fields = ['nodes'] only the extent (node count and depth) is returned." }
-      },
-      "problem": "Problem Statement",
-      "problemPlaceholder": "What is the observed problem?",
-      "addWhy": "Add Why",
-      "addWhyN": "Add Why {n}",
-      "addSubQuestion": "Add sub-question",
-      "rootCause": "Root Cause",
-      "questionPlaceholder": "Why? (Level {n}) — Enter question…",
-      "rootCausePlaceholder": "Describe root cause…",
-      "answer": "Answer",
-      "answerPlaceholder": "Answer / Insight…",
-      "collapse": "Collapse",
-      "expand": "Expand",
-      "collapseAll": "Collapse",
-      "expandAll": "Expand",
-      "delete": "Delete",
-      "deleteConfirm": "Delete question and all sub-questions?",
-      "reset": "Reset",
-      "resetConfirm": "Reset all 5-Why analysis data?",
-      "resetDone": "5-Why reset",
-      "exportJSON": "JSON",
-      "exportedJSON": "JSON exported",
-      "emptyHint": "No questions yet. Click \"Add Why\" to start.",
-      "statsNodes": "Questions",
-      "statsDepth": "Max Depth",
-      "statsBranches": "Branches",
-      "statsAnswered": "Answered"
-    },
     "todo": {
       "name": "Todo",
       "description": "Task list with status, due date, and owner",

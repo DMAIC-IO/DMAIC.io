@@ -1,7 +1,7 @@
 /* ============================================================
    D.Mike — Module Container Styles (modules.css)
    Base styles for module containers. Module-specific styles
-   live in their own CSS files (e.g. js/modules/five-why/five-why.css,
+   live in their own CSS files (e.g. js/modules/kano/kano.css,
    or resources/style.css in a converted module such as sipoc).
    ============================================================ */
 
@@ -190,7 +190,7 @@
    was clicked, hides the following siblings, AND swaps the icon's
    `data-icon` between `nav.expand-down` / `nav.expand-right` — state lives in
    the icon name, not in a CSS transform, so every icon stays a sprite symbol. Same convention
-   already used by five-why.js and distribution-fit/viewmodel/viewmodel.js for expand/collapse
+   already used by five-why/viewmodel/viewmodel.js and distribution-fit/viewmodel/viewmodel.js for expand/collapse
    chevrons elsewhere in the app. icon--sm (16px) is the closest system step
    to the old 5px triangle's visual weight; color matches the old
    --color-text-tertiary exactly. */

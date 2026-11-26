@@ -112,17 +112,6 @@ export default [
       dmadv: { phase: 'define', allowedPhases: ['define'] },
     },
   },
-  {
-    id: 'five-why',
-    phase: 'define',
-    group: 'causes',
-    load: () => import('./five-why/five-why.js'),
-    cycles: {
-      dmaic:  { phase: 'define' },
-      dmadv:  { phase: 'define',    allowedPhases: ['define', 'analyze'] },
-      eightd: { phase: 'rootcause', allowedPhases: ['problem', 'rootcause'] },
-    },
-  },
 
   // ─── Measure ──────────────────────────────────────────────────
   {

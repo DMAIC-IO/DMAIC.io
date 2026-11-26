@@ -55,6 +55,11 @@
     "description": "Versuchsplanung: Vollfaktoriell, Teilfaktoriell, Plackett-Burman, CCD, Box-Behnken, Taguchi",
     "whenToUse": "Wenn der Einfluss mehrerer Faktoren auf eine oder mehrere Zielgrößen mit einem geplanten Versuch untersucht werden soll: vollfaktoriell, teilfaktoriell, Plackett-Burman, Wirkungsflächen (CCD, Box-Behnken), Taguchi oder optimal (D, A, G), auch als EVOP-Projekt über mehrere Phasen. Welcher Plantyp passt, klärt vorher der DoE-Berater (doe-advisor)."
   },
+  "five-why": {
+    "name": "5-Why Analyse",
+    "description": "Ursachenanalyse mit verzweigten Fragepfaden",
+    "whenToUse": "Wenn ein konkreter Einzelvorfall bis zur Wurzel verfolgt werden soll und das Fachwissen im Raum ist — nicht für statistische Zusammenhänge über viele Fälle."
+  },
   "gage-run-chart": {
     "name": "Messverlaufsdiagramm",
     "description": "Zeigt jede Einzelmessung, gruppiert nach Prüfeinheit und Prüfer, gegen eine gemeinsame Referenzlinie — deckt Prüfer-Bias und auffällige Prüfeinheiten auf.",

@@ -147,7 +147,7 @@ test('countHelpCoverage survives an absent subtree and a string intermediate seg
    fehlende Kontexthilfe ist ausdrücklich eine ausgewiesene Lücke und
    blockiert nicht; das harte i18n-Tor der freigegebenen Module steht in
    `agent-data.test.mjs`. Zugesichert wird, dass die Zahl die echte
-   Auflösungskette benutzt: `five-why` hat über das geteilte `read()` den
+   Auflösungskette benutzt: `todo` hat über das geteilte `read()` den
    Parameter `options`, aber keinen modulspezifischen Schlüssel dafür. Ohne
    den geteilten Rückfall wiese der Report hier eine Phantomlücke aus. */
 test('countHelpCoverage resolves the real tree through the documented chain', async () => {
@@ -156,10 +156,10 @@ test('countHelpCoverage resolves the real tree through the documented chain', as
   const { modules } = await collectAgentData(APP_DIR);
   const out = countHelpCoverage(APP_DIR, modules);
   assert.ok(out.actions.total > 0, 'kein freigegebenes Modul — die Zahl prüfte nichts');
-  assert.ok(modules['five-why']?.actions?.read?.params?.some(p => p.name === 'options'),
-    'five-why.read hat den Parameter options nicht mehr — dieser Fall prüft nichts');
+  assert.ok(modules['todo']?.actions?.read?.params?.some(p => p.name === 'options'),
+    'todo.read hat den Parameter options nicht mehr — dieser Fall prüft nichts');
   assert.deepEqual(
-    out.missing.filter(m => m.includes('five-why.actions.read.params.options')),
+    out.missing.filter(m => m.includes('todo.actions.read.params.options')),
     [],
   );
 });

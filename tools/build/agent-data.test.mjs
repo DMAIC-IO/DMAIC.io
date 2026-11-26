@@ -1685,14 +1685,14 @@ test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die do
   assert.deepEqual(missing, [], `unauflösbare read-Hilfetexte:\n${missing.join('\n')}`);
 });
 
-test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', async () => {
+test('i18n-Tor: das deutsche read-Hilfetext von kano bleibt der modulspezifische', async () => {
   // Der geteilte Rückfall (`modules.shared.actions.read.help`) ist additiv: der
   // Modulschlüssel gewinnt weiterhin. Dieser Fall hält fest, dass die
-  // Freigabe von five-why ihren eigenen Text behält.
+  // Freigabe von kano ihren eigenen Text behält.
   const appDir = join(import.meta.dirname, '..', '..');
   const de = JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8'));
-  assert.equal(lookup(de, 'modules.five-why.actions.read.help'),
-    'Liefert Problemtext und Fragebaum als Lesezustand.');
+  assert.equal(lookup(de, 'modules.kano.actions.read.help'),
+    'Liefert die Erfassung, die Befragten und die wählbaren Bäume.');
   assert.ok(lookup(de, 'modules.shared.actions.read.help'));
   assert.ok(lookup(de, 'modules.shared.actions.read.params.options'));
 });

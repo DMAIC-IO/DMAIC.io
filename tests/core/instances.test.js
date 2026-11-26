@@ -87,10 +87,10 @@ suite('instances.read', () => {
   });
 
   test('Altform mit Mixin: readAgentState über den gespeicherten Stand', async () => {
-    const saved = { problem: 'P', whys: [] };
+    const saved = { items: [], search: 'P' };
     const { svc, sm } = setup({ states: { dx: saved } });
     const out = await svc.read('dx', { fields: [] });
-    assertDeepEqual(out, readAgentState('five-why', saved, { fields: [] }));
+    assertDeepEqual(out, readAgentState('todo', saved, { fields: [] }));
     assertEqual(sm.writes.length, 0, 'Altform wird beim Lesen nicht zurückgeschrieben');
   });
 

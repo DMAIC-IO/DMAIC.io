@@ -18,7 +18,7 @@ setModelName(State, 'five-why');
 
 const SCHEMA = { _schema: { name: 'five-why', version: '1.0' } };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLES = new URL('../../../examples/projects/', import.meta.url);
+const EXAMPLES = new URL('../../../js/modules/five-why/resources/examples/projects/', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 

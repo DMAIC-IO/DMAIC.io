@@ -139,6 +139,12 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.outputs', reason: 'Namen aus den Daten in den Spaltenköpfen; Eingaben ohne sichtbare Beschriftung' },
     { name: 'fields.scores', reason: 'Bewertungen in den Zellen; ein Fragezeichen je Zelle wäre Rauschen, die Skala ist an fields.scale verankert' },
   ],
+  'five-why': [
+    { name: 'actions.addChild', reason: 'Plus je Knoten; ein Fragezeichen je Knoten wäre Rauschen' },
+    { name: 'actions.removeNode', reason: 'Mülleimer je Knoten; ein Fragezeichen je Knoten wäre Rauschen' },
+    { name: 'actions.setAnswer', reason: 'Antwortfelder je Knoten ohne Beschriftung; die Oberfläche schreibt direkt ins Feld' },
+    { name: 'fields.nodes', reason: 'Antwortfelder je Knoten ohne Beschriftung' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

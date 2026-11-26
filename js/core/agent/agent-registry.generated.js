@@ -5561,6 +5561,7 @@ export const AGENT_REGISTRY = {
   "five-why": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -5570,87 +5571,146 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "setProblem": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "the problem statement"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the observed problem statement."
-      },
-      "setAnswer": {
-        "params": [
-          {
-            "name": "nodeId",
-            "type": "number",
-            "optional": false,
-            "help": "id of the node"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "the answer text"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the answer of a Why node."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addRoot": {
-        "params": [],
-        "returns": "number",
-        "help": "Append a new level-1 Why node."
-      },
-      "addChild": {
+        "target": "model",
         "params": [
           {
-            "name": "parentId",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the node to append to"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "number|null",
-        "help": "Append a child Why below a node."
+        "returns": "number",
+        "help": "",
+        "keysOf": "addRoot",
+        "keysHelp": "actions.addRoot.params",
+        "keys": {}
       },
-      "removeNode": {
+      "addChild": {
+        "target": "model",
         "params": [
           {
-            "name": "nodeId",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the node to remove"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "addChild",
+        "keysHelp": "actions.addChild.params",
+        "keys": {
+          "parentId": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "setAnswer": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Remove a node and its subtree. The UI handler `deleteNode()` asks the user first and then calls this — one sink, two callers."
+        "help": "",
+        "keysOf": "setAnswer",
+        "keysHelp": "actions.setAnswer.params",
+        "keys": {
+          "nodeId": {
+            "type": "number",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeNode": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeNode",
+        "keysHelp": "actions.removeNode.params",
+        "keys": {
+          "nodeId": {
+            "type": "number",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "problem": {
         "type": "string",
-        "help": "the observed problem statement",
+        "help": "",
         "bulk": false
       },
       "nodes": {
-        "type": "object[]",
-        "help": "branching tree of Why nodes",
+        "type": "Array<{ id: number, level: 1, parentId: number|null, answer: string, children: Array<{ id: number, level: 2, parentId: number|null, answer: string, children: Array<{ id: number, level: 3, parentId: number|null, answer: string, children: Array<{ id: number, level: 4, parentId: number|null, answer: string, children: Array<{ id: number, level: 5, parentId: number|null, answer: string }> }> }> }> }>",
+        "help": "",
         "bulk": true,
         "bulkKind": "tree"
+      },
+      "stats": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "FiveWhyStats",
+        "keys": {
+          "totalNodes": {
+            "type": "number",
+            "help": "number of questions in the tree"
+          },
+          "maxDepth": {
+            "type": "number",
+            "help": "deepest level that holds a question, 0 without questions"
+          },
+          "branches": {
+            "type": "number",
+            "help": "for every question with more than one sub-question, their count minus one, summed"
+          },
+          "answered": {
+            "type": "number",
+            "help": "questions whose answer is not blank"
+          }
+        }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
-      "nodes[]**.collapsed"
+      "collapsed"
+    ],
+    "settable": [
+      "problem",
+      "nodes"
+    ],
+    "invariants": [
+      "uniqueIds",
+      "parentLinks",
+      "knownCollapsed"
     ]
   },
   "fmea": {

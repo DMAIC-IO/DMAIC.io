@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "five-why-lieferzeit",
+      "type": "project",
+      "title": {
+        "de": "5 Why: Lieferzeit > 30 min",
+        "en": "5 Why: Delivery Time > 30 min"
+      },
+      "description": {
+        "de": "5-Why-Kette vom Symptom „Pizza kommt zu spät\" bis zur Grundursache „Bestellsystem ohne Logistikfunktion\".",
+        "en": "5-Why chain from symptom 'pizza arrives late' down to root cause 'order system without logistics function'."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/five-why-lieferzeit.json",
+      "format": "json",
+      "tags": [
+        "analyze",
+        "five-why",
+        "root-cause",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "five-why-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — 5-Why (Streuung der Flugzeit)",
+        "en": "Paper Helicopter — 5 Whys (Flight-Time Variation)"
+      },
+      "description": {
+        "de": "5-Why-Kette von „Zeiten streuen zwischen 1,5 und 2,3 s bei identischer Konfiguration“ bis zur Wurzelursache „Wurftechnik nicht standardisiert“.",
+        "en": "5-Why chain from \"times vary between 1.5 and 2.3 s under identical configuration\" down to the root cause \"throwing technique not standardized\"."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/five-why-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    }
+  ]
+}

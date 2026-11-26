@@ -14,8 +14,8 @@ function componentFor(moduleId, modelJson) {
   return { ...mixin, model: { toJSON: () => modelJson } };
 }
 
-// Seit Task 5 deklariert `five-why.nodes` ein Massenfeld (bulk: true, kind
-// 'tree') — aber um readAgentState()s TABELLEN-Optionen (fields, rows) real
+// `voc-ctx-tree.vocs` ist ein Massenfeld (bulk: true, kind 'tree') — aber
+// um readAgentState()s TABELLEN-Optionen (fields, rows) real
 // zu prüfen, statt sie nur zu behaupten, registrieren wir hier zusätzlich
 // einen synthetischen Eintrag mit Worksheet-Form (title/columns/rows),
 // spiegelt die Form, die agent-read.test.js für projectReadState selbst
@@ -32,14 +32,13 @@ suite('agent read mixin', () => {
   afterAll(() => { delete AGENT_REGISTRY[BULK_MODULE_ID]; });
 
   test('read() projects the model JSON through the registry schema', () => {
-    // five-why ist nach Task 5 freigegeben; bis dahin liefert die Registry
-    // für das Modul bereits `fields`, auch ohne Freigabe. `nodes` ist seit
-    // Task 5 selbst ein Massenfeld (@agentBulk tree) — ohne
-    // options.fields kommt nur der Umfang, kein leeres Array mehr.
-    const component = componentFor('five-why', { problem: 'P', nodes: [], _idCounter: 7 });
+    // voc-ctx-tree spreizt das Mixin (MIXIN_READ_MODULES). `vocs` ist ein
+    // Massenfeld (@agentBulk tree) — ohne options.fields kommt nur der
+    // Umfang, kein leeres Array.
+    const component = componentFor('voc-ctx-tree', { vocs: [], styles: { a: 1 }, _idCounter: 7 });
     const state = component.read();
-    assertEqual(state.problem, 'P');
-    assertDeepEqual(state.nodes, { $bulk: true, kind: 'tree', nodeCount: 0, depth: 0 });
+    assertDeepEqual(state.styles, { a: 1 });
+    assertDeepEqual(state.vocs, { $bulk: true, kind: 'tree', nodeCount: 0, depth: 0 });
     assertEqual('_idCounter' in state, false);
   });
 
@@ -92,19 +91,19 @@ suite('agent read mixin', () => {
   });
 
   test('readAgentState never hands out a reference into the live state', () => {
-    // `nodes` ist seit Task 5 ein Massenfeld: ohne `fields` kommt nur der
-    // Umfang, kein Array. Die Vollform holt genau dieser Aufruf ab.
-    const live = { problem: 'P', nodes: [{ id: 1 }] };
-    const state = readAgentState('five-why', live, { fields: ['nodes'] });
-    state.nodes[0].id = 99;
-    assertEqual(live.nodes[0].id, 1);
+    // `vocs` ist ein Massenfeld: ohne `fields` kommt nur der Umfang, kein
+    // Array. Die Vollform holt genau dieser Aufruf ab.
+    const live = { vocs: [{ id: 1 }] };
+    const state = readAgentState('voc-ctx-tree', live, { fields: ['vocs'] });
+    state.vocs[0].id = 99;
+    assertEqual(live.vocs[0].id, 1);
   });
 
   test('read() returns the empty-snapshot projection when the model has no toJSON', () => {
-    const mixin = agentReadMixin({ id: 'five-why' });
+    const mixin = agentReadMixin({ id: 'voc-ctx-tree' });
     const component = { ...mixin, model: null };
-    // five-why's Schema hat zwei Felder (problem, nodes), beide nicht bulk;
-    // über einem LEEREN Snapshot projiziert FEHLT jedes von beiden. Vorher
+    // voc-ctx-tree's Schema hat zwei Felder (vocs, styles); über einem
+    // LEEREN Snapshot projiziert FEHLT jedes von beiden. Vorher
     // kamen sie als `undefined` durch — und genau das machte den
     // Driftvergleich der Pilotmodule (Schlüssel von read() == erklärte
     // Felder) unfällbar.

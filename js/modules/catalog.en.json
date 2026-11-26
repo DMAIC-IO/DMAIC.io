@@ -55,6 +55,11 @@
     "description": "Design of Experiments: Full Factorial, Fractional, Plackett-Burman, CCD, Box-Behnken, Taguchi",
     "whenToUse": "When the effect of several factors on one or more responses is to be studied in a planned experiment: full or fractional factorial, Plackett-Burman, response surface (CCD, Box-Behnken), Taguchi or optimal (D, A, G), also as an EVOP project over several phases. Which design type fits is settled beforehand in the DoE advisor (doe-advisor)."
   },
+  "five-why": {
+    "name": "5-Why Analysis",
+    "description": "Root cause analysis with branching question paths",
+    "whenToUse": "When a single concrete incident is to be traced to its root and the domain knowledge is in the room — not for statistical relationships across many cases."
+  },
   "gage-run-chart": {
     "name": "Gage Run Chart",
     "description": "Plots every single measurement grouped by part and appraiser against a common reference line — reveals appraiser bias and unusual parts.",

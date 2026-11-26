@@ -86,7 +86,7 @@ export const PHASES = () => ({
   define: [
     { instanceId: 'd2', moduleId: 'sipoc', order: 1 },
     { instanceId: 'd1', moduleId: 'sipoc', order: 0, customName: 'Erster' },
-    { instanceId: 'dx', moduleId: 'five-why', order: 2 },
+    { instanceId: 'dx', moduleId: 'todo', order: 2 },
   ],
   measure: [
     { instanceId: 'm1', moduleId: 'sipoc', order: 0 },
@@ -97,7 +97,7 @@ export const PHASES = () => ({
 export function setup({ states = {}, completed = false, modules = {}, live, workspace, i18n } = {}) {
   const bus = makeBus();
   const sm = makeState({ phases: PHASES(), states, completed, bus });
-  const mods = { sipoc: targetModule(), 'five-why': { id: 'five-why' }, kano: { id: 'kano' }, ...modules };
+  const mods = { sipoc: targetModule(), todo: { id: 'todo' }, kano: { id: 'kano' }, ...modules };
   const loaded = new Set(Object.keys(mods));
   const moduleRegistry = { loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null) };
   const ws = workspace ?? makeWorkspace(live);
