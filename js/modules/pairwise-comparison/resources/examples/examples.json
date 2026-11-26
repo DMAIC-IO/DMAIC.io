@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "pairwise-projektauswahl",
+      "type": "project",
+      "title": {
+        "de": "Projektauswahl-Kriterien",
+        "en": "Project selection criteria"
+      },
+      "description": {
+        "de": "Vorgefüllte Kriterien für die Projektauswahl im Pizza-Lieferprozess: Lieferzeit, Pizzaqualität, Preis, Mitarbeiterzufriedenheit, Reklamationsquote. Vergleiche werden im Modul selbst durchgeführt.",
+        "en": "Pre-filled criteria for project selection in the pizza-delivery process: delivery time, pizza quality, price, employee satisfaction, complaint rate. Pairwise comparisons are run inside the module."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/pairwise-projektauswahl.json",
+      "format": "json",
+      "tags": [
+        "pairwise",
+        "ahp",
+        "project-selection"
+      ]
+    },
+    {
+      "id": "pairwise-projektauswahl-abgeschlossen",
+      "type": "project",
+      "title": {
+        "de": "Projektauswahl-Kriterien, abgeschlossen",
+        "en": "Project selection criteria, completed"
+      },
+      "description": {
+        "de": "Fünf Kriterien der Projektauswahl im Pizza-Lieferprozess, alle zehn Paare sind entschieden (ein Gleichstand). Die Rangfolge steht im Reiter „Ergebnis“. Lernziel: Punkte und Rangfolge aus der Gewinn-Verlust-Matrix lesen.",
+        "en": "Five project-selection criteria for the pizza-delivery process, all ten pairs decided (one tie). The ranking is shown on the “Result” tab. Learning goal: read the scores and ranking from the win/loss matrix."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1351 (Paarreihenfolge)",
+      "license": "public-domain",
+      "file": "projects/pairwise-projektauswahl-abgeschlossen.json",
+      "format": "json",
+      "tags": [
+        "pairwise",
+        "ahp",
+        "project-selection"
+      ]
+    }
+  ]
+}

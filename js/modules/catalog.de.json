@@ -125,6 +125,11 @@
     "description": "Klassische Ausreißertests (Grubbs, Dixon Q, Generalized ESD, Tukey IQR, Hampel, Z-Score) parallel auf einer Spalte rechnen",
     "whenToUse": "Wenn ein gemessenes Merkmal Ausreißer enthalten könnte: prüft eine numerische Spalte mit bis zu sieben Verfahren (Grubbs, Dixon Q, verallgemeinerter ESD, Tukey-IQR, Hampel, Z-Score, modifizierter Z-Score) und meldet, welche Werte jedes Verfahren markiert; braucht mindestens 3 numerische Werte."
   },
+  "pairwise-comparison": {
+    "name": "Paarweiser Vergleich",
+    "description": "Priorisierung von Kriterien durch systematischen paarweisen Vergleich. Jedes Kriterium wird gegen jedes andere bewertet.",
+    "whenToUse": "Wenn aus einer Handvoll gleichrangiger Kriterien eine begründete Rangfolge werden soll und ein direktes Punktevergeben zu willkürlich wäre — jedes Kriterium wird einmal gegen jedes andere gestellt, drei bis fünfzehn Kriterien; nicht, wenn die Kriterien gegen MEHRERE Ergebnisgrößen gewichtet werden sollen, dafür ist die C&E-Matrix da."
+  },
   "pareto": {
     "name": "Pareto-Diagramm",
     "description": "Nach Größe sortiertes Säulendiagramm mit kumulativer Prozent-Linie — das klassische „vital few“-Werkzeug.",

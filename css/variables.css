@@ -260,11 +260,6 @@
   --datagrid-row-hover-bg: rgb(59 130 246 / 6%);
   --datagrid-shadow-popup: 0 8px 30px rgb(0 0 0 / 20%), 0 0 0 1px var(--color-border-primary);
 
-  /* Ranking medal colors (used by pairwise comparison) */
-  --color-rank-gold: #d4a843;
-  --color-rank-silver: #a8b4c4;
-  --color-rank-bronze: #cd8a5c;
-
   /* ===== Glossary inline-link tokens (used by .glossary-term) =====
      Theme-aware; never overridden per module, so a term looks the same everywhere. */
   --glossary-term-bg-hover:        rgb(0 0 0 / 4%);

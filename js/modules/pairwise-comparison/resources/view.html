@@ -51,7 +51,7 @@
           </template>
           <button class="pairwise__btn pairwise__btn--start" type="button"
                   data-action="start" :disabled="!isStartReady"
-                  x-command="startComparison">
+                  data-help-key="modules.pairwise-comparison.actions.startComparison.help" x-command="startComparison">
             <span x-text="startLabel"></span>
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true" x-show="isStartReady"></span>
           </button>
@@ -70,23 +70,23 @@
           <div class="pairwise__card">
             <div class="pairwise__vs-label" x-text="t('vsPrompt')"></div>
             <div class="pairwise__vs">
-              <button class="pairwise__vs-option" type="button" data-action="choose" x-command="chooseLeft">
+              <button class="pairwise__vs-option" type="button" data-action="choose" data-help-key="modules.pairwise-comparison.actions.chooseLeft.help" x-command="chooseLeft">
                 <span class="pairwise__vs-hotkey"><span class="icon icon--sm" data-icon="nav.arrow-left" aria-hidden="true"></span></span>
                 <span class="pairwise__vs-name" x-text="leftName"></span>
               </button>
               <div class="pairwise__vs-divider" x-text="t('vsDivider')"></div>
-              <button class="pairwise__vs-option" type="button" data-action="choose" x-command="chooseRight">
+              <button class="pairwise__vs-option" type="button" data-action="choose" data-help-key="modules.pairwise-comparison.actions.chooseRight.help" x-command="chooseRight">
                 <span class="pairwise__vs-hotkey"><span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span></span>
                 <span class="pairwise__vs-name" x-text="rightName"></span>
               </button>
             </div>
-            <button class="pairwise__vs-tie" type="button" data-action="tie" x-command="tieCurrent">
+            <button class="pairwise__vs-tie" type="button" data-action="tie" data-help-key="modules.pairwise-comparison.actions.tieCurrent.help" x-command="tieCurrent">
               <span class="pairwise__vs-hotkey">␣</span>
               <span x-text="tieLabel"></span>
             </button>
           </div>
-          <div class="pairwise__compare-actions" x-set="model.viewPhase">
-            <button class="pairwise__btn pairwise__btn--outline" type="button" value="input"
+          <div class="pairwise__compare-actions" role="radiogroup" x-set="model.viewPhase">
+            <button class="pairwise__btn pairwise__btn--outline" type="button" role="radio" value="input"
                     data-action="back-to-input">
               <span class="icon icon--sm icon--text" data-icon="nav.back" aria-hidden="true"></span><span x-text="t('backToInput')"></span>
             </button>

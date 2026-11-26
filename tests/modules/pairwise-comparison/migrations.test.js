@@ -19,7 +19,7 @@ setModelName(State, 'pairwise-comparison');
 const SCHEMA = { _schema: { name: 'pairwise-comparison', version: '1.0' } };
 const EMPTY = { criteria: [], matrix: [], pairs: [], currentPair: 0, viewPhase: 'input' };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLES = new URL('../../../examples/projects/', import.meta.url);
+const EXAMPLES = new URL('../../../js/modules/pairwise-comparison/resources/examples/projects/', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 

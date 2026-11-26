@@ -13599,6 +13599,7 @@ export const AGENT_REGISTRY = {
   "pairwise-comparison": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -13612,107 +13613,168 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "AgentRead",
-        "help": "Den Lesezustand liefern: Model-Form plus Auswertung."
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addCriterion": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Name des Kriteriums; Leerzeichen am Rand fallen weg"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string",
-        "help": "Hängt ein Kriterium an die Liste an."
+        "returns": "number",
+        "help": "",
+        "keysOf": "addCriterion",
+        "keysHelp": "actions.addCriterion.params",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
       },
       "removeCriterion": {
+        "target": "model",
         "params": [
           {
-            "name": "i",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Nummer des Kriteriums, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt ein Kriterium. Ein laufender Vergleich wird dadurch ungültig: Matrix, Paarfolge und Fortschritt gehen zurück auf leer."
+        "help": "",
+        "keysOf": "removeCriterion",
+        "keysHelp": "actions.removeCriterion.params",
+        "keys": {
+          "i": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "startComparison": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Startet den Vergleich: baut die Matrix und die gemischte Paarfolge und wechselt in die Phase `compare`."
-      },
-      "chooseLeft": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Entscheidet das anstehende Paar für sein erstes Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf `results`. Welches Paar anstehend ist, sagt `pairs[currentPair]`."
-      },
-      "chooseRight": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Entscheidet das anstehende Paar für sein zweites Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf `results`."
-      },
-      "tieCurrent": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Erklärt das anstehende Paar für unentschieden (je 0.5) und rückt einen Schritt vor."
-      },
-      "cycleCell": {
+        "target": "model",
         "params": [
           {
-            "name": "i",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Nummer des Kriteriums der Zeile, von 0 an gezählt"
-          },
-          {
-            "name": "j",
-            "type": "number",
-            "optional": false,
-            "help": "die Nummer des Kriteriums der Spalte, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt."
+        "returns": "void",
+        "help": "",
+        "keysOf": "startComparison",
+        "keysHelp": "actions.startComparison.params",
+        "keys": {}
+      },
+      "chooseLeft": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "chooseLeft",
+        "keysHelp": "actions.chooseLeft.params",
+        "keys": {}
+      },
+      "chooseRight": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "chooseRight",
+        "keysHelp": "actions.chooseRight.params",
+        "keys": {}
+      },
+      "tieCurrent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "tieCurrent",
+        "keysHelp": "actions.tieCurrent.params",
+        "keys": {}
+      },
+      "cycleCell": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "cycleCell",
+        "keysHelp": "actions.cycleCell.params",
+        "keys": {
+          "i": {
+            "type": "number",
+            "help": ""
+          },
+          "j": {
+            "type": "number",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "criteria": {
         "type": "string[]",
-        "help": "die Kriterien in Eingabereihenfolge, adressiert über ihre Nummer ab 0; höchstens 15, mindestens 3 für einen Vergleich",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "matrix": {
         "type": "number[][]",
-        "help": "die Vergleichsmatrix, matrix[i][j] sagt, wie Kriterium i gegen Kriterium j abgeschnitten hat: 1 gewonnen, 0.5 unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne Bedeutung",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "pairs": {
-        "type": "[number, number][]",
-        "help": "die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft",
-        "bulk": false,
-        "via": [
-          "startComparison"
-        ],
-        "derived": true
+        "type": "number[][]",
+        "help": "",
+        "bulk": false
       },
       "currentPair": {
         "type": "number",
-        "help": "wie viele Paare schon entschieden sind — und damit der Index des nächsten in `pairs`; gleich der Länge von `pairs` heißt fertig",
-        "bulk": false,
-        "via": [
-          "chooseLeft",
-          "chooseRight",
-          "tieCurrent"
-        ],
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "Auswertung, leer bis alle Paare entschieden sind",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -13747,8 +13809,13 @@ export const AGENT_REGISTRY = {
         }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "viewPhase"
+    ],
+    "settable": [],
+    "invariants": [
+      "reachablePhase"
     ]
   },
   "pareto": {

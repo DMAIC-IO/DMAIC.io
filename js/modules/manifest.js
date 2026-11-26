@@ -249,17 +249,6 @@ export default [
       eightd: { phase: 'rootcause' },
     },
   },
-  {
-    id: 'pairwise-comparison',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./pairwise-comparison/pairwise-comparison.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
 
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {

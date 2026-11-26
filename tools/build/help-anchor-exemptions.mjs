@@ -109,6 +109,12 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setStandardSelected', reason: 'die Oberfläche hakt das Kästchen an, verankert an fields.selected' },
     { name: 'actions.setExpandedClasses', reason: 'die Oberfläche klappt über die Klassenköpfe auf, verankert an fields.expandedClasses' },
   ],
+  'pairwise-comparison': [
+    { name: 'fields.criteria', reason: 'Namen aus den Daten auf den Chips; verankert ist die Chip-Leiste an removeCriterion und das Anlegen an addCriterion' },
+    { name: 'fields.matrix', reason: 'Zellen ohne eigenes Fragezeichen; verankert sind der Satz „Klick zum Ändern:“ an cycleCell und Matrix, Summe und Rangliste an den Typedef-Sätzen von result' },
+    { name: 'fields.pairs', reason: 'die Paarfolge zeigt die Oberfläche nur als das aktuelle Paar auf der Vergleichskarte; verankert sind die Wahlknöpfe' },
+    { name: 'fields.currentPair', reason: 'die Oberfläche zeigt den Fortschritt als Balken und „n / m“ ohne Beschriftung; verankert sind die Wahlknöpfe' },
+  ],
   'raci-matrix': [
     { name: 'actions.setRole', reason: 'kein Bedienelement; die Oberfläche schaltet die Zelle über cycleRole' },
     { name: 'actions.renameActivity', reason: 'die Oberfläche benennt per Doppelklick auf den Namen um' },

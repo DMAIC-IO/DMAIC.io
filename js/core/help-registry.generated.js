@@ -16,17 +16,16 @@ import h13 from '../modules/model-data-generator/model-data-generator-help.js';
 import h14 from '../modules/msa-typ1/msa-typ1-help.js';
 import h15 from '../modules/msa-typ4/msa-typ4-help.js';
 import h16 from '../modules/msa-typ6/msa-typ6-help.js';
-import h17 from '../modules/pairwise-comparison/pairwise-comparison-help.js';
-import h18 from '../modules/process-map/process-map-help.js';
-import h19 from '../modules/random-generator/random-generator-help.js';
-import h20 from '../modules/regression/regression-help.js';
-import h21 from '../modules/response-optimization/response-optimization-help.js';
-import h22 from '../modules/rest-api/rest-api-help.js';
-import h23 from '../modules/sample-size/sample-size-help.js';
-import h24 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h25 from '../modules/todo/todo-help.js';
-import h26 from '../modules/unit-converter/unit-converter-help.js';
-import h27 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h17 from '../modules/process-map/process-map-help.js';
+import h18 from '../modules/random-generator/random-generator-help.js';
+import h19 from '../modules/regression/regression-help.js';
+import h20 from '../modules/response-optimization/response-optimization-help.js';
+import h21 from '../modules/rest-api/rest-api-help.js';
+import h22 from '../modules/sample-size/sample-size-help.js';
+import h23 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
+import h24 from '../modules/todo/todo-help.js';
+import h25 from '../modules/unit-converter/unit-converter-help.js';
+import h26 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -46,15 +45,14 @@ export const HELP = {
   "msa-typ1": h14,
   "msa-typ4": h15,
   "msa-typ6": h16,
-  "pairwise-comparison": h17,
-  "process-map": h18,
-  "random-generator": h19,
-  "regression": h20,
-  "response-optimization": h21,
-  "rest-api": h22,
-  "sample-size": h23,
-  "stakeholder-analysis": h24,
-  "todo": h25,
-  "unit-converter": h26,
-  "voc-ctx-tree": h27,
+  "process-map": h17,
+  "random-generator": h18,
+  "regression": h19,
+  "response-optimization": h20,
+  "rest-api": h21,
+  "sample-size": h22,
+  "stakeholder-analysis": h23,
+  "todo": h24,
+  "unit-converter": h25,
+  "voc-ctx-tree": h26,
 };

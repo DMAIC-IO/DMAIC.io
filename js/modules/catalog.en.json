@@ -125,6 +125,11 @@
     "description": "Run classical outlier tests (Grubbs, Dixon Q, Generalized ESD, Tukey IQR, Hampel, Z-Score) in parallel on a column",
     "whenToUse": "When a measured characteristic may contain outliers: tests one numeric column with up to seven methods (Grubbs, Dixon Q, generalized ESD, Tukey IQR, Hampel, Z-score, modified Z-score) and reports which values each method flags; requires at least 3 numeric values."
   },
+  "pairwise-comparison": {
+    "name": "Pairwise Comparison",
+    "description": "Prioritize criteria through systematic pairwise comparison. Every criterion is judged against every other.",
+    "whenToUse": "When a handful of equally ranked criteria needs a justified order and handing out points directly would be too arbitrary — every criterion is put against every other one, three to fifteen criteria; not when the criteria are to be weighted against SEVERAL outputs, which is what the C&E matrix is for."
+  },
   "pareto": {
     "name": "Pareto Chart",
     "description": "Bar chart sorted by descending value with a cumulative-percentage line — the classic \"vital few\" tool.",
