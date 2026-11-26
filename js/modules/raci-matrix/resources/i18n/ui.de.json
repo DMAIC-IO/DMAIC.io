@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "RACI-Matrix",
+  "description": "Verantwortlichkeitsmatrix: Rollen pro Aktivität und Stakeholder",
+  "whenToUse": "Wenn für jede Aktivität eines Vorhabens festgehalten werden soll, wer sie ausführt (R), wer sie verantwortet (A), wer gefragt wird (C) und wer Bescheid bekommt (I) — die Prüfung meldet jede Zeile ohne R, ohne A oder mit mehr als einem A; nicht zur Beschreibung des Ablaufs selbst, dafür ist ein Flussdiagramm da.",
+  "activity": "Aktivität",
+  "stakeholder": "Stakeholder",
+  "roleR": "Responsible (führt aus)",
+  "roleA": "Accountable (verantwortlich)",
+  "roleC": "Consulted (wird befragt)",
+  "roleI": "Informed (wird informiert)",
+  "addActivity": "Aktivität",
+  "addStakeholder": "Stakeholder",
+  "activityPlaceholder": "Neue Aktivität...",
+  "stakeholderPlaceholder": "Neuer Stakeholder...",
+  "removeActivity": "Aktivität entfernen",
+  "removeStakeholder": "Stakeholder entfernen",
+  "addStakeholderHint": "Fügen Sie jetzt Stakeholder hinzu, um Rollen zuzuweisen.",
+  "warn_noR": "Kein Responsible (R) zugewiesen",
+  "warn_noA": "Kein Accountable (A) zugewiesen",
+  "warn_multiA": "Mehrere Accountable (A) — nur einer erlaubt",
+  "dragHint": "Zeile per Drag & Drop verschieben",
+  "renameHint": "Doppelklick zum Umbenennen",
+  "renameFailed": "Der Name konnte nicht übernommen werden.",
+  "invariants": {
+    "activityIds": "Jede Aktivität hat eine eigene, nichtleere Kennung ohne Doppelpunkt.",
+    "stakeholderIds": "Jeder Stakeholder hat eine eigene, nichtleere Kennung ohne Doppelpunkt.",
+    "knownCells": "Eine Rolle gehört zu einer vorhandenen Aktivität und einem vorhandenen Stakeholder."
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "label": "Anzahl der Warnungen"
+      }
+    }
+  }
+}

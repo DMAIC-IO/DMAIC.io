@@ -1,0 +1,116 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "activities": {
+      "help": "Die Aktivitäten, die Zeilen der Matrix, in Anzeigereihenfolge, jede mit Kennung und Namen. Die Kennung bleibt beim Umbenennen und Verschieben gleich; über sie sprechen die Kommandos und die Rollen eine Aktivität an.",
+      "id": {
+        "help": "Die Kennung der Aktivität; Wert für activityId und erster Teil des Schlüssels in assignments."
+      },
+      "name": {
+        "help": "Der Name der Aktivität, so wie er in der ersten Spalte steht."
+      }
+    },
+    "stakeholders": {
+      "help": "Die Stakeholder, die Spalten der Matrix, in Anzeigereihenfolge, jeder mit Kennung und Namen. Die Kennung bleibt beim Umbenennen gleich; über sie sprechen die Kommandos und die Rollen einen Stakeholder an.",
+      "id": {
+        "help": "Die Kennung des Stakeholders; Wert für stakeholderId und zweiter Teil des Schlüssels in assignments."
+      },
+      "name": {
+        "help": "Der Name des Stakeholders, so wie er im Spaltenkopf steht."
+      }
+    },
+    "assignments": {
+      "help": "Die gesetzten Rollen, je Zelle mit Rolle ein Eintrag. Der Schlüssel verbindet die Kennung der Aktivität und die des Stakeholders mit einem Doppelpunkt, etwa a1:s2. Der Wert ist R (Responsible, führt aus), A (Accountable, verantwortet), C (Consulted, wird gefragt) oder I (Informed, wird informiert). Eine Zelle ohne Rolle hat keinen Eintrag."
+    },
+    "warnings": {
+      "help": "Die Prüfung je Aktivität, nur Aktivitäten mit Befund, in Zeilenreihenfolge: kein R, kein A oder mehr als ein A. Ohne Stakeholder hat jede Aktivität die Befunde kein R und kein A; die Oberfläche zeigt die Warnsymbole erst, wenn es Stakeholder gibt."
+    }
+  },
+  "actions": {
+    "addActivity": {
+      "help": "Hängt eine Aktivität, eine neue Zeile, mit dem eingegebenen Namen an die Matrix an und liefert ihre Kennung.",
+      "params": {
+        "text": "Der Name der Aktivität; Leerzeichen am Rand fallen weg. Ein leerer Text wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit text."
+      }
+    },
+    "addStakeholder": {
+      "help": "Hängt einen Stakeholder, eine neue Spalte, mit dem eingegebenen Namen an die Matrix an und liefert seine Kennung.",
+      "params": {
+        "text": "Der Name des Stakeholders; Leerzeichen am Rand fallen weg. Ein leerer Text wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit text."
+      }
+    },
+    "renameActivity": {
+      "help": "Benennt eine Aktivität um; Kennung, Platz und Rollen bleiben.",
+      "params": {
+        "activityId": "Die Kennung der Aktivität. Eine unbekannte Kennung ist ein Fehler.",
+        "value": "Der neue Name; Leerzeichen am Rand fallen weg. Ein leerer Name wird abgelehnt und lässt den alten stehen.",
+        "command": "Das Kommando als ein Objekt mit activityId und value."
+      }
+    },
+    "renameStakeholder": {
+      "help": "Benennt einen Stakeholder um; Kennung, Platz und Rollen bleiben.",
+      "params": {
+        "stakeholderId": "Die Kennung des Stakeholders. Eine unbekannte Kennung ist ein Fehler.",
+        "value": "Der neue Name; Leerzeichen am Rand fallen weg. Ein leerer Name wird abgelehnt und lässt den alten stehen.",
+        "command": "Das Kommando als ein Objekt mit stakeholderId und value."
+      }
+    },
+    "removeActivity": {
+      "help": "Entfernt eine Aktivität samt ihrer Rollen; die übrigen Zeilen und ihre Rollen bleiben unverändert.",
+      "params": {
+        "activityId": "Die Kennung der Aktivität. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit activityId."
+      }
+    },
+    "removeStakeholder": {
+      "help": "Entfernt einen Stakeholder samt seiner Rollen; die übrigen Spalten und ihre Rollen bleiben unverändert.",
+      "params": {
+        "stakeholderId": "Die Kennung des Stakeholders. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit stakeholderId."
+      }
+    },
+    "moveActivity": {
+      "help": "Verschiebt eine Aktivität an eine andere Stelle der Reihenfolge; ihre Rollen wandern mit.",
+      "params": {
+        "activityId": "Die Kennung der Aktivität. Eine unbekannte Kennung ist ein Fehler.",
+        "to": "Die Stelle, an der die Aktivität nach dem Verschieben steht, von 0 an gezählt, höchstens die Zahl der Aktivitäten weniger eins. Ihre bisherige Stelle lässt alles stehen; eine Stelle außerhalb ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit activityId und to."
+      }
+    },
+    "setRole": {
+      "help": "Setzt die Rolle einer Zelle auf einen bestimmten Wert.",
+      "params": {
+        "activityId": "Die Kennung der Aktivität, die Zeile der Zelle. Eine unbekannte Kennung ist ein Fehler.",
+        "stakeholderId": "Die Kennung des Stakeholders, die Spalte der Zelle. Eine unbekannte Kennung ist ein Fehler.",
+        "role": "Die Rolle: R (Responsible, führt aus), A (Accountable, verantwortet), C (Consulted, wird gefragt) oder I (Informed, wird informiert). Der leere Text nimmt die Rolle zurück. Ein anderer Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit activityId, stakeholderId und role."
+      }
+    },
+    "cycleRole": {
+      "help": "Schaltet die Rolle einer Zelle einen Schritt weiter, wie ein Klick auf die Zelle: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle. R führt aus, A verantwortet, C wird gefragt, I wird informiert. Einen bestimmten Wert setzt setRole.",
+      "params": {
+        "activityId": "Die Kennung der Aktivität, die Zeile der Zelle. Eine unbekannte Kennung ist ein Fehler.",
+        "stakeholderId": "Die Kennung des Stakeholders, die Spalte der Zelle. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit activityId und stakeholderId."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele fehlende Zuweisungen die Kachel höchstens zeigt, von 1 bis 20."
+      },
+      "showLegend": {
+        "help": "Zeigt unter dem Balken die Legende der Rollen R, A, C und I mit ihrer Zahl."
+      }
+    }
+  },
+  "types": {
+    "RowWarning": {
+      "activityId": "Die Kennung der Aktivität mit Befund.",
+      "issues": "Die Befunde der Zeile in dieser Reihenfolge: noR (kein R), noA (kein A), multiA (mehr als ein A)."
+    }
+  }
+}

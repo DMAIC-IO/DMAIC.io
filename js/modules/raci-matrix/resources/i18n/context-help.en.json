@@ -1,0 +1,116 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "activities": {
+      "help": "The activities, the rows of the matrix, in display order, each with an id and a name. The id stays the same when renaming and moving; the commands and the roles address an activity by it.",
+      "id": {
+        "help": "The id of the activity; value for activityId and first part of the key in assignments."
+      },
+      "name": {
+        "help": "The name of the activity, as shown in the first column."
+      }
+    },
+    "stakeholders": {
+      "help": "The stakeholders, the columns of the matrix, in display order, each with an id and a name. The id stays the same when renaming; the commands and the roles address a stakeholder by it.",
+      "id": {
+        "help": "The id of the stakeholder; value for stakeholderId and second part of the key in assignments."
+      },
+      "name": {
+        "help": "The name of the stakeholder, as shown in the column header."
+      }
+    },
+    "assignments": {
+      "help": "The roles that are set, one entry per cell with a role. The key joins the id of the activity and the id of the stakeholder with a colon, such as a1:s2. The value is R (responsible, does the work), A (accountable), C (consulted) or I (informed). A cell without a role has no entry."
+    },
+    "warnings": {
+      "help": "The check per activity, only activities with a finding, in row order: no R, no A or more than one A. Without stakeholders every activity has the findings no R and no A; the interface shows the warning symbols only once there are stakeholders."
+    }
+  },
+  "actions": {
+    "addActivity": {
+      "help": "Appends an activity, a new row, with the entered name to the matrix and returns its id.",
+      "params": {
+        "text": "The name of the activity; surrounding whitespace is dropped. An empty text is rejected.",
+        "command": "The command as one object with text."
+      }
+    },
+    "addStakeholder": {
+      "help": "Appends a stakeholder, a new column, with the entered name to the matrix and returns its id.",
+      "params": {
+        "text": "The name of the stakeholder; surrounding whitespace is dropped. An empty text is rejected.",
+        "command": "The command as one object with text."
+      }
+    },
+    "renameActivity": {
+      "help": "Renames an activity; id, place and roles stay.",
+      "params": {
+        "activityId": "The id of the activity. An unknown id is an error.",
+        "value": "The new name; surrounding whitespace is dropped. An empty name is rejected and leaves the old one in place.",
+        "command": "The command as one object with activityId and value."
+      }
+    },
+    "renameStakeholder": {
+      "help": "Renames a stakeholder; id, place and roles stay.",
+      "params": {
+        "stakeholderId": "The id of the stakeholder. An unknown id is an error.",
+        "value": "The new name; surrounding whitespace is dropped. An empty name is rejected and leaves the old one in place.",
+        "command": "The command as one object with stakeholderId and value."
+      }
+    },
+    "removeActivity": {
+      "help": "Removes an activity together with its roles; the other rows and their roles stay unchanged.",
+      "params": {
+        "activityId": "The id of the activity. An unknown id is an error.",
+        "command": "The command as one object with activityId."
+      }
+    },
+    "removeStakeholder": {
+      "help": "Removes a stakeholder together with its roles; the other columns and their roles stay unchanged.",
+      "params": {
+        "stakeholderId": "The id of the stakeholder. An unknown id is an error.",
+        "command": "The command as one object with stakeholderId."
+      }
+    },
+    "moveActivity": {
+      "help": "Moves an activity to another place in the order; its roles travel along.",
+      "params": {
+        "activityId": "The id of the activity. An unknown id is an error.",
+        "to": "The place the activity has after the move, counted from 0, at most the number of activities minus one. Its current place leaves everything as it is; a place outside is an error.",
+        "command": "The command as one object with activityId and to."
+      }
+    },
+    "setRole": {
+      "help": "Sets the role of a cell to a specific value.",
+      "params": {
+        "activityId": "The id of the activity, the row of the cell. An unknown id is an error.",
+        "stakeholderId": "The id of the stakeholder, the column of the cell. An unknown id is an error.",
+        "role": "The role: R (responsible, does the work), A (accountable), C (consulted) or I (informed). The empty text takes the role back. Any other value is an error.",
+        "command": "The command as one object with activityId, stakeholderId and role."
+      }
+    },
+    "cycleRole": {
+      "help": "Advances the role of a cell by one step, like a click on the cell: no role to R, R to A, A to C, C to I, I back to no role. R does the work, A is accountable, C is consulted, I is informed. setRole sets a specific value.",
+      "params": {
+        "activityId": "The id of the activity, the row of the cell. An unknown id is an error.",
+        "stakeholderId": "The id of the stakeholder, the column of the cell. An unknown id is an error.",
+        "command": "The command as one object with activityId and stakeholderId."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many missing assignments the tile shows at most, from 1 to 20."
+      },
+      "showLegend": {
+        "help": "Shows the legend of the roles R, A, C and I with their count below the bar."
+      }
+    }
+  },
+  "types": {
+    "RowWarning": {
+      "activityId": "The id of the activity with a finding.",
+      "issues": "The findings of the row in this order: noR (no R), noA (no A), multiA (more than one A)."
+    }
+  }
+}

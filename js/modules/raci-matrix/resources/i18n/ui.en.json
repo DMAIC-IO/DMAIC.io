@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "RACI Matrix",
+  "description": "Responsibility Assignment Matrix: roles per activity and stakeholder",
+  "whenToUse": "When each activity of an undertaking needs a record of who does the work (R), who is accountable (A), who is consulted (C) and who is informed (I) — the check reports every row without an R, without an A or with more than one A; not for describing the flow itself, which is what a flowchart is for.",
+  "activity": "Activity",
+  "stakeholder": "Stakeholder",
+  "roleR": "Responsible (does the work)",
+  "roleA": "Accountable (owns the outcome)",
+  "roleC": "Consulted (asked beforehand)",
+  "roleI": "Informed (told afterwards)",
+  "addActivity": "Activity",
+  "addStakeholder": "Stakeholder",
+  "activityPlaceholder": "New activity...",
+  "stakeholderPlaceholder": "New stakeholder...",
+  "removeActivity": "Remove activity",
+  "removeStakeholder": "Remove stakeholder",
+  "addStakeholderHint": "Now add stakeholders to assign roles.",
+  "warn_noR": "No Responsible (R) assigned",
+  "warn_noA": "No Accountable (A) assigned",
+  "warn_multiA": "Multiple Accountable (A) — only one allowed",
+  "dragHint": "Drag to reorder row",
+  "renameHint": "Double-click to rename",
+  "renameFailed": "The name could not be applied.",
+  "invariants": {
+    "activityIds": "Every activity has its own non-empty id without a colon.",
+    "stakeholderIds": "Every stakeholder has its own non-empty id without a colon.",
+    "knownCells": "A role belongs to an existing activity and an existing stakeholder."
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "label": "Number of warnings"
+      }
+    }
+  }
+}

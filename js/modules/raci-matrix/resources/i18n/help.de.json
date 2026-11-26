@@ -1,0 +1,91 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau einer RACI-Matrix",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:raci|RACI-Matrix}} klärt für jede Aufgabe oder Aktivität in einem Projekt, wer welche Rolle hat. Die vier Buchstaben stehen für vier klar definierte Verantwortungsarten. Sie verhindert Doppelarbeit, Zuständigkeitslücken und unklare Entscheidungswege."
+        },
+        {
+          "type": "definition",
+          "term": "R — Responsible (Durchführend)",
+          "content": "Wer macht die Arbeit tatsächlich? Pro Aufgabe können mehrere Personen „R“ sein, sollten es aber selten — sonst zerfasert die Verantwortung."
+        },
+        {
+          "type": "definition",
+          "term": "A — Accountable (Rechenschaftspflichtig)",
+          "content": "Wer ist letztendlich verantwortlich für das Ergebnis und trifft die finale Entscheidung? Pro Aufgabe genau eine Person — nicht null, nicht zwei. „A“ trägt den Hut, „R“ macht die Arbeit."
+        },
+        {
+          "type": "definition",
+          "term": "C — Consulted (Konsultiert)",
+          "content": "Wer wird vor der Entscheidung um Input gefragt? Zweiwege-Kommunikation. Typischerweise Fachexperten, deren Wissen unverzichtbar ist, die aber nicht entscheiden."
+        },
+        {
+          "type": "definition",
+          "term": "I — Informed (Informiert)",
+          "content": "Wer wird über das Ergebnis informiert? Einwege-Kommunikation. Stakeholder, die den Stand kennen müssen, aber keine aktive Rolle haben."
+        },
+        {
+          "type": "definition",
+          "term": "Aufgaben (Zeilen) und Personen (Spalten)",
+          "content": "Die Matrix listet links die Aufgaben oder Liefergegenstände, oben die Rollen oder Personen. In jeder Zelle steht der Buchstabe (R/A/C/I), oft auch leer, wenn keine Beteiligung besteht."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Aufgaben oder Liefergegenstände aus dem Projektplan auflisten — als Zeilen.",
+            "Beteiligte Personen oder Rollen als Spalten eintragen.",
+            "Pro Aufgabe genau einen „A“ vergeben — die letzte Instanz.",
+            "Mindestens einen „R“ pro Aufgabe — die ausführende Hand.",
+            "„C“ sparsam einsetzen — nur, wenn der Input wirklich gebraucht wird, sonst entstehen Engpässe.",
+            "„I“ für alle, die das Ergebnis kennen müssen, ohne mitzuentscheiden.",
+            "Matrix mit dem Team gegenlesen und freigeben — Konflikte klären, bevor das Projekt läuft."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Mehrere „A“ pro Aufgabe",
+          "content": "Wenn zwei Personen rechenschaftspflichtig sind, ist niemand wirklich verantwortlich. Bei Konflikt eskaliert nichts, bei Erfolg streiten sich beide um den Lorbeer. Pro Zeile genau ein „A“."
+        },
+        {
+          "type": "definition",
+          "term": "Kein „A“",
+          "content": "Eine Aufgabe ohne „A“ ist Niemandsland — sie wird liegen bleiben oder unter falschen Annahmen erledigt. Jede Zeile braucht einen Hutträger."
+        },
+        {
+          "type": "definition",
+          "term": "Zu viele „C“",
+          "content": "Wer drei Experten konsultieren muss, verliert Tempo. Konsultation kostet Zeit — nur die wirklich nötigen einbinden, der Rest reicht als „I“."
+        },
+        {
+          "type": "definition",
+          "term": "„R“ und „A“ verwechseln",
+          "content": "Der „R“ macht die Arbeit, der „A“ verantwortet das Ergebnis. Oft ist das dieselbe Person, manchmal aber gerade nicht — z. B. wenn ein Operator ausführt und der Schichtleiter verantwortet."
+        },
+        {
+          "type": "definition",
+          "term": "Matrix wird nicht gelebt",
+          "content": "Eine RACI-Matrix in der Schublade nutzt niemandem. Sie sollte am Projektstart kommuniziert werden und bei jeder Rollenänderung aktualisiert werden."
+        },
+        {
+          "type": "definition",
+          "term": "Spaltenwahl: Person vs. Rolle",
+          "content": "Personen wechseln, Rollen sind stabiler. Bei langlaufenden Projekten lieber Rollen („Schichtleiter“) als Namen verwenden — sonst muss die Matrix bei jedem Personalwechsel umgestrickt werden."
+        }
+      ]
+    }
+  }
+}
