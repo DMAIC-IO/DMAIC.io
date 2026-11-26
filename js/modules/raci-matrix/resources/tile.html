@@ -1,0 +1,37 @@
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="empty"></p>
+</template>
+<template x-if="!empty">
+  <div class="dashboard-raci__summary">
+    <template x-for="s in summary">
+      <span><span x-text="s.label"></span><strong x-text="s.value"></strong></span>
+    </template>
+  </div>
+</template>
+<template x-if="segments.length">
+  <div class="dashboard-raci__bar">
+    <template x-for="seg in segments">
+      <div class="dashboard-raci__bar-seg" :style="seg.style" :title="seg.title"></div>
+    </template>
+  </div>
+</template>
+<template x-if="legend">
+  <div class="dashboard-raci__legend">
+    <template x-for="l in legend">
+      <span class="dashboard-raci__legend-item"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
+    </template>
+  </div>
+</template>
+<template x-if="warnLabel">
+  <div class="dashboard-raci__warn-label" x-text="warnLabel"></div>
+</template>
+<template x-if="warnLabel">
+  <ul class="dashboard-raci__warn-list">
+    <template x-for="w in warnItems">
+      <li class="dashboard-raci__warn-item"><span class="dashboard-raci__warn-role" :style="w.style" x-text="w.role"></span><span x-text="w.text"></span></li>
+    </template>
+    <template x-if="more">
+      <li class="dashboard-area__muted" x-text="more"></li>
+    </template>
+  </ul>
+</template>
