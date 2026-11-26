@@ -1,0 +1,255 @@
+/* TRIZ 9-Windows / System Operator — module styles. BEM-light, theme-driven. */
+
+/* Der Löschknopf liegt auf dem Bild, nicht auf einer Themenfläche: hell und
+   dunkel dieselben Werte. */
+.triz-9w {
+  --triz-9w-clear-bg: rgb(0 0 0 / 55%);
+  --triz-9w-clear-fg: rgb(255 255 255);
+}
+
+.triz-9w__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+.triz-9w__topbar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.triz-9w__title-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.triz-9w__title-input {
+  width: 100%;
+}
+
+/* ── 3×3 Grid ─────────────────────────────────────────────── */
+.triz-9w__grid {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) repeat(3, 1fr);
+  grid-auto-rows: auto;
+  gap: var(--spacing-sm);
+  align-items: stretch;
+}
+
+/* Alpine's <template x-for> needs exactly one child element, so each body row
+   (row-head + its 3 cells) is wrapped in a div. display:contents lets the
+   row-head and cells participate directly in the parent grid instead of
+   collapsing into a single grid cell. */
+.triz-9w__row {
+  display: contents;
+}
+
+.triz-9w__corner {
+  position: relative;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  border: 1px dashed var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 56px;
+}
+
+.triz-9w__corner-rows {
+  font-style: italic;
+}
+
+.triz-9w__corner-cols {
+  text-align: right;
+  font-style: italic;
+}
+
+/* Column / row axis labels (editable) */
+.triz-9w__col-head,
+.triz-9w__row-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs);
+  min-height: 56px;
+}
+
+.triz-9w__axis-input {
+  width: 100%;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  background: transparent;
+  border: 0;
+}
+
+.triz-9w__axis-input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-radius: var(--border-radius-sm);
+}
+
+/* The row-head occupies grid column 1 in each row of cells. We need the row
+   header for row N to span the same row as the cells for row N. Default flow
+   inside the grid handles that — the column-template defines 4 columns, and
+   each ROWS iteration renders 1 row-head + 3 cells = exactly 4 children that
+   land on the 4 grid columns. The first row of the grid is the corner +
+   3 col-heads (also 4 children). */
+
+/* ── Cell ─────────────────────────────────────────────────── */
+.triz-9w__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  min-height: 160px;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.triz-9w__cell:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+.triz-9w__cell-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Anker der Kontexthilfe um die Koordinate: das Abschneiden bleibt innen,
+   das Abzeichen außen. */
+.triz-9w__cell-coord-anchor {
+  display: flex;
+  min-width: 0;
+}
+
+.triz-9w__cell-coord {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Wirt der Datei-Eingabe: nur ohne Bild sichtbar (x-show). */
+.triz-9w__upload {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.triz-9w__upload-btn {
+  font: inherit;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.triz-9w__upload-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-color: var(--color-accent);
+}
+
+.triz-9w__cell-text {
+  flex: 1 1 auto;
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  font-size: var(--font-size-sm);
+  white-space: pre-wrap;
+}
+
+/* Image thumbnail inside the cell */
+.triz-9w__image-wrap {
+  position: relative;
+  display: inline-block;
+  align-self: flex-start;
+  max-width: 100%;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+/* Knopf um das Vorschaubild: ohne eigene Fläche, per Tastatur erreichbar. */
+.triz-9w__image-open {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.triz-9w__image-open:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.triz-9w__image {
+  display: block;
+  max-width: 100%;
+  max-height: 120px;
+  cursor: zoom-in;
+  background: var(--color-bg-tertiary);
+}
+
+.triz-9w__image-clear {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--triz-9w-clear-bg);
+  color: var(--triz-9w-clear-fg);
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.triz-9w__image-clear:hover {
+  background: var(--color-error);
+}
+
+/* ── Enlarged image (inside the dialog service's window) ─── */
+.triz-9w__enlarged img {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+}
