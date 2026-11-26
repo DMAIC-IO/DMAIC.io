@@ -89,7 +89,7 @@
       }
     },
     "cycleRole": {
-      "help": "Schaltet die Rolle einer Zelle einen Schritt weiter, wie ein Klick auf die Zelle: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle. R führt aus, A verantwortet, C wird gefragt, I wird informiert. Einen bestimmten Wert setzt setRole.",
+      "help": "Schaltet die Rolle einer Zelle einen Schritt weiter, wie ein Klick auf die Zelle: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle. R führt aus, A verantwortet, C wird gefragt, I wird informiert.",
       "params": {
         "activityId": "Die Kennung der Aktivität, die Zeile der Zelle. Eine unbekannte Kennung ist ein Fehler.",
         "stakeholderId": "Die Kennung des Stakeholders, die Spalte der Zelle. Eine unbekannte Kennung ist ein Fehler.",

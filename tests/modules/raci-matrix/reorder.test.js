@@ -36,6 +36,21 @@ suite('raci-matrix — Geste reorder', () => {
       ['moveActivity', { activityId: 'a1', to: 2 }]);
   });
 
+  test('clamp: am Ausgangsplatz die Startposition selbst, sonst Gruppe und Index im Bereich', () => {
+    const items = [0, 1, 2].map((i) => ({ dataset: { reorderIndex: String(i) }, closest: () => group }));
+    const group = /** @type {any} */ ({
+      dataset: { reorderGroup: 'activities' },
+      hasAttribute: (a) => a === 'data-reorder-closed',
+      querySelectorAll: () => items,
+    });
+    const ctx = { root: /** @type {any} */ ({ querySelectorAll: () => [group] }) };
+    const from = { group: 'activities', index: 2, id: 'a3' };
+    assertTrue(reorder.clamp({ group: 'activities', index: 3 }, ctx, from) === from);
+    assertTrue(reorder.clamp({ group: 'activities', index: 2 }, ctx, from) === from);
+    assertDeepEqual(reorder.clamp({ group: 'activities', index: 0 }, ctx, from), { group: 'activities', index: 0 });
+    assertDeepEqual(reorder.clamp({ group: 'activities', index: -1 }, ctx, { ...from, index: 1 }), { group: 'activities', index: 0 });
+  });
+
   test('preview schreibt Gruppe und Index nach state.dropPreview, null räumt auf', () => {
     const host = { state: { dropPreview: null } };
     reorder.preview.call(host, { group: 'activities', index: 1, id: 'a2' });

@@ -89,7 +89,7 @@
       }
     },
     "cycleRole": {
-      "help": "Advances the role of a cell by one step, like a click on the cell: no role to R, R to A, A to C, C to I, I back to no role. R does the work, A is accountable, C is consulted, I is informed. setRole sets a specific value.",
+      "help": "Advances the role of a cell by one step, like a click on the cell: no role to R, R to A, A to C, C to I, I back to no role. R does the work, A is accountable, C is consulted, I is informed.",
       "params": {
         "activityId": "The id of the activity, the row of the cell. An unknown id is an error.",
         "stakeholderId": "The id of the stakeholder, the column of the cell. An unknown id is an error.",

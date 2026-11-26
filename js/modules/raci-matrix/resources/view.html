@@ -1,0 +1,113 @@
+<div class="module-container raci" x-data="raciMatrix">
+  <!-- data-help-key="" an Formularen, Eingaben, Zellen und Löschknöpfen ist gewollt: die Hilfe hängt an den Knöpfen zum Anlegen, am Eckkopf (Rollen schalten) und an der Legende; ein Abzeichen je Zelle wäre Rauschen. -->
+  <div class="module-container__body">
+    <div class="raci__legend" data-help-key="modules.raci-matrix.fields.assignments.help">
+      <template x-for="r in roles" :key="r">
+        <span class="raci__legend-item" :class="roleClass(r)" x-text="legendLabel(r)"></span>
+      </template>
+    </div>
+
+    <div class="raci__add-bar">
+      <form class="raci__add-group" x-command-form="addActivity" data-help-key="">
+        <input class="field raci__add-input" type="text" data-add="activity" x-param="text" data-help-key=""
+               :aria-label="t('activityPlaceholder')"
+               :placeholder="t('activityPlaceholder')" :maxlength="activityMaxlen">
+        <button class="btn btn--sm btn--primary raci__add-btn" type="submit"
+                data-add-btn="activity"
+                data-help-key="modules.raci-matrix.actions.addActivity.help"
+                x-text="addLabel('addActivity')"></button>
+      </form>
+      <form class="raci__add-group" x-command-form="addStakeholder" data-help-key="">
+        <input class="field raci__add-input" type="text" data-add="stakeholder" x-param="text" data-help-key=""
+               :aria-label="t('stakeholderPlaceholder')"
+               :placeholder="t('stakeholderPlaceholder')" :maxlength="stakeholderMaxlen">
+        <button class="btn btn--sm btn--primary raci__add-btn" type="submit"
+                data-add-btn="stakeholder"
+                data-help-key="modules.raci-matrix.actions.addStakeholder.help"
+                x-text="addLabel('addStakeholder')"></button>
+      </form>
+    </div>
+
+    <template x-if="model.activities.length > 0">
+      <div class="raci__table-wrap">
+        <table class="raci__table">
+          <thead>
+            <tr>
+              <th class="raci__th-corner"><span data-help-key="modules.raci-matrix.actions.cycleRole.help" x-text="cornerLabel"></span></th>
+              <template x-for="(sh, sIdx) in model.stakeholders" :key="sh.id">
+                <th class="raci__th-stakeholder dmike-del-btn-host">
+                  <span class="raci__th-text"
+                        x-show="!isRenaming('stakeholder', sh.id)"
+                        :title="renameTitle(sh.name)"
+                        data-rename="stakeholder" :data-idx="sIdx"
+                        @dblclick="startRename('stakeholder', sh.id)"
+                        x-text="sh.name"></span>
+                  <template x-if="isRenaming('stakeholder', sh.id)">
+                    <input class="field raci__rename-input"
+                           :aria-label="t('stakeholderPlaceholder')"
+                           :maxlength="stakeholderMaxlen"
+                           x-model="state.renameDraft"
+                           @keydown="onRenameKeydown($event)"
+                           @blur="commitRename()">
+                  </template>
+                  <button class="dmike-del-btn raci__del-btn" type="button"
+                          data-del="stakeholder" :data-idx="sIdx" data-help-key=""
+                          :title="t('removeStakeholder')"
+                          x-command="removeStakeholder" :data-arg-stakeholder-id="sh.id"
+                          @click.stop><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody data-reorder-group="activities" data-reorder-closed :data-reorder-group-label="t('activity')">
+            <template x-for="(act, aIdx) in model.activities" :key="act.id">
+              <tr :data-id="act.id" :data-reorder-index="aIdx" :class="rowClass(act, aIdx)">
+                <td class="raci__activity-cell dmike-del-btn-host">
+                  <button class="dmike-table__grip raci__grip" type="button"
+                          :title="t('dragHint')" :aria-label="t('common.reorder')"></button>
+                  <span class="raci__activity-text"
+                        x-show="!isRenaming('activity', act.id)"
+                        :title="renameTitle(act.name)"
+                        data-rename="activity" :data-idx="aIdx"
+                        @dblclick="startRename('activity', act.id)"
+                        x-text="act.name"></span>
+                  <template x-if="isRenaming('activity', act.id)">
+                    <input class="field raci__rename-input"
+                           :aria-label="t('activityPlaceholder')"
+                           :maxlength="activityMaxlen"
+                           x-model="state.renameDraft"
+                           @keydown="onRenameKeydown($event)"
+                           @blur="commitRename()">
+                  </template>
+                  <template x-if="hasWarning(act)">
+                    <span class="raci__row-warn" data-help-key="modules.raci-matrix.fields.warnings.help"
+                          :title="warnTitle(act)"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span></span>
+                  </template>
+                  <button class="dmike-del-btn raci__del-btn" type="button"
+                          data-del="activity" :data-idx="aIdx" data-help-key=""
+                          :title="t('removeActivity')"
+                          x-command="removeActivity" :data-arg-activity-id="act.id"
+                          @click.stop><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                </td>
+                <template x-for="(sh, sIdx) in model.stakeholders" :key="cellKeyOf(act, sh)">
+                  <td class="raci__cell" :class="roleClass(roleOf(act, sh))"
+                      :data-a="aIdx" :data-s="sIdx" data-help-key=""
+                      x-command="cycleRole" :data-arg-activity-id="act.id" :data-arg-stakeholder-id="sh.id"
+                      x-text="roleOf(act, sh)"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <template x-if="model.activities.length === 0">
+      <div class="raci__empty"></div>
+    </template>
+
+    <template x-if="model.activities.length > 0 && model.stakeholders.length === 0">
+      <p class="raci__hint" x-text="t('addStakeholderHint')"></p>
+    </template>
+  </div>
+</div>

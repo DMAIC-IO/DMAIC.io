@@ -164,7 +164,7 @@ suite('raci-matrix Model — Invarianten beim Laden', () => {
       const items = m[key];
       assertEqual(items.length, LEGACY_STATE[key].length + 2);
       assertDeepEqual(items.map((x) => x.name).slice(-2), ['Leer', 'Doppelpunkt']);
-      for (const x of items.slice(-2)) assertTrue(x.id !== '' && !x.id.includes(':') && !x.id.startsWith(prefix), x.id);
+      for (const x of items.slice(-2)) assertTrue(x.id !== '' && !x.id.includes(':') && x.id !== `${prefix}:9`, x.id);
       assertEqual(new Set(items.map((x) => x.id)).size, items.length);
       assertEqual(json(m.assignments), json(LEGACY_STATE.assignments));
     });

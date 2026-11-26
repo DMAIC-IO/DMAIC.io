@@ -25,6 +25,19 @@ export const reorder = defineGesture({
     return { ...baseReorder.start(el), id };
   },
 
+  /**
+   * Bereich wie `reorder`; am Ausgangsplatz die Startposition selbst (samt
+   * id), damit der Kern „nicht bewegt“ erkennt und kein Kommando schickt.
+   * @param {{ group: string, index: number }} pos @param {object} ctx
+   * @param {{ group: string, index: number, id: string }} from
+   * @returns {{ group: string, index: number, id?: string }|null}
+   */
+  clamp(pos, ctx, from) {
+    const p = baseReorder.clamp(pos, ctx, from);
+    if (!p) return null;
+    return p.group === from.group && p.index === from.index ? from : p;
+  },
+
   /** @param {{ group: string, index: number }|null} pos Vorschau, null = aufräumen */
   preview(pos) {
     this.state.dropPreview = pos ? { group: pos.group, index: pos.index } : null;
