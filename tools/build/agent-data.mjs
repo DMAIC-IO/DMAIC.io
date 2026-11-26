@@ -2938,7 +2938,7 @@ function readModelFields(resolver, sf) {
  * Die Schlüssel, die das Model WIRKLICH persistiert — die Gegenprobe zur
  * Lesefläche. Ohne sie fällt ein `toJSON()`-Schlüssel ohne Registry-Feld
  * lautlos aus `read()`: `projectReadState` iteriert über das Schema, nicht
- * über die Momentaufnahme. Im Bestand trifft das `triz-9-windows`.
+ * über die Momentaufnahme.
  *
  * Drei Rückgabeformen kommen vor und werden entpackt: das Objektliteral
  * selbst, `JSON.parse(JSON.stringify(…))` und eine lokale Variable. Alles

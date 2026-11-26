@@ -19727,6 +19727,7 @@ export const AGENT_REGISTRY = {
   "triz-9-windows": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -19736,133 +19737,104 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "clearImage": {
-        "params": [
-          {
-            "name": "row",
-            "type": "number",
-            "optional": false,
-            "help": "Zeile 0 bis 2 (Subsystem, System, Übersystem)"
-          },
-          {
-            "name": "col",
-            "type": "number",
-            "optional": false,
-            "help": "Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)"
-          }
-        ],
-        "returns": "void",
-        "help": "Löscht das Bild eines Feldes der 3×3-Matrix; der Feldtext bleibt."
-      },
-      "setSystemTitle": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Systemtitel"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Titel des betrachteten Systems."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setCellText": {
+        "target": "model",
         "params": [
           {
-            "name": "row",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Zeile 0 bis 2 (Subsystem, System, Übersystem)"
-          },
-          {
-            "name": "col",
-            "type": "number",
-            "optional": false,
-            "help": "Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Feldtext"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Schreibt den Text eines Feldes der 3×3-Matrix."
+        "help": "",
+        "keysOf": "setCellText",
+        "keysHelp": "actions.setCellText.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          },
+          "col": {
+            "type": "number",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "setColLabel": {
+      "clearImage": {
+        "target": "model",
         "params": [
           {
-            "name": "col",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Spaltenbeschriftung"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Beschriftet eine Spalte der Zeitachse."
-      },
-      "setRowLabel": {
-        "params": [
-          {
-            "name": "row",
+        "help": "",
+        "keysOf": "clearImage",
+        "keysHelp": "actions.clearImage.params",
+        "keys": {
+          "row": {
             "type": "number",
-            "optional": false,
-            "help": "Zeile 0 bis 2 (Subsystem, System, Übersystem)"
+            "help": ""
           },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Zeilenbeschriftung"
+          "col": {
+            "type": "number",
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Beschriftet eine Zeile der Systemebenen."
+        }
       }
     },
     "fields": {
       "systemTitle": {
         "type": "string",
-        "help": "das betrachtete System",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "colLabels": {
         "type": "string[]",
-        "help": "die drei Spaltenbeschriftungen (Zeitachse: Vergangenheit, Gegenwart, Zukunft)",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "rowLabels": {
         "type": "string[]",
-        "help": "die drei Zeilenbeschriftungen (Systemebene: Subsystem, System, Übersystem)",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "cells": {
         "type": "Array<Array<{ text: string, image: string|null }>>",
-        "help": "die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist null oder, statt der Daten-URL, nur deren Größe",
+        "help": "",
         "bulk": true,
-        "bulkKind": "table",
         "omit": [
           "[][].image"
-        ],
-        "derived": true
+        ]
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "systemTitle",
+      "colLabels",
+      "rowLabels"
+    ],
+    "invariants": [
+      "colLabelCount",
+      "rowLabelCount",
+      "cellGrid"
+    ]
   },
   "triz-contradiction-matrix": {
     "tagged": true,

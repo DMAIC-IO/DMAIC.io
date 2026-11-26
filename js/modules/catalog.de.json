@@ -185,6 +185,11 @@
     "description": "I-MR mit Box-Cox-Transformation für nicht-normale Daten",
     "whenToUse": "Schiefe, streng positive Daten in einer Regelkarte überwachen: eine Box-Cox-Transformation macht sie annähernd normal, bevor die I-MR-Grenzen gerechnet werden."
   },
+  "triz-9-windows": {
+    "name": "9-Fenster (TRIZ Systemoperator)",
+    "description": "System auf den Achsen Zeit × Hierarchie betrachten",
+    "whenToUse": "Wenn ein Problem in seinem Zusammenhang betrachtet werden soll — drei Systemebenen mal drei Zeitfenster — um Ursachen und Lösungsräume außerhalb des Systems selbst zu finden; nicht, um eine einzelne Ursachenkette zu verfolgen, dafür sind 5-Why oder Ishikawa da."
+  },
   "triz-contradiction-matrix": {
     "name": "Widerspruchsmatrix (TRIZ)",
     "description": "Erfinderische Prinzipien für technische Widersprüche nach Altschuller",

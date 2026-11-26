@@ -1309,31 +1309,6 @@
       ]
     },
     {
-      "id": "triz-9windows-pizza-lieferung",
-      "type": "project",
-      "title": {
-        "de": "TRIZ 9 Windows Pizza-Lieferung",
-        "en": "TRIZ 9 Windows Pizza Delivery"
-      },
-      "description": {
-        "de": "3×3 Matrix Subsystem/System/Übersystem × Vergangenheit/Gegenwart/Zukunft — angewandt auf den Pizza-Lieferprozess.",
-        "en": "3×3 matrix Sub-/System/Super-system × Past/Present/Future — applied to the pizza delivery process."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/triz-9windows-pizza-lieferung.json",
-      "format": "json",
-      "modules": [
-        "triz-9-windows"
-      ],
-      "tags": [
-        "improve",
-        "triz",
-        "9-windows",
-        "pizza-lehrcase"
-      ]
-    },
-    {
       "id": "triz-sufield-bohrer-beton",
       "type": "project",
       "title": {

@@ -185,6 +185,11 @@
     "description": "I-MR with Box-Cox transform for non-normal data",
     "whenToUse": "Control-chart skewed, strictly positive data: a Box-Cox transformation makes them near-normal before I-MR limits are computed."
   },
+  "triz-9-windows": {
+    "name": "9 Windows (TRIZ System Operator)",
+    "description": "Examine the system on time × hierarchy axes",
+    "whenToUse": "When a problem is to be looked at in its context — three system levels by three time windows — to find causes and solution spaces outside the system itself; not to follow a single chain of causes, which is what 5-why or Ishikawa are for."
+  },
   "triz-contradiction-matrix": {
     "name": "Contradiction Matrix (TRIZ)",
     "description": "Inventive principles for technical contradictions (Altschuller)",

@@ -98,6 +98,10 @@ export const HELP_ANCHOR_EXEMPTIONS = {
   'triz-resources': [
     { name: 'actions.setCellStatus', reason: 'nur für den Agenten; die Oberfläche schaltet den Füllstand mit dem Statusknopf weiter (cycleStatus)' },
   ],
+  'triz-9-windows': [
+    { name: 'actions.setCellText', reason: 'der Text wird in der Oberfläche direkt ins Fenster geschrieben; die Fenster sind an fields.cells verankert' },
+    { name: 'actions.clearImage', reason: 'Löschknopf je Bild; ein Fragezeichen je Fenster wäre Rauschen, verankert ist fields.cells' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

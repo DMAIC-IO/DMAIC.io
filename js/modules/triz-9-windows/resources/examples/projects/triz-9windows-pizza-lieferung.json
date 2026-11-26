@@ -1,4 +1,5 @@
 {
+  "_schema": { "name": "triz-9-windows", "version": "1.0" },
   "systemTitle": "Pizza-Lieferprozess Bella Margherita",
   "colLabels": [
     "Vergangenheit",

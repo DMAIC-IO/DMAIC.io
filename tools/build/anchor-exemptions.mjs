@@ -140,9 +140,6 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':value="opt.id"', reason: 'Option einer Bedingungszeile; ihr Text ist die Option selbst, die Bedingungen sind am Titel der Bedingungen verankert', count: 1 },
     { match: '<th x-text="g.label">', reason: 'Spaltenkopf je Vergleichsgruppe, Text aus den Daten; die Gruppierung ist an ihrer Auswahl verankert', count: 1 },
   ],
-  'triz-9-windows': [
-    { match: 'triz-9w__upload-btn', reason: 'Bild-Upload je Fenster (9×); Dateiwahl ohne Agentenweg', count: 1 },
-  ],
   'triz-contradiction-matrix': [
     { match: 'triz-cm__mx-corner', reason: 'Ecke der Nachschlagematrix (Pfeile); das Kontrollkästchen darüber erklärt die Matrix', count: 1 },
     { match: 'triz-cm__mx-col-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },

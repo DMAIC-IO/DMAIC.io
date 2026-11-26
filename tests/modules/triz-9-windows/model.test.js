@@ -513,25 +513,3 @@ suite('triz-9-windows Model — Lesefläche und Agentenkatalog', () => {
     assertDeepEqual(entry.invariants, ['colLabelCount', 'rowLabelCount', 'cellGrid']);
   });
 });
-
-suite('triz-9-windows Model — Beispiel am bisherigen Ort', () => {
-  test('pizza-lieferung (ohne _schema) lädt über 0→1.0 ohne Reparatur, toJSON = _schema + Datei', async () => {
-    const url = new URL('../../../examples/projects/triz-9windows-pizza-lieferung.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch example: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file._schema, undefined);
-    const { m, fields } = repaired(plain(file));
-    assertDeepEqual(fields, []);
-    assertEqual(m.systemTitle, 'Pizza-Lieferprozess Bella Margherita');
-    assertEqual(m.rowLabels[2], 'Übersystem');
-    assertEqual(json(m.toJSON()), json({ ...SCHEMA, ...file }));
-    assertTrue(m.cells.every((row) => row.every((c) => c.text !== '' && c.image === null)));
-  });
-  test('mit _schema 1.0 (Form nach dem Umzug) lädt es streng ohne Schritt', async () => {
-    const url = new URL('../../../examples/projects/triz-9windows-pizza-lieferung.json', import.meta.url);
-    const file = await (await fetch(url, { cache: 'no-cache' })).json();
-    const withSchema = { ...SCHEMA, ...file };
-    assertEqual(json(State.fromJSON(plain(withSchema)).toJSON()), json(withSchema));
-  });
-});
