@@ -1,0 +1,113 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "params": {
+      "help": "Die Eingaben der Studie, je Schlüssel unter keys beschrieben; Referenzwert und Grenzen als Zahl oder leer, k₁ und k₂ als Zahl aus der Auswahl.",
+      "ref": {
+        "help": "Der Referenzwert des Normals, Beschriftung „Referenzwert (x_ref)“, als Zahl. Ohne ihn gibt es kein Ergebnis."
+      },
+      "lsl": {
+        "help": "Die untere Toleranzgrenze, Beschriftung „Untere Toleranz (USG)“, als Zahl. Leer heißt: keine untere Grenze; mit nur einer Grenze wird allein der Bias geprüft. Mindestens eine Grenze muss gesetzt sein."
+      },
+      "usl": {
+        "help": "Die obere Toleranzgrenze, Beschriftung „Obere Toleranz (OSG)“, als Zahl. Leer heißt: keine obere Grenze; mit nur einer Grenze wird allein der Bias geprüft. Mindestens eine Grenze muss gesetzt sein."
+      },
+      "k1": {
+        "help": "Der Anteil der Toleranz, Beschriftung „Faktor k₁ (Toleranzanteil)“: 0,2, 0,15 oder 0,1, voreingestellt 0,2."
+      },
+      "k2": {
+        "help": "Der Streuungsfaktor, Beschriftung „Faktor k₂ (Streuung)“: 3, 4 oder 6, voreingestellt 3 (6·s)."
+      }
+    },
+    "columnRef": {
+      "help": "Die Spalte einer Datensammlung mit den Wiederholmessungen am Referenzteil, numerisch (mindestens 25, empfohlen 50 Werte); nach einer Änderung wird neu gerechnet."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispiel-Arbeitsblatts, aus dem dieses Modul befüllt wurde; leer, wenn keines geladen wurde."
+    },
+    "runChartEdits": {
+      "help": "Die Einstellungen des Verlaufsdiagramms aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
+    },
+    "histogramChart": {
+      "help": "Die Einstellungen des Histogramms aus dem Diagramm-Editor (Titel, Klassen, Normalverteilung)."
+    },
+    "analysis": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; leer, solange Spalte oder Werte fehlen. Lehnt die Prüfung die Eingaben ab, steht nur der Grund da."
+    },
+    "columnStats": {
+      "help": "Anzahl, Mittelwert und Standardabweichung der Messwertspalte, schon ab 2 Werten und ohne Grenzen; leer bei weniger als 2 Werten. Andere Module übernehmen daraus µ und σ."
+    },
+    "activeParams": {
+      "help": "Die Schlüssel der Eingaben, die im aktuellen Zustand gelten; hier immer alle sieben."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spalten-Slots, die im aktuellen Zustand gelten; dieses Modul führt nur den Slot der Messwerte."
+    }
+  },
+  "types": {
+    "Params": {
+      "name": "Bezeichnung des geprüften Merkmals, zum Beispiel „Durchmesser Welle A“. Sie erscheint im Ergebnis und hat auf die Rechnung keinen Einfluss.",
+      "ref": "Der bekannte Sollwert des Referenzteils (Normal), als Zahl. Alle Messungen werden mit ihm verglichen; die Abweichung ihres Mittelwerts davon ist der Bias.",
+      "unit": "Maßeinheit der Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+      "lsl": "Untere Toleranzgrenze des Merkmals, als Zahl. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
+      "usl": "Obere Toleranzgrenze des Merkmals, als Zahl. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
+      "k1": "Anteil der Toleranz, den die Streubreite des Messsystems ausschöpfen darf: 0,2 (20 %, üblich), 0,15 oder 0,1. Ein kleinerer Wert ist strenger.",
+      "k2": "Wie viele Standardabweichungen die Streubreite umfasst: 3 steht für 6·s (üblich), 4 für 8·s, 6 für 12·s. Ein größerer Wert ist strenger."
+    },
+    "Result": {
+      "mode": "Toleranzart der Studie: zweiseitig, wenn untere und obere Toleranzgrenze gesetzt sind, sonst einseitig. Einseitig wird nur der Bias bewertet, Cg und Cgk entfallen.",
+      "n": "Anzahl der ausgewerteten Messwerte. Gefordert sind mindestens 25, empfohlen 50.",
+      "xbar": "Mittelwert aller Wiederholmessungen am Referenzteil.",
+      "sg": "Standardabweichung der Wiederholmessungen (Stichprobe, n − 1). Sie misst die Wiederholbarkeit des Messsystems.",
+      "xmin": "Kleinster Messwert.",
+      "xmax": "Größter Messwert.",
+      "range": "Spannweite: größter minus kleinster Messwert.",
+      "bias": "Systematische Abweichung: Mittelwert minus Referenzwert. Positiv heißt, das Messsystem misst im Mittel zu hoch.",
+      "biasTest": "t-Test, ob sich der Bias signifikant von 0 unterscheidet.",
+      "resolution": "Kleinster Schritt zwischen den Messwerten, aus den Daten erkannt; 0, wenn er sich nicht bestimmen lässt.",
+      "upperThreshold": "Obere Ausreißergrenze: Mittelwert plus 3 Standardabweichungen.",
+      "lowerThreshold": "Untere Ausreißergrenze: Mittelwert minus 3 Standardabweichungen.",
+      "details": "Je Messwert ein Eintrag in Messreihenfolge, mit Abweichungen und Ausreißermarke.",
+      "noSpread": "Wahr, wenn alle Messwerte gleich sind. Dann lassen sich Cg und Cgk nicht berechnen.",
+      "params": "Die Parameter, mit denen gerechnet wurde, als Zahlen.",
+      "T": "Toleranz: obere minus untere Toleranzgrenze. Nur bei zweiseitiger Toleranz, sonst leer.",
+      "biasPercent": "Bias in Prozent der Toleranz, mit Vorzeichen.",
+      "Cg": "Fähigkeitsindex aus der Streuung allein: Cg = (k₁ · T) / (2 · k₂ · sg). Ab 1,33 gilt das Messsystem als fähig.",
+      "Cgk": "Fähigkeitsindex mit Bias: Cgk = (k₁ · T / 2 − |Bias|) / (k₂ · sg). Ab 1,33 gilt das Messsystem als fähig.",
+      "cgStatus": "Urteil zu Cg: fähig ab 1,33, bedingt fähig von 1,00 bis unter 1,33, nicht fähig darunter. Leer, wenn Cg nicht berechenbar ist.",
+      "cgkStatus": "Urteil zu Cgk, mit denselben Grenzen wie bei Cg.",
+      "overall": "Gesamturteil: fähig, wenn Cg und Cgk fähig sind; nicht fähig, wenn einer von beiden nicht fähig ist; sonst bedingt fähig. Ohne Urteil bei einseitiger Toleranz oder fehlender Streuung.",
+      "tolUsage": "Anteil der Toleranz, den die Streubreite des Messsystems belegt: 2 · k₂ · sg / T in Prozent.",
+      "varEv": "%Var(EV): Streuungsanteil des Messsystems an der Toleranz, 100 · k₁ / Cg. Derselbe Wert wie die Toleranzausnutzung.",
+      "varEvBias": "%Var(EV+Bias): wie %Var(EV), aber mit Bias gerechnet, 100 · k₁ / Cgk. Leer, wenn Cgk nicht positiv ist.",
+      "resPercent": "Auflösung in Prozent der Toleranz. Üblich gefordert sind höchstens 5 %.",
+      "zoneHi": "Obere Grenze der Zone Referenzwert ± k₁ · T / 2, die der Verlaufsplot einzeichnet.",
+      "zoneLo": "Untere Grenze der Zone Referenzwert ± k₁ · T / 2, die der Verlaufsplot einzeichnet.",
+      "invalid": "Ablehnung der Prüfung statt eines Ergebnisses: key ist der Textschlüssel der Meldung (Referenzwert fehlt, keine Grenze, obere nicht über unterer Grenze, weniger als 25 Werte), vars die eingesetzten Werte. Dann fehlen alle übrigen Schlüssel."
+    },
+    "BiasTest": {
+      "t": "Prüfgröße des t-Tests: Bias geteilt durch sg / √n.",
+      "df": "Freiheitsgrade des t-Tests, n − 1.",
+      "p": "Zweiseitiger p-Wert. Unter 0,05 gilt der Bias als signifikant."
+    },
+    "Detail": {
+      "index": "Laufende Nummer des Messwerts, ab 1.",
+      "value": "Der Messwert.",
+      "deviation": "Abweichung des Messwerts vom Referenzwert.",
+      "devFromMean": "Betrag der Abweichung des Messwerts vom Mittelwert.",
+      "isOutlier": "Wahr, wenn der Messwert außerhalb von Mittelwert ± 3 Standardabweichungen liegt."
+    },
+    "ResultParams": {
+      "ref": "Referenzwert, mit dem gerechnet wurde.",
+      "lsl": "Untere Toleranzgrenze, mit der gerechnet wurde; leer bei einseitiger Toleranz ohne untere Grenze.",
+      "usl": "Obere Toleranzgrenze, mit der gerechnet wurde; leer bei einseitiger Toleranz ohne obere Grenze.",
+      "k1": "Anteil der Toleranz, mit dem gerechnet wurde.",
+      "k2": "Streuungsfaktor, mit dem gerechnet wurde."
+    },
+    "ColumnStats": {
+      "n": "Anzahl der numerischen Werte in der Spalte.",
+      "mean": "Mittelwert der Werte.",
+      "stdDev": "Standardabweichung der Werte (Stichprobe, n − 1)."
+    }
+  }
+}

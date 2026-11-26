@@ -1,0 +1,113 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die MSA Typ-1-Studie prüft ein Messsystem auf Lage ({{term:bias|Bias}}) und Streuung ({{term:wiederholbarkeit|Wiederholbarkeit}}) — an einem einzigen Normal, mit einem Bediener, in kurzer Zeit. Sie ist der erste Schritt jeder Messsystemanalyse: zeigt sie Schwächen, lohnt sich keine weitergehende Studie (Typ 2 / {{term:gage-rr|Gage R&R}}) {{ref:aiag-msa-4}}."
+        },
+        {
+          "type": "definition",
+          "term": "Normal (Referenzteil)",
+          "content": "Ein {{term:referenzteil|Referenzteil}} oder Master mit bekanntem, rückführbarem Referenzwert. Ohne diesen Wert kann keine Lage bestimmt werden — der Bias-Anteil der Studie wäre blind."
+        },
+        {
+          "type": "definition",
+          "term": "Wiederholmessungen",
+          "content": "Typischerweise 25–50 Messungen desselben Normals mit demselben Messsystem, unter möglichst gleichbleibenden Bedingungen. Nur so wird die reine Wiederholstreuung sichtbar."
+        },
+        {
+          "type": "definition",
+          "term": "Bias",
+          "content": "Systematische Abweichung: {{term:mittelwert|Mittelwert}} der Wiederholmessungen − Referenzwert. Ein Bias ≠ 0 deutet auf eine Kalibrierabweichung oder ein systematisches Offset hin und verletzt die {{term:richtigkeit|Richtigkeit}} des Messsystems."
+        },
+        {
+          "type": "definition",
+          "term": "Cg",
+          "content": "{{term:cg|Cg}} ist das Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die {{term:spezifikationsgrenzen|Toleranzbreite}} und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33 {{ref:vda-5}}."
+        },
+        {
+          "type": "definition",
+          "term": "Cgk",
+          "content": "{{term:cgk|Cgk}} erweitert Cg um den Bias. Cgk ≥ 1,33 gilt als akzeptabel {{ref:vda-5}}. Cg hoch, Cgk niedrig → das Messsystem ist {{term:praezision|präzise}}, aber verschoben (Kalibrierproblem)."
+        },
+        {
+          "type": "definition",
+          "term": "k₂ (Streubreite)",
+          "content": "Vorgabe 3 = 6·s wie in Bosch Heft 10 und Minitab — der Standardwert dieser Studie. 4 (8·s) und 6 (12·s) sind strengere Alternativen mit größerer Streubreite. Bereits gespeicherte Studien behalten ihre bisherige Einstellung."
+        },
+        {
+          "type": "definition",
+          "term": "%Var",
+          "content": "%Var(Wiederholbarkeit) = 100·k₁/Cg und %Var(Wiederholbarkeit u. Bias) = 100·k₁/Cgk zeigen den Cg- bzw. Cgk-Grenzwert 1,33 als Streuungsanteil der Toleranz: Cg = 1,33 entspricht %Var(Wiederholbarkeit) ≈ 15 %."
+        },
+        {
+          "type": "definition",
+          "term": "Bias-t-Test",
+          "content": "t = Bias / (s / √n), Freiheitsgrade FG = n − 1. Bei p < 0,05 ist der Bias statistisch signifikant. Der Test ist informativ — die Bewertung (fähig / nicht fähig) richtet sich allein nach Cg und Cgk."
+        },
+        {
+          "type": "paragraph",
+          "content": "Einseitige Toleranz: Ist nur eine obere oder untere Spezifikationsgrenze angegeben, lassen sich Cg und Cgk nicht berechnen (wie in Minitab) — Laufdiagramm, Statistiken und Bias-t-Test werden weiterhin angezeigt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Typ 1 ersetzt keine Gage R&R, sondern ist ihr Voraustest. Wer bereits bei Typ 1 scheitert, verschwendet Ressourcen, wenn er danach noch eine Gage-R&R-Studie aufsetzt."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Normal mit rückführbarem Referenzwert bereitstellen — idealerweise im Bereich der mittleren Spezifikation.",
+            "Messsystem wie im Produktionsbetrieb einsetzen — nicht unter Laborbedingungen.",
+            "25–50 Wiederholmessungen an einem Tag, ohne Neueinrichtung.",
+            "Mittelwert, Standardabweichung und Bias berechnen.",
+            "Cg und Cgk berechnen und mit der Akzeptanzgrenze (meist 1,33) vergleichen.",
+            "Ergebnis dokumentieren; bei Scheitern Ursachen untersuchen, bevor Gage R&R startet."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Ohne rückführbaren Referenzwert",
+          "content": "Ein Normal ohne bekannten Wert erlaubt keine Bias-Bewertung — dann misst die Studie nur Wiederholbarkeit. Ohne Referenzwert ist das Ergebnis unvollständig."
+        },
+        {
+          "type": "definition",
+          "term": "Optimale Laborbedingungen",
+          "content": "Wer ein Messgerät an einem klimatisierten Werkstatt-Sonntag testet, bekommt ein schönes Cgk — das in der Alltagsproduktion nicht reproduzierbar ist. Der Test muss den realen Einsatz spiegeln."
+        },
+        {
+          "type": "definition",
+          "term": "Zu wenige Messungen",
+          "content": "Mit 10 Wiederholungen sind s und Bias unsicher, die Cg/Cgk-Werte instabil. 25–50 Messungen sind Standard, darunter wird es unzuverlässig."
+        },
+        {
+          "type": "definition",
+          "term": "Messungen „optimiert\"",
+          "content": "Wer Ausreißer großzügig entfernt, bekommt schöne Zahlen und schlechte Realität. Alle Messungen dokumentieren; Ausreißer nur mit begründeter Ursache entfernen."
+        },
+        {
+          "type": "definition",
+          "term": "Typ 1 bestanden = System okay",
+          "content": "Typ 1 prüft nur Lage und Wiederholbarkeit an einem Teil durch einen Bediener. Streuung durch Bedienereinfluss oder Teilespanne wird erst in Typ 2 / Gage R&R sichtbar."
+        },
+        {
+          "type": "definition",
+          "term": "Akzeptanzschwelle zu lax",
+          "content": "Cg/Cgk < 1,33 sind international nicht akzeptiert. Eine hausinterne Absenkung macht die Studie wertlos, sobald Kundenaudits ins Haus kommen."
+        }
+      ]
+    }
+  }
+}
