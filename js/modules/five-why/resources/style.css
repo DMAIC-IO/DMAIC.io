@@ -1,0 +1,285 @@
+/**
+ * D.Mike — 5-Why Module Styles
+ * BEM-light naming: .five-why__*
+ */
+
+/* Ebenenfarben des Moduls. Dieselben Werte in beiden Themes: die Farbe
+   kennzeichnet die Ebene (Why 1 bis Grundursache) und bleibt gleich.
+   Flächen und Rahmen mischen sie mit transparent. */
+.five-why {
+  --five-why-level-1: #f59e0b;
+  --five-why-level-2: #f97316;
+  --five-why-level-3: #ef4444;
+  --five-why-level-4: #ec4899;
+  --five-why-level-5: #a855f7;
+}
+
+/* ── Problem Statement ── */
+.five-why__problem {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.five-why__problem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+}
+
+.five-why__problem-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-xs);
+}
+
+.five-why__problem-input {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.five-why__problem-input::placeholder {
+  font-weight: 400;
+}
+
+/* ── Tree ── */
+.five-why__tree {
+  min-height: 100px;
+}
+
+
+/* ── Node ── */
+.five-why__node {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ── Card (compact single-row layout: tag | textarea | actions) ── */
+.five-why__card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.five-why__card:hover {
+  border-color: var(--color-border-hover, var(--color-border-secondary));
+  box-shadow: 0 1px 6px rgb(0 0 0 / 8%);
+}
+
+/* Root Cause card */
+.five-why__card--root-cause {
+  border-color: var(--five-why-level-5);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--five-why-level-5) 6%, transparent),
+    color-mix(in srgb, var(--five-why-level-4) 4%, transparent)
+  );
+}
+
+.five-why__tag {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: var(--spacing-xs);
+  line-height: 1;
+}
+
+.five-why__tag[data-level="1"] {
+  background: color-mix(in srgb, var(--five-why-level-1) 15%, transparent);
+  color: var(--five-why-level-1);
+  border: 1px solid color-mix(in srgb, var(--five-why-level-1) 25%, transparent);
+}
+
+.five-why__tag[data-level="2"] {
+  background: color-mix(in srgb, var(--five-why-level-2) 15%, transparent);
+  color: var(--five-why-level-2);
+  border: 1px solid color-mix(in srgb, var(--five-why-level-2) 25%, transparent);
+}
+
+.five-why__tag[data-level="3"] {
+  background: color-mix(in srgb, var(--five-why-level-3) 15%, transparent);
+  color: var(--five-why-level-3);
+  border: 1px solid color-mix(in srgb, var(--five-why-level-3) 25%, transparent);
+}
+
+.five-why__tag[data-level="4"] {
+  background: color-mix(in srgb, var(--five-why-level-4) 15%, transparent);
+  color: var(--five-why-level-4);
+  border: 1px solid color-mix(in srgb, var(--five-why-level-4) 25%, transparent);
+}
+
+.five-why__tag[data-level="5"] {
+  background: color-mix(in srgb, var(--five-why-level-5) 15%, transparent);
+  color: var(--five-why-level-5);
+  border: 1px solid color-mix(in srgb, var(--five-why-level-5) 25%, transparent);
+}
+
+/* ── Card Actions ── */
+.five-why__card-actions {
+  display: flex;
+  gap: var(--spacing-2xs);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+  margin-top: 1px;
+}
+
+.five-why__card:hover .five-why__card-actions {
+  opacity: 1;
+}
+
+/* Card actions use global .btn .btn--icon-sm */
+.five-why__icon-btn {
+  font-size: 12px;
+}
+
+.five-why__icon-btn--add:hover {
+  color: var(--color-success);
+}
+
+.five-why__icon-btn--delete:hover {
+  color: var(--color-error);
+}
+
+/* ── Answer Textarea (inline, grows with card) ── */
+.five-why__answer {
+  flex: 1;
+  min-height: 28px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: var(--spacing-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  transition: border-color var(--transition-speed);
+  line-height: 1.4;
+}
+
+.five-why__answer:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+.five-why__answer::placeholder {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Children Container ── */
+.five-why__children {
+  margin-left: var(--spacing-l);
+  padding-left: var(--spacing-sm);
+  border-left: 2px solid var(--color-border-primary);
+  margin-top: var(--spacing-2xs);
+}
+
+.five-why__children[data-level="1"] { border-left-color: color-mix(in srgb, var(--five-why-level-1) 30%, transparent); }
+.five-why__children[data-level="2"] { border-left-color: color-mix(in srgb, var(--five-why-level-2) 30%, transparent); }
+.five-why__children[data-level="3"] { border-left-color: color-mix(in srgb, var(--five-why-level-3) 30%, transparent); }
+.five-why__children[data-level="4"] { border-left-color: color-mix(in srgb, var(--five-why-level-4) 30%, transparent); }
+.five-why__children[data-level="5"] { border-left-color: color-mix(in srgb, var(--five-why-level-5) 30%, transparent); }
+
+/* ── Add Buttons ── */
+.five-why__add-child-btn {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--color-border-primary);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.five-why__add-child-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.five-why__add-root-btn {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  margin-top: var(--spacing-md);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.five-why__add-root-btn:hover {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+/* ── Stats Bar ── */
+.five-why__stats {
+  padding: var(--spacing-sm) 0;
+  margin-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--color-border-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* Schrumpfbreit: der Hilfe-Anker sitzt rechts neben der letzten Kennzahl,
+   nicht an der Kante des Moduls; Band und Linie bleiben voll breit. */
+.five-why__stats-list {
+  display: flex;
+  gap: var(--spacing-lg);
+  width: fit-content;
+}
+
+.five-why__stat {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.five-why__stat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.five-why__stat-dot--nodes   { background: var(--color-accent); }
+.five-why__stat-dot--depth   { background: var(--five-why-level-3); }
+.five-why__stat-dot--branches { background: var(--five-why-level-5); }
+.five-why__stat-dot--answered { background: var(--color-success); }
