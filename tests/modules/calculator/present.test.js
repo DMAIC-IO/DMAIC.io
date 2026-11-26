@@ -41,10 +41,26 @@ suite('calculator Presenter — Anzeige je Kommando', () => {
     assertDeepEqual(shown(e, m2), ['1÷2 =', 'Fehler']);
     assertEqual(isError(e), true);
   });
-  test('Unendlich wird angezeigt', () => {
+  test('Unendlich wird angezeigt, auch mit dem Grund notFinite', () => {
     const m = model();
-    const d = nextDisplay(null, 'calculate', {}, { value: Infinity, reason: null, expression: '1÷0' }, m);
+    const d = nextDisplay(null, 'calculate', {}, { value: Infinity, reason: 'notFinite', expression: '1÷0' }, m);
     assertDeepEqual(shown(d, m), ['1÷0 =', 'Infinity']);
+    assertEqual(isError(d), false);
+    const ms = model({ mode: 'stats', dataset: [2, 2, 2] });
+    const s = nextDisplay(null, 'calcStat', { type: 'skew' }, { value: NaN, modes: null, reason: 'notFinite' }, ms);
+    assertDeepEqual(shown(s, ms), ['Schiefe', 'NaN']);
+    assertEqual(isError(s), false);
+    const mc = model({ mode: 'sixsigma', ssDataset: [5, 5] });
+    const c = nextDisplay(null, 'calcSS', { type: 'cp' }, { value: Infinity, percent: null, reason: 'notFinite' }, mc);
+    assertDeepEqual(shown(c, mc), ['Cp', 'Infinity']);
+    assertEqual(isError(c), false);
+  });
+  test('ohne Anzeige und leerer Zeile: das letzte Ergebnis statt 0', () => {
+    assertDeepEqual(shown(null, model({ lastResult: 1234.5 })), ['', '1.234,5']);
+    assertDeepEqual(shown(null, model({ lastResult: 0.5 }), 'en'), ['', '0.5']);
+    assertDeepEqual(shown(null, model({ lastResult: 5, expression: '7' })), ['', '7']);
+    const m = model({ lastResult: 5 });
+    assertDeepEqual(shown(nextDisplay(null, 'backspace', {}, '', m), m), ['', '5']);
   });
   test('Kennwert: Symbol bzw. Beschriftung, Wert, Modalwerte mit ;', () => {
     const m = model({ mode: 'stats', dataset: [1, 2], lastResult: 1.5 });

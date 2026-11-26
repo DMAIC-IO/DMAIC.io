@@ -32,8 +32,26 @@ const snapKey = (m) => JSON.stringify(snapOf(m));
  */
 const LAST_DISPLAY = new Map();
 
+/**
+ * Busse, an denen das Aufräumen der Map hängt. Entfernt wird beim Löschen
+ * der Instanz (`module:removed`), nicht in `destroy` — das läuft auch beim
+ * Sprachwechsel, nach dem die Anzeige wieder dastehen soll.
+ * @type {WeakSet<object>}
+ */
+const CLEANUP_BUSES = new WeakSet();
+
+/** @param {any} bus */
+function installCleanup(bus) {
+  if (!bus?.on || CLEANUP_BUSES.has(bus)) return;
+  CLEANUP_BUSES.add(bus);
+  bus.on('module:removed', (/** @type {any} */ p) => { if (p?.instanceId) LAST_DISPLAY.delete(p.instanceId); });
+}
+
 /** Ziele, in denen getippt wird; die Tastatur des Rechners schweigt dort. */
 const TEXT_TARGETS = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
+
+/** Offene Dialoge: ihre Tasten gehören ihnen, nicht dem Rechner. */
+const DIALOG_TARGETS = '[role="dialog"], [aria-modal="true"]';
 
 export default createModule({
   descriptor,
@@ -57,6 +75,7 @@ export default createModule({
           if (d) LAST_DISPLAY.set(ctx.instanceId, d);
           else LAST_DISPLAY.delete(ctx.instanceId);
         };
+        installCleanup(ctx.eventBus);
         const saved = currentDisplay(LAST_DISPLAY.get(ctx.instanceId) ?? null, this.model);
         if (saved) this.state.display = saved;
         onCommand = (e) => {
@@ -93,6 +112,8 @@ export default createModule({
       get memIndicator() { return this.model.memory !== 0 ? 'M' : ''; },
       /** @returns {string} die andere Winkeleinheit (Wert der Taste DEG/RAD) */
       get otherAngle() { return this.model.angleMode === 'DEG' ? 'RAD' : 'DEG'; },
+      /** @returns {string} Name der Taste DEG/RAD mit der aktuellen Einheit */
+      get angleLabel() { return this.t('angleUnitLabel', { unit: this.model.angleMode }); },
 
       // ─── Reiter und Bereiche ──────────────────────────────
       /** @param {string} m @returns {boolean} */
@@ -124,16 +145,17 @@ export default createModule({
       /**
        * Tastatur des Rechners: Zeichen in die Eingabezeile, Enter rechnet
        * bzw. übernimmt den Wert, Escape leert, Rückschritt löscht. Nur in der
-       * sichtbaren Instanz, nicht beim Tippen in einem Feld, nicht mit
-       * Strg/Meta/Alt; Enter auf einem fokussierten, inaktiven Reiter
+       * sichtbaren Instanz, nicht beim Tippen in einem Feld oder in einem
+       * Dialog, nicht nach einem anderen Empfänger (`defaultPrevented`), nicht
+       * mit Strg/Meta/Alt; Enter auf einem fokussierten, inaktiven Reiter
        * aktiviert ihn.
        * @param {KeyboardEvent} e
        */
       onKey(e) {
         if (!this.$root.closest('.app-workspace') || this.$root.offsetParent === null) return;
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
         const target = /** @type {Element|null} */ (e.target instanceof Element ? e.target : null);
-        if (target?.closest(TEXT_TARGETS)) return;
+        if (target?.closest(TEXT_TARGETS) || target?.closest(DIALOG_TARGETS)) return;
         const tab = target?.closest('[role="tab"]');
         if (e.key === 'Enter' && tab && tab.getAttribute('aria-selected') !== 'true') return;
         const m = this.model;

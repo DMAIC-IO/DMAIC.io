@@ -76,20 +76,20 @@
       }
     },
     "calculate": {
-      "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis; die Eingabezeile wird danach leer. Liefert das Ergebnis, den gerechneten Ausdruck und, wenn die Eingabezeile keinen rechenbaren Ausdruck enthält, den Grund error; dann bleibt alles unverändert. Ein unendliches Ergebnis (etwa 1 ÷ 0) wird angezeigt, aber nicht als letztes Ergebnis gemerkt.",
+      "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis; die Eingabezeile wird danach leer. Liefert das Ergebnis, den gerechneten Ausdruck und, wenn die Eingabezeile keinen rechenbaren Ausdruck enthält, den Grund error; dann bleibt alles unverändert. Ein unendliches Ergebnis (etwa 1 ÷ 0) wird angezeigt, aber nicht als letztes Ergebnis gemerkt; dann steht neben dem Wert der Grund notFinite.",
       "params": {
         "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
       }
     },
     "calcStat": {
-      "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis. Liefert den Wert, beim Modalwert die häufigsten Werte, oder den Grund, warum er nicht rechenbar ist: noData (leerer Datensatz), needN2 bzw. needN3 (zu wenige Werte), noMode (jeder Wert kommt nur einmal vor). Ohne Zahl wird das letzte Ergebnis leer.",
+      "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis. Liefert den Wert, beim Modalwert die häufigsten Werte, oder den Grund, warum er nicht rechenbar ist: noData (leerer Datensatz), needN2 bzw. needN3 (zu wenige Werte), noMode (jeder Wert kommt nur einmal vor). Ohne Zahl wird das letzte Ergebnis leer. Ein unendlicher Wert (etwa die Schiefe bei s = 0) wird angezeigt, aber nicht gemerkt; dann steht neben dem Wert der Grund notFinite.",
       "params": {
         "type": "Welcher Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
         "command": "Das Kommando als ein Objekt mit type."
       }
     },
     "calcSS": {
-      "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis. Liefert den Wert, bei Yield % den Anteil gut in Prozent, oder den Grund, warum er nicht rechenbar ist: needData (keine Werte), needN2 (weniger als 2 Werte), needDataAndLimits (zu wenige Werte oder eine Spezifikationsgrenze fehlt). Ohne Zahl wird das letzte Ergebnis leer.",
+      "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis. Liefert den Wert, bei Yield % den Anteil gut in Prozent, oder den Grund, warum er nicht rechenbar ist: needData (keine Werte), needN2 (weniger als 2 Werte), needDataAndLimits (zu wenige Werte oder eine Spezifikationsgrenze fehlt). Ohne Zahl wird das letzte Ergebnis leer. Ein unendlicher Wert (etwa Cp bei σ = 0) wird angezeigt, aber nicht gemerkt; dann steht neben dem Wert der Grund notFinite.",
       "params": {
         "type": "Welcher Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
         "command": "Das Kommando als ein Objekt mit type."

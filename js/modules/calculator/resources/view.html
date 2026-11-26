@@ -1,6 +1,6 @@
 <div class="module-calculator" x-data="calculator" @keydown.window="onKey($event)">
   <!-- data-help-key="" an Ziffern, Operatoren und Funktionstasten ist gewollt: ein Abzeichen je Taste wäre Rauschen; die Hilfe hängt an den Aktionstasten, den Kennwerttasten und den Beschriftungen. -->
-  <!-- data-confirm-delete="off" an „Letzter ×“: die Taste nimmt wie Rückschritt den zuletzt getippten Wert zurück (Rückgängig holt ihn wieder), keine Rückfrage wie bisher. -->
+  <!-- data-confirm-delete="off" an „Letzter ×“: die Taste entfernt den letzten Wert des Datensatzes; Rückgängig holt ihn zurück — keine Rückfrage wie bisher. -->
   <div class="module-calculator__wrap">
 
     <div class="dmike-tabs" role="tablist" x-tablist data-help-key="modules.calculator.actions.switchMode.help">
@@ -51,7 +51,7 @@
         <button class="module-calculator__key module-calculator__key--fn" data-fn="(" x-command="inputText" data-arg-ch="(" data-help-key="">(</button>
         <button class="module-calculator__key module-calculator__key--fn" data-fn=")" x-command="inputText" data-arg-ch=")" data-help-key="">)</button>
         <div class="module-calculator__angle" role="radiogroup" :aria-label="t('degRad')" x-set="model.angleMode">
-          <button class="module-calculator__key module-calculator__key--fn" type="button" role="radio" :value="otherAngle" data-action="toggle-angle" data-help-key="modules.calculator.fields.angleMode.help" x-text="t('degRad')"></button>
+          <button class="module-calculator__key module-calculator__key--fn" type="button" role="radio" :value="otherAngle" :aria-label="angleLabel" data-action="toggle-angle" data-help-key="modules.calculator.fields.angleMode.help" x-text="t('degRad')"></button>
         </div>
         <button class="module-calculator__key module-calculator__key--fn" data-action="mem-store" data-help-key="modules.calculator.actions.memStore.help" x-command="memStore" x-text="t('keyMs')"></button>
         <button class="module-calculator__key module-calculator__key--fn" data-action="mem-recall" data-help-key="modules.calculator.actions.memRecall.help" x-command="memRecall" x-text="t('keyMr')"></button>

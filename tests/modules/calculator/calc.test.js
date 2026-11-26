@@ -215,8 +215,8 @@ suite('calc: Wertemengen gleich dem Schema', () => {
     assertDeepEqual([...C.calcStat.params.type.values], [...STAT_TYPES]);
     assertDeepEqual([...C.calcSS.params.type.values], [...SS_TYPES]);
   });
-  test('Gründe der Rückgaben', () => {
-    assertDeepEqual([...C.calcStat.returns.shape.reason.values], [...STAT_REASONS]);
-    assertDeepEqual([...C.calcSS.returns.shape.reason.values], [...SS_REASONS]);
+  test('Gründe der Rückgaben (das Kommando ergänzt notFinite)', () => {
+    assertDeepEqual([...C.calcStat.returns.shape.reason.values], [...STAT_REASONS, 'notFinite']);
+    assertDeepEqual([...C.calcSS.returns.shape.reason.values], [...SS_REASONS, 'notFinite']);
   });
 });

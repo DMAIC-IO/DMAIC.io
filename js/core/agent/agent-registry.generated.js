@@ -1493,7 +1493,7 @@ export const AGENT_REGISTRY = {
             "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "{ value: number|null, reason: 'error'|null, expression: string }",
+        "returns": "{ value: number|null, reason: 'error'|'notFinite'|null, expression: string }",
         "help": "",
         "keysOf": "calculate",
         "keysHelp": "actions.calculate.params",
@@ -1509,7 +1509,7 @@ export const AGENT_REGISTRY = {
             "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "{ value: number|null, modes: number[]|null, reason: 'noData'|'noMode'|'needN2'|'needN3'|null }",
+        "returns": "{ value: number|null, modes: number[]|null, reason: 'noData'|'noMode'|'needN2'|'needN3'|'notFinite'|null }",
         "help": "",
         "keysOf": "calcStat",
         "keysHelp": "actions.calcStat.params",
@@ -1530,7 +1530,7 @@ export const AGENT_REGISTRY = {
             "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "{ value: number|null, percent: number|null, reason: 'needData'|'needN2'|'needDataAndLimits'|null }",
+        "returns": "{ value: number|null, percent: number|null, reason: 'needData'|'needN2'|'needDataAndLimits'|'notFinite'|null }",
         "help": "",
         "keysOf": "calcSS",
         "keysHelp": "actions.calcSS.params",

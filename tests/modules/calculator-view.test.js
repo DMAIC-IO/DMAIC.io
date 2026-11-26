@@ -127,7 +127,7 @@ async function mount(instanceId, model, { keep = false, confirm = true, hidden =
   const qa = (sel) => [...container.querySelectorAll(sel)];
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   const h = {
-    inst, states, notes, commands, container, q, qa, vm,
+    inst, states, notes, commands, container, q, qa, vm, context,
     tab: (m) => /** @type {HTMLButtonElement} */ (q(`[role="tab"][data-tab="${m}"]`)),
     activeTab: () => q('[role="tab"].dmike-tab--active')?.getAttribute('data-tab') ?? null,
     top: () => q('[data-ref="expr"]')?.textContent ?? null,
@@ -206,7 +206,7 @@ suite('calculator Viewmodel — Tasten, Agent, Rückgängig', () => {
     assertEqual(h.top(), '');
     assertTrue(await h.redo(), 'Wiederholen ohne Wirkung');
     await until(() => h.saved().lastResult === 5);
-    assertEqual(h.result(), '0');
+    assertEqual(h.result(), '5');
   });
   test('Klick auf den aktiven Reiter behält die Eingabe, ohne Verlaufsschritt', async () => {
     const h = await mount('c1', null);
@@ -239,8 +239,11 @@ suite('calculator Viewmodel — Tasten, Agent, Rückgängig', () => {
   });
   test('DEG/RAD als Knopfgruppe, ein Schritt', async () => {
     const h = await mount('c1', null);
+    const btn = h.key('toggle-angle');
+    assertEqual(btn.getAttribute('aria-label'), 'Winkeleinheit: DEG, wechseln');
     await h.press('toggle-angle');
     await until(() => h.saved().angleMode === 'RAD');
+    assertEqual(btn.getAttribute('aria-label'), 'Winkeleinheit: RAD, wechseln');
     assertEqual(h.q('[data-ref="angle-mode"]').textContent, 'RAD');
     assertTrue(await h.undo());
     await until(() => h.saved().angleMode === 'DEG');
@@ -286,6 +289,31 @@ suite('calculator Viewmodel — Tastatur', () => {
     ta.remove();
     assertEqual(h.saved()?.expression ?? '', '');
   });
+  test('nicht nach einem anderen Empfänger, nicht in einem Dialog', async () => {
+    const h = await mount('c1', null);
+    const stop = (e) => e.preventDefault();
+    document.body.addEventListener('keydown', stop, { capture: true });
+    try {
+      await h.windowKey('4');
+    } finally {
+      document.body.removeEventListener('keydown', stop, { capture: true });
+    }
+    assertEqual(h.saved()?.expression ?? '', '');
+    for (const attrs of [{ role: 'dialog' }, { 'aria-modal': 'true' }]) {
+      const dlg = document.createElement('div');
+      for (const [k, v] of Object.entries(attrs)) dlg.setAttribute(k, v);
+      const btn = document.createElement('button');
+      dlg.append(btn);
+      document.body.append(dlg);
+      btn.focus();
+      await h.windowKey('8');
+      await h.windowKey('Enter');
+      dlg.remove();
+    }
+    assertEqual(h.saved()?.expression ?? '', '');
+    await h.windowKey('5');
+    assertEqual(h.saved().expression, '5');
+  });
   test('zwei Instanzen: nur die sichtbare tippt', async () => {
     const a = await mount('ca', null);
     const b = await mount('cb', null, { keep: true, hidden: true });
@@ -313,6 +341,18 @@ suite('calculator Viewmodel — Altprojekt und Sprache', () => {
     assertEqual(/** @type {HTMLInputElement} */ (h.q('[data-ref="lsl"]')).value, '10');
     assertEqual(/** @type {HTMLInputElement} */ (h.q('[data-ref="usl"]')).value, '13,5');
     assertEqual(h.inst.historyCan('undo'), false);
+  });
+  test('Anzeige übersteht das Neueinhängen, nicht das Entfernen der Instanz', async () => {
+    const h = await mount('c1', null);
+    await h.press('2', '+', '3', 'calculate');
+    assertEqual(h.top(), '2+3 =');
+    const again = await mount('c1', h.saved());
+    assertEqual(again.top(), '2+3 =');
+    assertEqual(again.result(), '5');
+    again.context.eventBus.emit('module:removed', { instanceId: 'c1' });
+    const fresh = await mount('c1', again.saved());
+    assertEqual(fresh.top(), '');
+    assertEqual(fresh.result(), '5');
   });
   test('Zahlen in Englisch mit Punkt', async () => {
     lang = 'en';

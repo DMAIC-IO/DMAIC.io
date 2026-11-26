@@ -76,20 +76,20 @@
       }
     },
     "calculate": {
-      "help": "Evaluates the input line and remembers the result; the input line is cleared afterwards. Returns the result, the evaluated expression and, if the input line holds no computable expression, the reason error; then nothing changes. An infinite result (such as 1 ÷ 0) is shown but not remembered as the last result.",
+      "help": "Evaluates the input line and remembers the result; the input line is cleared afterwards. Returns the result, the evaluated expression and, if the input line holds no computable expression, the reason error; then nothing changes. An infinite result (such as 1 ÷ 0) is shown but not remembered as the last result; the value then comes with the reason notFinite.",
       "params": {
         "command": "The command as an empty object; it takes no arguments."
       }
     },
     "calcStat": {
-      "help": "Computes a statistic over the statistics data set and remembers it as the last result. Returns the value, for the mode the most frequent values, or the reason it cannot be computed: noData (empty data set), needN2 or needN3 (too few values), noMode (every value occurs only once). Without a number the last result becomes empty.",
+      "help": "Computes a statistic over the statistics data set and remembers it as the last result. Returns the value, for the mode the most frequent values, or the reason it cannot be computed: noData (empty data set), needN2 or needN3 (too few values), noMode (every value occurs only once). Without a number the last result becomes empty. An infinite value (such as the skewness at s = 0) is shown but not remembered; the value then comes with the reason notFinite.",
       "params": {
         "type": "Which statistic; each is described individually under keys. Any other value is an error.",
         "command": "The command as an object with type."
       }
     },
     "calcSS": {
-      "help": "Computes a metric over the process data set and remembers it as the last result. Returns the value, for Yield % the fraction good in percent, or the reason it cannot be computed: needData (no values), needN2 (fewer than 2 values), needDataAndLimits (too few values or a spec limit is missing). Without a number the last result becomes empty.",
+      "help": "Computes a metric over the process data set and remembers it as the last result. Returns the value, for Yield % the fraction good in percent, or the reason it cannot be computed: needData (no values), needN2 (fewer than 2 values), needDataAndLimits (too few values or a spec limit is missing). Without a number the last result becomes empty. An infinite value (such as Cp at σ = 0) is shown but not remembered; the value then comes with the reason notFinite.",
       "params": {
         "type": "Which statistic; each is described individually under keys. Any other value is an error.",
         "command": "The command as an object with type."

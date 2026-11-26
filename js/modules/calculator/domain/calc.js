@@ -142,7 +142,8 @@ export function leadingNumber(expr) {
 
 /**
  * Ergebnis eines Statistik-Kennwerts: genau einer von `value`, `modes`,
- * `reason` ist nicht `null`.
+ * `reason` ist nicht `null`. Das Kommando `calcStat` setzt neben einem nicht
+ * endlichen `value` zusätzlich `reason: 'notFinite'`.
  * @typedef {{ value: number|null, modes: number[]|null, reason: string|null }} StatOutcome
  */
 
@@ -181,7 +182,8 @@ export function statOf(d, type) {
 
 /**
  * Ergebnis eines Prozess-Kennwerts: genau einer von `value`, `percent`,
- * `reason` ist nicht `null`.
+ * `reason` ist nicht `null`. Das Kommando `calcSS` setzt neben einem nicht
+ * endlichen `value` bzw. `percent` zusätzlich `reason: 'notFinite'`.
  * @typedef {{ value: number|null, percent: number|null, reason: string|null }} CapabilityOutcome
  */
 

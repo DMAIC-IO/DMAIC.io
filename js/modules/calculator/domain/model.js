@@ -62,6 +62,17 @@ import {
 /** @param {number} v @returns {number|null} die Zahl, wenn sie endlich ist */
 const finite = (v) => (Number.isFinite(v) ? v : null);
 
+/** @param {number|null|undefined} v @returns {boolean} eine Zahl, aber nicht endlich */
+const infinite = (v) => v !== null && v !== undefined && !Number.isFinite(v);
+
+/**
+ * Ein Kennwert mit nicht endlichem Wert (oder Prozentanteil) trägt den Grund
+ * `notFinite`; der Wert bleibt für die Anzeige stehen, gemerkt wird er nicht.
+ * @template {{ value: number|null, percent?: number|null, reason: string|null }} T
+ * @param {T} r @returns {T}
+ */
+const notFinite = (r) => (infinite(r.value) || infinite(r.percent) ? { ...r, reason: 'notFinite' } : r);
+
 export class State extends defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
@@ -151,7 +162,7 @@ export class State extends defineModel({
     calculate: command({
       returns: object({
         value: number({ nullable: true }),
-        reason: oneOf(['error'], { nullable: true }),
+        reason: oneOf(['error', 'notFinite'], { nullable: true }),
         expression: text(),
       }),
       run() {
@@ -164,7 +175,7 @@ export class State extends defineModel({
         }
         this.lastResult = finite(value);
         this.expression = '';
-        return { value, reason: null, expression };
+        return { value, reason: Number.isFinite(value) ? null : 'notFinite', expression };
       },
     }),
     calcStat: command({
@@ -175,12 +186,12 @@ export class State extends defineModel({
       returns: object({
         value: number({ nullable: true }),
         modes: list(number(), { nullable: true }),
-        reason: oneOf(['noData', 'noMode', 'needN2', 'needN3'], { nullable: true }),
+        reason: oneOf(['noData', 'noMode', 'needN2', 'needN3', 'notFinite'], { nullable: true }),
       }),
       run({ type }) {
         const r = statOf(this.dataset, type);
         this.lastResult = r.value === null ? null : finite(r.value);
-        return r;
+        return notFinite(r);
       },
     }),
     calcSS: command({
@@ -191,12 +202,12 @@ export class State extends defineModel({
       returns: object({
         value: number({ nullable: true }),
         percent: number({ nullable: true }),
-        reason: oneOf(['needData', 'needN2', 'needDataAndLimits'], { nullable: true }),
+        reason: oneOf(['needData', 'needN2', 'needDataAndLimits', 'notFinite'], { nullable: true }),
       }),
       run({ type }) {
         const r = capabilityOf(this.ssDataset, this.lsl, this.usl, type);
         this.lastResult = r.value === null ? null : finite(r.value);
-        return r;
+        return notFinite(r);
       },
     }),
     addData: command({

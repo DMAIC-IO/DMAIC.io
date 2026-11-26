@@ -6,6 +6,7 @@
   "modeStats": "Statistics",
   "modeSixSigma": "6 Sigma",
   "degRad": "DEG/RAD",
+  "angleUnitLabel": "Angle unit: {unit}, switch",
   "error": "Error",
   "noData": "No data",
   "removed": "Removed",

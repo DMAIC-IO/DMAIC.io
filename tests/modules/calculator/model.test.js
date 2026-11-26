@@ -131,7 +131,9 @@ suite('calculator Model — Rechnen', () => {
   test('1÷0: Unendlich im Ergebnis, gemerkt wird null', () => {
     const m = fresh();
     type(m, '1÷0');
-    assertEqual(m.calculate({}).value, Infinity);
+    const r = m.calculate({});
+    assertEqual(r.value, Infinity);
+    assertEqual(r.reason, 'notFinite');
     assertEqual(m.lastResult, null);
     assertEqual(m.expression, '');
     assertEqual(m.memStore({}), 0);
@@ -258,8 +260,20 @@ suite('calculator Model — Kennwerte', () => {
   });
   test('Cp bei σ = 0: Unendlich im Ergebnis, gemerkt null', () => {
     const m = load({ ...EMPTY, ssDataset: [5, 5, 5], lsl: 1, usl: 9 });
-    assertEqual(m.calcSS({ type: 'cp' }).value, Infinity);
+    const r = m.calcSS({ type: 'cp' });
+    assertEqual(r.value, Infinity);
+    assertEqual(r.reason, 'notFinite');
     assertEqual(m.lastResult, null);
+  });
+  test('endlicher Kennwert ohne Grund, nicht endlicher mit notFinite', () => {
+    const m = load({ ...EMPTY, dataset: [1e308, 1e308], ssDataset: [9, 11], lsl: 1, usl: 19 });
+    const s = m.calcStat({ type: 'sum' });
+    assertEqual(s.value, Infinity);
+    assertEqual(s.reason, 'notFinite');
+    assertEqual(m.lastResult, null);
+    m.dataset = [1, 2];
+    assertEqual(m.calcStat({ type: 'mean' }).reason, null);
+    assertEqual(m.calcSS({ type: 'cp' }).reason, null);
   });
   test('Ablehnung unbekannter Kennwerte', () => {
     const m = fresh();

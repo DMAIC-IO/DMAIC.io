@@ -168,9 +168,17 @@ export function snapOf(m) {
   };
 }
 
-/** @param {Snap} a @param {Snap} b @returns {boolean} */
+/**
+ * Gleicher Stand für die Anzeige. Der Vergleich ist grob: ein anderer Stand
+ * mit denselben Kennzahlen (etwa nach Rückgängig und neuer Eingabe) kann
+ * zufällig passen — das betrifft nur die Beschriftung, nie das Model.
+ * @param {Snap} a @param {Snap} b @returns {boolean}
+ */
 const sameSnap = (a, b) => a.expression === b.expression && a.lastResult === b.lastResult
   && a.n === b.n && a.nSS === b.nSS && a.mode === b.mode;
+
+/** Grund neben einem nicht endlichen Wert: angezeigt wird der Wert. */
+const NOT_FINITE = 'notFinite';
 
 /** @type {Top} */
 const TOP_NONE = { kind: 'none', text: '', type: '' };
@@ -197,12 +205,12 @@ export function nextDisplay(prev, command, args, result, m) {
     case 'switchMode':
       return result === true ? out(TOP_NONE, main({ kind: 'zero' })) : null;
     case 'calculate':
-      if (result?.reason) return out(top, main({ kind: 'reason', key: 'error', error: true }));
+      if (result?.reason && result.reason !== NOT_FINITE) return out(top, main({ kind: 'reason', key: 'error', error: true }));
       return out({ kind: 'expr', text: result.expression, type: '' }, main({ kind: 'calc', value: result.value }));
     case 'calcStat': case 'calcSS': {
       const kind = command === 'calcStat' ? 'stat' : 'ss';
       const labelTop = /** @type {Top} */ ({ kind, text: '', type: args?.type ?? '' });
-      if (result?.reason) {
+      if (result?.reason && result.reason !== NOT_FINITE) {
         const soft = kind === 'stat' && SOFT_REASONS.includes(result.reason);
         return soft
           ? out(labelTop, main({ kind: 'reason', key: result.reason }))
@@ -253,7 +261,7 @@ export function topText(d, t) {
  */
 export function mainText(d, m, t, lang) {
   const mn = d?.main;
-  if (!mn || mn.kind === 'expr') return m.expression || '0';
+  if (!mn || mn.kind === 'expr') return fallbackText(m, lang);
   switch (mn.kind) {
     case 'zero': return '0';
     case 'calc': return formatCalc(/** @type {number} */ (mn.value), lang);
@@ -262,8 +270,18 @@ export function mainText(d, m, t, lang) {
     case 'percent': return `${formatNumber(/** @type {number} */ (mn.value), lang, { decimals: 4 })}%`;
     case 'added': return formatValue(/** @type {number} */ (mn.value), lang);
     case 'reason': return t(mn.key);
-    default: return m.expression || '0';
+    default: return fallbackText(m, lang);
   }
+}
+
+/**
+ * Ohne eigene Anzeige: der Ausdruck, bei leerer Zeile das letzte Ergebnis
+ * (womit weitergerechnet wird, etwa nach Wiederholen oder Neuladen), sonst 0.
+ * @param {any} m @param {string} lang @returns {string}
+ */
+function fallbackText(m, lang) {
+  if (m.expression) return m.expression;
+  return m.lastResult !== null && m.lastResult !== undefined ? formatCalc(m.lastResult, lang) : '0';
 }
 
 /** @param {Display|null} d @returns {boolean} Hauptzeile in Fehlerfarbe */
