@@ -86,14 +86,14 @@
     <div class="fmea__settings" data-ref="settings">
       <div class="fmea__settings-group">
         <span class="fmea__settings-label" x-text="t('methodLabel')"></span>
-        <div class="btn-group" role="radiogroup" :aria-label="t('methodLabel')" data-help-key="modules.fmea.fields.method.help" x-set="model.method">
+        <div class="btn-group context-help-anchor--overlay" role="radiogroup" :aria-label="t('methodLabel')" data-help-key="modules.fmea.fields.method.help" x-set="model.method">
           <button type="button" role="radio" class="btn--segment" data-help-key="" data-method="ap" value="ap" :class="methodClass('ap')" x-text="t('methodAp')"></button>
           <button type="button" role="radio" class="btn--segment" data-help-key="" data-method="rpn" value="rpn" :class="methodClass('rpn')" x-text="t('methodRpn')"></button>
         </div>
       </div>
       <div class="fmea__settings-group" data-ref="fmea-type-switch" x-show="isAp">
         <span class="fmea__settings-label" x-text="t('fmeaTypeLabel')"></span>
-        <div class="btn-group" role="radiogroup" :aria-label="t('fmeaTypeLabel')" data-help-key="modules.fmea.fields.fmeaType.help" x-set="model.fmeaType">
+        <div class="btn-group context-help-anchor--overlay" role="radiogroup" :aria-label="t('fmeaTypeLabel')" data-help-key="modules.fmea.fields.fmeaType.help" x-set="model.fmeaType">
           <button type="button" role="radio" class="btn--segment" data-help-key="" data-fmea-type="process" value="process" :class="typeClass('process')" x-text="t('fmeaTypeProcess')"></button>
           <button type="button" role="radio" class="btn--segment" data-help-key="" data-fmea-type="design" value="design" :class="typeClass('design')" x-text="t('fmeaTypeDesign')"></button>
         </div>
@@ -101,7 +101,7 @@
     </div>
 
     <!-- Kennzahlen -->
-    <div class="fmea__stats" data-help-key="modules.fmea.fields.stats.help">
+    <div class="fmea__stats context-help-anchor--overlay" data-help-key="modules.fmea.fields.stats.help">
       <div class="fmea__stat-card">
         <div class="fmea__stat-icon fmea__stat-icon--total">Σ</div>
         <div><div class="fmea__stat-value" data-stat="total" x-text="stats.total"></div><div class="fmea__stat-label" x-text="t('statTotal')"></div></div>
@@ -253,7 +253,7 @@
             </div>
 
             <hr class="fmea__section-sep">
-            <div class="fmea__section-title" data-help-key="modules.fmea.fields.risks.actions.help" x-text="t('actionsSection')"></div>
+            <div class="fmea__section-title"><span data-help-key="modules.fmea.fields.risks.actions.help" x-text="t('actionsSection')"></span></div>
             <div class="fmea__actions-section">
               <table class="dmike-table fmea__action-table">
                 <thead><tr>
