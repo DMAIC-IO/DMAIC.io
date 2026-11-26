@@ -1,0 +1,5 @@
+/* ── Kachel auf dem Dashboard ──────────────────────────────────── */
+
+.dashboard-lessons__open--alert strong {
+  color: var(--color-error);
+}

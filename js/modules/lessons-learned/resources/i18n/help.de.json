@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "{{term:lessons-learned|Lessons Learned}} dokumentieren Erkenntnisse aus einem laufenden oder abgeschlossenen Projekt — was hat funktioniert, was nicht, und welche Schlussfolgerung ergibt sich daraus für zukünftige Projekte. Sie sind das organisationale Gedächtnis der Six-Sigma-Praxis und gehören in die Control-Phase, am besten aber kontinuierlich gepflegt."
+        },
+        {
+          "type": "definition",
+          "term": "Erkenntnis (Lesson)",
+          "content": "Ein einzelner, in sich geschlossener Lerneintrag mit Beschreibung, Kontext, Ursache und Empfehlung. Jede Lesson sollte für sich verständlich sein — auch ohne Kenntnis des Originalprojekts."
+        },
+        {
+          "type": "definition",
+          "term": "Was lief gut / nicht gut",
+          "content": "Lessons Learned umfassen beides: Erfolge, die wiederholt werden sollen, und Fehler, die vermieden werden sollen. Eine Sammlung nur aus Misserfolgen wirkt schnell deprimierend."
+        },
+        {
+          "type": "definition",
+          "term": "Empfehlung",
+          "content": "Konkrete, umsetzbare Handlungsanweisung für künftige Projekte — nicht „besser machen“, sondern z. B. „Kick-off mit allen Schichten durchführen, nicht nur Frühschicht“."
+        },
+        {
+          "type": "definition",
+          "term": "Kategorisierung",
+          "content": "Lessons werden nach DMAIC-Phase, Themenbereich oder Wirkung sortiert. Das macht sie später durchsuchbar — sonst verstauben sie als Liste."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Lessons während des Projekts laufend sammeln — nicht erst am Ende. Was nach drei Monaten noch erinnert wird, ist nur ein Bruchteil des Erlebten.",
+            "Am Projektende einen kurzen Workshop ansetzen: „Was lief gut, was nicht, was würden wir anders machen?“.",
+            "Jede Erkenntnis als eigene Lesson erfassen — mit Beschreibung, Ursache und Empfehlung.",
+            "Sachlich formulieren, keine Schuldzuweisungen — Lessons sind kein Bewertungswerkzeug.",
+            "Mit DMAIC-Phase und Thema kategorisieren.",
+            "In die organisationsweite Sammlung übertragen, damit andere Projekte davon profitieren."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Erst am Projektende erfasst",
+          "content": "Wer wartet, vergisst. Lessons Learned funktionieren am besten, wenn sie unmittelbar nach den auslösenden Ereignissen festgehalten werden — sonst bleiben nur die spektakulärsten übrig."
+        },
+        {
+          "type": "definition",
+          "term": "Schuldzuweisung statt Erkenntnis",
+          "content": "„Person X hat versagt“ ist keine Lesson, sondern ein Vorwurf. Lessons beschreiben Strukturen, nicht Personen — sonst funktioniert das Format nicht und niemand trägt mehr ehrlich bei."
+        },
+        {
+          "type": "definition",
+          "term": "Unkonkrete Empfehlungen",
+          "content": "„Besser kommunizieren“ ist keine Empfehlung, sondern eine Floskel. Eine gute Empfehlung ist so konkret, dass jemand sie ohne Rückfragen umsetzen kann."
+        },
+        {
+          "type": "definition",
+          "term": "Dokument verschwindet",
+          "content": "Ohne zentrale Ablage und Suchfunktion landet die Sammlung im Projektordner und wird nie wiedergefunden. Eine durchsuchbare zentrale Datenbank ist Pflicht — sonst lernt nur das Projektteam, nicht die Organisation."
+        },
+        {
+          "type": "definition",
+          "term": "Nur Fehler werden festgehalten",
+          "content": "Erfolge sind genauso wichtig — sonst wird das Format zur Mängelliste. Bewusst nach „was lief gut“ fragen."
+        },
+        {
+          "type": "definition",
+          "term": "Kein Folge-Mechanismus",
+          "content": "Lessons sind nutzlos, wenn sie nicht in Standards, Templates oder Schulungen einfließen. Pro Lesson definieren: Wo wird sie wirksam, wer trägt sie weiter?"
+        }
+      ]
+    }
+  }
+}

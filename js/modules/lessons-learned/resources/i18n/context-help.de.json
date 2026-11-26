@@ -1,0 +1,159 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "lessons": {
+      "help": "Die erfassten Erfahrungen in Anlegereihenfolge, jede mit Kennung, Titel, Kategorie, Phase, Wirkung, Verantwortlich, Beschreibung, Ursache, Empfehlung, Maßnahmen und den Zeitpunkten von Anlage und letzter Änderung. Die Liste der Karten zeigt die neueste zuerst.",
+      "id": {
+        "help": "Die Kennung der Erfahrung; die vergibt die App beim Anlegen. Mit ihr sprechen Sie die Erfahrung beim Ändern und Löschen an."
+      },
+      "title": {
+        "help": "Der Titel der Erfahrung, er steht als Überschrift auf der Karte. Er ist die einzige Pflichtangabe; Leerzeichen am Rand werden entfernt."
+      },
+      "category": {
+        "help": "Die Art der Erfahrung: Erfolg (success), Problem (problem) oder Verbesserung (improve); ohne Angabe Erfolg. Danach richten sich der Farbpunkt an der Karte und die Filter über der Liste. Ein unbekannter Wert aus einem Import wird zu Erfolg."
+      },
+      "phase": {
+        "help": "Die Phase des Zyklus, zu der die Erfahrung gehört; neu angelegt nur eine Phase des aktiven Zyklus, ohne Angabe dessen letzte. Sie steht als Marke auf der Karte. Aus einem Import oder einem älteren Projekt kann auch die Phase eines anderen Zyklus stammen; sie bleibt stehen, bis jemand die Erfahrung im Formular ändert und speichert."
+      },
+      "impact": {
+        "help": "Die Auswirkung der Erfahrung auf das Projekt in drei Stufen: Hoch (high), Mittel (medium) oder Niedrig (low); ohne Angabe Mittel. Sie steht als Marke auf der Karte. Ein unbekannter Wert aus einem Import wird zu Mittel."
+      },
+      "owner": {
+        "help": "Wer für die Erfahrung verantwortlich ist, als freier Text. Darf leer bleiben."
+      },
+      "description": {
+        "help": "Was passiert ist, in eigenen Worten und als freier Text. Darf leer bleiben."
+      },
+      "rootCause": {
+        "help": "Warum es dazu kam: die Ursache hinter dem Erfolg oder dem Problem, als freier Text. Darf leer bleiben."
+      },
+      "recommendation": {
+        "help": "Was künftige Projekte tun oder lassen sollten, als freier Text. Darf leer bleiben."
+      },
+      "actions": {
+        "help": "Die Maßnahmen, die sich aus der Erfahrung ergeben, als Liste; jede hat einen Text und einen Haken für erledigt. Die offenen Maßnahmen aller Erfahrungen zählt die Kennzahl „Offene Actions“.",
+        "text": {
+          "help": "Der Text der Maßnahme."
+        },
+        "done": {
+          "help": "Ob die Maßnahme erledigt ist; auf der Karte hakt man sie ab."
+        }
+      },
+      "createdAt": {
+        "help": "Wann die Erfahrung angelegt wurde, als Zeitstempel in Millisekunden; den setzt die App. Die Karten sind danach sortiert, die neueste zuerst."
+      },
+      "updatedAt": {
+        "help": "Wann die Erfahrung zuletzt geändert wurde, als Zeitstempel in Millisekunden; den setzt die App bei jeder Änderung, auch beim Abhaken einer Maßnahme."
+      }
+    },
+    "stats": {
+      "help": "Die Kennzahlen der Statistikleiste: Zahl der Erfahrungen insgesamt und je Kategorie sowie die Zahl der offenen Maßnahmen über alle Erfahrungen. Sie werden nicht gespeichert, sondern aus den Erfahrungen gezählt."
+    }
+  },
+  "types": {
+    "LessonStats": {
+      "total": "Die Zahl aller Erfahrungen.",
+      "success": "Die Zahl der Erfahrungen der Kategorie Erfolg.",
+      "problem": "Die Zahl der Erfahrungen der Kategorie Problem.",
+      "improve": "Die Zahl der Erfahrungen der Kategorie Verbesserung.",
+      "openActions": "Die Zahl der Maßnahmen ohne Haken, über alle Erfahrungen."
+    }
+  },
+  "actions": {
+    "addLesson": {
+      "help": "Legt eine Erfahrung an und liefert ihre Kennung.",
+      "params": {
+        "title": "Der Titel; Leerzeichen am Rand fallen weg. Ein leerer Titel wird abgelehnt.",
+        "category": "Die Kategorie: success, problem oder improve; ohne Angabe success. Ein anderer Wert wird abgelehnt.",
+        "impact": "Die Wirkung: high, medium oder low; ohne Angabe medium. Ein anderer Wert wird abgelehnt.",
+        "phase": "Eine Phase des aktiven Zyklus; ohne Angabe dessen letzte. Eine andere Phase wird abgelehnt.",
+        "owner": "Wer verantwortlich ist; ohne Angabe leer.",
+        "description": "Was passiert ist; ohne Angabe leer.",
+        "rootCause": "Die Ursache; ohne Angabe leer.",
+        "recommendation": "Die Empfehlung für künftige Projekte; ohne Angabe leer.",
+        "actions": "Die Maßnahmen als Liste von Objekten mit text und wahlweise done (true oder false, ohne Angabe false); ohne Angabe keine.",
+        "command": "Das Kommando als ein Objekt mit title und wahlweise category, impact, phase, owner, description, rootCause, recommendation und actions."
+      }
+    },
+    "updateLesson": {
+      "help": "Ändert die genannten Angaben einer Erfahrung; alle übrigen bleiben stehen. Die Zeit der letzten Änderung setzt die App.",
+      "params": {
+        "lessonId": "Die Kennung der Erfahrung, wie sie unter lessons steht. Eine unbekannte Kennung wird abgelehnt.",
+        "title": "Der neue Titel; Leerzeichen am Rand fallen weg. Ein leerer Titel wird abgelehnt und lässt alles stehen.",
+        "category": "Die neue Kategorie: success, problem oder improve.",
+        "impact": "Die neue Wirkung: high, medium oder low.",
+        "phase": "Die neue Phase, eine Phase des aktiven Zyklus. Eine andere Phase wird abgelehnt.",
+        "owner": "Der neue Verantwortliche.",
+        "description": "Die neue Beschreibung.",
+        "rootCause": "Die neue Ursache.",
+        "recommendation": "Die neue Empfehlung.",
+        "actions": "Die neue, vollständige Liste der Maßnahmen, je ein Objekt mit text und wahlweise done; sie ersetzt die bisherige.",
+        "command": "Das Kommando als ein Objekt mit lessonId und mindestens einer der Angaben title, category, impact, phase, owner, description, rootCause, recommendation oder actions; ohne eine davon wird es abgelehnt."
+      }
+    },
+    "removeLesson": {
+      "help": "Löscht eine Erfahrung samt ihren Maßnahmen. In der Oberfläche fragt das Modul vorher nach.",
+      "params": {
+        "lessonId": "Die Kennung der Erfahrung. Eine unbekannte Kennung wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit lessonId."
+      }
+    },
+    "addAction": {
+      "help": "Hängt eine Maßnahme an eine Erfahrung an und liefert ihre Position, von 0 an gezählt.",
+      "params": {
+        "lessonId": "Die Kennung der Erfahrung. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Der Text der Maßnahme; Leerzeichen am Rand fallen weg. Ein leerer Text wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit lessonId und text."
+      }
+    },
+    "removeAction": {
+      "help": "Entfernt eine Maßnahme einer Erfahrung; die übrigen rücken nach.",
+      "params": {
+        "lessonId": "Die Kennung der Erfahrung. Eine unbekannte Kennung wird abgelehnt.",
+        "actionIndex": "Die Position der Maßnahme innerhalb der Erfahrung, von 0 an gezählt. Eine Position ohne Maßnahme wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit lessonId und actionIndex."
+      }
+    },
+    "setActionDone": {
+      "help": "Hakt eine Maßnahme ab oder nimmt den Haken zurück.",
+      "params": {
+        "lessonId": "Die Kennung der Erfahrung. Eine unbekannte Kennung wird abgelehnt.",
+        "actionIndex": "Die Position der Maßnahme innerhalb der Erfahrung, von 0 an gezählt. Eine Position ohne Maßnahme wird abgelehnt.",
+        "done": "true hakt die Maßnahme ab, false nimmt den Haken zurück. Jeder andere Wert wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit lessonId, actionIndex und done."
+      }
+    },
+    "importLessons": {
+      "help": "Stellt Erfahrungen aus einer Exportdatei dieses Moduls wieder her, mit ihren Kennungen und Zeitpunkten, und hängt sie hinten an. Eine Kennung, die schon vergeben ist, wird durch eine neue ersetzt. Liefert die Zahl der übernommenen Erfahrungen.",
+      "params": {
+        "json": "Der Text der Exportdatei: eine JSON-Liste von Erfahrungen. Einträge, die keine Objekte sind, entfallen; unbekannte Kategorien und Wirkungen werden zu success und medium. Ein Text, der keine solche Liste ist, wird abgelehnt und lässt alles stehen.",
+        "command": "Das Kommando als ein Objekt mit json."
+      }
+    }
+  },
+  "forms": {
+    "LessonForm": {
+      "actionText": {
+        "help": "Eine neue Maßnahme: Text eingeben und mit Plus oder der Eingabetaste anhängen. Gespeichert wird sie erst mit der Erfahrung."
+      }
+    }
+  },
+  "state": {
+    "search": {
+      "help": "Durchsucht Titel, Beschreibung, Verantwortlich, Empfehlung und Ursache; Groß- und Kleinschreibung zählen nicht. Die Suche wird nicht gespeichert."
+    },
+    "filter": {
+      "help": "Zeigt alle Erfahrungen oder nur die einer Kategorie. Der Filter wird nicht gespeichert."
+    },
+    "openCards": {
+      "help": "Welche Karten aufgeklappt sind. Wird nicht gespeichert."
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele Erfahrungen mit hoher Wirkung und offenen Maßnahmen die Kachel höchstens auflistet, von 1 bis 10."
+      }
+    }
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "lessons": {
+      "help": "The recorded lessons in the order they were added, each with identifier, title, category, phase, impact, owner, description, root cause, recommendation, actions and the times it was created and last changed. The list of cards shows the newest first.",
+      "id": {
+        "help": "The identifier of the lesson; the app assigns it when the lesson is created. Use it to address the lesson when changing or deleting."
+      },
+      "title": {
+        "help": "The title of the lesson, shown as the heading on the card. It is the only required entry; spaces at the edges are removed."
+      },
+      "category": {
+        "help": "The kind of lesson: Success (success), Problem (problem) or Improvement (improve); Success when not given. The coloured dot on the card and the filters above the list follow it. An unknown value from an import becomes Success."
+      },
+      "phase": {
+        "help": "The phase of the cycle the lesson belongs to; a new lesson takes only a phase of the active cycle, its last one when not given. It is shown as a tag on the card. An import or an older project can also bring the phase of another cycle; it stays until someone changes the lesson in the form and saves it."
+      },
+      "impact": {
+        "help": "The effect of the lesson on the project in three levels: High (high), Medium (medium) or Low (low); Medium when not given. It is shown as a tag on the card. An unknown value from an import becomes Medium."
+      },
+      "owner": {
+        "help": "Who is responsible for the lesson, as free text. May stay empty."
+      },
+      "description": {
+        "help": "What happened, in your own words and as free text. May stay empty."
+      },
+      "rootCause": {
+        "help": "Why it happened: the cause behind the success or the problem, as free text. May stay empty."
+      },
+      "recommendation": {
+        "help": "What future projects should do or avoid, as free text. May stay empty."
+      },
+      "actions": {
+        "help": "The actions that follow from the lesson, as a list; each has a text and a tick for done. The open actions of all lessons are counted by the figure “Open Actions”.",
+        "text": {
+          "help": "The text of the action."
+        },
+        "done": {
+          "help": "Whether the action is done; you tick it off on the card."
+        }
+      },
+      "createdAt": {
+        "help": "When the lesson was created, as a timestamp in milliseconds; the app sets it. The cards are sorted by it, newest first."
+      },
+      "updatedAt": {
+        "help": "When the lesson was last changed, as a timestamp in milliseconds; the app sets it on every change, including ticking off an action."
+      }
+    },
+    "stats": {
+      "help": "The figures of the statistics bar: the number of lessons in total and per category and the number of open actions over all lessons. They are not stored but counted from the lessons."
+    }
+  },
+  "types": {
+    "LessonStats": {
+      "total": "The number of all lessons.",
+      "success": "The number of lessons of the category Success.",
+      "problem": "The number of lessons of the category Problem.",
+      "improve": "The number of lessons of the category Improvement.",
+      "openActions": "The number of actions without a tick, over all lessons."
+    }
+  },
+  "actions": {
+    "addLesson": {
+      "help": "Adds a lesson and returns its identifier.",
+      "params": {
+        "title": "The title; spaces at the edges are dropped. An empty title is rejected.",
+        "category": "The category: success, problem or improve; success when not given. Any other value is rejected.",
+        "impact": "The impact: high, medium or low; medium when not given. Any other value is rejected.",
+        "phase": "A phase of the active cycle; its last one when not given. Any other phase is rejected.",
+        "owner": "Who is responsible; empty when not given.",
+        "description": "What happened; empty when not given.",
+        "rootCause": "The root cause; empty when not given.",
+        "recommendation": "The recommendation for future projects; empty when not given.",
+        "actions": "The actions as a list of objects with text and optionally done (true or false, false when not given); none when not given.",
+        "command": "The command as one object with title and optionally category, impact, phase, owner, description, rootCause, recommendation and actions."
+      }
+    },
+    "updateLesson": {
+      "help": "Changes the named entries of a lesson; all others stay as they are. The app sets the time of the last change.",
+      "params": {
+        "lessonId": "The identifier of the lesson as listed under lessons. An unknown identifier is rejected.",
+        "title": "The new title; spaces at the edges are dropped. An empty title is rejected and leaves everything as it was.",
+        "category": "The new category: success, problem or improve.",
+        "impact": "The new impact: high, medium or low.",
+        "phase": "The new phase, a phase of the active cycle. Any other phase is rejected.",
+        "owner": "The new owner.",
+        "description": "The new description.",
+        "rootCause": "The new root cause.",
+        "recommendation": "The new recommendation.",
+        "actions": "The new, complete list of actions, each an object with text and optionally done; it replaces the previous one.",
+        "command": "The command as one object with lessonId and at least one of title, category, impact, phase, owner, description, rootCause, recommendation or actions; without one of them it is rejected."
+      }
+    },
+    "removeLesson": {
+      "help": "Deletes a lesson together with its actions. In the interface the module asks first.",
+      "params": {
+        "lessonId": "The identifier of the lesson. An unknown identifier is rejected.",
+        "command": "The command as one object with lessonId."
+      }
+    },
+    "addAction": {
+      "help": "Appends an action to a lesson and returns its position, counted from 0.",
+      "params": {
+        "lessonId": "The identifier of the lesson. An unknown identifier is rejected.",
+        "text": "The text of the action; spaces at the edges are dropped. An empty text is rejected.",
+        "command": "The command as one object with lessonId and text."
+      }
+    },
+    "removeAction": {
+      "help": "Removes an action of a lesson; the remaining ones move up.",
+      "params": {
+        "lessonId": "The identifier of the lesson. An unknown identifier is rejected.",
+        "actionIndex": "The position of the action within the lesson, counted from 0. A position without an action is rejected.",
+        "command": "The command as one object with lessonId and actionIndex."
+      }
+    },
+    "setActionDone": {
+      "help": "Ticks an action off, or takes the tick back.",
+      "params": {
+        "lessonId": "The identifier of the lesson. An unknown identifier is rejected.",
+        "actionIndex": "The position of the action within the lesson, counted from 0. A position without an action is rejected.",
+        "done": "true ticks the action off, false takes the tick back. Any other value is rejected.",
+        "command": "The command as one object with lessonId, actionIndex and done."
+      }
+    },
+    "importLessons": {
+      "help": "Restores lessons from an export file of this module, with their identifiers and times, and appends them. An identifier that is already taken is replaced by a new one. Returns the number of lessons taken over.",
+      "params": {
+        "json": "The text of the export file: a JSON list of lessons. Entries that are not objects are dropped; unknown categories and impacts become success and medium. A text that is no such list is rejected and leaves everything as it was.",
+        "command": "The command as one object with json."
+      }
+    }
+  },
+  "forms": {
+    "LessonForm": {
+      "actionText": {
+        "help": "A new action: type the text and append it with plus or the Enter key. It is saved only together with the lesson."
+      }
+    }
+  },
+  "state": {
+    "search": {
+      "help": "Searches title, description, owner, recommendation and root cause; upper and lower case do not matter. The search is not saved."
+    },
+    "filter": {
+      "help": "Shows all lessons or only those of one category. The filter is not saved."
+    },
+    "openCards": {
+      "help": "Which cards are expanded. Not saved."
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many lessons with high impact and open actions the tile lists at most, from 1 to 10."
+      }
+    }
+  }
+}
