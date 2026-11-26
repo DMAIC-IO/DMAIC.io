@@ -3,8 +3,10 @@
  * BEM-light naming: .ll__*, Kachel .dashboard-lessons__*
  */
 
-/* ── Modulfarben (Phasen, Kennzahlen, Wirkung; hell und dunkel gleich) ── */
-.lessons-learned {
+/* ── Modulfarben (Phasen, Kennzahlen, Wirkung; hell und dunkel gleich).
+   Auch am Formular: es wird in den Dialog außerhalb des Modulbehälters ausgeliehen. ── */
+.lessons-learned,
+.ll__form {
   --ll-accent-bg: rgb(56 189 248 / 12%);
   --ll-success-bg: rgb(52 211 153 / 12%);
   --ll-danger-bg: rgb(248 113 113 / 12%);
@@ -23,7 +25,8 @@
   --ll-font-size-chip: 11px;
 }
 
-[data-theme="dark"] .lessons-learned {
+[data-theme="dark"] .lessons-learned,
+[data-theme="dark"] .ll__form {
   --ll-accent-bg: rgb(56 189 248 / 12%);
   --ll-success-bg: rgb(52 211 153 / 12%);
   --ll-danger-bg: rgb(248 113 113 / 12%);
