@@ -52,6 +52,16 @@ const ItemForm = defineForm({
   },
 });
 
+/**
+ * Ein Text als Parameter, im Formular ein Textfeld und eine Liste, die nur
+ * Code schreibt (kein `x-param`): `toParams` hängt die Liste an den Text.
+ */
+const TagsForm = defineForm({
+  fields: { text: text(), extra: list(text()) },
+  fromParams({ text: t = '' }) { return { text: t, extra: [] }; },
+  toParams({ text: t, extra }) { return { text: [t, ...extra].join(' ').trim() }; },
+});
+
 /** Viewmodel-Kommandos wie aus createModule({ commands }): `this` ist die Komponente. */
 const VM_COMMANDS = {
   pickType: command({
@@ -132,7 +142,7 @@ function build(html, { confirmAnswer = true, columns = {} } = {}) {
     }
     Object.defineProperty(comp, '_ui', {
       enumerable: false,
-      get() { return { model: this.model, notify: (...a) => notified.push(a), dialog, i18n: I18N, moduleId: 'ct', forms: { ItemForm }, vmCommands: VM_COMMANDS, component: this }; },
+      get() { return { model: this.model, notify: (...a) => notified.push(a), dialog, i18n: I18N, moduleId: 'ct', forms: { ItemForm, TagsForm }, vmCommands: VM_COMMANDS, component: this }; },
     });
     return comp;
   });
@@ -491,6 +501,36 @@ suite('x-command-form', () => {
     await submitForm($('form'));
     assertEqual($('.f').getAttribute('aria-invalid'), 'true');
     assertEqual(model.columns.a[0], 'Ada Lovelace');
+  });
+
+  test('Formular-Schema: eine Liste, die nur Code ändert, zählt als Änderung', async () => {
+    const { $, model } = await mount(
+      '<form x-command-form="setItem" data-command-form-schema="TagsForm" data-arg-col="a" data-arg-idx="0"><input x-param="text"></form>',
+      { columns: { a: ['eins'] } },
+    );
+    Alpine.$data($('input')).form.extra.push('zwei');
+    await submitForm($('form'));
+    assertEqual(model.columns.a[0], 'eins zwei');
+  });
+
+  test('ohne Formular-Schema zählen nur die x-param-Felder', async () => {
+    const { $, model, notified } = await mount('<form x-command-form="addItem"><input x-param="text"></form>');
+    Alpine.$data($('input')).form.col = 'b';
+    await submitForm($('form'));
+    assertDeepEqual([...model.columns.a, ...model.columns.b], []);
+    assertEqual(notified.length, 0);
+  });
+
+  test('Formular-Schema, nichts geändert: der Dialog schließt wie Abbrechen', async () => {
+    const { $, dialog, model } = await mount(`
+      <button class="edit" x-dialog="tagForm" data-dialog-command="setItem" data-arg-col="a" data-arg-idx="0">e</button>
+      <div hidden><form x-ref="tagForm" x-command-form="setItem" data-command-form-schema="TagsForm"><input x-param="text"></form></div>`,
+    { columns: { a: ['eins'] } });
+    $('.edit').click();
+    dialog.open.api.confirm();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertEqual(model.columns.a[0], 'eins');
   });
 
   test('Anker am Formular aus dem Kommando', async () => {

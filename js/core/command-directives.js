@@ -387,7 +387,10 @@ function createFormController(Alpine, formEl, baseCommand) {
 
   const submit = async () => {
     const names = [...free.keys()];
-    if (!names.some((k) => JSON.stringify(values[k]) !== JSON.stringify(start[k]))) {
+    // Mit Formular-Schema zählt jedes Formularfeld, auch eines, das nur Code
+    // schreibt (eine Liste im Formular); sonst nur die freien Felder.
+    const watched = formDef ? Object.keys(values) : names;
+    if (!watched.some((k) => JSON.stringify(values[k]) !== JSON.stringify(start[k]))) {
       dialog?.onUnchanged();
       return;
     }
