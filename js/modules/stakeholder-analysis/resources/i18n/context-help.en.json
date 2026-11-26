@@ -1,0 +1,84 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "stakeholders": {
+      "help": "The stakeholders in the order they were added, each with identifier, name, role, power, interest, attitude, category and notes. The priority quadrant follows from power and interest and is not stored; it is in the quadrant list. From a project import attitude and category may also carry a value other than the ones the commands accept.",
+      "id": {
+        "help": "The identifier of the stakeholder; the app assigns it when the stakeholder is created. Use it to address the stakeholder when changing or removing."
+      },
+      "name": {
+        "help": "The name of the stakeholder, up to 100 characters. It is the only required entry."
+      },
+      "role": {
+        "help": "The role or organization of the stakeholder, up to 200 characters, for example department head or supplier."
+      },
+      "power": {
+        "help": "The stakeholder's power over the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with interest it decides the quadrant of the power-interest matrix: 4 and above counts as high."
+      },
+      "interest": {
+        "help": "The stakeholder's interest in the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with power it decides the quadrant of the power-interest matrix: 4 and above counts as high; high on both gives Manage Closely, only power high Keep Satisfied, only interest high Keep Informed, otherwise Monitor."
+      },
+      "support": {
+        "help": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; the module takes it over as it is and shows it that way; whoever opens the entry in the form and saves it resets it to Neutral. In the matrix it is coloured like a critic; it does not count toward the warning."
+      },
+      "category": {
+        "help": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; the module takes it over as it is and shows it that way; whoever opens the entry in the form and saves it resets it to Internal."
+      },
+      "notes": {
+        "help": "The stakeholder's expectations and concerns as free text, up to 500 characters."
+      }
+    },
+    "quadrants": {
+      "help": "The priority quadrant of each stakeholder, in the order of the stakeholders. It follows from power and interest (a value of 4 or more counts as high) and is not stored: manage-closely (Manage Closely) for high power and high interest, keep-satisfied (Keep Satisfied) for high power and low interest, keep-informed (Keep Informed) for low power and high interest, monitor (Monitor) for both low."
+    }
+  },
+  "actions": {
+    "addStakeholder": {
+      "help": "Adds a stakeholder and returns their identifier.",
+      "params": {
+        "name": "The name; spaces at the edges are dropped. An empty name is refused.",
+        "role": "The role or organization; empty when not given.",
+        "power": "The power, a whole number from 1 to 5, also as numeric text; 3 when not given. Any other value is refused.",
+        "interest": "The interest, a whole number from 1 to 5, also as numeric text; 3 when not given. Any other value is refused.",
+        "support": "The attitude: supporter, neutral or critic; neutral when not given. Any other value is refused.",
+        "category": "The category: intern, extern, kunde, lieferant or behoerde; intern when not given. Any other value is refused.",
+        "notes": "Expectations and concerns; empty when not given.",
+        "command": "The command as an object with name and optionally role, power, interest, support, category and notes."
+      }
+    },
+    "updateStakeholder": {
+      "help": "Changes the named entries of a stakeholder; all others stay as they are.",
+      "params": {
+        "id": "The identifier of the stakeholder. An unknown identifier is refused.",
+        "name": "The new name; spaces at the edges are dropped. An empty name is refused and leaves everything unchanged.",
+        "role": "The new role or organization.",
+        "power": "The new power, a whole number from 1 to 5, also as numeric text.",
+        "interest": "The new interest, a whole number from 1 to 5, also as numeric text.",
+        "support": "The new attitude: supporter, neutral or critic.",
+        "category": "The new category: intern, extern, kunde, lieferant or behoerde.",
+        "notes": "The new expectations and concerns.",
+        "command": "The command as an object with id and at least one of name, role, power, interest, support, category or notes; without any of them it is refused."
+      }
+    },
+    "removeStakeholder": {
+      "help": "Removes a stakeholder. In the interface the module asks first.",
+      "params": {
+        "id": "The identifier of the stakeholder. An unknown identifier is refused.",
+        "command": "The command as an object with id."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "showCritics": {
+        "help": "Shows below the counts the critics in the Manage Closely quadrant, with their role."
+      }
+    }
+  },
+  "types": {
+    "QuadrantEntry": {
+      "id": "The identifier of the stakeholder as it appears in the stakeholder list.",
+      "quadrant": "The quadrant: manage-closely (Manage Closely), keep-satisfied (Keep Satisfied), keep-informed (Keep Informed) or monitor (Monitor)."
+    }
+  }
+}

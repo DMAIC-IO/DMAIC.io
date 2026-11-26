@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "{{term:stakeholder|Stakeholder analysis}} identifies all individuals and groups who influence a {{term:six-sigma|Six Sigma}} project or are affected by it, and classifies them by their influence and attitude toward the project. It is a central tool of the Define phase and forms the basis for targeted communication and change management."
+        },
+        {
+          "type": "definition",
+          "term": "Stakeholder",
+          "content": "A person or group that can either influence the project or is affected by its outcome — e.g. sponsor, operators, customers, IT, works council, sales. Those overlooked may later slow or block progress."
+        },
+        {
+          "type": "definition",
+          "term": "Influence / power",
+          "content": "How strongly can this person promote or hinder the project? High power = formal decision authority or informal influence."
+        },
+        {
+          "type": "definition",
+          "term": "Interest / impact",
+          "content": "How much does the result affect them? High interest = the project outcome directly changes their daily work or goals."
+        },
+        {
+          "type": "definition",
+          "term": "Power-interest matrix",
+          "content": "Stakeholders are placed in four quadrants: high/high (\"Manage closely\"), high/low (\"Keep satisfied\"), low/high (\"Keep informed\"), low/low (\"Monitor\"). Each quadrant calls for a different communication approach."
+        },
+        {
+          "type": "definition",
+          "term": "Attitude",
+          "content": "Where does the stakeholder stand today: supporter, neutral, or critic? The tool records the current attitude. Note under \"Expectations / Concerns\" where they should stand for the project to succeed and how you will get them there — the gap marks the action need. In the matrix, the dot colour shows the attitude (green supporter, yellow neutral, red critic). If a critic sits in the \"Manage Closely\" quadrant, the tool shows a warning above the matrix — a key stakeholder must not be against the project."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Build the stakeholder list — include all functions and levels the process touches.",
+            "Estimate influence and interest for each (e.g. scale 1–5).",
+            "Place each stakeholder in the power-interest matrix — every entry gets a quadrant.",
+            "Capture the current attitude (critic / neutral / supporter); record the target attitude under \"Expectations / Concerns\".",
+            "Derive a communication strategy per stakeholder — e.g. weekly update, one-on-one talk, workshop participation.",
+            "Refresh the list regularly — stakeholders change stance, new ones appear, old ones leave."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Missing important stakeholders",
+          "content": "Indirectly affected groups (IT, purchasing, compliance) are easy to miss — and later block from the background. When brainstorming, deliberately walk through all interfaces."
+        },
+        {
+          "type": "definition",
+          "term": "Confusing power with hierarchy",
+          "content": "Influence is not equal to position. An experienced operator may have more change-making power than a senior manager far from the process. Estimate real impact, not the org chart."
+        },
+        {
+          "type": "definition",
+          "term": "Ignoring opponents",
+          "content": "Stakeholders with a negative stance tend to be excluded from the plan. That is dangerous — they need the most attention. Approach them deliberately."
+        },
+        {
+          "type": "definition",
+          "term": "Static analysis",
+          "content": "Stakeholder stances change. A matrix built once ages quickly. Refresh at least at every tollgate."
+        },
+        {
+          "type": "definition",
+          "term": "Confidential assessments",
+          "content": "A power-interest matrix with labels like \"opponent\" does not belong in open project folders. Treat as confidential, otherwise political problems arise."
+        },
+        {
+          "type": "definition",
+          "term": "Communication without a strategy",
+          "content": "\"We send a regular email\" is not a strategy. Per stakeholder, define concretely: what should they know, in which form, how often, who delivers it?"
+        }
+      ]
+    }
+  }
+}

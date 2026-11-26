@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:stakeholder|Stakeholder-Analyse}} identifiziert alle Personen und Gruppen, die ein Six-Sigma-Projekt beeinflussen oder von ihm betroffen sind, und ordnet sie nach ihrem Einfluss und ihrer Haltung zum Projekt. Sie ist ein zentrales Werkzeug der Define-Phase und bildet die Grundlage für gezielte Kommunikation und Change Management."
+        },
+        {
+          "type": "definition",
+          "term": "Stakeholder",
+          "content": "Eine Person oder Gruppe, die das Projekt entweder beeinflussen kann oder vom Ergebnis betroffen ist — z. B. Sponsor, Operatoren, Kunden, IT, Betriebsrat, Vertrieb. Wer übersehen wird, kann später bremsen oder blockieren."
+        },
+        {
+          "type": "definition",
+          "term": "Einfluss / Macht",
+          "content": "Wie stark kann diese Person das Projekt fördern oder behindern? Hoher Einfluss = formelle Entscheidungsmacht oder informelle Autorität."
+        },
+        {
+          "type": "definition",
+          "term": "Interesse / Betroffenheit",
+          "content": "Wie sehr betrifft sie das Ergebnis? Hohes Interesse = das Projektergebnis ändert ihren Alltag oder ihre Ziele direkt."
+        },
+        {
+          "type": "definition",
+          "term": "Power-Interest-Matrix",
+          "content": "Stakeholder werden in vier Quadranten eingeordnet: hoch/hoch („Eng managen“), hoch/niedrig („Zufrieden halten“), niedrig/hoch („Gut informieren“), niedrig/niedrig („Beobachten“). Jeder Quadrant verlangt einen anderen Kommunikationsansatz."
+        },
+        {
+          "type": "definition",
+          "term": "Einstellung",
+          "content": "Wo steht der Stakeholder heute: Unterstützer, neutral oder Kritiker? Erfasst wird die aktuelle Einstellung. Wo er stehen sollte, damit das Projekt gelingt, und wie Sie ihn dorthin bringen, halten Sie unter „Erwartungen / Bedenken“ fest — die Differenz markiert den Handlungsbedarf. In der Matrix zeigt die Punktfarbe die Einstellung (grün Unterstützer, gelb neutral, rot Kritiker). Sitzt ein Kritiker im Quadranten „Eng managen“, warnt das Werkzeug über der Matrix — ein Schlüssel-Stakeholder darf nicht gegen das Projekt stehen."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Stakeholder-Liste erstellen — alle Funktionen und Ebenen einbeziehen, die der Prozess berührt.",
+            "Für jeden Stakeholder Einfluss und Interesse einschätzen (z. B. Skala 1–5).",
+            "In die Power-Interest-Matrix eintragen — jeder Stakeholder bekommt einen Quadranten.",
+            "Aktuelle Einstellung erfassen (Kritiker / neutral / Unterstützer); die gewünschte Einstellung unter „Erwartungen / Bedenken“ festhalten.",
+            "Pro Stakeholder eine Kommunikationsstrategie ableiten — z. B. wöchentliches Update, persönliches Gespräch, Workshop-Einbindung.",
+            "Die Liste regelmäßig aktualisieren — Stakeholder ändern Haltung, neue tauchen auf, alte fallen weg."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Wichtige Stakeholder vergessen",
+          "content": "Vor allem indirekt Betroffene (IT, Einkauf, Compliance) werden gerne übersehen — und blockieren später aus dem Hintergrund. Beim Brainstorming bewusst alle Schnittstellen abklopfen."
+        },
+        {
+          "type": "definition",
+          "term": "Macht mit Hierarchie verwechseln",
+          "content": "Einfluss ist nicht gleich Position. Ein erfahrener Maschinenführer kann mehr Veränderungsmacht haben als ein hoher Manager, der weit weg vom Prozess sitzt. Echte Wirkkraft einschätzen, nicht das Organigramm."
+        },
+        {
+          "type": "definition",
+          "term": "Gegner ignorieren",
+          "content": "Stakeholder mit ablehnender Haltung werden gerne aus dem Plan ausgeklammert. Das ist gefährlich — gerade sie brauchen die meiste Aufmerksamkeit. Bewusst auf sie zugehen."
+        },
+        {
+          "type": "definition",
+          "term": "Statische Analyse",
+          "content": "Stakeholder-Haltungen ändern sich. Eine einmal erstellte Matrix veraltet schnell. Mindestens an jedem Tollgate aktualisieren."
+        },
+        {
+          "type": "definition",
+          "term": "Vertrauliche Bewertungen",
+          "content": "Eine Power-Interest-Matrix mit Einschätzungen wie „Gegner“ gehört nicht in offene Projektordner. Vertraulich behandeln, sonst entstehen politische Probleme."
+        },
+        {
+          "type": "definition",
+          "term": "Kommunikation ohne Strategie",
+          "content": "„Wir informieren regelmäßig per E-Mail“ ist keine Strategie. Pro Stakeholder konkret festlegen: Was sollen sie wissen, in welcher Form, wie oft, wer macht es?"
+        }
+      ]
+    }
+  }
+}
