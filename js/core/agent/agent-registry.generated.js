@@ -8784,6 +8784,7 @@ export const AGENT_REGISTRY = {
   "lessons-learned": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -8793,185 +8794,339 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addLesson": {
+        "target": "model",
         "params": [
           {
-            "name": "data",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "die Erfahrung: `title` (nötig), und wahlweise `category`, `impact`, `phase`, `owner`, `description`, `rootCause`, `recommendation` und `actions`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string|null",
-        "help": "Legt eine Erfahrung an."
+        "returns": "string",
+        "help": "",
+        "keysOf": "addLesson",
+        "keysHelp": "actions.addLesson.params",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "category": {
+            "type": "'success'|'problem'|'improve'",
+            "help": "",
+            "optional": true
+          },
+          "impact": {
+            "type": "'high'|'medium'|'low'",
+            "help": "",
+            "optional": true
+          },
+          "phase": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "owner": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "rootCause": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "recommendation": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "actions": {
+            "type": "{ text: string, done?: boolean }[]",
+            "help": "",
+            "optional": true
+          }
+        }
       },
       "updateLesson": {
+        "target": "model",
         "params": [
           {
-            "name": "lessonId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Erfahrung"
-          },
-          {
-            "name": "data",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "die zu ändernden Felder — `title`, `category`, `impact`, `phase`, `owner`, `description`, `rootCause`, `recommendation` oder `actions`"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Ändert die genannten Felder einer Erfahrung; alle übrigen bleiben stehen."
-      },
-      "removeLesson": {
-        "params": [
-          {
-            "name": "lessonId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Erfahrung"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt eine Erfahrung samt ihren Maßnahmen."
+        "help": "",
+        "keysOf": "updateLesson",
+        "keysHelp": "actions.updateLesson.params",
+        "keys": {
+          "lessonId": {
+            "type": "string",
+            "help": ""
+          },
+          "title": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "category": {
+            "type": "'success'|'problem'|'improve'",
+            "help": "",
+            "optional": true
+          },
+          "impact": {
+            "type": "'high'|'medium'|'low'",
+            "help": "",
+            "optional": true
+          },
+          "phase": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "owner": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "rootCause": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "recommendation": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "actions": {
+            "type": "{ text: string, done?: boolean }[]",
+            "help": "",
+            "optional": true
+          }
+        }
       },
-      "addAction": {
+      "removeLesson": {
+        "target": "model",
         "params": [
           {
-            "name": "lessonId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Erfahrung"
-          },
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeLesson",
+        "keysHelp": "actions.removeLesson.params",
+        "keys": {
+          "lessonId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addAction": {
+        "target": "model",
+        "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Text der Maßnahme"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Hängt eine Maßnahme an eine Erfahrung an."
+        "help": "",
+        "keysOf": "addAction",
+        "keysHelp": "actions.addAction.params",
+        "keys": {
+          "lessonId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
       },
       "removeAction": {
+        "target": "model",
         "params": [
           {
-            "name": "lessonId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Erfahrung"
-          },
-          {
-            "name": "actionIndex",
-            "type": "number",
-            "optional": false,
-            "help": "die Position der Maßnahme, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt eine Maßnahme einer Erfahrung."
+        "help": "",
+        "keysOf": "removeAction",
+        "keysHelp": "actions.removeAction.params",
+        "keys": {
+          "lessonId": {
+            "type": "string",
+            "help": ""
+          },
+          "actionIndex": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "setActionDone": {
+        "target": "model",
         "params": [
           {
-            "name": "lessonId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Erfahrung"
-          },
-          {
-            "name": "actionIndex",
-            "type": "number",
-            "optional": false,
-            "help": "die Position der Maßnahme, von 0 an gezählt"
-          },
-          {
-            "name": "done",
-            "type": "boolean",
-            "optional": false,
-            "help": "true hakt sie ab, false nimmt den Haken zurück"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Hakt eine Maßnahme einer Erfahrung ab oder nimmt den Haken zurück."
+        "help": "",
+        "keysOf": "setActionDone",
+        "keysHelp": "actions.setActionDone.params",
+        "keys": {
+          "lessonId": {
+            "type": "string",
+            "help": ""
+          },
+          "actionIndex": {
+            "type": "number",
+            "help": ""
+          },
+          "done": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "importLessons": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ count: number }",
+        "help": "",
+        "keysOf": "importLessons",
+        "keysHelp": "actions.importLessons.params",
+        "keys": {
+          "json": {
+            "type": "string",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "lessons": {
-        "type": "LessonEntry[]",
-        "help": "die erfassten Erfahrungen in Anlegereihenfolge; je Erfahrung `id` (zum Ansprechen), `title`, `category` (`success`, `problem` oder `improve`), `phase` (eine Phase des aktiven Zyklus), `impact` (`high`, `medium` oder `low`), `owner`, `description`, `rootCause`, `recommendation`, `actions` (je Maßnahme `text` und `done`) sowie `createdAt` und `updatedAt` als Zeitstempel in Millisekunden",
-        "bulk": true,
-        "bulkKind": "table",
-        "keysOf": "LessonEntry",
+        "type": "Array<{ id: string, title: string, category: 'success'|'problem'|'improve', phase: string, impact: 'high'|'medium'|'low', owner: string, description: string, rootCause: string, recommendation: string, actions: { text: string, done: boolean }[], createdAt: number, updatedAt: number }>",
+        "help": "",
+        "bulk": true
+      },
+      "stats": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "LessonStats",
         "keys": {
-          "id": {
-            "type": "string",
-            "help": "Kennung"
-          },
-          "title": {
-            "type": "string",
-            "help": "Titel"
-          },
-          "category": {
-            "type": "'success'|'problem'|'improve'",
-            "help": "Kategorie"
-          },
-          "phase": {
-            "type": "string",
-            "help": "Phase des Zyklus"
-          },
-          "impact": {
-            "type": "'high'|'medium'|'low'",
-            "help": "Auswirkung"
-          },
-          "owner": {
-            "type": "string",
-            "help": "verantwortlich"
-          },
-          "description": {
-            "type": "string",
-            "help": "Beschreibung"
-          },
-          "rootCause": {
-            "type": "string",
-            "help": "Ursache"
-          },
-          "recommendation": {
-            "type": "string",
-            "help": "Empfehlung"
-          },
-          "actions": {
-            "type": "LessonAction[]",
-            "help": "Maßnahmen",
-            "keysOf": "LessonAction",
-            "keys": {
-              "text": {
-                "type": "string",
-                "help": "die Maßnahme"
-              },
-              "done": {
-                "type": "boolean",
-                "help": "erledigt"
-              }
-            }
-          },
-          "createdAt": {
+          "total": {
             "type": "number",
-            "help": "angelegt, Zeitstempel in Millisekunden"
+            "help": "number of lessons"
           },
-          "updatedAt": {
+          "success": {
             "type": "number",
-            "help": "zuletzt geändert, Zeitstempel in Millisekunden"
+            "help": "lessons of the category success"
+          },
+          "problem": {
+            "type": "number",
+            "help": "lessons of the category problem"
+          },
+          "improve": {
+            "type": "number",
+            "help": "lessons of the category improve"
+          },
+          "openActions": {
+            "type": "number",
+            "help": "actions not ticked off, over all lessons"
           }
         }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [],
+    "invariants": [
+      "uniqueIds"
+    ]
   },
   "makigami": {
     "tagged": true,

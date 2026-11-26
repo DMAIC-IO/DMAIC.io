@@ -39,7 +39,6 @@ import { AGENT_REGISTRY } from './agent-registry.generated.js';
 export const MIXIN_READ_MODULES = Object.freeze([
   'calculator',
   'deployment-flowchart',
-  'lessons-learned',
   'makigami',
   'process-map',
   'voc-ctx-tree',

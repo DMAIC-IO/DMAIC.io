@@ -95,6 +95,11 @@
     "description": "Ursachenanalyse mit 6M-Kategorien und Expertenbewertung",
     "whenToUse": "Wenn mögliche Ursachen eines Problems gesammelt, nach 6M geordnet und vom Team bewertet werden sollen, um die wahrscheinlichsten mit Experimenten zu prüfen; Stände lassen sich als Snapshot festhalten und vergleichen. Für eine einzelne Ursachenkette per Warum-Fragen ist 5-Why da."
   },
+  "lessons-learned": {
+    "name": "Lessons Learned",
+    "description": "Strukturierte Dokumentation von Projekterkenntnissen",
+    "whenToUse": "Wenn die Erfahrungen eines Projekts festgehalten werden sollen — was gut lief, was nicht, die Ursache und die Empfehlung samt Maßnahmen; nicht für die laufende Aufgabenverfolgung und nicht für eine Ursachenanalyse selbst, dafür sind die Aufgabenliste und die 5-Why-Analyse da."
+  },
   "morphological-box": {
     "name": "Morphologischer Kasten",
     "description": "Lösungskonzepte aus Parametern und Ausprägungen kombinieren, Unverträglichkeiten prüfen",

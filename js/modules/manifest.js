@@ -248,20 +248,6 @@ export default [
     },
   },
 
-  // ─── Control (DMAIC) / Verify (DMADV) ────────────────────────
-  {
-    id: 'lessons-learned',
-    phase: 'control',
-    allowedPhases: ['control'],
-    load: () => import('./lessons-learned/lessons-learned.js'),
-    loadTile: () => import('./lessons-learned/lessons-learned.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'control',   allowedPhases: ['control']   },
-      dmadv:  { phase: 'verify',    allowedPhases: ['verify']    },
-      eightd: { phase: 'recognize', allowedPhases: ['recognize'] },
-    },
-  },
-
   // ─── Extras (cycle-independent catch-all, trailing tile) ─────
   // Modules with cycles: {} land in the trailing extras tile (⋯) —
   // the registry's cycle-mapping check (`m.cycles?.[cycleId]`) returns

@@ -71,7 +71,7 @@ export function initCollapsibleSections() {
 
     // State lives in the icon name (variant B), not in a CSS rotation, so
     // every icon stays a sprite symbol. The marker is the same `nav.expand-down`/`nav.expand-right`
-    // pair five-why/viewmodel/viewmodel.js and lessons-learned.js already use for expand/collapse.
+    // pair five-why and lessons-learned (viewmodel/viewmodel.js) already use for expand/collapse.
     const markerIcon = toggle.querySelector('.icon');
     if (markerIcon) {
       markerIcon.dataset.icon = collapsed ? 'nav.expand-right' : 'nav.expand-down';

@@ -1588,11 +1588,6 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-secondary);
 }
 
-/* Lessons learned tile on dashboard */
-.dashboard-lessons__open--alert strong {
-  color: var(--color-error);
-}
-
 /* SPC / Control Chart on dashboard */
 .dashboard-spc__header {
   display: flex;

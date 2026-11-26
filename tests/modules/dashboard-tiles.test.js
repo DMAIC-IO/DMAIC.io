@@ -10,7 +10,7 @@ import spcTile from '../../js/modules/control-chart/tile/tile.js';
 import todoTile from '../../js/modules/todo/tile/tile.js';
 import calendarTile from '../../js/modules/dmaic-calendar/tile/tile.js';
 import stakeholderTile from '../../js/modules/stakeholder-analysis/tile/tile.js';
-import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.js';
+import lessonsTile from '../../js/modules/lessons-learned/tile/tile.js';
 import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
@@ -1173,11 +1173,11 @@ suite('dashboard tiles: lessons-learned', () => {
 
   test('viewModel: stats with alert modifier and the open-action list', () => {
     const vm = vmOf(lessonsTile, LL_STATE);
-    assertPlain(vm);
-    assertDeepEqual(vm.stats.map(s => s.key), ['success', 'problem', 'improve', 'openActions']);
-    assertDeepEqual(vm.stats[3], { key: 'openActions', label: 'dashboard.lessonsOpenActions: ', value: '3',
+    assertEqual(vm._templateTile, true);
+    assertDeepEqual(vm.statItems.map(s => s.key), ['success', 'problem', 'improve', 'openActions']);
+    assertDeepEqual(vm.statItems[3], { key: 'openActions', label: 'dashboard.lessonsOpenActions: ', value: '3',
       modifier: 'dashboard-lessons__open--alert' });
-    assertEqual(vm.stats[0].modifier, '');
+    assertEqual(vm.statItems[0].modifier, '');
     assertEqual(vm.topLabel, 'dashboard.lessonsHighOpen');
     assertDeepEqual(vm.top, [{ title: 'Scope creep', open: '2' }, { title: 'Data access', open: '1' }]);
   });

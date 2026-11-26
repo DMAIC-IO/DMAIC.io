@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "lessons-pizza-pilotprojekt",
+      "type": "project",
+      "title": {
+        "de": "Lessons Learned Pizza-Pilotprojekt",
+        "en": "Lessons Learned Pizza Pilot"
+      },
+      "description": {
+        "de": "4 Lessons aus dem Pilot: Vorab-Routenplanung (Erfolg), Doppelwand-Thermo-Boxen (Erfolg), Wochenstart-Standup (Verbesserung), Bestellannahme als Engpass (Problem).",
+        "en": "4 lessons from the pilot: pre-route planning (success), double-wall thermal boxes (success), Monday standup (improvement), order intake bottleneck (problem)."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/lessons-pizza-pilotprojekt.json",
+      "format": "json",
+      "tags": [
+        "control",
+        "lessons-learned",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "lessons-learned-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Lessons Learned",
+        "en": "Paper Helicopter — Lessons Learned"
+      },
+      "description": {
+        "de": "5 Lessons aus dem Projekt: sequenzielle Blockung löst die Irreversibilität der Rotorlänge (Erfolg), MSA vor DoE (Erfolg), Fokus auf zwei Faktoren (Erfolg) sowie Rotorbreite als dritter Faktor nicht umsetzbar (Problem) und Wurftechnik als dominierende Reststreuung (Problem).",
+        "en": "5 lessons from the project: sequential blocking resolves the irreversibility of the rotor length (success), MSA before DoE (success), focusing on two factors (success), plus wing width not viable as a third factor (problem) and throwing technique dominating the residual variation (problem)."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/lessons-learned-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    }
+  ]
+}

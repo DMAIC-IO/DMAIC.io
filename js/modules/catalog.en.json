@@ -95,6 +95,11 @@
     "description": "Root cause analysis with 6M categories and expert scoring",
     "whenToUse": "When possible causes of a problem are to be collected, ordered by 6M and rated by the team, so that the most likely ones get tested with experiments; states can be kept as snapshots and compared. For a single chain of causes by asking why, use 5-Why."
   },
+  "lessons-learned": {
+    "name": "Lessons Learned",
+    "description": "Structured documentation of project insights",
+    "whenToUse": "When the experiences of a project are to be recorded — what went well, what did not, the root cause and the recommendation with its actions; not for day-to-day task tracking and not for a root-cause analysis itself, which is what the task list and the 5-Why analysis are for."
+  },
   "morphological-box": {
     "name": "Morphological Box",
     "description": "Combine solution concepts from parameters and options, check incompatibilities",

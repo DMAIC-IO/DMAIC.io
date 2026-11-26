@@ -59,7 +59,7 @@ function matchGlyph(content) {
 
 /** \uXXXX (JS) und \u{X…} dekodieren, bevor auf Glyphen geprüft wird — sonst
  * entzieht sich eine in Escape-Notation geschriebene Glyphe dem Scan (I-3,
- * hier die JS-Spiegelung: `lessons-learned.js:121` schreibt `'▾'`). */
+ * hier die JS-Spiegelung: `'\u25BE'` in einem Quelltext ist `'▾'`). */
 function decodeJsEscapes(str) {
   return str
     .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))

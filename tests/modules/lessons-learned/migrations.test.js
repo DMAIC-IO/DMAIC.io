@@ -15,7 +15,7 @@ import { setModelName } from '../../../js/core/model.js';
 setModelName(State, 'lessons-learned');
 
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLES = new URL('../../../examples/projects/', import.meta.url);
+const EXAMPLES = new URL('../../../js/modules/lessons-learned/resources/examples/projects/', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 

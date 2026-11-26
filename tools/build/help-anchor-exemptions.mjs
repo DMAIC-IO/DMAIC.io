@@ -171,6 +171,11 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.burndown', reason: 'Reihen des Burndown-Diagramms im Fenster des Leistenknopfs; kein eigenes beschriftetes Element' },
     { name: 'fields.risks', reason: 'Liste der Risikokarten; jedes Feld der Karte ist einzeln an fields.risks.<k> verankert' },
   ],
+  'lessons-learned': [
+    { name: 'actions.addAction', reason: 'nur für den Agenten; die Oberfläche hängt Maßnahmen im Bearbeiten-Dialog an (updateLesson), dessen Maßnahmenfeld an fields.lessons.actions verankert ist' },
+    { name: 'actions.removeAction', reason: 'nur für den Agenten; die Oberfläche entfernt Maßnahmen im Bearbeiten-Dialog (updateLesson)' },
+    { name: 'fields.lessons', reason: 'die Liste selbst hat keine Beschriftung (Karten); verankert sind ihre Formularfelder und Marken an fields.lessons.<feld>' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },
