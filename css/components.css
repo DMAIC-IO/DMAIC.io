@@ -728,19 +728,16 @@ select.input {
 
      <table class="dmike-table dmike-table--draggable">
        <thead><tr><th class="dmike-table__grip-col"></th> … </tr></thead>
-       <tbody>
-         <tr @dragstart="dragStart(id, $event)" …>
+       <tbody data-reorder-group="…">
+         <tr :data-id="id" …>
            <td class="dmike-table__grip-col">
              <button class="dmike-table__grip" type="button"
-                     :aria-label="t('common.reorder')"
-                     @mousedown="dragArm($event)" @keydown="dragKey(id, $event)">
-             </button>
+                     :aria-label="t('common.reorder')"></button>
            </td>
            …
 
-   The behaviour lives in draggableRows() (js/ui/draggable-list.js). Note that
-   `draggable` is NOT in the markup — the grip arms it on mousedown, so text
-   selection inside cell inputs keeps working. */
+   The behaviour is the module's `reorder` gesture (js/core/interaction/);
+   only the grip starts it, so text selection inside cell inputs keeps working. */
 
 .dmike-table--draggable .dmike-table__grip-col {
   width: 32px;
