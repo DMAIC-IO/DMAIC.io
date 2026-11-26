@@ -1,0 +1,183 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "mode": {
+      "help": "The active calculator area: Scientific, Statistics or 6 Sigma (process capability)."
+    },
+    "expression": {
+      "help": "The input line as shown in the display. Empty means nothing entered. It fills via the keys."
+    },
+    "lastResult": {
+      "help": "The result of the last computation or statistic as a number. If missing, there is none; an infinite result is not remembered."
+    },
+    "memory": {
+      "help": "The memory value. 0 means empty — the display then shows no M."
+    },
+    "angleMode": {
+      "help": "The DEG/RAD key toggles the angle unit of the trigonometric functions between degrees (DEG) and radians (RAD)."
+    },
+    "dataset": {
+      "help": "The values of the statistics area in the order they were entered. They are filled via \"+ Value\"; the statistic keys (mean, standard deviation, etc.) calculate on them."
+    },
+    "ssDataset": {
+      "help": "The values of the process area in the order they were entered. They are filled via \"+ Value\"; the process keys (sigma level, DPMO, etc.) calculate on them."
+    },
+    "lsl": {
+      "help": "The lower specification limit as a number. An empty field means: not set."
+    },
+    "usl": {
+      "help": "The upper specification limit as a number. An empty field means: not set."
+    }
+  },
+  "actions": {
+    "inputText": {
+      "help": "Appends a character or a number to the input line. Returns the input line afterwards.",
+      "params": {
+        "ch": "A character of the input line — a digit, a dot, + - × ÷ ^ ( ) π or e — or a number in decimal notation. Any other value is an error.",
+        "command": "The command as an object with ch."
+      }
+    },
+    "inputFn": {
+      "help": "Appends a function together with its opening bracket to the input line. Returns the input line afterwards.",
+      "params": {
+        "fn": "The function with its opening bracket, exactly as the keypad writes it: sin(, cos(, tan(, asin(, acos(, atan(, log(, ln(, sqrt(, cbrt(, exp( or fact(. Any other value is an error.",
+        "command": "The command as an object with fn."
+      }
+    },
+    "backspace": {
+      "help": "Deletes the last character of the input line. Returns the input line afterwards.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "clear": {
+      "help": "Clears the input line and the last result.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "memStore": {
+      "help": "Stores the displayed value in memory — the last result, otherwise the evaluated input line. If the value cannot be computed or is infinite, 0 is stored. Returns the memory value.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "memRecall": {
+      "help": "Appends the memory value to the input line. Returns the input line afterwards.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "switchMode": {
+      "help": "Switches between the tabs Scientific, Statistics and 6 Sigma and clears the input line. The tab already active keeps the input. Returns whether the tab changed.",
+      "params": {
+        "m": "sci computes scientifically, stats evaluates the statistics data set, sixsigma the process data set. Any other value is an error.",
+        "command": "The command as an object with m."
+      }
+    },
+    "calculate": {
+      "help": "Evaluates the input line and remembers the result; the input line is cleared afterwards. Returns the result, the evaluated expression and, if the input line holds no computable expression, the reason error; then nothing changes. An infinite result (such as 1 ÷ 0) is shown but not remembered as the last result.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "calcStat": {
+      "help": "Computes a statistic over the statistics data set and remembers it as the last result. Returns the value, for the mode the most frequent values, or the reason it cannot be computed: noData (empty data set), needN2 or needN3 (too few values), noMode (every value occurs only once). Without a number the last result becomes empty.",
+      "params": {
+        "type": "Which statistic; each is described individually under keys. Any other value is an error.",
+        "command": "The command as an object with type."
+      }
+    },
+    "calcSS": {
+      "help": "Computes a metric over the process data set and remembers it as the last result. Returns the value, for Yield % the fraction good in percent, or the reason it cannot be computed: needData (no values), needN2 (fewer than 2 values), needDataAndLimits (too few values or a spec limit is missing). Without a number the last result becomes empty.",
+      "params": {
+        "type": "Which statistic; each is described individually under keys. Any other value is an error.",
+        "command": "The command as an object with type."
+      }
+    },
+    "addData": {
+      "help": "Takes the input line as a value into the statistics data set. If it does not start with a number, the data set stays unchanged. Returns the value taken over, otherwise nothing.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "addDataValue": {
+      "help": "Appends a number to the statistics data set and clears the input line. Returns the value.",
+      "params": {
+        "value": "The value, a finite number. Any other value is rejected.",
+        "command": "The command as an object with value."
+      }
+    },
+    "removeLast": {
+      "help": "Removes the last value of the statistics data set.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "clearData": {
+      "help": "Clears the statistics data set. The input line and the last result are cleared.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "addSSData": {
+      "help": "Takes the input line as a value into the process data set. If it does not start with a number, the data set stays unchanged. Returns the value taken over, otherwise nothing.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "addSSDataValue": {
+      "help": "Appends a number to the process data set and clears the input line. Returns the value.",
+      "params": {
+        "value": "The value, a finite number. Any other value is rejected.",
+        "command": "The command as an object with value."
+      }
+    },
+    "removeLastSS": {
+      "help": "Removes the last value of the process data set.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "clearSSData": {
+      "help": "Clears the process data set. The input line and the last result are cleared.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    }
+  },
+  "types": {
+    "StatKey": {
+      "mean": "Mean x̄ key: the sum of all values in the statistics dataset divided by their count, x̄ = Σx/n.",
+      "median": "Median x̃ key: the middle value of the values sorted ascending; with an even count, the average of the two middle values.",
+      "mode": "Mode key: the value that occurs most often. On a tie all most frequent values appear, separated by semicolons. If every value occurs only once (also with a single value) there is no mode, and the display says so in a message.",
+      "range": "Range key: the largest value minus the smallest value of the dataset.",
+      "stdS": "s (sample) key: the sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), divided by n − 1. Needs at least 2 values, otherwise the message “n ≥ 2 required” appears.",
+      "stdP": "σ (population) key: the population standard deviation σ = √(Σ(x − x̄)²/n), divided by n instead of n − 1. With a single value it is 0.",
+      "varS": "s² variance key: the sample variance s² = Σ(x − x̄)²/(n − 1), the square of the sample standard deviation. Needs at least 2 values, otherwise the message “n ≥ 2 required” appears.",
+      "varP": "σ² variance key: the population variance σ² = Σ(x − x̄)²/n, the square of the population standard deviation, divided by n instead of n − 1.",
+      "sum": "Σ sum key: the sum of all values in the dataset.",
+      "min": "Min key: the smallest value of the dataset.",
+      "max": "Max key: the largest value of the dataset.",
+      "count": "n count key: the number of values in the dataset, as the n line under the value list shows it.",
+      "q1": "Q1 key: the lower quartile, the 25 % quantile. The values are sorted and, at position (n − 1) · 0.25, linearly interpolated between the two neighbouring values; this is the same method as Excel (QUARTILE.INC).",
+      "q3": "Q3 key: the upper quartile, the 75 % quantile. The values are sorted and, at position (n − 1) · 0.75, linearly interpolated between the two neighbouring values; this is the same method as Excel (QUARTILE.INC).",
+      "iqr": "IQR key: the interquartile range, Q3 − Q1, using the linearly interpolated quartiles of the Q1 and Q3 keys.",
+      "skew": "Skewness key: the sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ with the sample standard deviation s; 0 for symmetric data, positive for right-skewed. Needs at least 3 values, otherwise the message “n ≥ 3 required” appears."
+    },
+    "CapabilityKey": {
+      "cp": "Cp key: the process capability index Cp = (USL − LSL)/(6 · σ within), the tolerance width over six standard deviations. σ within is the average moving range of neighbouring values divided by 1.128, taken in entry order. Needs at least 2 values and both limits LSL and USL, otherwise “Data + LSL/USL required” appears. The target is not used.",
+      "cpk": "Cpk key: the centred capability index Cpk = min((USL − x̄)/(3σ), (x̄ − LSL)/(3σ)) with σ within (average moving range divided by 1.128, in entry order). It measures the distance from the mean to the nearer limit. Needs at least 2 values and both limits LSL and USL.",
+      "pp": "Pp key: the overall performance index Pp = (USL − LSL)/(6 · s), with the sample standard deviation s of all values (divided by n − 1), that is the overall spread rather than the within spread. Needs at least 2 values and both limits LSL and USL.",
+      "ppk": "Ppk key: the centred overall performance index Ppk = min((USL − x̄)/(3s), (x̄ − LSL)/(3s)) with the sample standard deviation s of all values (divided by n − 1). Needs at least 2 values and both limits LSL and USL.",
+      "sigma": "Sigma-Level key: the benchmark Z (Z.bench) = −Φ⁻¹(p), where p is the fraction outside the limits, both tails together, under a normal distribution with mean x̄ and σ within (average moving range divided by 1.128). No 1.5 σ shift is added. Needs at least 2 values and both limits LSL and USL.",
+      "dpmo": "DPMO key: defects per million opportunities, (P(X < LSL) + P(X > USL)) · 1,000,000, rounded to a whole number. The probabilities come from a normal distribution with mean x̄ and the sample standard deviation s of all values (overall spread). Needs at least 2 values and both limits LSL and USL.",
+      "yield": "Yield % key: the expected fraction within specification, P(LSL ≤ X ≤ USL) · 100 as a percentage with four decimals. The probability comes from a normal distribution with mean x̄ and the sample standard deviation s of all values (overall spread); it is 1 minus the defect fraction of the DPMO key. Needs at least 2 values and both limits LSL and USL.",
+      "zscore": "Z-Score key: −Φ⁻¹(defect fraction), the normal-distribution distance that matches the total fraction outside the limits (both tails together, as for DPMO, with mean x̄ and the sample standard deviation s of all values). No 1.5 σ shift is added. Needs at least 2 values and both limits LSL and USL.",
+      "mean": "x̄ Mean key: the mean of the process dataset, Σx/n. Needs at least 1 value, otherwise “Data required” appears.",
+      "std": "σ Std.Dev. key: the sample standard deviation s = √(Σ(x − x̄)²/(n − 1)) of the process dataset (overall spread, not the within spread). Needs at least 2 values, otherwise “n ≥ 2 required” appears.",
+      "ucl": "UCL key: the upper control limit x̄ + 3 · s with the sample standard deviation s of all values of the process dataset. Needs at least 2 values; the specification limits are not used.",
+      "lcl": "LCL key: the lower control limit x̄ − 3 · s with the sample standard deviation s of all values of the process dataset. Needs at least 2 values; the specification limits are not used."
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The scientific calculator is an integrated helper for quick computations without leaving the app. It offers three modes, each tailored to a typical {{term:six-sigma|Six Sigma}} use case."
+        },
+        {
+          "type": "definition",
+          "term": "Scientific mode",
+          "content": "Classic calculator with basic arithmetic, powers, roots, logarithms, trigonometric functions, constants (π, e), and parentheses. Suitable for general numeric calculations."
+        },
+        {
+          "type": "definition",
+          "term": "Statistics mode",
+          "content": "Enter a list of values; the calculator returns {{term:mittelwert|mean}}, {{term:median|median}}, {{term:standardabweichung|standard deviation}}, {{term:varianz|variance}}, minimum, maximum, {{term:schiefe|skewness}}, and sample size. Handy for a quick description of small datasets."
+        },
+        {
+          "type": "definition",
+          "term": "Six Sigma mode",
+          "content": "Computes Cp and Cpk from mean, standard deviation, and lower/upper specification limits. Also converts between DPMO, sigma level, and yield."
+        },
+        {
+          "type": "paragraph",
+          "content": "The calculator does not replace full analysis modules — for Cpk studies with distribution fitting, control charts, or larger datasets, use the dedicated module."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Operation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Pick a mode at the top via the tabs (Scientific / Statistics / Six Sigma).",
+            "Enter numbers and operators with the on-screen keys or your keyboard.",
+            "In Statistics mode, paste values separated by commas or line breaks — copy & paste from the worksheet works as well.",
+            "In Six Sigma mode, enter specification limits, mean, and standard deviation — Cp/Cpk update immediately.",
+            "DPMO ↔ sigma level ↔ yield: enter one of the three, the others are computed automatically."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Sample vs. population standard deviation",
+          "content": "The Statistics mode uses the sample standard deviation (divisor n−1). This is the standard for real measurement data — when comparing against other software, check which variant it uses."
+        },
+        {
+          "type": "definition",
+          "term": "Cp/Cpk without normality check",
+          "content": "The Six Sigma mode computes without checking the distribution assumption. For non-normal data the result is misleading — verify with a probability plot or distribution fit beforehand."
+        },
+        {
+          "type": "definition",
+          "term": "DPMO is not ppm",
+          "content": "DPMO refers to defect opportunities per unit, ppm to defects per million parts. With multiple opportunities per part the two values differ substantially."
+        },
+        {
+          "type": "definition",
+          "term": "Trigonometric input",
+          "content": "Scientific mode expects arguments in radians unless explicitly switched to degrees. If results look wrong, check the angle mode."
+        },
+        {
+          "type": "definition",
+          "term": "No audit trail",
+          "content": "Calculations are not stored in the project. Transfer important intermediate results to the worksheet or project charter, otherwise they are lost on close."
+        }
+      ]
+    }
+  }
+}

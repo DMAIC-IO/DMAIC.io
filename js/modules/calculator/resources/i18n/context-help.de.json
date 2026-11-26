@@ -1,0 +1,183 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "mode": {
+      "help": "Der aktive Rechenbereich: Wissenschaftlich, Statistik oder 6 Sigma (Prozessfähigkeit)."
+    },
+    "expression": {
+      "help": "Die Eingabezeile, so wie sie in der Anzeige steht. Leer heißt: nichts eingegeben. Sie füllt sich über die Tasten."
+    },
+    "lastResult": {
+      "help": "Das Ergebnis der letzten Rechnung oder des letzten Kennwerts als Zahl. Fehlt es, liegt keines vor; ein unendliches Ergebnis wird nicht gemerkt."
+    },
+    "memory": {
+      "help": "Der Speicherwert. 0 heißt leer — die Anzeige zeigt dann kein M."
+    },
+    "angleMode": {
+      "help": "Die Taste DEG/RAD schaltet die Winkeleinheit der trigonometrischen Funktionen zwischen Grad (DEG) und Radiant (RAD) um."
+    },
+    "dataset": {
+      "help": "Die Werte des Statistikbereichs in der Reihenfolge, in der sie eingegeben wurden. Sie füllen sich über „+ Wert“; auf ihnen rechnen die Kennwert-Tasten (Mittelwert, Standardabweichung usw.)."
+    },
+    "ssDataset": {
+      "help": "Die Werte des Prozessbereichs in der Reihenfolge, in der sie eingegeben wurden. Sie füllen sich über „+ Wert“; auf ihnen rechnen die Prozess-Kennwerte (Sigma-Level, DPMO usw.)."
+    },
+    "lsl": {
+      "help": "Die untere Spezifikationsgrenze als Zahl. Ein leeres Feld heißt: nicht gesetzt."
+    },
+    "usl": {
+      "help": "Die obere Spezifikationsgrenze als Zahl. Ein leeres Feld heißt: nicht gesetzt."
+    }
+  },
+  "actions": {
+    "inputText": {
+      "help": "Hängt ein Zeichen oder eine Zahl an die Eingabezeile an. Liefert die Eingabezeile danach.",
+      "params": {
+        "ch": "Ein Zeichen der Eingabezeile — eine Ziffer, ein Punkt, + - × ÷ ^ ( ) π oder e — oder eine Zahl in Dezimalschreibweise. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit ch."
+      }
+    },
+    "inputFn": {
+      "help": "Hängt eine Funktion samt öffnender Klammer an die Eingabezeile an. Liefert die Eingabezeile danach.",
+      "params": {
+        "fn": "Die Funktion mit öffnender Klammer, so wie das Tastenfeld sie schreibt: sin(, cos(, tan(, asin(, acos(, atan(, log(, ln(, sqrt(, cbrt(, exp( oder fact(. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit fn."
+      }
+    },
+    "backspace": {
+      "help": "Löscht das letzte Zeichen der Eingabezeile. Liefert die Eingabezeile danach.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "clear": {
+      "help": "Leert die Eingabezeile und das letzte Ergebnis.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "memStore": {
+      "help": "Legt den angezeigten Wert in den Speicher — das letzte Ergebnis, sonst den gerechneten Wert der Eingabezeile. Ist der Wert nicht rechenbar oder unendlich, wird 0 gespeichert. Liefert den Speicherwert.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "memRecall": {
+      "help": "Hängt den Speicherwert an die Eingabezeile an. Liefert die Eingabezeile danach.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "switchMode": {
+      "help": "Wechselt zwischen den Reitern Wissenschaftlich, Statistik und 6 Sigma und leert dabei die Eingabezeile. Der schon aktive Reiter behält die Eingabe. Liefert, ob der Reiter gewechselt hat.",
+      "params": {
+        "m": "sci rechnet wissenschaftlich, stats wertet den Statistikdatensatz aus, sixsigma den Prozessdatensatz. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit m."
+      }
+    },
+    "calculate": {
+      "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis; die Eingabezeile wird danach leer. Liefert das Ergebnis, den gerechneten Ausdruck und, wenn die Eingabezeile keinen rechenbaren Ausdruck enthält, den Grund error; dann bleibt alles unverändert. Ein unendliches Ergebnis (etwa 1 ÷ 0) wird angezeigt, aber nicht als letztes Ergebnis gemerkt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "calcStat": {
+      "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis. Liefert den Wert, beim Modalwert die häufigsten Werte, oder den Grund, warum er nicht rechenbar ist: noData (leerer Datensatz), needN2 bzw. needN3 (zu wenige Werte), noMode (jeder Wert kommt nur einmal vor). Ohne Zahl wird das letzte Ergebnis leer.",
+      "params": {
+        "type": "Welcher Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit type."
+      }
+    },
+    "calcSS": {
+      "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis. Liefert den Wert, bei Yield % den Anteil gut in Prozent, oder den Grund, warum er nicht rechenbar ist: needData (keine Werte), needN2 (weniger als 2 Werte), needDataAndLimits (zu wenige Werte oder eine Spezifikationsgrenze fehlt). Ohne Zahl wird das letzte Ergebnis leer.",
+      "params": {
+        "type": "Welcher Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit type."
+      }
+    },
+    "addData": {
+      "help": "Übernimmt die Eingabezeile als Wert in den Statistikdatensatz. Beginnt sie nicht mit einer Zahl, bleibt der Datensatz unverändert. Liefert den übernommenen Wert, sonst nichts.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "addDataValue": {
+      "help": "Hängt eine Zahl an den Statistikdatensatz an und leert die Eingabezeile. Liefert den Wert.",
+      "params": {
+        "value": "Der Wert, eine endliche Zahl. Jeder andere Wert wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit value."
+      }
+    },
+    "removeLast": {
+      "help": "Entfernt den letzten Wert des Statistikdatensatzes.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "clearData": {
+      "help": "Leert den Statistikdatensatz. Die Eingabezeile und das letzte Ergebnis werden leer.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "addSSData": {
+      "help": "Übernimmt die Eingabezeile als Wert in den Prozessdatensatz. Beginnt sie nicht mit einer Zahl, bleibt der Datensatz unverändert. Liefert den übernommenen Wert, sonst nichts.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "addSSDataValue": {
+      "help": "Hängt eine Zahl an den Prozessdatensatz an und leert die Eingabezeile. Liefert den Wert.",
+      "params": {
+        "value": "Der Wert, eine endliche Zahl. Jeder andere Wert wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit value."
+      }
+    },
+    "removeLastSS": {
+      "help": "Entfernt den letzten Wert des Prozessdatensatzes.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "clearSSData": {
+      "help": "Leert den Prozessdatensatz. Die Eingabezeile und das letzte Ergebnis werden leer.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    }
+  },
+  "types": {
+    "StatKey": {
+      "mean": "Taste x̄ Mittelwert: die Summe aller Werte des Statistikdatensatzes geteilt durch ihre Anzahl, x̄ = Σx/n.",
+      "median": "Taste x̃ Median: der mittlere Wert der aufsteigend sortierten Werte; bei gerader Anzahl der Mittelwert der beiden mittleren.",
+      "mode": "Taste Modus: der Wert, der am häufigsten vorkommt. Bei Gleichstand erscheinen alle häufigsten Werte, durch Semikolon getrennt. Kommt jeder Wert nur einmal vor (auch bei nur einem Wert), gibt es keinen Modus, und die Anzeige sagt das in einer Meldung.",
+      "range": "Taste Spannweite: der größte Wert minus der kleinste Wert des Datensatzes.",
+      "stdS": "Taste s (Stichpr.): die Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)), geteilt durch n − 1. Braucht mindestens 2 Werte, sonst erscheint der Hinweis „n ≥ 2 nötig“.",
+      "stdP": "Taste σ (Popul.): die Standardabweichung der Grundgesamtheit σ = √(Σ(x − x̄)²/n), geteilt durch n statt n − 1. Mit nur einem Wert ist sie 0.",
+      "varS": "Taste s² Varianz: die Stichprobenvarianz s² = Σ(x − x̄)²/(n − 1), das Quadrat der Stichproben-Standardabweichung. Braucht mindestens 2 Werte, sonst erscheint der Hinweis „n ≥ 2 nötig“.",
+      "varP": "Taste σ² Varianz: die Varianz der Grundgesamtheit σ² = Σ(x − x̄)²/n, das Quadrat der Standardabweichung der Grundgesamtheit, geteilt durch n statt n − 1.",
+      "sum": "Taste Σ Summe: die Summe aller Werte des Datensatzes.",
+      "min": "Taste Min: der kleinste Wert des Datensatzes.",
+      "max": "Taste Max: der größte Wert des Datensatzes.",
+      "count": "Taste n Anzahl: die Zahl der Werte im Datensatz, so wie die Zeile n unter der Werteliste sie zeigt.",
+      "q1": "Taste Q1: das untere Quartil, das 25-%-Quantil. Die Werte werden sortiert, an der Stelle (n − 1) · 0,25 wird zwischen den beiden Nachbarwerten linear interpoliert; das ist dasselbe Verfahren wie bei Excel (QUARTIL.INKL).",
+      "q3": "Taste Q3: das obere Quartil, das 75-%-Quantil. Die Werte werden sortiert, an der Stelle (n − 1) · 0,75 wird zwischen den beiden Nachbarwerten linear interpoliert; das ist dasselbe Verfahren wie bei Excel (QUARTIL.INKL).",
+      "iqr": "Taste IQR: der Quartilsabstand, Q3 − Q1, mit den linear interpolierten Quartilen der Tasten Q1 und Q3.",
+      "skew": "Taste Schiefe: die Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ mit der Stichproben-Standardabweichung s; 0 bei symmetrischen Daten, positiv bei rechtsschiefen. Braucht mindestens 3 Werte, sonst erscheint der Hinweis „n ≥ 3 nötig“."
+    },
+    "CapabilityKey": {
+      "cp": "Taste Cp: der Prozessfähigkeitsindex Cp = (OSG − USG)/(6 · σ innerhalb), also Toleranzbreite durch sechs Standardabweichungen. σ innerhalb ist die mittlere Spannweite benachbarter Werte (Moving Range) geteilt durch 1,128, in der Eingabereihenfolge gerechnet. Braucht mindestens 2 Werte und beide Grenzen USG und OSG, sonst erscheint „Daten + USG/OSG nötig“. Der Zielwert geht nicht ein.",
+      "cpk": "Taste Cpk: der zentrierte Prozessfähigkeitsindex Cpk = min((OSG − x̄)/(3σ), (x̄ − USG)/(3σ)) mit σ innerhalb (mittlere Moving Range geteilt durch 1,128, in Eingabereihenfolge). Er misst den Abstand des Mittelwerts zur näheren Grenze. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "pp": "Taste Pp: der Gesamt-Leistungsindex Pp = (OSG − USG)/(6 · s), mit der Stichproben-Standardabweichung s aller Werte (geteilt durch n − 1), also der Gesamtstreuung statt der Streuung innerhalb. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "ppk": "Taste Ppk: der zentrierte Gesamt-Leistungsindex Ppk = min((OSG − x̄)/(3s), (x̄ − USG)/(3s)) mit der Stichproben-Standardabweichung s aller Werte (geteilt durch n − 1). Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "sigma": "Taste Sigma-Level: das Benchmark-Z (Z.bench) = −Φ⁻¹(p), wobei p der Anteil außerhalb der Grenzen ist, beide Seiten zusammen, unter einer Normalverteilung mit Mittelwert x̄ und σ innerhalb (mittlere Moving Range geteilt durch 1,128). Es wird keine 1,5-σ-Verschiebung aufgeschlagen. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "dpmo": "Taste DPMO: Fehler je Million Möglichkeiten, (P(X < USG) + P(X > OSG)) · 1.000.000, gerundet auf eine ganze Zahl. Die Wahrscheinlichkeiten stammen aus einer Normalverteilung mit Mittelwert x̄ und der Stichproben-Standardabweichung s aller Werte (Gesamtstreuung). Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "yield": "Taste Yield %: der erwartete Anteil gut, P(USG ≤ X ≤ OSG) · 100 in Prozent mit vier Nachkommastellen. Die Wahrscheinlichkeit stammt aus einer Normalverteilung mit Mittelwert x̄ und der Stichproben-Standardabweichung s aller Werte (Gesamtstreuung); sie ist 1 minus der Fehleranteil der Taste DPMO. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "zscore": "Taste Z-Score: −Φ⁻¹(Fehleranteil), also der Normalverteilungs-Abstand, der zum gesamten Fehleranteil außerhalb der Grenzen passt (beide Seiten zusammen, wie bei DPMO, mit Mittelwert x̄ und der Stichproben-Standardabweichung s aller Werte). Es wird keine 1,5-σ-Verschiebung aufgeschlagen. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+      "mean": "Taste x̄ Mittelwert: der Mittelwert des Prozessdatensatzes, Σx/n. Braucht mindestens 1 Wert, sonst erscheint „Daten nötig“.",
+      "std": "Taste σ Std.Abw.: die Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)) des Prozessdatensatzes (Gesamtstreuung, nicht die Streuung innerhalb). Braucht mindestens 2 Werte, sonst erscheint „n ≥ 2 nötig“.",
+      "ucl": "Taste UCL: die obere Kontrollgrenze x̄ + 3 · s mit der Stichproben-Standardabweichung s aller Werte des Prozessdatensatzes. Braucht mindestens 2 Werte; die Spezifikationsgrenzen gehen nicht ein.",
+      "lcl": "Taste LCL: die untere Kontrollgrenze x̄ − 3 · s mit der Stichproben-Standardabweichung s aller Werte des Prozessdatensatzes. Braucht mindestens 2 Werte; die Spezifikationsgrenzen gehen nicht ein."
+    }
+  }
+}

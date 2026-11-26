@@ -1,0 +1,78 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der wissenschaftliche Taschenrechner ist ein integrierter Helfer für schnelle Berechnungen ohne externes Tool. Er bietet drei Modi, die jeweils auf einen typischen Six-Sigma-Anwendungsfall zugeschnitten sind."
+        },
+        {
+          "type": "definition",
+          "term": "Modus „Wissenschaftlich\"",
+          "content": "Klassischer Taschenrechner mit Grundrechenarten, Potenzen, Wurzeln, Logarithmen, trigonometrischen Funktionen, Konstanten (π, e) und Klammern. Geeignet für allgemeine numerische Berechnungen."
+        },
+        {
+          "type": "definition",
+          "term": "Modus „Statistik\"",
+          "content": "Eingabe einer Werteliste; ausgegeben werden {{term:mittelwert|Mittelwert}}, {{term:median|Median}}, {{term:standardabweichung|Standardabweichung}}, {{term:varianz|Varianz}}, Minimum, Maximum, {{term:schiefe|Schiefe}} und Stichprobenumfang. Praktisch für eine schnelle Beschreibung kleiner Datensätze."
+        },
+        {
+          "type": "definition",
+          "term": "Modus „Six Sigma\"",
+          "content": "Berechnet Cp und Cpk aus Mittelwert, Standardabweichung sowie unterer und oberer Spezifikationsgrenze. Wandelt zudem zwischen DPMO, {{term:sigma-niveau|Sigma-Niveau}} und Yield um."
+        },
+        {
+          "type": "paragraph",
+          "content": "Der Rechner ersetzt keine vollständigen Analyse-Module — für Cpk-Studien mit Verteilungsanpassung, Kontrollkarten oder größere Datensätze sollte das jeweilige Fachmodul verwendet werden."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Modus oben über die Tabs auswählen (Wissenschaftlich / Statistik / Six Sigma).",
+            "Zahlen und Operatoren über die Tasten oder die Tastatur eingeben.",
+            "Im Statistik-Modus die Werte komma- oder zeilengetrennt einfügen — auch Copy & Paste aus dem Worksheet funktioniert.",
+            "Im Six-Sigma-Modus die {{term:spezifikationsgrenzen|Spezifikationsgrenzen}}, Mittelwert und Standardabweichung eintragen — Cp/Cpk werden sofort angezeigt.",
+            "DPMO ↔ Sigma-Niveau ↔ Yield: einen der drei Werte eintragen, die anderen werden automatisch berechnet."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Stichproben- vs. Populations-Standardabweichung",
+          "content": "Der Statistik-Modus verwendet die Stichproben-Standardabweichung (Teiler n−1). Das ist der Standard für reale Messdaten — bei Vergleichen mit anderer Software prüfen, welche Variante dort eingestellt ist."
+        },
+        {
+          "type": "definition",
+          "term": "Cp/Cpk ohne Normalverteilungsprüfung",
+          "content": "Der Six-Sigma-Modus rechnet ohne Verteilungsannahme zu prüfen. Bei nicht-normalen Daten ist das Ergebnis irreführend — vorher mit {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder Verteilungsanpassung absichern."
+        },
+        {
+          "type": "definition",
+          "term": "DPMO ist nicht ppm",
+          "content": "DPMO bezieht sich auf Defektmöglichkeiten pro Einheit, ppm auf Defekte pro Million. Bei mehreren Defektmöglichkeiten je Bauteil unterscheiden sich die beiden Werte deutlich."
+        },
+        {
+          "type": "definition",
+          "term": "Trigonometrische Eingabe",
+          "content": "Der Modus „Wissenschaftlich\" erwartet Argumente in Radiant, sofern nicht explizit auf Grad umgeschaltet. Bei unerwarteten Ergebnissen den Winkelmodus prüfen."
+        },
+        {
+          "type": "definition",
+          "term": "Kein Audit-Trail",
+          "content": "Berechnungen werden nicht ins Projekt gespeichert. Wichtige Zwischenergebnisse direkt ins Worksheet oder den {{term:project-charter|Project Charter}} übertragen, sonst gehen sie beim Schließen verloren."
+        }
+      ]
+    }
+  }
+}
