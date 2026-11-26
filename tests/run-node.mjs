@@ -233,6 +233,7 @@ const SKIP = new Set([
   'modules/stakeholder-analysis-view.test.js',
   'modules/todo-view.test.js',
   'modules/pairwise-comparison-view.test.js',
+  'modules/calculator-view.test.js',
   'modules/five-why-view.test.js',
   'modules/lessons-learned-view.test.js',
   'modules/heatmap-view.test.js',

@@ -1,0 +1,196 @@
+<div class="module-calculator" x-data="calculator" @keydown.window="onKey($event)">
+  <!-- data-help-key="" an Ziffern, Operatoren und Funktionstasten ist gewollt: ein Abzeichen je Taste wäre Rauschen; die Hilfe hängt an den Aktionstasten, den Kennwerttasten und den Beschriftungen. -->
+  <div class="module-calculator__wrap">
+
+    <div class="dmike-tabs" role="tablist" x-tablist data-help-key="modules.calculator.actions.switchMode.help">
+      <button class="dmike-tab" type="button" role="tab" data-tab="sci" :class="tabClass('sci')"
+              :aria-selected="tabSelected('sci')" :tabindex="tabIndex('sci')" data-help-key=""
+              @mousedown="preventFocus($event)" x-command="switchMode" data-arg-m="sci" x-text="t('modeSci')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="stats" :class="tabClass('stats')"
+              :aria-selected="tabSelected('stats')" :tabindex="tabIndex('stats')" data-help-key=""
+              @mousedown="preventFocus($event)" x-command="switchMode" data-arg-m="stats" x-text="t('modeStats')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="sixsigma" :class="tabClass('sixsigma')"
+              :aria-selected="tabSelected('sixsigma')" :tabindex="tabIndex('sixsigma')" data-help-key=""
+              @mousedown="preventFocus($event)" x-command="switchMode" data-arg-m="sixsigma" x-text="t('modeSixSigma')"></button>
+    </div>
+
+    <div class="module-calculator__display">
+      <div class="module-calculator__expr" data-ref="expr" x-text="topLine"></div>
+      <div class="module-calculator__result" data-ref="display" :class="resultClass">
+        <span class="icon icon--sm icon--text" :data-icon="resultIcon" aria-hidden="true" x-show="resultIcon"></span>
+        <span x-text="mainLine"></span>
+      </div>
+      <div class="module-calculator__info">
+        <span data-ref="angle-mode" x-text="model.angleMode"></span>
+        <span class="module-calculator__mem" data-ref="mem-ind" x-text="memIndicator"></span>
+      </div>
+    </div>
+
+    <!-- SCIENTIFIC -->
+    <div data-panel="sci" :class="panelClass('sci')">
+      <div class="module-calculator__grid module-calculator__grid--5col">
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="sin(" x-command="inputFn" data-arg-fn="sin(" data-help-key="">sin</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="cos(" x-command="inputFn" data-arg-fn="cos(" data-help-key="">cos</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="tan(" x-command="inputFn" data-arg-fn="tan(" data-help-key="">tan</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="log(" x-command="inputFn" data-arg-fn="log(" data-help-key="">log</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="ln(" x-command="inputFn" data-arg-fn="ln(" data-help-key="">ln</button>
+
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="asin(" x-command="inputFn" data-arg-fn="asin(" data-help-key="">sin⁻¹</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="acos(" x-command="inputFn" data-arg-fn="acos(" data-help-key="">cos⁻¹</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="atan(" x-command="inputFn" data-arg-fn="atan(" data-help-key="">tan⁻¹</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="sqrt(" x-command="inputFn" data-arg-fn="sqrt(" data-help-key="">√</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="cbrt(" x-command="inputFn" data-arg-fn="cbrt(" data-help-key="">∛</button>
+
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="exp(" x-command="inputFn" data-arg-fn="exp(" data-help-key="">eˣ</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="π" x-command="inputText" data-arg-ch="π" data-help-key="">π</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="e" x-command="inputText" data-arg-ch="e" data-help-key="">e</button>
+        <button class="module-calculator__key module-calculator__key--op" data-text="^" x-command="inputText" data-arg-ch="^" data-help-key="">xʸ</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="fact(" x-command="inputFn" data-arg-fn="fact(" data-help-key="">n!</button>
+
+        <button class="module-calculator__key module-calculator__key--fn" data-fn="(" x-command="inputText" data-arg-ch="(" data-help-key="">(</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-fn=")" x-command="inputText" data-arg-ch=")" data-help-key="">)</button>
+        <div class="module-calculator__angle" role="radiogroup" :aria-label="t('degRad')" x-set="model.angleMode">
+          <button class="module-calculator__key module-calculator__key--fn" type="button" role="radio" :value="otherAngle" data-action="toggle-angle" data-help-key="modules.calculator.fields.angleMode.help" x-text="t('degRad')"></button>
+        </div>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-store" data-help-key="modules.calculator.actions.memStore.help" x-command="memStore" x-text="t('keyMs')"></button>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-recall" data-help-key="modules.calculator.actions.memRecall.help" x-command="memRecall" x-text="t('keyMr')"></button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="7" x-command="inputText" data-arg-ch="7" data-help-key="">7</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="8" x-command="inputText" data-arg-ch="8" data-help-key="">8</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="9" x-command="inputText" data-arg-ch="9" data-help-key="">9</button>
+        <button class="module-calculator__key module-calculator__key--op" data-text="÷" x-command="inputText" data-arg-ch="÷" data-help-key="">/</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear" data-help-key="modules.calculator.actions.clear.help" x-command="clear" x-text="t('keyAc')"></button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="4" x-command="inputText" data-arg-ch="4" data-help-key="">4</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="5" x-command="inputText" data-arg-ch="5" data-help-key="">5</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="6" x-command="inputText" data-arg-ch="6" data-help-key="">6</button>
+        <button class="module-calculator__key module-calculator__key--op" data-text="×" x-command="inputText" data-arg-ch="×" data-help-key="">×</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" data-help-key="modules.calculator.actions.backspace.help" x-command="backspace">⌫</button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="1" x-command="inputText" data-arg-ch="1" data-help-key="">1</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="2" x-command="inputText" data-arg-ch="2" data-help-key="">2</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="3" x-command="inputText" data-arg-ch="3" data-help-key="">3</button>
+        <button class="module-calculator__key module-calculator__key--op" data-text="-" x-command="inputText" data-arg-ch="-" data-help-key="">−</button>
+        <button class="module-calculator__key module-calculator__key--act" data-action="calculate" data-help-key="modules.calculator.actions.calculate.help" x-command="calculate">=</button>
+
+        <button class="module-calculator__key module-calculator__key--num module-calculator__key--wide" data-text="0" x-command="inputText" data-arg-ch="0" data-help-key="">0</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="." x-command="inputText" data-arg-ch="." data-help-key="">.</button>
+        <button class="module-calculator__key module-calculator__key--op" data-text="+" x-command="inputText" data-arg-ch="+" data-help-key="">+</button>
+      </div>
+    </div>
+
+    <!-- STATISTICS -->
+    <div data-panel="stats" :class="panelClass('stats')">
+      <div class="module-calculator__data-panel">
+        <label class="module-calculator__data-label" data-help-key="modules.calculator.fields.dataset.help" x-text="t('datasetLabel')"></label>
+        <div class="module-calculator__data-display" data-ref="data-display">
+          <template x-if="model.dataset.length === 0">
+            <span class="module-calculator__val--empty" x-text="t('noData')"></span>
+          </template>
+          <template x-for="(v, i) in model.dataset" :key="i">
+            <span class="module-calculator__val" x-text="valueText(v)"></span>
+          </template>
+        </div>
+        <div class="module-calculator__data-count" data-ref="data-count" x-text="dataCount"></div>
+      </div>
+      <div class="module-calculator__grid module-calculator__grid--4col">
+        <button class="module-calculator__key module-calculator__key--num" data-text="7" x-command="inputText" data-arg-ch="7" data-help-key="">7</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="8" x-command="inputText" data-arg-ch="8" data-help-key="">8</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="9" x-command="inputText" data-arg-ch="9" data-help-key="">9</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" data-help-key="modules.calculator.actions.backspace.help" x-command="backspace">⌫</button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="4" x-command="inputText" data-arg-ch="4" data-help-key="">4</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="5" x-command="inputText" data-arg-ch="5" data-help-key="">5</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="6" x-command="inputText" data-arg-ch="6" data-help-key="">6</button>
+        <button class="module-calculator__key module-calculator__key--act" data-action="add-data" data-help-key="modules.calculator.actions.addData.help" x-command="addData" x-text="t('addValue')"></button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="1" x-command="inputText" data-arg-ch="1" data-help-key="">1</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="2" x-command="inputText" data-arg-ch="2" data-help-key="">2</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="3" x-command="inputText" data-arg-ch="3" data-help-key="">3</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear-data" data-help-key="modules.calculator.actions.clearData.help" x-command="clearData" x-text="t('clearData')"></button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="0" x-command="inputText" data-arg-ch="0" data-help-key="">0</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="." x-command="inputText" data-arg-ch="." data-help-key="">.</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="-" x-command="inputText" data-arg-ch="-" data-help-key="">-</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last" data-help-key="modules.calculator.actions.removeLast.help" x-command="removeLast" x-text="t('removeLast')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="mean" data-help-key="modules.calculator.types.StatKey.mean" x-command="calcStat" data-arg-type="mean" x-text="statLabel('mean')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="median" data-help-key="modules.calculator.types.StatKey.median" x-command="calcStat" data-arg-type="median" x-text="statLabel('median')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="mode" data-help-key="modules.calculator.types.StatKey.mode" x-command="calcStat" data-arg-type="mode" x-text="statLabel('mode')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="range" data-help-key="modules.calculator.types.StatKey.range" x-command="calcStat" data-arg-type="range" x-text="statLabel('range')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="stdS" data-help-key="modules.calculator.types.StatKey.stdS" x-command="calcStat" data-arg-type="stdS" x-text="statLabel('stdS')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="stdP" data-help-key="modules.calculator.types.StatKey.stdP" x-command="calcStat" data-arg-type="stdP" x-text="statLabel('stdP')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="varS" data-help-key="modules.calculator.types.StatKey.varS" x-command="calcStat" data-arg-type="varS" x-text="statLabel('varS')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="varP" data-help-key="modules.calculator.types.StatKey.varP" x-command="calcStat" data-arg-type="varP" x-text="statLabel('varP')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="sum" data-help-key="modules.calculator.types.StatKey.sum" x-command="calcStat" data-arg-type="sum" x-text="statLabel('sum')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="min" data-help-key="modules.calculator.types.StatKey.min" x-command="calcStat" data-arg-type="min" x-text="statLabel('min')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="max" data-help-key="modules.calculator.types.StatKey.max" x-command="calcStat" data-arg-type="max" x-text="statLabel('max')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="count" data-help-key="modules.calculator.types.StatKey.count" x-command="calcStat" data-arg-type="count" x-text="statLabel('count')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="q1" data-help-key="modules.calculator.types.StatKey.q1" x-command="calcStat" data-arg-type="q1" x-text="statLabel('q1')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="q3" data-help-key="modules.calculator.types.StatKey.q3" x-command="calcStat" data-arg-type="q3" x-text="statLabel('q3')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="iqr" data-help-key="modules.calculator.types.StatKey.iqr" x-command="calcStat" data-arg-type="iqr" x-text="statLabel('iqr')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="skew" data-help-key="modules.calculator.types.StatKey.skew" x-command="calcStat" data-arg-type="skew" x-text="statLabel('skew')"></button>
+      </div>
+    </div>
+
+    <!-- SIX SIGMA -->
+    <div data-panel="sixsigma" :class="panelClass('sixsigma')">
+      <div class="module-calculator__data-panel">
+        <label class="module-calculator__data-label" data-help-key="modules.calculator.fields.ssDataset.help" x-text="t('processDataLabel')"></label>
+        <div class="module-calculator__data-display" data-ref="ss-data-display">
+          <template x-if="model.ssDataset.length === 0">
+            <span class="module-calculator__val--empty" x-text="t('noData')"></span>
+          </template>
+          <template x-for="(v, i) in model.ssDataset" :key="i">
+            <span class="module-calculator__val" x-text="valueText(v)"></span>
+          </template>
+        </div>
+        <div class="module-calculator__data-count" data-ref="ss-data-count" x-text="ssDataCount"></div>
+      </div>
+      <div class="module-calculator__cpk-inputs">
+        <input class="field field--num" data-ref="lsl" x-field="model.lsl" data-help-key="" :placeholder="t('lslPlaceholder')" :aria-label="t('lslPlaceholder')">
+        <input class="field field--num" data-ref="usl" x-field="model.usl" data-help-key="" :placeholder="t('uslPlaceholder')" :aria-label="t('uslPlaceholder')">
+      </div>
+      <div class="module-calculator__grid module-calculator__grid--4col">
+        <button class="module-calculator__key module-calculator__key--num" data-text="7" x-command="inputText" data-arg-ch="7" data-help-key="">7</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="8" x-command="inputText" data-arg-ch="8" data-help-key="">8</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="9" x-command="inputText" data-arg-ch="9" data-help-key="">9</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" data-help-key="modules.calculator.actions.backspace.help" x-command="backspace">⌫</button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="4" x-command="inputText" data-arg-ch="4" data-help-key="">4</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="5" x-command="inputText" data-arg-ch="5" data-help-key="">5</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="6" x-command="inputText" data-arg-ch="6" data-help-key="">6</button>
+        <button class="module-calculator__key module-calculator__key--act" data-action="add-ss-data" data-help-key="modules.calculator.actions.addSSData.help" x-command="addSSData" x-text="t('addValue')"></button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="1" x-command="inputText" data-arg-ch="1" data-help-key="">1</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="2" x-command="inputText" data-arg-ch="2" data-help-key="">2</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="3" x-command="inputText" data-arg-ch="3" data-help-key="">3</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear-ss-data" data-help-key="modules.calculator.actions.clearSSData.help" x-command="clearSSData" x-text="t('clearData')"></button>
+
+        <button class="module-calculator__key module-calculator__key--num" data-text="0" x-command="inputText" data-arg-ch="0" data-help-key="">0</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="." x-command="inputText" data-arg-ch="." data-help-key="">.</button>
+        <button class="module-calculator__key module-calculator__key--num" data-text="-" x-command="inputText" data-arg-ch="-" data-help-key="">-</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" data-help-key="modules.calculator.actions.removeLastSS.help" x-command="removeLastSS" x-text="t('removeLast')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" data-help-key="modules.calculator.types.CapabilityKey.cp" x-command="calcSS" data-arg-type="cp" x-text="ssLabel('cp')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" data-help-key="modules.calculator.types.CapabilityKey.cpk" x-command="calcSS" data-arg-type="cpk" x-text="ssLabel('cpk')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="pp" data-help-key="modules.calculator.types.CapabilityKey.pp" x-command="calcSS" data-arg-type="pp" x-text="ssLabel('pp')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="ppk" data-help-key="modules.calculator.types.CapabilityKey.ppk" x-command="calcSS" data-arg-type="ppk" x-text="ssLabel('ppk')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="sigma" data-help-key="modules.calculator.types.CapabilityKey.sigma" x-command="calcSS" data-arg-type="sigma" x-text="ssLabel('sigma')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="dpmo" data-help-key="modules.calculator.types.CapabilityKey.dpmo" x-command="calcSS" data-arg-type="dpmo" x-text="ssLabel('dpmo')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="yield" data-help-key="modules.calculator.types.CapabilityKey.yield" x-command="calcSS" data-arg-type="yield" x-text="ssLabel('yield')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="zscore" data-help-key="modules.calculator.types.CapabilityKey.zscore" x-command="calcSS" data-arg-type="zscore" x-text="ssLabel('zscore')"></button>
+
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="mean" data-help-key="modules.calculator.types.CapabilityKey.mean" x-command="calcSS" data-arg-type="mean" x-text="ssLabel('mean')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="std" data-help-key="modules.calculator.types.CapabilityKey.std" x-command="calcSS" data-arg-type="std" x-text="ssLabel('std')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="ucl" data-help-key="modules.calculator.types.CapabilityKey.ucl" x-command="calcSS" data-arg-type="ucl" x-text="ssLabel('ucl')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="lcl" data-help-key="modules.calculator.types.CapabilityKey.lcl" x-command="calcSS" data-arg-type="lcl" x-text="ssLabel('lcl')"></button>
+      </div>
+    </div>
+
+  </div>
+</div>
