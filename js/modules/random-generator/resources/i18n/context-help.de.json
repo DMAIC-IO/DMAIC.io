@@ -324,6 +324,11 @@
         "value": "Der Wert: bei name ein Text (leer erlaubt), bei weight eine Zahl ab 0; alles andere wird abgelehnt.",
         "command": "Das Kommando als ein Objekt mit attrId, key und value."
       }
+    },
+    "toWorksheet": {
+      "params": {
+        "command": "Der Ablauf als ein Objekt mit target."
+      }
     }
   },
   "asyncTasks": {

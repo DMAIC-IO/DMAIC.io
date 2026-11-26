@@ -79,7 +79,9 @@ suite('random-generator Kontexthilfe in context-help.<lang>.json', () => {
     const commands = State.schema.commands;
     for (const lang of LANGS) {
       const { actions, asyncTasks } = await contextHelp(lang);
-      assertDeepEqual(Object.keys(actions), Object.keys(commands), lang);
+      // Neben den Kommandos trägt `actions` den Lauf toWorksheet (nur `params.command`).
+      assertDeepEqual(Object.keys(actions), [...Object.keys(commands), 'toWorksheet'], lang);
+      assertTrue(nonEmpty(actions.toWorksheet.params.command), `${lang} toWorksheet.params.command`);
       for (const [name, def] of Object.entries(commands)) {
         assertTrue(nonEmpty(actions[name].help), `${lang} ${name}.help`);
         assertDeepEqual(Object.keys(actions[name].params), [...Object.keys(def.params), 'command'], `${lang} ${name}.params`);

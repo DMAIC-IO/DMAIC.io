@@ -137,17 +137,6 @@ export const BOUND_HELP_KEY_FAMILIES = [
       ];
     },
   },
-  {
-    moduleId: 'random-generator',
-    keys: async () => {
-      const { DISTRIBUTIONS } = await import('../../js/engines/random-variates-engine.js');
-      return Object.entries(DISTRIBUTIONS).flatMap(([dist, d]) =>
-        (d.params ?? []).flatMap((p) => [
-          `modules.random-generator.dist.${dist}.${p.id}.label`,
-          `modules.random-generator.types.DistParams.${dist}.${p.id}`,
-        ]));
-    },
-  },
 ];
 
 /**

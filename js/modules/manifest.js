@@ -29,12 +29,6 @@ export default [
     load: () => import('./rest-api/rest-api.js'),
   },
   {
-    id: 'random-generator',
-    phase: 'data',
-    group: 'collect',
-    load: () => import('./random-generator/random-generator.js'),
-  },
-  {
     id: 'model-data-generator',
     phase: 'data',
     group: 'collect',

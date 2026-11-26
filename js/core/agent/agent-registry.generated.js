@@ -16047,6 +16047,7 @@ export const AGENT_REGISTRY = {
   "random-generator": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -16062,211 +16063,145 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "selectDistribution": {
-        "params": [
-          {
-            "name": "key",
-            "type": "string",
-            "optional": false,
-            "help": "eine der Verteilungen aus `distributions`"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Verteilung wählen und sofort generieren."
-      },
-      "setDistParam": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "einer der Parameter aus `activeDistParams`"
-          },
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "Zahl im Bereich aus `activeDistParams`; Textzahlen werden angenommen"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter der gewählten Verteilung setzen und sofort generieren."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'count'|'seed'|'attrCount'|'attrSeed'",
-            "optional": false,
-            "help": "welcher Wert; die zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "ganze Zahl; Umfang von 1 bis 100000, Startwert beliebig (auch 0); Textzahlen werden angenommen"
-          }
-        ],
-        "returns": "void",
-        "help": "Umfang oder Startwert setzen und sofort generieren.",
-        "keysOf": "Params",
-        "keys": {
-          "count": {
-            "type": "number",
-            "help": "Stichprobenumfang, nur stetig/diskret",
-            "optional": true
-          },
-          "seed": {
-            "type": "number",
-            "help": "Startwert, nur stetig/diskret",
-            "optional": true
-          },
-          "attrCount": {
-            "type": "number",
-            "help": "Stichprobenumfang, nur attributiv",
-            "optional": true
-          },
-          "attrSeed": {
-            "type": "number",
-            "help": "Startwert, nur attributiv",
-            "optional": true
-          }
-        }
-      },
       "addAttribute": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Eine Kategorie der attributiven Verteilung anlegen und sofort generieren."
+        "help": "",
+        "keysOf": "addAttribute",
+        "keysHelp": "actions.addAttribute.params",
+        "keys": {}
       },
       "removeAttribute": {
+        "target": "model",
         "params": [
           {
-            "name": "attrId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die id einer Kategorie aus `attributes`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Eine Kategorie entfernen und sofort generieren."
-      },
-      "setAttribute": {
-        "params": [
-          {
-            "name": "attrId",
-            "type": "string",
-            "optional": false,
-            "help": "die id einer Kategorie aus `attributes`"
-          },
-          {
-            "name": "key",
-            "type": "'name'|'weight'",
-            "optional": false,
-            "help": "welches Feld"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Name (Text, leer erlaubt) oder das Gewicht (Zahl ab 0)"
-          }
-        ],
-        "returns": "void",
-        "help": "Name oder Gewicht einer Kategorie setzen und sofort generieren.",
-        "keysOf": "AttributeFields",
+        "help": "",
+        "keysOf": "removeAttribute",
+        "keysHelp": "actions.removeAttribute.params",
         "keys": {
-          "name": {
+          "attrId": {
             "type": "string",
-            "help": "Name der Kategorie"
-          },
-          "weight": {
-            "type": "number",
-            "help": "Gewicht der Kategorie"
+            "help": ""
           }
         }
       },
-      "generate": {
-        "params": [],
-        "returns": "void",
-        "help": "Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung geschieht nichts; ein Fehler der Verteilung steht in `errorMsg`, keine Absage."
-      },
-      "toWorksheet": {
+      "setAttribute": {
+        "target": "model",
         "params": [
           {
-            "name": "target",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`; columnId `'__new__'` hängt eine neue Spalte an das Blatt an"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<{ instanceId: string }|null>",
-        "help": "Die generierten Werte als neue Spalte an einen neuen oder leeren Worksheet senden."
+        "returns": "void",
+        "help": "",
+        "keysOf": "setAttribute",
+        "keysHelp": "actions.setAttribute.params",
+        "keys": {
+          "attrId": {
+            "type": "string",
+            "help": ""
+          },
+          "key": {
+            "type": "'name'|'weight'",
+            "help": ""
+          },
+          "value": {
+            "type": "any",
+            "help": ""
+          }
+        }
+      },
+      "toWorksheet": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "toWorksheet",
+        "keysHelp": "asyncTasks.toWorksheet.params",
+        "keys": {
+          "target": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "toWorksheet",
+        "op": "start",
+        "helpKey": "asyncTasks.toWorksheet.help"
+      },
+      "toWorksheet.cancel": {
+        "target": "asyncTask",
+        "task": "toWorksheet",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.toWorksheet.cancel.help"
       }
     },
     "fields": {
       "currentDist": {
-        "type": "string|null",
-        "help": "the selected distribution key, one of `distributions`, or null",
-        "bulk": false,
-        "derived": true
-      },
-      "distributions": {
-        "type": "string[]",
-        "help": "all distribution keys, `attributive` included",
-        "bulk": false,
-        "derived": true
+        "type": "'normal'|'chisquare'|'f_dist'|'t_dist'|'uniform'|'beta'|'cauchy'|'exponential'|'gamma_dist'|'laplace'|'gumbel_max'|'logistic'|'loglogistic'|'lognormal'|'gumbel_min'|'triangular'|'weibull'|'bernoulli'|'binomial'|'geometric'|'negbinomial'|'hypergeometric'|'integer'|'poisson'|'mvnormal'|'attributive'|null",
+        "help": "",
+        "bulk": false
       },
       "params": {
-        "type": "Object<string, number>",
-        "help": "the parameters of the current numeric distribution by id",
-        "bulk": false,
-        "derived": true
-      },
-      "activeDistParams": {
-        "type": "Array<{ id: string, min: number|null, max: number|null, default: number }>",
-        "help": "the ids `setDistParam` accepts now",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts now",
-        "bulk": false,
-        "derived": true
+        "type": "{ normal: { mu: number, sigma: number, epsilon: number, delta: number }, chisquare: { k: number }, f_dist: { d1: number, d2: number }, t_dist: { nu: number }, uniform: { a: number, b: number }, beta: { alpha: number, beta: number }, cauchy: { x0: number, gamma: number }, exponential: { lambda: number }, gamma_dist: { alpha: number, beta: number }, laplace: { mu: number, b: number }, gumbel_max: { mu: number, beta: number }, logistic: { mu: number, s: number }, loglogistic: { alpha: number, beta: number }, lognormal: { mu: number, sigma: number }, gumbel_min: { mu: number, beta: number }, triangular: { a: number, c: number, b: number }, weibull: { alpha: number, beta: number }, bernoulli: { p: number }, binomial: { n: number, p: number }, geometric: { p: number }, negbinomial: { r: number, p: number }, hypergeometric: { N: number, K: number, n: number }, integer: { a: number, b: number }, poisson: { lambda: number }, mvnormal: { mu1: number, mu2: number, sigma1: number, sigma2: number, rho: number } }",
+        "help": "",
+        "bulk": false
       },
       "count": {
         "type": "number",
-        "help": "sample size of a numeric distribution",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "seed": {
-        "type": "number",
-        "help": "random seed of a numeric distribution",
-        "bulk": false,
-        "derived": true
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
       "attributes": {
-        "type": "Array<{ id: string, name: string, weight: number }>",
-        "help": "the categories of the attributive distribution",
-        "bulk": false,
-        "derived": true
+        "type": "{ id: string, name: string, weight: number }[]",
+        "help": "",
+        "bulk": false
       },
       "attrCount": {
         "type": "number",
-        "help": "sample size of the attributive distribution",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "attrSeed": {
-        "type": "number",
-        "help": "random seed of the attributive distribution",
-        "bulk": false,
-        "derived": true
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
       "generated": {
-        "type": "Generated|null",
-        "help": "summary of the generated values, each item described under keys; null without values",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Generated",
@@ -16276,37 +16211,37 @@ export const AGENT_REGISTRY = {
             "help": "Zahl der erzeugten Werte"
           },
           "mean": {
-            "type": "number",
+            "type": "number|null",
             "help": "Mittelwert",
             "optional": true
           },
           "sd": {
-            "type": "number",
+            "type": "number|null",
             "help": "Standardabweichung",
             "optional": true
           },
           "median": {
-            "type": "number",
+            "type": "number|null",
             "help": "Median",
             "optional": true
           },
           "min": {
-            "type": "number",
+            "type": "number|null",
             "help": "kleinster Wert",
             "optional": true
           },
           "max": {
-            "type": "number",
+            "type": "number|null",
             "help": "größter Wert",
             "optional": true
           },
           "skewness": {
-            "type": "number",
+            "type": "number|null",
             "help": "Schiefe",
             "optional": true
           },
           "kurtosis": {
-            "type": "number",
+            "type": "number|null",
             "help": "Kurtosis (Exzess)",
             "optional": true
           },
@@ -16332,19 +16267,65 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "targetColumns": {
-        "type": "Array<{ key: string, name: string }>",
-        "help": "the targets `toWorksheet` accepts: per sheet with an empty column its empty columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet",
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "why the last generation failed, '' without error",
+      "targetColumns": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "TargetColumn",
+        "keys": {
+          "key": {
+            "type": "string",
+            "help": "Ziel `instanceId|sheetId|columnId`"
+          },
+          "name": {
+            "type": "string",
+            "help": "Spaltenname bzw. Blattname beim Eintrag „neue Spalte“"
+          }
+        }
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "toWorksheet",
+        "auto": false,
+        "params": [
+          "target"
+        ]
+      }
+    ],
+    "viewFields": [
+      "histogramEdits",
+      "paretoEdits"
+    ],
+    "settable": [
+      "currentDist",
+      "params",
+      "count",
+      "seed",
+      "attributes",
+      "attrCount",
+      "attrSeed"
+    ],
+    "invariants": [
+      "uniformOrder",
+      "triangularOrder",
+      "hyperK",
+      "hyperN",
+      "uniqueAttributeIds"
+    ]
   },
   "rare-event-chart": {
     "tagged": true,

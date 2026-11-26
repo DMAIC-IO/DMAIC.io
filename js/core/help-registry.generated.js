@@ -13,10 +13,9 @@ import h10 from '../modules/msa-typ1/msa-typ1-help.js';
 import h11 from '../modules/msa-typ4/msa-typ4-help.js';
 import h12 from '../modules/msa-typ6/msa-typ6-help.js';
 import h13 from '../modules/process-map/process-map-help.js';
-import h14 from '../modules/random-generator/random-generator-help.js';
-import h15 from '../modules/regression/regression-help.js';
-import h16 from '../modules/response-optimization/response-optimization-help.js';
-import h17 from '../modules/rest-api/rest-api-help.js';
+import h14 from '../modules/regression/regression-help.js';
+import h15 from '../modules/response-optimization/response-optimization-help.js';
+import h16 from '../modules/rest-api/rest-api-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -33,8 +32,7 @@ export const HELP = {
   "msa-typ4": h11,
   "msa-typ6": h12,
   "process-map": h13,
-  "random-generator": h14,
-  "regression": h15,
-  "response-optimization": h16,
-  "rest-api": h17,
+  "regression": h14,
+  "response-optimization": h15,
+  "rest-api": h16,
 };

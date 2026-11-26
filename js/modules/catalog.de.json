@@ -180,6 +180,11 @@
     "description": "Verantwortlichkeitsmatrix: Rollen pro Aktivität und Stakeholder",
     "whenToUse": "Wenn für jede Aktivität eines Vorhabens festgehalten werden soll, wer sie ausführt (R), wer sie verantwortet (A), wer gefragt wird (C) und wer Bescheid bekommt (I) — die Prüfung meldet jede Zeile ohne R, ohne A oder mit mehr als einem A; nicht zur Beschreibung des Ablaufs selbst, dafür ist ein Flussdiagramm da."
   },
+  "random-generator": {
+    "name": "Zufallszahlen-Generator",
+    "description": "Erzeugt reproduzierbare Stichproben aus statistischen Verteilungen",
+    "whenToUse": "Wenn Zufallsdaten aus einer bekannten Verteilung oder aus gewichteten Kategorien gebraucht werden — zum Üben, für Simulationen oder als Testdaten — reproduzierbar über den Startwert."
+  },
   "rare-event-chart": {
     "name": "Regelkarte (seltene Ereignisse)",
     "description": "g- und t-Karten für seltene Ereignisse",

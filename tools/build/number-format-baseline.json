@@ -98,12 +98,6 @@
     "count": 4,
     "reason": "Zielerreichung, Rahmen- und Linienbreite (Stil-Panel, Bearbeiten-Dialog) bleiben Zahlenfelder mit Pfeiltasten (Ganzzahlen), wie bisher; die Werte laufen über x-field bzw. x-param"
   },
-  "js/modules/random-generator/random-generator.html": {
-    "count": 6
-  },
-  "js/modules/random-generator/random-generator.js": {
-    "count": 6
-  },
   "js/modules/regression/regression-model.js": {
     "count": 1
   },

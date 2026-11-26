@@ -112,6 +112,15 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setStandardSelected', reason: 'die Oberfläche hakt das Kästchen an, verankert an fields.selected' },
     { name: 'actions.setExpandedClasses', reason: 'die Oberfläche klappt über die Klassenköpfe auf, verankert an fields.expandedClasses' },
   ],
+  'random-generator': [
+    { name: 'actions.removeAttribute', reason: 'Löschknopf × je Kategorienzeile; ein Fragezeichen je Zeile wäre Rauschen, verankert sind die Spaltenköpfe Name und Gewicht' },
+    { name: 'actions.setAttribute', reason: 'nur für den Agenten; die Oberfläche schreibt Name und Gewicht direkt in den Zeilenfeldern, verankert an den Spaltenköpfen' },
+    { name: 'actions.toWorksheet.cancel', reason: 'das Senden läuft ohne Wartezeit, die Oberfläche bietet keinen Abbrechen-Knopf' },
+    { name: 'fields.asyncTasks', reason: 'Laufzustand des Sendens für den Agenten; die Oberfläche zeigt ihn nur am Sendeknopf, verankert an asyncTasks.toWorksheet' },
+    { name: 'fields.attributes', reason: 'die Kategorienliste hat keine eigene Beschriftung; verankert sind die Spaltenköpfe Name und Gewicht und das Anlegen an addAttribute' },
+    { name: 'fields.params', reason: 'kein eigenes Element; jeder Parameter ist einzeln an fields.params.<Verteilung>.<Parameter> verankert' },
+    { name: 'fields.targetColumns', reason: 'Auswahlhilfe für den Agenten; die Oberfläche zeigt dieselben Ziele im Zielwähler, verankert an asyncTasks.toWorksheet.params.target' },
+  ],
   'pairwise-comparison': [
     { name: 'fields.criteria', reason: 'Namen aus den Daten auf den Chips; verankert ist die Chip-Leiste an removeCriterion und das Anlegen an addCriterion' },
     { name: 'fields.matrix', reason: 'Zellen ohne eigenes Fragezeichen; verankert sind der Satz „Klick zum Ändern:“ an cycleCell und Matrix, Summe und Rangliste an den Typedef-Sätzen von result' },

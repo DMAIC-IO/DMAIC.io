@@ -180,6 +180,11 @@
     "description": "Responsibility Assignment Matrix: roles per activity and stakeholder",
     "whenToUse": "When each activity of an undertaking needs a record of who does the work (R), who is accountable (A), who is consulted (C) and who is informed (I) — the check reports every row without an R, without an A or with more than one A; not for describing the flow itself, which is what a flowchart is for."
   },
+  "random-generator": {
+    "name": "Random Generator",
+    "description": "Generate reproducible samples from statistical distributions",
+    "whenToUse": "When random data from a known distribution or from weighted categories is needed — for practice, simulations or test data — reproducible through the seed."
+  },
   "rare-event-chart": {
     "name": "Control Chart (Rare Events)",
     "description": "g and t charts for rare events",

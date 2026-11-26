@@ -324,6 +324,11 @@
         "value": "The value: for name a text (empty allowed), for weight a number from 0; anything else is rejected.",
         "command": "The command as an object with attrId, key and value."
       }
+    },
+    "toWorksheet": {
+      "params": {
+        "command": "The task as an object with target."
+      }
     }
   },
   "asyncTasks": {
