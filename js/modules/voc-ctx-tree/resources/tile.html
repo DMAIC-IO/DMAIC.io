@@ -1,0 +1,39 @@
+<div class="vct-tile">
+  <template x-if="empty">
+    <p class="dashboard-area__empty" x-text="empty"></p>
+  </template>
+  <template x-if="!empty">
+    <div class="dashboard-voc__summary">
+      <template x-for="s in stats">
+        <span class="dashboard-voc__stat"><strong x-text="s.value"></strong><span x-text="s.label"></span></span>
+      </template>
+    </div>
+  </template>
+  <template x-if="segments.length">
+    <div class="dashboard-voc__driver-bar">
+      <template x-for="seg in segments">
+        <div class="dashboard-voc__bar-seg" :style="seg.style" :title="seg.title"></div>
+      </template>
+    </div>
+  </template>
+  <template x-if="legend">
+    <div class="dashboard-voc__driver-legend">
+      <template x-for="l in legend">
+        <span class="dashboard-voc__legend-item"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
+      </template>
+    </div>
+  </template>
+  <template x-if="listLabel">
+    <div class="dashboard-voc__list-label" x-text="listLabel"></div>
+  </template>
+  <template x-if="listLabel">
+    <ul class="dashboard-voc__list">
+      <template x-for="v in items">
+        <li class="dashboard-voc__item"><span x-text="v.quote"></span><template x-if="v.source"><span class="dashboard-area__muted" x-text="v.source"></span></template></li>
+      </template>
+      <template x-if="more">
+        <li class="dashboard-voc__item dashboard-area__muted" x-text="more"></li>
+      </template>
+    </ul>
+  </template>
+</div>

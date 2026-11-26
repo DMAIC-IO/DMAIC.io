@@ -1,0 +1,89 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der {{term:ctx-baum|VoC → CTx-Baum}} übersetzt unstrukturierte Kundenaussagen in messbare Anforderungen. Ausgehend von der {{term:voc|Voice of Customer}} (VoC) werden Bedürfnisse identifiziert, in Treiber zerlegt und schließlich in {{term:ctq|Critical-to-X}}-Anforderungen (CTQ, CTC, CTD) überführt — also in messbare Eigenschaften, die ein Prozess oder Produkt erfüllen muss."
+        },
+        {
+          "type": "definition",
+          "term": "Voice of Customer (VoC)",
+          "content": "Originalaussagen von Kunden — wörtlich, unsortiert, oft emotional. Quellen sind Interviews, Beschwerden, Umfragen, Reklamationen. Diese Ebene wird nicht interpretiert, nur dokumentiert."
+        },
+        {
+          "type": "definition",
+          "term": "Bedürfnis (Need)",
+          "content": "Die hinter der Aussage liegende Erwartung — verdichtet und entpersonalisiert. „Ich warte ewig auf mein Essen“ wird zu „schnelle Lieferung“. Mehrere VoC-Aussagen können zu einem Bedürfnis verschmelzen."
+        },
+        {
+          "type": "definition",
+          "term": "Treiber (Driver)",
+          "content": "Konkrete Eigenschaften des Prozesses oder Produkts, die das Bedürfnis adressieren. Aus „schnelle Lieferung“ wird z. B. „{{term:durchlaufzeit|Bearbeitungszeit}}“, „Versandzeit“, „Lagerverfügbarkeit“."
+        },
+        {
+          "type": "definition",
+          "term": "Critical-to-X (CTQ, CTC, CTD)",
+          "content": "Messbare, spezifizierte Anforderungen — meist Critical-to-Quality (CTQ), Critical-to-Cost (CTC) oder Critical-to-Delivery (CTD). Beispiel: „Lieferzeit ≤ 30 Min in 95 % der Fälle“. Mit Sollwert, Toleranz und Messmethode."
+        },
+        {
+          "type": "paragraph",
+          "content": "Der Baum verbindet die emotionale Kundenwelt mit der zahlenorientierten Prozesswelt. Ohne diese Übersetzung bleibt VoC ein Stimmungsbild, mit ihr wird sie zur Spezifikation."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "VoC-Aussagen sammeln — möglichst wörtlich, möglichst aus mehreren Quellen.",
+            "Aussagen gruppieren und zu Bedürfnissen verdichten.",
+            "Pro Bedürfnis Treiber ableiten — was im Prozess bestimmt das Erleben?",
+            "Pro Treiber eine oder mehrere CTx-Anforderungen formulieren — mit Messgröße, Sollwert und Toleranz.",
+            "Mit Kunden bzw. Stakeholdern gegenprüfen — sind die CTx wirklich das, was gemeint war?",
+            "Priorisieren — nicht alle Anforderungen sind gleich wichtig. {{term:kano|Kano-Modell}} oder Gewichtung helfen."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Direkt zu Lösungen springen",
+          "content": "Aus „Essen kommt zu spät“ wird sofort „neuen Lieferdienst kaufen“. Erst Bedürfnis und Treiber sauber ableiten — die Lösung kommt am Ende, nicht am Anfang."
+        },
+        {
+          "type": "definition",
+          "term": "VoC interpretiert statt zitiert",
+          "content": "Wer Aussagen umformuliert, verliert die Originalfärbung. Auf der VoC-Ebene wörtlich bleiben — die Verdichtung gehört auf die Need-Ebene."
+        },
+        {
+          "type": "definition",
+          "term": "CTx ohne Messgröße",
+          "content": "„Schnelle Lieferung“ ist keine CTx-Anforderung, sondern ein Wunsch. Eine echte CTx hat eine Zahl, eine Einheit und ein Akzeptanzkriterium."
+        },
+        {
+          "type": "definition",
+          "term": "Eine Quelle dominiert",
+          "content": "Wenn nur die lautesten Beschwerden ausgewertet werden, entsteht ein verzerrtes Bild. Auch zufriedene Kunden befragen, Stichproben über die ganze Kundenbasis ziehen."
+        },
+        {
+          "type": "definition",
+          "term": "Alle Bedürfnisse gleich gewichtet",
+          "content": "Manche Anforderungen sind Basis (müssen erfüllt sein), andere Begeisterer (überraschen positiv). Ohne Priorisierung wird Aufwand auf Unwichtiges verteilt."
+        },
+        {
+          "type": "definition",
+          "term": "Kein Abgleich mit dem Kunden",
+          "content": "Der Baum ist eine Hypothese, bis er rückgespiegelt wurde. Mindestens die wichtigsten CTx mit Kunden oder ihrem Vertreter (Vertrieb, Support) verifizieren."
+        }
+      ]
+    }
+  }
+}

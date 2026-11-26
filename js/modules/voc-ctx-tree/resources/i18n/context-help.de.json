@@ -1,0 +1,228 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "vocs": {
+      "help": "Die Kundenstimmen in Anlegereihenfolge, jede mit Kennung, Wortlaut, Herkunft und ihren Bedürfnissen; darunter je Bedürfnis die Treiber und je Treiber die messbaren Anforderungen. Massendaten: ohne ausdrückliche Anforderung dieses Felds liefert das Lesen nur den Umfang.",
+      "id": {
+        "help": "Die Kennung der Kundenstimme; über sie sprechen die Kommandos sie an."
+      },
+      "text": {
+        "help": "Der Wortlaut der Kundenstimme, möglichst als Originalzitat."
+      },
+      "source": {
+        "help": "Woher die Kundenstimme stammt, etwa eine Befragung oder eine Beschwerde; leer heißt ohne Angabe."
+      },
+      "needs": {
+        "help": "Die Bedürfnisse hinter der Kundenstimme, in Anzeigereihenfolge, jedes mit Kennung, Wortlaut und Treibern.",
+        "id": {
+          "help": "Die Kennung des Bedürfnisses."
+        },
+        "text": {
+          "help": "Der Wortlaut des Bedürfnisses."
+        },
+        "drivers": {
+          "help": "Die Treiber des Bedürfnisses, in Anzeigereihenfolge, jeder mit Kennung, Wortlaut, Art und Anforderungen.",
+          "id": {
+            "help": "Die Kennung des Treibers."
+          },
+          "text": {
+            "help": "Der Wortlaut des Treibers."
+          },
+          "type": {
+            "help": "Die Art des Treibers: ctq (Qualität), ctd (Lieferung) oder ctc (Kosten)."
+          },
+          "requirements": {
+            "help": "Die messbaren Anforderungen des Treibers, in Anzeigereihenfolge, jede mit Kennung, Wortlaut, Zielwert und Messgröße.",
+            "id": {
+              "help": "Die Kennung der Anforderung."
+            },
+            "text": {
+              "help": "Der Wortlaut der Anforderung."
+            },
+            "target": {
+              "help": "Der Zielwert, gegen den die Anforderung geprüft wird; leer heißt ohne Zielwert."
+            },
+            "measure": {
+              "help": "Die Messgröße oder das Messverfahren; leer heißt ohne Angabe."
+            }
+          }
+        }
+      }
+    },
+    "styles": {
+      "help": "Die Darstellung des Baums: Randstärke der Knoten und Farbe je Knotenart.",
+      "borderWidth": {
+        "help": "Die Randstärke der Knoten in Pixeln, von 0 bis 4 in Schritten von 0,5; Vorgabe 1."
+      },
+      "colors": {
+        "help": "Die Farbe je Knotenart: Kundenstimme, Bedürfnis, die drei Treiberarten und Anforderung.",
+        "voc": {
+          "help": "Farbe der Kundenstimmen (VoC) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit Kanälen von 0 bis 255 und einer Deckkraft von 0 bis 1, etwa rgba(230,126,34,1). Vorgabe ist ein kräftiges Orange. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
+        },
+        "need": {
+          "help": "Farbe der Kundenbedürfnisse im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit Kanälen von 0 bis 255 und einer Deckkraft von 0 bis 1, etwa rgba(155,89,182,1). Vorgabe ist ein Violett. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
+        },
+        "ctq": {
+          "help": "Farbe der Treiber der Art CTQ (Critical to Quality, Qualität) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit Kanälen von 0 bis 255 und einer Deckkraft von 0 bis 1, etwa rgba(39,174,96,1). Vorgabe ist ein Grün. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
+        },
+        "ctd": {
+          "help": "Farbe der Treiber der Art CTD (Critical to Delivery, Lieferung) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit Kanälen von 0 bis 255 und einer Deckkraft von 0 bis 1, etwa rgba(41,128,185,1). Vorgabe ist ein Blau. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
+        },
+        "ctc": {
+          "help": "Farbe der Treiber der Art CTC (Critical to Cost, Kosten) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit Kanälen von 0 bis 255 und einer Deckkraft von 0 bis 1, etwa rgba(231,76,139,1). Vorgabe ist ein Rosa. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
+        },
+        "req": {
+          "help": "Farbe der Anforderungen im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit Kanälen von 0 bis 255 und einer Deckkraft von 0 bis 1, etwa rgba(94,88,216,1). Vorgabe ist ein Blauviolett. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
+        }
+      }
+    },
+    "activeVocId": {
+      "help": "Welche Kundenstimme angezeigt wird; ohne Auswahl die erste."
+    }
+  },
+  "actions": {
+    "addVoc": {
+      "help": "Legt eine Kundenstimme an und wählt sie aus.",
+      "params": {
+        "text": "Der Wortlaut der Kundenstimme, möglichst als Originalzitat; Leerzeichen am Rand fallen weg. Ein leerer Wortlaut wird abgelehnt.",
+        "source": "Woher die Kundenstimme stammt, etwa eine Befragung, ein Interview oder eine Beschwerde. Leer heißt ohne Angabe.",
+        "command": "Das Kommando als ein Objekt mit text und wahlweise source; es liefert die Kennung der neuen Kundenstimme."
+      }
+    },
+    "updateVoc": {
+      "help": "Ändert Wortlaut und Herkunft einer Kundenstimme.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Der neue Wortlaut. Ein leerer Wortlaut wird abgelehnt.",
+        "source": "Die neue Herkunft; leer löscht sie.",
+        "command": "Das Kommando als ein Objekt mit vocId, text und source."
+      }
+    },
+    "removeVoc": {
+      "help": "Entfernt eine Kundenstimme samt ihrem Baum. War sie ausgewählt, rückt die erste verbleibende nach. In der Oberfläche fragt das Modul vorher nach.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId."
+      }
+    },
+    "setActiveVoc": {
+      "help": "Wählt die Kundenstimme aus, deren Baum angezeigt wird. In der Liste genügt ein Klick auf eine Karte; ohne Auswahl wird die erste angezeigt.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme; leer heißt keine Auswahl. Eine unbekannte Kennung wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId; nur die Oberfläche wählt aus."
+      }
+    },
+    "addNeed": {
+      "help": "Leitet aus einer Kundenstimme ein Kundenbedürfnis ab.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Das Bedürfnis hinter der Aussage, verdichtet und ohne Person, etwa „schnelle Lieferung“. Ein leerer Wortlaut wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId und text; es liefert die Kennung des neuen Bedürfnisses."
+      }
+    },
+    "updateNeed": {
+      "help": "Ändert den Wortlaut eines Bedürfnisses.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Der neue Wortlaut. Ein leerer Wortlaut wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId, needId und text."
+      }
+    },
+    "removeNeed": {
+      "help": "Entfernt ein Bedürfnis samt seinen Treibern und Anforderungen.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId und needId."
+      }
+    },
+    "addDriver": {
+      "help": "Legt unter einem Bedürfnis einen CTx-Treiber an.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Die Eigenschaft des Prozesses oder Produkts, die das Bedürfnis trägt, etwa „Lieferzeit“. Ein leerer Wortlaut wird abgelehnt.",
+        "type": "Die Art des Treibers: Qualität (ctq), Lieferung (ctd) oder Kosten (ctc) — was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost). Ohne Angabe Qualität.",
+        "command": "Das Kommando als ein Objekt mit vocId, needId, text und wahlweise type; es liefert die Kennung des neuen Treibers."
+      }
+    },
+    "updateDriver": {
+      "help": "Ändert Wortlaut und Art eines Treibers.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "drvId": "Die Kennung des Treibers. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Der neue Wortlaut. Ein leerer Wortlaut wird abgelehnt.",
+        "type": "Die Art des Treibers: Qualität (ctq), Lieferung (ctd) oder Kosten (ctc) — was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost).",
+        "command": "Das Kommando als ein Objekt mit vocId, needId, drvId, text und type."
+      }
+    },
+    "removeDriver": {
+      "help": "Entfernt einen Treiber samt seinen Anforderungen.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "drvId": "Die Kennung des Treibers. Eine unbekannte Kennung wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId, needId und drvId."
+      }
+    },
+    "addRequirement": {
+      "help": "Legt unter einem Treiber eine messbare Anforderung an.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "drvId": "Die Kennung des Treibers. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Die messbare Anforderung oder Spezifikation, etwa „Lieferzeit höchstens 48 Stunden in 95 % der Fälle“. Ein leerer Wortlaut wird abgelehnt.",
+        "target": "Der Zielwert, gegen den die Anforderung geprüft wird, etwa „höchstens 24 Stunden“. Leer heißt ohne Zielwert.",
+        "measure": "Die Messgröße oder das Messverfahren, mit dem der Zielwert geprüft wird, etwa „Durchlaufzeit in Stunden“. Leer heißt ohne Angabe.",
+        "command": "Das Kommando als ein Objekt mit vocId, needId, drvId, text und wahlweise target und measure; es liefert die Kennung der neuen Anforderung."
+      }
+    },
+    "updateRequirement": {
+      "help": "Ändert Wortlaut, Zielwert und Messgröße einer Anforderung.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "drvId": "Die Kennung des Treibers. Eine unbekannte Kennung wird abgelehnt.",
+        "reqId": "Die Kennung der Anforderung. Eine unbekannte Kennung wird abgelehnt.",
+        "text": "Der neue Wortlaut. Ein leerer Wortlaut wird abgelehnt.",
+        "target": "Der neue Zielwert; leer löscht ihn.",
+        "measure": "Die neue Messgröße; leer löscht sie.",
+        "command": "Das Kommando als ein Objekt mit vocId, needId, drvId, reqId, text, target und measure."
+      }
+    },
+    "removeReq": {
+      "help": "Entfernt eine Anforderung.",
+      "params": {
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses. Eine unbekannte Kennung wird abgelehnt.",
+        "drvId": "Die Kennung des Treibers. Eine unbekannte Kennung wird abgelehnt.",
+        "reqId": "Die Kennung der Anforderung. Eine unbekannte Kennung wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit vocId, needId, drvId und reqId."
+      }
+    },
+    "reorderNodes": {
+      "help": "Verschiebt einen Knoten an die Stelle eines Geschwisterknotens; in der Oberfläche durch Ziehen am Abzeichen oder mit den Pfeiltasten.",
+      "params": {
+        "kind": "Die Ebene, auf der verschoben wird: need (Bedürfnis), driver (Treiber) oder req (Anforderung).",
+        "vocId": "Die Kennung der Kundenstimme. Eine unbekannte Kennung wird abgelehnt.",
+        "needId": "Die Kennung des Bedürfnisses; nötig für Treiber und Anforderungen.",
+        "drvId": "Die Kennung des Treibers; nötig für Anforderungen.",
+        "fromId": "Die Kennung des Knotens, der verschoben wird; er muss auf der genannten Ebene unter derselben Elternkette liegen.",
+        "toId": "Die Kennung des Geschwisterknotens, an dessen Stelle er rückt. Dieselbe Kennung lässt die Reihenfolge stehen und liefert false.",
+        "command": "Das Kommando als ein Objekt mit kind, vocId, fromId, toId und je nach Ebene needId und drvId; es liefert true, wenn sich die Reihenfolge geändert hat."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele Kundenstimmen die Kachel höchstens auflistet, von 1 bis 20."
+      },
+      "showLegend": {
+        "help": "Zeigt unter dem Balken die Legende der Treiberarten CTQ, CTD und CTC."
+      }
+    }
+  }
+}

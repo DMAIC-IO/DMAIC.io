@@ -1,0 +1,228 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "vocs": {
+      "help": "The voice-of-customer statements in the order they were added, each with id, wording, source and its needs; below each need the drivers and below each driver the measurable requirements. Bulk data: unless this field is requested explicitly, reading returns only its size.",
+      "id": {
+        "help": "The id of the statement; the commands address it by this id."
+      },
+      "text": {
+        "help": "The wording of the statement, ideally as an original quote."
+      },
+      "source": {
+        "help": "Where the statement came from, e.g. a survey or a complaint; empty means no source."
+      },
+      "needs": {
+        "help": "The needs behind the statement, in display order, each with id, wording and drivers.",
+        "id": {
+          "help": "The id of the need."
+        },
+        "text": {
+          "help": "The wording of the need."
+        },
+        "drivers": {
+          "help": "The drivers of the need, in display order, each with id, wording, type and requirements.",
+          "id": {
+            "help": "The id of the driver."
+          },
+          "text": {
+            "help": "The wording of the driver."
+          },
+          "type": {
+            "help": "The driver's type: ctq (quality), ctd (delivery) or ctc (cost)."
+          },
+          "requirements": {
+            "help": "The measurable requirements of the driver, in display order, each with id, wording, target value and measure.",
+            "id": {
+              "help": "The id of the requirement."
+            },
+            "text": {
+              "help": "The wording of the requirement."
+            },
+            "target": {
+              "help": "The target value the requirement is checked against; empty means no target."
+            },
+            "measure": {
+              "help": "The measure or measuring method; empty means none."
+            }
+          }
+        }
+      }
+    },
+    "styles": {
+      "help": "The appearance of the tree: border width of the nodes and colour per kind of node.",
+      "borderWidth": {
+        "help": "The border width of the nodes in pixels, from 0 to 4 in steps of 0.5; default 1."
+      },
+      "colors": {
+        "help": "The colour per kind of node: statement, need, the three driver types and requirement.",
+        "voc": {
+          "help": "Colour of the voice-of-customer statements (VoC) in the tree, as rgb(r,g,b) or rgba(r,g,b,a) with channels from 0 to 255 and an opacity from 0 to 1, e.g. rgba(230,126,34,1). The default is a strong orange. Background, border and lines of the nodes derive from this colour."
+        },
+        "need": {
+          "help": "Colour of the customer needs in the tree, as rgb(r,g,b) or rgba(r,g,b,a) with channels from 0 to 255 and an opacity from 0 to 1, e.g. rgba(155,89,182,1). The default is a violet. Background, border and lines of the nodes derive from this colour."
+        },
+        "ctq": {
+          "help": "Colour of the CTQ drivers (Critical to Quality) in the tree, as rgb(r,g,b) or rgba(r,g,b,a) with channels from 0 to 255 and an opacity from 0 to 1, e.g. rgba(39,174,96,1). The default is a green. Background, border and lines of the nodes derive from this colour."
+        },
+        "ctd": {
+          "help": "Colour of the CTD drivers (Critical to Delivery) in the tree, as rgb(r,g,b) or rgba(r,g,b,a) with channels from 0 to 255 and an opacity from 0 to 1, e.g. rgba(41,128,185,1). The default is a blue. Background, border and lines of the nodes derive from this colour."
+        },
+        "ctc": {
+          "help": "Colour of the CTC drivers (Critical to Cost) in the tree, as rgb(r,g,b) or rgba(r,g,b,a) with channels from 0 to 255 and an opacity from 0 to 1, e.g. rgba(231,76,139,1). The default is a pink. Background, border and lines of the nodes derive from this colour."
+        },
+        "req": {
+          "help": "Colour of the requirements in the tree, as rgb(r,g,b) or rgba(r,g,b,a) with channels from 0 to 255 and an opacity from 0 to 1, e.g. rgba(94,88,216,1). The default is a blue violet. Background, border and lines of the nodes derive from this colour."
+        }
+      }
+    },
+    "activeVocId": {
+      "help": "Which statement is shown; without a selection the first one."
+    }
+  },
+  "actions": {
+    "addVoc": {
+      "help": "Adds a voice-of-customer statement and selects it.",
+      "params": {
+        "text": "The wording of the statement, ideally as an original quote; surrounding spaces are dropped. Empty wording is rejected.",
+        "source": "Where the statement came from, e.g. a survey, an interview or a complaint. Empty means no source.",
+        "command": "The command as an object with text and optionally source; it returns the id of the new statement."
+      }
+    },
+    "updateVoc": {
+      "help": "Changes the wording and source of a statement.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "text": "The new wording. Empty wording is rejected.",
+        "source": "The new source; empty clears it.",
+        "command": "The command as an object with vocId, text and source."
+      }
+    },
+    "removeVoc": {
+      "help": "Removes a statement with its whole tree. If it was selected, the first remaining one takes over. In the interface the module asks first.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "command": "The command as an object with vocId."
+      }
+    },
+    "setActiveVoc": {
+      "help": "Selects the statement whose tree is shown. In the list, one click on a card is enough; without a selection the first one is shown.",
+      "params": {
+        "vocId": "The id of the statement; empty means no selection. An unknown id is rejected.",
+        "command": "The command as an object with vocId; only the interface selects."
+      }
+    },
+    "addNeed": {
+      "help": "Derives a customer need from a statement.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "text": "The need behind the statement, condensed and impersonal, e.g. “fast delivery”. Empty wording is rejected.",
+        "command": "The command as an object with vocId and text; it returns the id of the new need."
+      }
+    },
+    "updateNeed": {
+      "help": "Changes the wording of a need.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "text": "The new wording. Empty wording is rejected.",
+        "command": "The command as an object with vocId, needId and text."
+      }
+    },
+    "removeNeed": {
+      "help": "Removes a need with its drivers and requirements.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "command": "The command as an object with vocId and needId."
+      }
+    },
+    "addDriver": {
+      "help": "Adds a CTx driver under a need.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "text": "The property of the process or product that serves the need, e.g. “delivery time”. Empty wording is rejected.",
+        "type": "The driver's type: quality (ctq), delivery (ctd) or cost (ctc) — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost). Without one, quality.",
+        "command": "The command as an object with vocId, needId, text and optionally type; it returns the id of the new driver."
+      }
+    },
+    "updateDriver": {
+      "help": "Changes the wording and type of a driver.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "drvId": "The id of the driver. An unknown id is rejected.",
+        "text": "The new wording. Empty wording is rejected.",
+        "type": "The driver's type: quality (ctq), delivery (ctd) or cost (ctc) — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost).",
+        "command": "The command as an object with vocId, needId, drvId, text and type."
+      }
+    },
+    "removeDriver": {
+      "help": "Removes a driver with its requirements.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "drvId": "The id of the driver. An unknown id is rejected.",
+        "command": "The command as an object with vocId, needId and drvId."
+      }
+    },
+    "addRequirement": {
+      "help": "Adds a measurable requirement under a driver.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "drvId": "The id of the driver. An unknown id is rejected.",
+        "text": "The measurable requirement or specification, e.g. “delivery time at most 48 hours in 95% of cases”. Empty wording is rejected.",
+        "target": "The target value the requirement is checked against, e.g. “at most 24 hours”. Empty means no target.",
+        "measure": "The measure or method used to check the target, e.g. “lead time in hours”. Empty means none.",
+        "command": "The command as an object with vocId, needId, drvId, text and optionally target and measure; it returns the id of the new requirement."
+      }
+    },
+    "updateRequirement": {
+      "help": "Changes the wording, target and measure of a requirement.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "drvId": "The id of the driver. An unknown id is rejected.",
+        "reqId": "The id of the requirement. An unknown id is rejected.",
+        "text": "The new wording. Empty wording is rejected.",
+        "target": "The new target; empty clears it.",
+        "measure": "The new measure; empty clears it.",
+        "command": "The command as an object with vocId, needId, drvId, reqId, text, target and measure."
+      }
+    },
+    "removeReq": {
+      "help": "Removes a requirement.",
+      "params": {
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need. An unknown id is rejected.",
+        "drvId": "The id of the driver. An unknown id is rejected.",
+        "reqId": "The id of the requirement. An unknown id is rejected.",
+        "command": "The command as an object with vocId, needId, drvId and reqId."
+      }
+    },
+    "reorderNodes": {
+      "help": "Moves a node to the place of a sibling; in the interface by dragging its badge or with the arrow keys.",
+      "params": {
+        "kind": "The level to move on: need, driver or req (requirement).",
+        "vocId": "The id of the statement. An unknown id is rejected.",
+        "needId": "The id of the need; required for drivers and requirements.",
+        "drvId": "The id of the driver; required for requirements.",
+        "fromId": "The id of the node to move; it must lie on that level under the same parents.",
+        "toId": "The id of the sibling whose place it takes. The same id keeps the order and returns false.",
+        "command": "The command as an object with kind, vocId, fromId, toId and, by level, needId and drvId; it returns true if the order changed."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many statements the tile lists at most, from 1 to 20."
+      },
+      "showLegend": {
+        "help": "Shows the legend of the driver types CTQ, CTD and CTC below the bar."
+      }
+    }
+  }
+}

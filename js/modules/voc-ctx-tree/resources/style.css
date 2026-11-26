@@ -1,0 +1,81 @@
+/* ============================================================
+   VoC → CTx-Baum (resources/style.css)
+   BEM-light: Modul .vct__*, Kachel .vct-tile und .dashboard-voc__*
+   ============================================================ */
+
+/* ===== Kachel ===== */
+
+/* Farben der Treiberarten in Balken und Legende. */
+.vct-tile {
+  --vct-tile-ctq: rgba(39, 174, 96, 1);
+  --vct-tile-ctd: rgba(41, 128, 185, 1);
+  --vct-tile-ctc: rgba(231, 76, 139, 1);
+}
+
+.dashboard-voc__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.dashboard-voc__stat strong {
+  color: var(--color-text-primary);
+}
+
+.dashboard-voc__driver-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--color-bg-tertiary, var(--color-border-primary));
+  margin-bottom: var(--spacing-xs);
+}
+
+.dashboard-voc__bar-seg {
+  height: 100%;
+  transition: width 0.2s;
+}
+
+.dashboard-voc__driver-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.dashboard-voc__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.dashboard-voc__list-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.dashboard-voc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.dashboard-voc__item {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
