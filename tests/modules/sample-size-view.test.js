@@ -249,7 +249,7 @@ suite('sample-size: Viewmodel im Browser', () => {
     assertTrue(h.q('.smpsize__algo-link .dmike-algo-link') !== null, 'kein Lab-Link');
     const c = h.live()[0];
     assertEqual(c.type, 'scatter');
-    assertEqual(c.el.getAttribute('data-ref'), 'power-chart');
+    assertTrue(c.el.closest('[data-ref="power-chart"]') !== null, 'Diagramm außerhalb der Zeichenfläche');
     assertEqual(c.config.xDec, 0);
     assertEqual(c.config.yDec, 0);
     assertEqual(c.config.title, tr('sectionCurve'));

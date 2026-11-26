@@ -1,0 +1,23 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "category": "mean",
+  "testType": "two",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "power": 0.8,
+  "effect": {
+    "varianceOne": {
+      "sigma0": null,
+      "sigmaAlt": null
+    },
+    "varianceTwo": {
+      "ratio": null
+    },
+    "mean": {
+      "delta": 0.5,
+      "sigma": 0.8
+    }
+  }
+}

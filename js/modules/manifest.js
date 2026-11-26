@@ -163,17 +163,6 @@ export default [
       eightd: { phase: 'rootcause', allowedPhases: ['rootcause', 'implementation'] },
     },
   },
-  {
-    id: 'sample-size',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./sample-size/sample-size.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
 
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {

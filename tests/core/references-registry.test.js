@@ -9,6 +9,7 @@ import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/
 import msaTyp2Refs from '../../js/modules/msa-typ2/resources/data/references.json' with { type: 'json' };
 import msaTyp5Refs from '../../js/modules/msa-typ5/resources/data/references.json' with { type: 'json' };
 import processCapabilityRefs from '../../js/modules/process-capability/resources/data/references.json' with { type: 'json' };
+import sampleSizeRefs from '../../js/modules/sample-size/resources/data/references.json' with { type: 'json' };
 
 /** Umgestellte Module führen ihre Quellen in resources/data/references.json, nicht in REFS. */
 const JSON_REFS = {
@@ -19,6 +20,7 @@ const JSON_REFS = {
   'msa-typ2': resolveReferences(msaTyp2Refs.references ?? []),
   'msa-typ5': resolveReferences(msaTyp5Refs.references ?? []),
   'process-capability': resolveReferences(processCapabilityRefs.references ?? []),
+  'sample-size': resolveReferences(sampleSizeRefs.references ?? []),
 };
 
 suite('references-registry', () => {

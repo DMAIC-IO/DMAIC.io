@@ -122,12 +122,6 @@
   "js/modules/rest-api/rest-api.html": {
     "count": 1
   },
-  "js/modules/sample-size/sample-size.html": {
-    "count": 7
-  },
-  "js/modules/sample-size/sample-size.js": {
-    "count": 10
-  },
   "js/modules/survey-builder/domain/labels.js": {
     "count": 2,
     "reason": "Ausgabe zeichengleich zur Altform (Bericht/Fragebogen)"

@@ -3,12 +3,10 @@ import r0 from '../modules/attribute-test/attribute-test-references.js';
 import r1 from '../modules/glm-regression/glm-regression-references.js';
 import r2 from '../modules/msa-typ1/msa-typ1-references.js';
 import r3 from '../modules/msa-typ6/msa-typ6-references.js';
-import r4 from '../modules/sample-size/sample-size-references.js';
 
 export const REFS = {
   "attribute-test": r0,
   "glm-regression": r1,
   "msa-typ1": r2,
   "msa-typ6": r3,
-  "sample-size": r4,
 };

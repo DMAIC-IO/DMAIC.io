@@ -17,7 +17,6 @@ import h14 from '../modules/random-generator/random-generator-help.js';
 import h15 from '../modules/regression/regression-help.js';
 import h16 from '../modules/response-optimization/response-optimization-help.js';
 import h17 from '../modules/rest-api/rest-api-help.js';
-import h18 from '../modules/sample-size/sample-size-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -38,5 +37,4 @@ export const HELP = {
   "regression": h15,
   "response-optimization": h16,
   "rest-api": h17,
-  "sample-size": h18,
 };

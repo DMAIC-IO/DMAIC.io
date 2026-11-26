@@ -195,6 +195,11 @@
     "description": "Lauf-Diagramm mit Median und vier Lauftests",
     "whenToUse": "Eine Reihe über die Zeit auf nicht zufällige Muster prüfen — Häufung, Mischung, Trend, Oszillation —, bevor Eingriffsgrenzen gebildet werden."
   },
+  "sample-size": {
+    "name": "Stichprobenumfang",
+    "description": "Berechnet den erforderlichen Stichprobenumfang für Varianz- und Mittelwerttests",
+    "whenToUse": "Wenn offen ist, wie viele Beobachtungen ein Test braucht: berechnet den erforderlichen Stichprobenumfang für Varianztests (Chi-Quadrat, F) und Mittelwerttests (Ein- und Zwei-Stichproben-t) aus dem nachzuweisenden Effekt, dem Signifikanzniveau und der Ziel-Power."
+  },
   "short-run-chart": {
     "name": "Regelkarte (Kurzläufer Z-MR)",
     "description": "Standardisierte I-MR über mehrere Teile mit unterschiedlichen Targets",

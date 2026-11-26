@@ -195,6 +195,11 @@
     "description": "Median run chart with four runs tests",
     "whenToUse": "Look at a series over time for non-random patterns — clustering, mixtures, trends, oscillation — before building control limits."
   },
+  "sample-size": {
+    "name": "Sample Size",
+    "description": "Calculate the required sample size for variance and mean tests",
+    "whenToUse": "When you need to know how many observations a test requires: computes the required sample size for variance tests (chi-square, F) and mean tests (one- and two-sample t) from the effect to detect, the significance level and the target power."
+  },
   "short-run-chart": {
     "name": "Control Chart (Short-Run Z-MR)",
     "description": "Standardised I-MR across parts with different targets",

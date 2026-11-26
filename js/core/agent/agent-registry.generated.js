@@ -17878,6 +17878,7 @@ export const AGENT_REGISTRY = {
   "sample-size": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -17892,149 +17893,48 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'category'|'testType'|'direction'|'alpha'|'power'|'sigma0'|'sigmaAlt'|'ratio'|'delta'|'sigma'",
-            "optional": false,
-            "help": "welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die Zahlenfelder eine Zahl oder einen Zahlentext (abgelegt als Text)"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Eingabewert setzen; die Berechnung läuft danach neu.",
-        "keysOf": "Params",
-        "keys": {
-          "category": {
-            "type": "'variance'|'mean'",
-            "help": "Varianz oder Mittelwert"
-          },
-          "testType": {
-            "type": "'one'|'two'",
-            "help": "eine oder zwei Stichproben"
-          },
-          "direction": {
-            "type": "'two-sided'|'greater'|'less'",
-            "help": "Alternativhypothese"
-          },
-          "alpha": {
-            "type": "number",
-            "help": "Signifikanzniveau"
-          },
-          "power": {
-            "type": "number",
-            "help": "Ziel-Teststärke"
-          },
-          "sigma0": {
-            "type": "string",
-            "help": "Standardabweichung unter H₀",
-            "optional": true
-          },
-          "sigmaAlt": {
-            "type": "string",
-            "help": "erwartete Standardabweichung",
-            "optional": true
-          },
-          "ratio": {
-            "type": "string",
-            "help": "Varianzverhältnis",
-            "optional": true
-          },
-          "delta": {
-            "type": "string",
-            "help": "Mittelwertdifferenz",
-            "optional": true
-          },
-          "sigma": {
-            "type": "string",
-            "help": "Standardabweichung",
-            "optional": true
-          }
-        }
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Berechnung mit den aktuellen Eingaben ausführen. Bei unvollständigen Eingaben oder Werten, die keine positiven Zahlen sind, bleibt result null."
       }
     },
     "fields": {
       "category": {
         "type": "'variance'|'mean'",
-        "help": "which kind of test the sample size is for",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "testType": {
         "type": "'one'|'two'",
-        "help": "one-sample or two-sample test",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "direction": {
         "type": "'two-sided'|'greater'|'less'",
-        "help": "the alternative hypothesis",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "alpha": {
-        "type": "number|null",
-        "help": "significance level; null until resolved from the settings",
-        "bulk": false,
-        "derived": true
+        "type": "number",
+        "help": "",
+        "bulk": false
       },
       "power": {
-        "type": "number|null",
-        "help": "target power (1 − β); null until resolved from the settings",
-        "bulk": false,
-        "derived": true
+        "type": "number",
+        "help": "",
+        "bulk": false
       },
-      "sigma0": {
-        "type": "string",
-        "help": "hypothesized standard deviation σ₀, as entered (one-sample variance)",
-        "bulk": false,
-        "derived": true
-      },
-      "sigmaAlt": {
-        "type": "string",
-        "help": "expected standard deviation σ₁, as entered (one-sample variance)",
-        "bulk": false,
-        "derived": true
-      },
-      "ratio": {
-        "type": "string",
-        "help": "variance ratio σ²₁/σ²₂, as entered (two-sample variance)",
-        "bulk": false,
-        "derived": true
-      },
-      "delta": {
-        "type": "string",
-        "help": "mean difference Δ, as entered (mean tests)",
-        "bulk": false,
-        "derived": true
-      },
-      "sigma": {
-        "type": "string",
-        "help": "standard deviation σ, as entered (mean tests)",
-        "bulk": false,
-        "derived": true
+      "effect": {
+        "type": "{ varianceOne: { sigma0: number|null, sigmaAlt: number|null }, varianceTwo: { ratio: number|null }, mean: { delta: number|null, sigma: number|null } }",
+        "help": "",
+        "bulk": false
       },
       "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "result": {
-        "type": "Result|null",
-        "help": "the required sample size with key figures, or null while the inputs are incomplete or not positive numbers",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -18069,7 +17969,20 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "powerCurveEdits"
+    ],
+    "settable": [
+      "category",
+      "testType",
+      "direction",
+      "alpha",
+      "power",
+      "effect"
+    ],
+    "invariants": []
   },
   "short-run-chart": {
     "tagged": true,

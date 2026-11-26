@@ -26,6 +26,9 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setOrgNodeStyle', reason: 'nur für den Agenten; die Oberfläche ändert den Knotenstil im Bearbeiten-Dialog (updateOrgNode)' },
     { name: 'actions.setOrgNodeBorderWidth', reason: 'nur für den Agenten; die Oberfläche ändert die Rahmenbreite im Bearbeiten-Dialog (updateOrgNode)' },
   ],
+  'sample-size': [
+    { name: 'fields.effect', reason: 'Sammelfeld der Effektangaben aller Varianten; die Oberfläche zeigt nur die Felder der gewählten Variante, jedes mit eigenem Anker (fields.effect.<variante>.<angabe>)' },
+  ],
   'survey-builder': [
     { name: 'actions.addQuestion', reason: 'Typauswahl je Abschnitt; ein Fragezeichen je Abschnitt wäre Rauschen, verankert ist die Gliederung' },
     { name: 'actions.moveSection', reason: 'Pfeilknopf je Abschnitt; ein Fragezeichen je Zeile wäre Rauschen' },
