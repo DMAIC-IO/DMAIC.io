@@ -113,19 +113,6 @@ export default [
     },
   },
   {
-    id: 'raci-matrix',
-    phase: 'define',
-    group: 'team',
-    allowedPhases: ['define'],
-    load: () => import('./raci-matrix/raci-matrix.js'),
-    loadTile: () => import('./raci-matrix/raci-matrix.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define', allowedPhases: ['define'] },
-      dmadv:  { phase: 'define', allowedPhases: ['define'] },
-      eightd: { phase: 'team',   allowedPhases: ['team']   },
-    },
-  },
-  {
     id: 'five-why',
     phase: 'define',
     group: 'causes',

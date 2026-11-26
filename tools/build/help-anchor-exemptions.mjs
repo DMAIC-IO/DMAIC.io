@@ -109,6 +109,16 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setStandardSelected', reason: 'die Oberfläche hakt das Kästchen an, verankert an fields.selected' },
     { name: 'actions.setExpandedClasses', reason: 'die Oberfläche klappt über die Klassenköpfe auf, verankert an fields.expandedClasses' },
   ],
+  'raci-matrix': [
+    { name: 'actions.setRole', reason: 'kein Bedienelement; die Oberfläche schaltet die Zelle über cycleRole' },
+    { name: 'actions.renameActivity', reason: 'die Oberfläche benennt per Doppelklick auf den Namen um' },
+    { name: 'actions.renameStakeholder', reason: 'die Oberfläche benennt per Doppelklick auf den Namen um' },
+    { name: 'actions.removeActivity', reason: 'Mülleimer der Zeile, erst beim Überfahren sichtbar' },
+    { name: 'actions.removeStakeholder', reason: 'Mülleimer der Spalte, erst beim Überfahren sichtbar' },
+    { name: 'actions.moveActivity', reason: 'die Oberfläche verschiebt über den Griff der Zeile' },
+    { name: 'fields.activities', reason: 'Namen aus den Daten in Zeilen- und Spaltenköpfen; Eingaben ohne sichtbare Beschriftung' },
+    { name: 'fields.stakeholders', reason: 'Namen aus den Daten in Zeilen- und Spaltenköpfen; Eingaben ohne sichtbare Beschriftung' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "raci-pizza-lieferprozess",
+      "type": "project",
+      "title": {
+        "de": "RACI Pizza-Lieferprozess",
+        "en": "RACI Pizza Delivery"
+      },
+      "description": {
+        "de": "RACI-Matrix für 8 Aktivitäten × 6 Rollen — wer ist R(esponsible), A(ccountable), C(onsulted), I(nformed)?",
+        "en": "RACI matrix for 8 activities × 6 roles — who is R(esponsible), A(ccountable), C(onsulted), I(nformed)?"
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/raci-pizza-lieferprozess.json",
+      "format": "json",
+      "tags": [
+        "define",
+        "raci",
+        "roles",
+        "pizza-lehrcase"
+      ]
+    }
+  ]
+}

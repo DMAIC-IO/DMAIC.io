@@ -19,16 +19,15 @@ import h16 from '../modules/msa-typ4/msa-typ4-help.js';
 import h17 from '../modules/msa-typ6/msa-typ6-help.js';
 import h18 from '../modules/pairwise-comparison/pairwise-comparison-help.js';
 import h19 from '../modules/process-map/process-map-help.js';
-import h20 from '../modules/raci-matrix/raci-matrix-help.js';
-import h21 from '../modules/random-generator/random-generator-help.js';
-import h22 from '../modules/regression/regression-help.js';
-import h23 from '../modules/response-optimization/response-optimization-help.js';
-import h24 from '../modules/rest-api/rest-api-help.js';
-import h25 from '../modules/sample-size/sample-size-help.js';
-import h26 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h27 from '../modules/todo/todo-help.js';
-import h28 from '../modules/unit-converter/unit-converter-help.js';
-import h29 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h20 from '../modules/random-generator/random-generator-help.js';
+import h21 from '../modules/regression/regression-help.js';
+import h22 from '../modules/response-optimization/response-optimization-help.js';
+import h23 from '../modules/rest-api/rest-api-help.js';
+import h24 from '../modules/sample-size/sample-size-help.js';
+import h25 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
+import h26 from '../modules/todo/todo-help.js';
+import h27 from '../modules/unit-converter/unit-converter-help.js';
+import h28 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -51,14 +50,13 @@ export const HELP = {
   "msa-typ6": h17,
   "pairwise-comparison": h18,
   "process-map": h19,
-  "raci-matrix": h20,
-  "random-generator": h21,
-  "regression": h22,
-  "response-optimization": h23,
-  "rest-api": h24,
-  "sample-size": h25,
-  "stakeholder-analysis": h26,
-  "todo": h27,
-  "unit-converter": h28,
-  "voc-ctx-tree": h29,
+  "random-generator": h20,
+  "regression": h21,
+  "response-optimization": h22,
+  "rest-api": h23,
+  "sample-size": h24,
+  "stakeholder-analysis": h25,
+  "todo": h26,
+  "unit-converter": h27,
+  "voc-ctx-tree": h28,
 };

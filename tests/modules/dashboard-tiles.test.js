@@ -5,7 +5,7 @@ import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/tile/tile.js';
 import charterTiles from '../../js/modules/project-charter/tile/tile.js';
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
-import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
+import raciTile from '../../js/modules/raci-matrix/tile/tile.js';
 import spcTile from '../../js/modules/control-chart/tile/tile.js';
 import todoTile from '../../js/modules/todo/todo.tile.js';
 import calendarTile from '../../js/modules/dmaic-calendar/tile/tile.js';
@@ -531,6 +531,7 @@ suite('dashboard tiles: voc', () => {
   });
 });
 
+// Stored in the legacy form (no _schema, positions as keys): the tile migrates on read.
 const RACI_STATE = {
   activities: ['A1', 'A2', 'A3', 'A4'],
   stakeholders: ['S1'],
@@ -568,9 +569,9 @@ suite('dashboard tiles: raci', () => {
       .querySelector('.dashboard-area__empty') !== null);
   });
 
-  test('viewModel: summary, bar, legend and capped warnings as display data', () => {
+  test('viewModel: summary, bar, legend and capped warnings (scope of the new form)', () => {
     const vm = vmOf(raciTile, RACI_STATE);
-    assertPlain(vm);
+    assertEqual(vm._templateTile, true);
     assertDeepEqual(vm.summary, [
       { label: 'dashboard.raciActivities: ', value: '4' },
       { label: 'dashboard.raciStakeholders: ', value: '1' },
@@ -579,10 +580,17 @@ suite('dashboard tiles: raci', () => {
     assertDeepEqual(vm.segments.map(s => s.title), ['C: 1', 'I: 1']);
     assertDeepEqual(vm.legend.map(l => l.text), ['C: 1', 'I: 1']);
     assertEqual(vm.warnLabel, 'dashboard.raciWarnings');
-    assertEqual(vm.warnings.length, 5);
-    assertDeepEqual(vm.warnings[0], { role: 'R', style: 'color:var(--color-error)', text: ' dashboard.raciMissing: A1' });
+    assertEqual(vm.warnItems.length, 5);
+    assertDeepEqual(vm.warnItems[0], { role: 'R', style: 'color:var(--color-error)', text: ' dashboard.raciMissing: A1' });
     assertEqual(vm.more, '… +3');
     assertEqual(vmOf(raciTile, RACI_STATE, { topN: 8 }).more, null);
+  });
+
+  test('orphaned role keys (no row or column) do not count', () => {
+    const vm = vmOf(raciTile, { ...RACI_STATE, assignments: { ...RACI_STATE.assignments, '9:0': 'R', '0:5': 'A' } });
+    assertDeepEqual(vm.summary[2], { label: 'dashboard.raciCoverage: ', value: '50%' });
+    assertDeepEqual(vm.segments.map(s => s.title), ['C: 1', 'I: 1']);
+    assertEqual(vm.missing.length, 8);
   });
 });
 

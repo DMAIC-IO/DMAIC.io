@@ -145,6 +145,11 @@
     "description": "Projektauftrag: Problembeschreibung und messbare Ziele",
     "whenToUse": "Zu Beginn eines Projekts, um Problem, messbare Ziele und die Projektorganisation festzuhalten — die Grundlage, auf die sich alle späteren Phasen beziehen."
   },
+  "raci-matrix": {
+    "name": "RACI-Matrix",
+    "description": "Verantwortlichkeitsmatrix: Rollen pro Aktivität und Stakeholder",
+    "whenToUse": "Wenn für jede Aktivität eines Vorhabens festgehalten werden soll, wer sie ausführt (R), wer sie verantwortet (A), wer gefragt wird (C) und wer Bescheid bekommt (I) — die Prüfung meldet jede Zeile ohne R, ohne A oder mit mehr als einem A; nicht zur Beschreibung des Ablaufs selbst, dafür ist ein Flussdiagramm da."
+  },
   "rare-event-chart": {
     "name": "Regelkarte (seltene Ereignisse)",
     "description": "g- und t-Karten für seltene Ereignisse",

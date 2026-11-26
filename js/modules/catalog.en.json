@@ -145,6 +145,11 @@
     "description": "Project mandate: problem statement and measurable goals",
     "whenToUse": "At the start of a project, to record the problem, measurable goals and the project organisation — the basis every later phase refers to."
   },
+  "raci-matrix": {
+    "name": "RACI Matrix",
+    "description": "Responsibility Assignment Matrix: roles per activity and stakeholder",
+    "whenToUse": "When each activity of an undertaking needs a record of who does the work (R), who is accountable (A), who is consulted (C) and who is informed (I) — the check reports every row without an R, without an A or with more than one A; not for describing the flow itself, which is what a flowchart is for."
+  },
   "rare-event-chart": {
     "name": "Control Chart (Rare Events)",
     "description": "g and t charts for rare events",

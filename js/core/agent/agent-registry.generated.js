@@ -15328,6 +15328,7 @@ export const AGENT_REGISTRY = {
   "raci-matrix": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -15337,174 +15338,291 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "cycleRole": {
-        "params": [
-          {
-            "name": "aIdx",
-            "type": "number",
-            "optional": false,
-            "help": "die Zeilennummer der Aktivität, von 0 an gezählt"
-          },
-          {
-            "name": "sIdx",
-            "type": "number",
-            "optional": false,
-            "help": "die Spaltennummer des Beteiligten, von 0 an gezählt"
-          }
-        ],
-        "returns": "void",
-        "help": "Geht die Rolle einer Zelle einen Schritt weiter: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle."
-      },
-      "setRole": {
-        "params": [
-          {
-            "name": "aIdx",
-            "type": "number",
-            "optional": false,
-            "help": "die Zeilennummer der Aktivität, von 0 an gezählt"
-          },
-          {
-            "name": "sIdx",
-            "type": "number",
-            "optional": false,
-            "help": "die Spaltennummer des Beteiligten, von 0 an gezählt"
-          },
-          {
-            "name": "role",
-            "type": "string",
-            "optional": false,
-            "help": "die Rolle, oder der leere Text, um sie zurückzunehmen"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Rolle einer Zelle absolut."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addActivity": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Aktivität; Leerzeichen am Rand fallen weg"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "number",
-        "help": "Hängt eine Aktivität (Zeile) an die Matrix an."
+        "returns": "string",
+        "help": "",
+        "keysOf": "addActivity",
+        "keysHelp": "actions.addActivity.params",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
       },
       "addStakeholder": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Beteiligte; Leerzeichen am Rand fallen weg"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "number",
-        "help": "Hängt einen Beteiligten (Spalte) an die Matrix an."
+        "returns": "string",
+        "help": "",
+        "keysOf": "addStakeholder",
+        "keysHelp": "actions.addStakeholder.params",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
       },
       "renameActivity": {
+        "target": "model",
         "params": [
           {
-            "name": "idx",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Zeilennummer, von 0 an gezählt"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Benennt eine Aktivität um."
+        "returns": "void",
+        "help": "",
+        "keysOf": "renameActivity",
+        "keysHelp": "actions.renameActivity.params",
+        "keys": {
+          "activityId": {
+            "type": "string",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
       },
       "renameStakeholder": {
+        "target": "model",
         "params": [
           {
-            "name": "idx",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Spaltennummer, von 0 an gezählt"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Benennt einen Beteiligten um."
+        "returns": "void",
+        "help": "",
+        "keysOf": "renameStakeholder",
+        "keysHelp": "actions.renameStakeholder.params",
+        "keys": {
+          "stakeholderId": {
+            "type": "string",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
       },
       "removeActivity": {
+        "target": "model",
         "params": [
           {
-            "name": "idx",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Zeilennummer, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt eine Aktivität samt ihrer Rollen; die übrigen Zeilen rücken nach."
+        "help": "",
+        "keysOf": "removeActivity",
+        "keysHelp": "actions.removeActivity.params",
+        "keys": {
+          "activityId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeStakeholder": {
+        "target": "model",
         "params": [
           {
-            "name": "idx",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Spaltennummer, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Beteiligten samt seiner Rollen; die übrigen Spalten rücken nach."
+        "help": "",
+        "keysOf": "removeStakeholder",
+        "keysHelp": "actions.removeStakeholder.params",
+        "keys": {
+          "stakeholderId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "moveActivity": {
+        "target": "model",
         "params": [
           {
-            "name": "from",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Zeilennummer der Aktivität, von 0 an gezählt"
-          },
-          {
-            "name": "to",
-            "type": "number",
-            "optional": false,
-            "help": "die Zeilennummer, an die sie soll"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Verschiebt eine Aktivität an eine andere Stelle der Reihenfolge; ihre Rollen wandern mit."
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveActivity",
+        "keysHelp": "actions.moveActivity.params",
+        "keys": {
+          "activityId": {
+            "type": "string",
+            "help": ""
+          },
+          "to": {
+            "type": "number",
+            "help": "",
+            "rules": [
+              "afterRemovalFrom:activities"
+            ]
+          }
+        }
+      },
+      "setRole": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setRole",
+        "keysHelp": "actions.setRole.params",
+        "keys": {
+          "activityId": {
+            "type": "string",
+            "help": ""
+          },
+          "stakeholderId": {
+            "type": "string",
+            "help": ""
+          },
+          "role": {
+            "type": "''|'R'|'A'|'C'|'I'",
+            "help": ""
+          }
+        }
+      },
+      "cycleRole": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "cycleRole",
+        "keysHelp": "actions.cycleRole.params",
+        "keys": {
+          "activityId": {
+            "type": "string",
+            "help": ""
+          },
+          "stakeholderId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "activities": {
-        "type": "string[]",
-        "help": "die Aktivitäten (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0",
+        "type": "{ id: string, name: string }[]",
+        "help": "",
         "bulk": false
       },
       "stakeholders": {
-        "type": "string[]",
-        "help": "die Beteiligten (Spalten) in Anzeigereihenfolge, adressiert über ihre Spaltennummer ab 0",
+        "type": "{ id: string, name: string }[]",
+        "help": "",
         "bulk": false
       },
       "assignments": {
-        "type": "Record<string, \"R\"|\"A\"|\"C\"|\"I\">",
-        "help": "die gesetzten Rollen, adressiert als assignments[\"zeile:spalte\"] mit Nummern ab 0; eine Zelle ohne Rolle fehlt in der Karte",
+        "type": "Record<string, 'R'|'A'|'C'|'I'>",
+        "help": "",
         "bulk": false
+      },
+      "warnings": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "RowWarning",
+        "keys": {
+          "activityId": {
+            "type": "string",
+            "help": "id of the activity"
+          },
+          "issues": {
+            "type": "string[]",
+            "help": "noR: no R in the row, noA: no A, multiA: more than one A; in this order"
+          }
+        }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "activities",
+      "stakeholders",
+      "assignments"
+    ],
+    "invariants": [
+      "activityIds",
+      "stakeholderIds",
+      "knownCells"
+    ]
   },
   "random-generator": {
     "tagged": true,

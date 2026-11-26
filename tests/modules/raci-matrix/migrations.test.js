@@ -17,7 +17,7 @@ setModelName(State, 'raci-matrix');
 const SCHEMA = { _schema: { name: 'raci-matrix', version: '1.0' } };
 const EMPTY = { activities: [], stakeholders: [], assignments: {} };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLE = new URL('../../../examples/projects/raci-pizza-lieferprozess.json', import.meta.url);
+const EXAMPLE = new URL('../../../js/modules/raci-matrix/resources/examples/projects/raci-pizza-lieferprozess.json', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
