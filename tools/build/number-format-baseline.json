@@ -135,8 +135,5 @@
   "js/modules/survey-builder/domain/report.js": {
     "count": 1,
     "reason": "Ausgabe zeichengleich zur Altform (Bericht/Fragebogen)"
-  },
-  "js/modules/unit-converter/unit-converter-model.js": {
-    "count": 4
   }
 }

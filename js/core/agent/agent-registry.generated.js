@@ -21730,6 +21730,7 @@ export const AGENT_REGISTRY = {
   "unit-converter": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -21746,221 +21747,205 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "selectCategory": {
+        "target": "model",
         "params": [
           {
-            "name": "catKey",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Schlüssel der Größenart. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Wechselt die Größenart und stellt beide Einheiten auf deren Vorgaben."
+        "help": "",
+        "keysOf": "selectCategory",
+        "keysHelp": "actions.selectCategory.params",
+        "keys": {
+          "catKey": {
+            "type": "'laenge'|'flaeche'|'volumen'|'masse'|'druck'|'temperatur'|'kraft'|'drehmoment'|'energie'|'leistung'|'durchfluss'|'geschwindigkeit'|'zeit'|'winkel'|'drehzahl'|'ph'|'konzentration'|'schall'|'laborwerte'",
+            "help": ""
+          }
+        }
       },
       "setFromUnit": {
+        "target": "model",
         "params": [
           {
-            "name": "unitKey",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Schlüssel einer Einheit der aktiven Größenart. Eine Einheit einer anderen Größenart ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Einheit, aus der umgerechnet wird, und zieht die Zieleinheit nach, wenn sie dazu nicht mehr passt."
-      },
-      "setToUnit": {
-        "params": [
-          {
-            "name": "unitKey",
+        "help": "",
+        "keysOf": "setFromUnit",
+        "keysHelp": "actions.setFromUnit.params",
+        "keys": {
+          "unitKey": {
             "type": "string",
-            "optional": false,
-            "help": "der Schlüssel einer Einheit, die zur Ausgangseinheit passt. Jede andere Einheit ist ein Fehler."
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Setzt die Einheit, in die umgerechnet wird."
-      },
-      "setInputValue": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Wert als Text; ein Komma gilt als Dezimaltrennzeichen, der leere Text löscht die Eingabe. Ein Text, der keine Zahl ergibt, ergibt kein Ergebnis — ein Fehler ist er nicht."
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Wert, der umgerechnet wird."
+        }
       },
       "swapUnits": {
-        "params": [],
-        "returns": "void",
-        "help": "Tauscht Ausgangs- und Zieleinheit."
-      },
-      "setTzFrom": {
+        "target": "model",
         "params": [
           {
-            "name": "index",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Position der Zeitzone in der Zeitzonenliste, von 0 an. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Ausgangszeitzone."
-      },
-      "setTzTo": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "die Position der Zeitzone in der Zeitzonenliste, von 0 an. Jeder andere Wert ist ein Fehler."
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Zielzeitzone."
-      },
-      "setTzTime": {
-        "params": [
-          {
-            "name": "hhmm",
-            "type": "string",
-            "optional": false,
-            "help": "die Uhrzeit als HH:MM von 00:00 bis 23:59; der leere Text löscht sie. Jeder andere Wert ist ein Fehler."
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Uhrzeit, die umgerechnet wird."
-      },
-      "setTzDate": {
-        "params": [
-          {
-            "name": "isoDate",
-            "type": "string",
-            "optional": false,
-            "help": "das Datum als YYYY-MM-DD; der leere Text löscht es. Jeder andere Wert ist ein Fehler."
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt das Datum, zu dem umgerechnet wird."
+        "help": "",
+        "keysOf": "swapUnits",
+        "keysHelp": "actions.swapUnits.params",
+        "keys": {}
       },
       "swapTimezones": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Tauscht Ausgangs- und Zielzeitzone."
+        "help": "",
+        "keysOf": "swapTimezones",
+        "keysHelp": "actions.swapTimezones.params",
+        "keys": {}
       },
       "tzSetNow": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Setzt Uhrzeit und Datum auf das Jetzt der Ausgangszeitzone."
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "tzSetNow",
+        "keysHelp": "actions.tzSetNow.params",
+        "keys": {}
       }
     },
     "fields": {
       "activeCat": {
-        "type": "string",
-        "help": "key of the active quantity category",
-        "bulk": false,
-        "derived": true
+        "type": "'laenge'|'flaeche'|'volumen'|'masse'|'druck'|'temperatur'|'kraft'|'drehmoment'|'energie'|'leistung'|'durchfluss'|'geschwindigkeit'|'zeit'|'winkel'|'drehzahl'|'ph'|'konzentration'|'schall'|'laborwerte'",
+        "help": "",
+        "bulk": false
       },
       "fromUnit": {
         "type": "string",
-        "help": "key of the unit converted from",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "toUnit": {
         "type": "string",
-        "help": "key of the unit converted to",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "inputVal": {
         "type": "string",
-        "help": "the entered value as text",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "tzFrom": {
         "type": "number",
-        "help": "position of the source time zone in the zone list",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "tzTo": {
         "type": "number",
-        "help": "position of the target time zone in the zone list",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "tzTime": {
         "type": "string",
-        "help": "the conversion time as HH:MM, empty if unset",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "tzDate": {
         "type": "string",
-        "help": "the conversion date as YYYY-MM-DD, empty if unset",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "unitKeys": {
-        "type": "string[]",
-        "help": "the unit keys `setFromUnit` accepts in the active category",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "toUnitKeys": {
-        "type": "string[]",
-        "help": "the unit keys `setToUnit` accepts for the current source unit",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "result": {
-        "type": "ConversionResult",
-        "help": "das umgerechnete Ergebnis der Einheitenumrechnung",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "ConversionResult",
         "keys": {
           "value": {
             "type": "number|null",
-            "help": "das umgerechnete Ergebnis als Zahl, ungerundet; leer, wenn keine Zahl eingegeben oder die Umrechnung undefiniert ist"
+            "help": "das umgerechnete Ergebnis, ungerundet"
           },
-          "text": {
-            "type": "string",
-            "help": "das Ergebnis, wie die Seite es zeigt (gerundet, mit Dezimalkomma bzw. -punkt); ein Strich ohne Eingabe, „undefiniert“ bei undefinierter Umrechnung"
-          },
-          "formula": {
-            "type": "string",
-            "help": "die Umrechnungsformel, wie die Seite sie zeigt, z. B. „1 bar = 100000 Pa“; ein Strich ohne Eingabe"
+          "factor": {
+            "type": "number|null",
+            "help": "der Wert einer Ausgangseinheit in der Zieleinheit; leer bei logarithmischen Größen"
           }
         }
       },
       "timezone": {
-        "type": "TimezoneResult",
-        "help": "das Ergebnis der Zeitzonenumrechnung",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "TimezoneResult",
         "keys": {
-          "text": {
-            "type": "string",
-            "help": "die umgerechnete Uhrzeit in der Zielzeitzone, wie die Seite sie zeigt; ein Strich, solange Zeit oder Datum fehlen"
+          "time": {
+            "type": "string|null",
+            "help": "die Uhrzeit in der Zielzeitzone als HH:MM"
           },
-          "dateText": {
-            "type": "string",
-            "help": "das Datum der umgerechneten Uhrzeit mit Wochentag, wie die Seite es zeigt; leer, solange Zeit oder Datum fehlen"
+          "date": {
+            "type": "string|null",
+            "help": "das Datum in der Zielzeitzone als YYYY-MM-DD"
           },
           "diffHours": {
             "type": "number|null",
-            "help": "der Zeitunterschied der Zielzeitzone zur Ausgangszeitzone in Stunden (positiv = Ziel liegt später, Bruchteile bei halben Stunden); leer, solange Zeit oder Datum fehlen"
+            "help": "Zielzeitzone minus Ausgangszeitzone in Stunden"
           }
         }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "activeCat",
+      "fromUnit",
+      "toUnit",
+      "inputVal",
+      "tzFrom",
+      "tzTo",
+      "tzTime",
+      "tzDate"
+    ],
+    "invariants": [
+      "unitsValid",
+      "timeForm",
+      "dateForm"
+    ]
   },
   "voc-ctx-tree": {
     "tagged": true,

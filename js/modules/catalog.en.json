@@ -270,6 +270,11 @@
     "description": "Model the interaction as an S1-S2-field triangle and apply Altshuller's 76 standard solutions",
     "whenToUse": "When an action between two substances is too weak, too strong, harmful or missing altogether and the matching TRIZ standard solutions are to be found; not to resolve a contradiction between two parameters — that is what the contradiction matrix is for."
   },
+  "unit-converter": {
+    "name": "Unit Converter",
+    "description": "Precise unit conversion (18 categories + timezones)",
+    "whenToUse": "When a measured value has to be expressed in another unit — length, area, volume, mass, pressure, temperature, force, torque, energy, power, flow rate, speed, time, angle, rotational speed, pH, concentration, sound or lab values — or when a time has to be converted between two time zones; not for converting a whole data column, that is what the data transformation is for."
+  },
   "worksheet": {
     "name": "Data Collection",
     "description": "Spreadsheet for data entry and management",

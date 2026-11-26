@@ -270,6 +270,11 @@
     "description": "Wechselwirkung als S1-S2-Feld-Dreieck modellieren und Altschullers 76 Standardlösungen anwenden",
     "whenToUse": "Wenn eine Wirkung zwischen zwei Stoffen zu schwach, zu stark, schädlich oder gar nicht vorhanden ist und die TRIZ-Standardlösungen dazu gefunden werden sollen; nicht, um einen Widerspruch zwischen zwei Parametern aufzulösen — dafür ist die Widerspruchsmatrix da."
   },
+  "unit-converter": {
+    "name": "Einheitenumrechner",
+    "description": "Maßeinheiten präzise konvertieren (18 Kategorien + Zeitzonen)",
+    "whenToUse": "Wenn ein Messwert in eine andere Einheit gebracht werden muss — Länge, Fläche, Volumen, Masse, Druck, Temperatur, Kraft, Drehmoment, Energie, Leistung, Durchfluss, Geschwindigkeit, Zeit, Winkel, Drehzahl, pH, Konzentration, Schall oder Laborwerte — oder wenn eine Uhrzeit zwischen zwei Zeitzonen umgerechnet werden soll; nicht für das Umrechnen einer ganzen Datenspalte, dafür ist die Datentransformation da."
+  },
   "worksheet": {
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",

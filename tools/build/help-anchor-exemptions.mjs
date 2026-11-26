@@ -185,6 +185,15 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.burndown', reason: 'Reihen des Burndown-Diagramms im Fenster des Leistenknopfs; kein eigenes beschriftetes Element' },
     { name: 'fields.risks', reason: 'Liste der Risikokarten; jedes Feld der Karte ist einzeln an fields.risks.<k> verankert' },
   ],
+  'unit-converter': [
+    { name: 'actions.setFromUnit', reason: 'die Auswahl Eingang ruft das Kommando; das Fragezeichen hängt an ihrer Beschriftung (fields.fromUnit)' },
+    { name: 'fields.activeCat', reason: 'die Größenart wählen die Knöpfe oben; verankert ist die Knopfleiste (actions.selectCategory)' },
+    { name: 'fields.inputVal', reason: 'Eingabefeld ohne eigene Beschriftung unter der Auswahl Eingang; ein leeres <input> trägt kein Fragezeichen' },
+    { name: 'fields.tzTime', reason: 'natives Zeitfeld ohne eigene Beschriftung unter der Ausgangszeitzone; ein leeres <input> trägt kein Fragezeichen' },
+    { name: 'fields.tzDate', reason: 'natives Datumsfeld ohne eigene Beschriftung unter der Ausgangszeitzone; ein leeres <input> trägt kein Fragezeichen' },
+    { name: 'fields.unitKeys', reason: 'Auswahlhilfe für den Agenten (welche Einheiten die Eingangsauswahl annimmt); die Auswahl selbst ist verankert' },
+    { name: 'fields.toUnitKeys', reason: 'Auswahlhilfe für den Agenten (welche Einheiten die Ausgangsauswahl annimmt); die Auswahl selbst ist verankert' },
+  ],
   'lessons-learned': [
     { name: 'actions.addAction', reason: 'nur für den Agenten; die Oberfläche hängt Maßnahmen im Bearbeiten-Dialog an (updateLesson), dessen Maßnahmenfeld an fields.lessons.actions verankert ist' },
     { name: 'actions.removeAction', reason: 'nur für den Agenten; die Oberfläche entfernt Maßnahmen im Bearbeiten-Dialog (updateLesson)' },

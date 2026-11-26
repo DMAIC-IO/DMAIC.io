@@ -41,12 +41,6 @@ export default [
     load: () => import('./model-data-generator/model-data-generator.js'),
   },
   {
-    id: 'unit-converter',
-    phase: 'data',
-    group: 'process',
-    load: () => import('./unit-converter/unit-converter.js'),
-  },
-  {
     id: 'data-transformation',
     phase: 'data',
     group: 'process',

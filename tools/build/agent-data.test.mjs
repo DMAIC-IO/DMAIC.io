@@ -2908,7 +2908,7 @@ test('undeclared_option_source: eine zustandsabhängige Menge über einen lokale
 });
 
 test('undeclared_option_source: eine eingewickelte Menge wird am inneren Zugriff benannt', async () => {
-  // Die Form aus unit-converter.js:217 — `Object.keys(this.model.unitKeys())`.
+  // Die Form der Altform von unit-converter — `Object.keys(this.model.unitKeys())`.
   // Der Feldname ist der letzte an `this` hängende Zugriff: `unitKeys`.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
