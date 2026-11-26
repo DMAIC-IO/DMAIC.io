@@ -1,0 +1,160 @@
+<div class="module-msa-typ1 dmike-split dmike-split--input-lg" x-data="msaTyp1">
+  <!-- data-help-key="" an Eingabe-, Auswahl- und Spalten-Wirten ist gewollt: die Hilfe hängt an der Beschriftung daneben, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label data-help-key="modules.msa-typ1.types.Params.name" x-text="t('featureName')"></label>
+        <input type="text" class="field" data-ref="inp-name" data-help-key=""
+               :placeholder="t('featureNamePh')" x-model="model.params.name">
+      </div>
+      <div class="field-group field-group--minor">
+        <label data-help-key="modules.msa-typ1.types.Params.unit" x-text="t('unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit" data-help-key=""
+               placeholder="mm" x-model="model.params.unit">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ1.types.Params.ref" x-text="t('refValue')"></label>
+      <input class="field field--num" data-ref="inp-ref" data-help-key=""
+             :placeholder="num(50, 3)" x-field="model.params.ref">
+    </div>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ1.types.Params.lsl" x-text="t('lsl')"></label>
+        <input class="field field--num" data-ref="inp-lsl" data-help-key=""
+               :placeholder="num(49.95, 3)" x-field="model.params.lsl">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ1.types.Params.usl" x-text="t('usl')"></label>
+        <input class="field field--num" data-ref="inp-usl" data-help-key=""
+               :placeholder="num(50.05, 3)" x-field="model.params.usl">
+      </div>
+    </div>
+    <span class="msa-typ1__field-error" data-ref="limits-error" x-text="fieldError('model.params.lsl') || fieldError('model.params.usl')"></span>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ1.types.Params.k1" x-text="t('k1Label')"></label>
+        <select class="field" data-ref="inp-k1" data-help-key="" x-field="model.params.k1">
+          <option value="0.2" x-text="k1Label(0.2)"></option>
+          <option value="0.15" x-text="k1Label(0.15)"></option>
+          <option value="0.1" x-text="k1Label(0.1)"></option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ1.types.Params.k2" x-text="t('k2Label')"></label>
+        <select class="field" data-ref="inp-k2" data-help-key="" x-field="model.params.k2">
+          <option value="3" x-text="t('k2Opt3')"></option>
+          <option value="4" x-text="t('k2Opt4')"></option>
+          <option value="6" x-text="t('k2Opt6')"></option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionValues')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ1.fields.columnRef.help" x-text="t('columnSelectLabel')"></label>
+      <div data-ref="col-picker-wrap" data-help-key="" x-field="model.columnRef"></div>
+    </div>
+  </div>
+
+  <div class="dmike-split__output">
+    <div data-ref="results">
+      <template x-if="result">
+        <div>
+          <!-- Statuszeile (generisches dmike-infobox aus css/components.css). -->
+          <div class="dmike-infobox" :class="statusClass">
+            <span class="dmike-infobox__label" data-help-key="modules.msa-typ1.types.Result.overall" x-text="statusLabel"></span>
+            <span class="dmike-infobox__detail">— <span x-text="featureName"></span> — n = <span x-text="result.n"></span></span>
+          </div>
+
+          <!-- Kennzahlen -->
+          <div class="dmike-kpi-strip">
+            <template x-if="isTwoSided">
+              <div class="dmike-kpi" :class="kpiClass(result.cgStatus)">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.Cg">Cg (<span x-text="t('repeatability')"></span>)
+                  <span x-widget="algo-lab-link" x-widget-algo-id="'cg'"></span>
+                </div>
+                <div class="dmike-kpi-value" x-text="fmtOpt(result.Cg)"></div>
+                <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ <span x-text="thresholdPass"></span> · <span x-text="badgeLabel(result.cgStatus)"></span></div>
+              </div>
+            </template>
+            <template x-if="isTwoSided">
+              <div class="dmike-kpi" :class="kpiClass(result.cgkStatus)">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.Cgk">Cgk (<span x-text="t('withBias')"></span>)
+                  <span x-widget="algo-lab-link" x-widget-algo-id="'cgk'"></span>
+                </div>
+                <div class="dmike-kpi-value" x-text="fmtOpt(result.Cgk)"></div>
+                <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ <span x-text="thresholdPass"></span> · <span x-text="badgeLabel(result.cgkStatus)"></span></div>
+              </div>
+            </template>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.bias" x-text="t('biasLabel')"></div>
+              <div class="dmike-kpi-value" x-text="fmt(result.bias)"></div>
+              <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.biasTest" x-text="biasTestText"></div>
+              <template x-if="isTwoSided">
+                <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.biasPercent"><span x-text="fmt(result.biasPercent)"></span> % <span x-text="t('ofTolerance')"></span> · <span x-text="model.params.unit"></span></div>
+              </template>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.sg" x-text="t('spreadSg')"></div>
+              <div class="dmike-kpi-value" x-text="fmt(result.sg)"></div>
+              <template x-if="isTwoSided">
+                <div>
+                  <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.varEv"><span x-text="t('varEv')"></span>: <span x-text="fmtOpt(result.varEv, 2)"></span> %</div>
+                  <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.varEvBias"><span x-text="t('varEvBias')"></span>: <span x-text="fmtOpt(result.varEvBias, 2)"></span> %</div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Statistiktabelle -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
+          <div class="msa-typ1__stats-panel">
+            <table class="dmike-table msa-typ1__stats-table">
+              <thead><tr>
+                <template x-for="(col, i) in statCols" :key="col.label + ':' + i"><th><span :data-help-key="col.help" x-text="col.label"></span></th></template>
+              </tr></thead>
+              <tbody><tr>
+                <template x-for="(col, i) in statCols" :key="col.label + ':' + i"><td x-text="col.value"></td></template>
+              </tr></tbody>
+            </table>
+          </div>
+
+          <!-- Verlaufsdiagramm -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('runChartTitle')"></span></div>
+          <div class="msa-typ1__chart-plot" data-ref="chart-run" x-widget="scatter-chart" x-widget-config="runChart"
+               x-widget-value="model.runChartEdits" x-widget-legacy-edit-key="legacyRunKey"></div>
+
+          <!-- Histogramm -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('histTitle')"></span></div>
+          <div class="msa-typ1__chart-plot" data-ref="chart-hist" x-widget="histogram-chart" x-widget-config="histChart"
+               x-widget-value="model.histogramChart" x-widget-legacy-edit-key="legacyHistKey"></div>
+
+          <!-- Interpretation (Überschrift und Block teilen ein x-if: einseitig entfallen beide) -->
+          <template x-if="isTwoSided">
+            <div class="msa-typ1__formulas" data-ref="formulas-section">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('formulasTitle')"></span></div>
+              <div class="msa-typ1__interpretation">
+                <p><strong>Cg</strong> = (k₁ · T) / (2 · k₂ · sg) = (<span x-text="num(result.params.k1)"></span> · <span x-text="fmt(result.T)"></span>) / (2 · <span x-text="num(result.params.k2)"></span> · <span x-text="fmt(result.sg)"></span>) = <strong x-text="fmtOpt(result.Cg)"></strong></p>
+                <p><strong>Cgk</strong> = (k₁ · T/2 − |x̄ − x<sub>ref</sub>|) / (k₂ · sg) = (<span x-text="halfZone()"></span> − <span x-text="absBias()"></span>) / (<span x-text="num(result.params.k2)"></span> · <span x-text="fmt(result.sg)"></span>) = <strong x-text="fmtOpt(result.Cgk)"></strong></p>
+                <p><strong x-text="t('varEv')"></strong> = 100 · k₁ / Cg = 100 · <span x-text="num(result.params.k1)"></span> / <span x-text="fmtOpt(result.Cg)"></span> = <strong x-text="fmtOpt(result.varEv, 2)"></strong> %</p>
+                <p><strong x-text="t('varEvBias')"></strong> = 100 · k₁ / Cgk = 100 · <span x-text="num(result.params.k1)"></span> / <span x-text="fmtOpt(result.Cgk)"></span> = <strong x-text="fmtOpt(result.varEvBias, 2)"></strong> %</p>
+                <div class="msa-typ1__interp-gap"></div>
+                <p><span class="msa-typ1__tag msa-typ1__tag--pass">Cg ≥ <span x-text="thresholdPass"></span></span> <span x-text="t('interpCgPass')"></span></p>
+                <p><span class="msa-typ1__tag msa-typ1__tag--pass">Cgk ≥ <span x-text="thresholdPass"></span></span> <span x-text="t('interpCgkPass')"></span></p>
+                <p><span class="msa-typ1__tag msa-typ1__tag--warn"><span x-text="thresholdWarn"></span> ≤ <span x-text="t('value')"></span> &lt; <span x-text="thresholdPass"></span></span> <span x-text="t('interpWarn')"></span></p>
+                <p><span class="msa-typ1__tag msa-typ1__tag--fail"><span x-text="t('value')"></span> &lt; <span x-text="thresholdWarn"></span></span> <span x-text="t('interpFail')"></span></p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
