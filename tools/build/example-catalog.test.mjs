@@ -34,17 +34,15 @@ test('readIndexEntries lässt Szenarien weg, readScenarios liest shared/scenario
   assert.deepEqual(readScenarios(root).map((e) => e.id), ['s']);
 });
 
-test('echter Baum: 12 Szenarien in shared/, keine mehr in index.json, neun geteilte Worksheets umgezogen', () => {
+test('echter Baum: 12 Szenarien in shared/, keine mehr in index.json, elf geteilte Worksheets umgezogen', () => {
   assert.equal(readScenarios(APP_DIR).length, 12);
   const raw = JSON.parse(readFileSync(join(APP_DIR, 'examples', 'index.json'), 'utf8'));
   assert.equal(raw.examples.filter((e) => e.type === 'scenario').length, 0);
   for (const name of ['pizza-delivery', 'regression-collinear', 'regression-outliers', 'spc-imr-shift', 'hypothesis-pizza-fahrer',
-    'outlier-bolzen-grubbs', 'distribution-weibull', 'distribution-lognormal', 'hubschrauber-flyer', 'resampling-ruestzeit']) {
+    'outlier-bolzen-grubbs', 'distribution-weibull', 'distribution-lognormal', 'hubschrauber-flyer', 'resampling-ruestzeit',
+    'msa-typ1-hubschrauber-flyer']) {
     assert.ok(existsSync(join(APP_DIR, 'examples', 'shared', 'worksheets', `${name}.json`)), name);
     assert.equal(existsSync(join(APP_DIR, 'examples', 'worksheets', `${name}.json`)), false, `${name} liegt noch unter worksheets/`);
-  }
-  for (const keep of ['msa-typ1-hubschrauber-flyer']) {
-    assert.ok(existsSync(join(APP_DIR, 'examples', 'worksheets', `${keep}.json`)), `${keep} bleibt`);
   }
 });
 

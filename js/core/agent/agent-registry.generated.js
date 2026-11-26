@@ -10257,6 +10257,7 @@ export const AGENT_REGISTRY = {
   "msa-typ1": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -10271,155 +10272,31 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'name'|'ref'|'unit'|'lsl'|'usl'|'k1'|'k2'",
-            "optional": false,
-            "help": "welcher Parameter"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "Bezeichnung des Merkmals"
-          },
-          "ref": {
-            "type": "string",
-            "help": "Referenzwert des Normals"
-          },
-          "unit": {
-            "type": "string",
-            "help": "Maßeinheit"
-          },
-          "lsl": {
-            "type": "string",
-            "help": "untere Toleranzgrenze, leer für einseitig"
-          },
-          "usl": {
-            "type": "string",
-            "help": "obere Toleranzgrenze, leer für einseitig"
-          },
-          "k1": {
-            "type": "'0.2'|'0.15'|'0.1'",
-            "help": "Anteil der Toleranz"
-          },
-          "k2": {
-            "type": "'3'|'4'|'6'",
-            "help": "Streuungsfaktor"
-          }
-        }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'value'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `value`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet mit den aktuellen Eingaben. Unvollständige Eingaben lassen result auf null (keine Absage, wie die Oberfläche)."
-      },
-      "scheduleAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
-      },
-      "clearResults": {
-        "params": [],
-        "returns": "void",
-        "help": "Das Ergebnis und die Diagramme verwerfen."
       }
     },
     "fields": {
       "params": {
-        "type": "Params",
-        "help": "the entered parameters, values as text as entered",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "Params",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "Bezeichnung des Merkmals"
-          },
-          "ref": {
-            "type": "string",
-            "help": "Referenzwert des Normals"
-          },
-          "unit": {
-            "type": "string",
-            "help": "Maßeinheit"
-          },
-          "lsl": {
-            "type": "string",
-            "help": "untere Toleranzgrenze, leer für einseitig"
-          },
-          "usl": {
-            "type": "string",
-            "help": "obere Toleranzgrenze, leer für einseitig"
-          },
-          "k1": {
-            "type": "'0.2'|'0.15'|'0.1'",
-            "help": "Anteil der Toleranz"
-          },
-          "k2": {
-            "type": "'3'|'4'|'6'",
-            "help": "Streuungsfaktor"
-          }
-        }
+        "type": "{ name: string, unit: string, ref: number|null, lsl: number|null, usl: number|null, k1: 0.2|0.15|0.1, k2: 3|4|6 }",
+        "help": "",
+        "bulk": false
       },
       "columnRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric"
+        ]
+      },
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
+      },
+      "analysis": {
         "type": "object|null",
-        "help": "the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null",
-        "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
-      "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null while the inputs are incomplete",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -10596,10 +10473,61 @@ export const AGENT_REGISTRY = {
           "zoneLo": {
             "type": "number|null",
             "help": "untere Grenze der k₁·T-Zone"
+          },
+          "invalid": {
+            "type": "{ key: string, vars: object|null }",
+            "help": "Ablehnung der Prüfung (Textschlüssel und Werte)",
+            "optional": true
           }
         }
+      },
+      "columnStats": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "ColumnStats",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Anzahl der numerischen Werte"
+          },
+          "mean": {
+            "type": "number",
+            "help": "Mittelwert"
+          },
+          "stdDev": {
+            "type": "number",
+            "help": "Standardabweichung (n − 1)"
+          }
+        }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "runChartEdits",
+      "histogramChart"
+    ],
+    "settable": [
+      "params",
+      "columnRef",
+      "exampleWorksheetId"
+    ],
+    "invariants": [
+      "limitsOrder"
+    ]
   },
   "msa-typ2": {
     "tagged": true,

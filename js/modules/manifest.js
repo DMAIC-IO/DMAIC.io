@@ -68,17 +68,6 @@ export default [
     },
   },
   {
-    id: 'msa-typ1',
-    phase: 'measure',
-    group: 'msa',
-    load: () => import('./msa-typ1/msa-typ1.js'),
-    cycles: {
-      dmaic:  { phase: 'measure' },
-      dmadv:  { phase: 'measure' },
-      eightd: { phase: 'problem' },
-    },
-  },
-  {
     id: 'msa-typ4',
     phase: 'measure',
     group: 'msa',

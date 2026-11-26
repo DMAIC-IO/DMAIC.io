@@ -115,6 +115,11 @@
     "description": "Visualisiert die gemeinsame Verteilung zweier kategorialer Variablen — Spaltenbreiten zeigen die Randhäufigkeit, Segmenthöhen die bedingten Anteile.",
     "whenToUse": "Zeigen, wie zwei kategoriale Merkmale zusammenspielen: die Spaltenbreite zeigt den Anteil jeder x-Kategorie, die Segmenthöhe den Anteil jeder Gruppe darin."
   },
+  "msa-typ1": {
+    "name": "MSA Typ 1 (Cg/Cgk)",
+    "description": "Messmittelanalyse Typ 1 — Wiederholbarkeit (Cg) und Bias (Cgk)",
+    "whenToUse": "Wenn die Eignung eines einzelnen Messmittels geprüft werden soll: ein Normal oder Referenzteil wird wiederholt gemessen, daraus folgen Wiederholbarkeit (Cg) und Bias (Cgk) — nicht für Messsysteme mit mehreren Prüfern oder Teilen, dafür sind die Typ-2-, Typ-4-, Typ-5- und Typ-6-Studien da. Setzt die Messwerte als numerische Spalte einer Datensammlung voraus."
+  },
   "msa-typ2": {
     "name": "MSA Typ 2/3 (Gage R&R)",
     "description": "Messmittelanalyse Typ 2 (mit Prüfer, Gage R&R) und Typ 3 (ohne Prüfer, automatisierte Messsysteme)",

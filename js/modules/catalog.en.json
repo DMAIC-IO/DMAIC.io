@@ -115,6 +115,11 @@
     "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
     "whenToUse": "Compare how two categorical variables combine: column widths show the share of each x category, segment heights the share of each group within it."
   },
+  "msa-typ1": {
+    "name": "MSA Type 1 (Cg/Cgk)",
+    "description": "Measurement System Analysis Type 1 — Repeatability (Cg) and Bias (Cgk)",
+    "whenToUse": "When the capability of a single gage should be checked: a standard or reference part is measured repeatedly, giving repeatability (Cg) and bias (Cgk) — not for measurement systems with several appraisers or parts, which the type 2, 4, 5 and 6 studies cover. Requires the measurements as a numeric column of a data collection."
+  },
   "msa-typ2": {
     "name": "MSA Type 2/3 (Gage R&R)",
     "description": "Measurement System Analysis Type 2 (with operator, Gage R&R) and Type 3 (no operator, automated measurement systems)",

@@ -9,13 +9,12 @@ import h6 from '../modules/glm-regression/glm-regression-help.js';
 import h7 from '../modules/kano/kano-help.js';
 import h8 from '../modules/makigami/makigami-help.js';
 import h9 from '../modules/model-data-generator/model-data-generator-help.js';
-import h10 from '../modules/msa-typ1/msa-typ1-help.js';
-import h11 from '../modules/msa-typ4/msa-typ4-help.js';
-import h12 from '../modules/msa-typ6/msa-typ6-help.js';
-import h13 from '../modules/process-map/process-map-help.js';
-import h14 from '../modules/regression/regression-help.js';
-import h15 from '../modules/response-optimization/response-optimization-help.js';
-import h16 from '../modules/rest-api/rest-api-help.js';
+import h10 from '../modules/msa-typ4/msa-typ4-help.js';
+import h11 from '../modules/msa-typ6/msa-typ6-help.js';
+import h12 from '../modules/process-map/process-map-help.js';
+import h13 from '../modules/regression/regression-help.js';
+import h14 from '../modules/response-optimization/response-optimization-help.js';
+import h15 from '../modules/rest-api/rest-api-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -28,11 +27,10 @@ export const HELP = {
   "kano": h7,
   "makigami": h8,
   "model-data-generator": h9,
-  "msa-typ1": h10,
-  "msa-typ4": h11,
-  "msa-typ6": h12,
-  "process-map": h13,
-  "regression": h14,
-  "response-optimization": h15,
-  "rest-api": h16,
+  "msa-typ4": h10,
+  "msa-typ6": h11,
+  "process-map": h12,
+  "regression": h13,
+  "response-optimization": h14,
+  "rest-api": h15,
 };

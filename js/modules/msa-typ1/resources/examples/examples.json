@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "msa-typ1-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — MSA Typ 1 (Stoppuhr)",
+        "en": "Paper Helicopter — MSA Type 1 (Stopwatch)"
+      },
+      "description": {
+        "de": "25 Wiederholmessungen der Stoppuhr gegen eine Metronom-Referenz (60 bpm, Bezugswert 2,000 s) — Cg ≈ 1,35 / Cgk ≈ 1,15: fähig, aber grenzwertig. Didaktische Botschaft: erst die Uhr prüfen, bevor das DoE gefahren wird.",
+        "en": "25 repeated stopwatch readings against a metronome reference (60 bpm, target value 2.000 s) — Cg ≈ 1.35 / Cgk ≈ 1.15: capable, but borderline. Teaching point: check the clock before running the DoE."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/msa-typ1-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import attributeControlChartRefs from '../../js/modules/attribute-control-chart/
 import controlChartRefs from '../../js/modules/control-chart/resources/data/references.json' with { type: 'json' };
 import doePlannerRefs from '../../js/modules/doe-planner/resources/data/references.json' with { type: 'json' };
 import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/references.json' with { type: 'json' };
+import msaTyp1Refs from '../../js/modules/msa-typ1/resources/data/references.json' with { type: 'json' };
 import msaTyp2Refs from '../../js/modules/msa-typ2/resources/data/references.json' with { type: 'json' };
 import msaTyp5Refs from '../../js/modules/msa-typ5/resources/data/references.json' with { type: 'json' };
 import processCapabilityRefs from '../../js/modules/process-capability/resources/data/references.json' with { type: 'json' };
@@ -17,6 +18,7 @@ const JSON_REFS = {
   'control-chart': resolveReferences(controlChartRefs.references ?? []),
   'doe-planner': resolveReferences(doePlannerRefs.references ?? []),
   'hypothesis-test': resolveReferences(hypothesisTestRefs.references ?? []),
+  'msa-typ1': resolveReferences(msaTyp1Refs.references ?? []),
   'msa-typ2': resolveReferences(msaTyp2Refs.references ?? []),
   'msa-typ5': resolveReferences(msaTyp5Refs.references ?? []),
   'process-capability': resolveReferences(processCapabilityRefs.references ?? []),

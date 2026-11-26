@@ -13,5 +13,5 @@
     "sheetId": "sheet-msa-typ1-hubschrauber-flyer",
     "columnId": "c-messwert"
   },
-  "sourceWorksheetFile": "worksheets/msa-typ1-hubschrauber-flyer.json"
+  "sourceWorksheetFile": "shared/worksheets/msa-typ1-hubschrauber-flyer.json"
 }
