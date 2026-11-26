@@ -369,6 +369,22 @@ suite('ce-matrix: Viewmodel im Browser', () => {
     unmountAll();
   });
 
+  test('Abgelehnte Zelle: nach gültiger Eingabe in einer anderen Zelle wieder der gespeicherte Wert, Markierung aufgehoben', async () => {
+    const h = await mount('ce-1', null);
+    await h.type(h.score('i1', 'o1'), '7');
+    await h.type(h.score('i1', 'o1'), '15', { leave: false, whole: true });
+    assertEqual(h.score('i1', 'o1').getAttribute('aria-invalid'), 'true');
+    // Gültig in einer anderen Zelle: die abgelehnte zeigt den gespeicherten Wert, unmarkiert.
+    await h.type(h.score('i2', 'o2'), '3');
+    await until(() => h.score('i1', 'o1').getAttribute('aria-invalid') === null);
+    assertEqual(h.score('i1', 'o1').value, '7');
+    assertEqual(h.score('i1', 'o1').getAttribute('aria-invalid'), null);
+    assertTrue(!h.score('i1', 'o1').classList.contains('field--error'), 'field--error');
+    assertEqual(h.vm().model.scores['i1:o1'], 7);
+    assertEqual(h.vm().model.scores['i2:o2'], 3);
+    unmountAll();
+  });
+
   test('Bewertung über den Agenten: erscheint im Feld, außerhalb der Skala abgelehnt; Rückgängig', async () => {
     const h = await mount('ce-1', null);
     h.vm().model.setScore({ inputId: 'i2', outputId: 'o3', value: 9 });

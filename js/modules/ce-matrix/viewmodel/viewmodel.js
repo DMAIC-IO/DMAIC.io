@@ -133,11 +133,15 @@ export default createModule({
       /**
        * Ein Skalenwechsel (Oberfläche, Agent, Rückgängig) hebt die
        * Ablehnungen der Felder auf und meldet die Bewertungen, die die neue
-       * Skala nicht zulässt.
+       * Skala nicht zulässt. Jede gespeicherte Bewertung schreibt alle Felder
+       * neu (`scores` wird ersetzt): eine abgewiesene Zelle zeigt danach
+       * wieder ihren gespeicherten Wert, ihre Markierung fällt mit.
        */
       init() {
+        const clearAll = () => this.$root.querySelectorAll('.ce-matrix__score-input.field--error').forEach((el) => clearRejection(/** @type {HTMLElement} */ (el)));
+        this.$watch('model.scores', clearAll);
         this.$watch('model.scale', () => {
-          this.$root.querySelectorAll('.ce-matrix__score-input.field--error').forEach((el) => clearRejection(/** @type {HTMLElement} */ (el)));
+          clearAll();
           const off = offScaleCount(this.model);
           if (off > 0) ctx.notify(this.t('offScale', { count: off }), 'warning');
         });
