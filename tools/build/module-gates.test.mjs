@@ -926,14 +926,14 @@ test('Kommando-Bezüge: Kommandos, data-command-form-schema, x-param', () => {
   assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS), [
     'command: resources/view.html: x-command="ghost": kein Kommando des Models oder Viewmodels',
     'command: resources/view.html: x-command-form="nope": kein Kommando des Models oder Viewmodels',
-    'command: resources/view.html: data-dialog-delete="drop": kein Kommando des Models',
+    'command: resources/view.html: data-dialog-delete="drop": kein Kommando des Models oder Viewmodels',
     'command: resources/view.html: data-command-form-schema="Gone": kein Export aus viewmodel/forms.js',
     'command: resources/view.html: x-param="col2": kein Parameter von addItem',
     'command: resources/view.html: x-param="zzz": kein Feld von NoteForm',
   ]);
 });
 
-test('Kommando-Bezüge: x-command und x-command-form nennen auch ein Viewmodel-Kommando', () => {
+test('Kommando-Bezüge: x-command, x-command-form und x-dialog nennen auch ein Viewmodel-Kommando', () => {
   const files = [{ path: 'resources/view.html', text: [
     '<button x-command="pickChart" :data-arg-type="s.type"></button><button x-command="ghost"></button>',
     '<form x-command-form="pickChart"><input x-param="type"><input x-param="nope"></form>',
@@ -941,7 +941,6 @@ test('Kommando-Bezüge: x-command und x-command-form nennen auch ein Viewmodel-K
   ].join('') }];
   assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS, { pickChart: { params: { type: true } } }), [
     'command: resources/view.html: x-command="ghost": kein Kommando des Models oder Viewmodels',
-    'command: resources/view.html: data-dialog-command="pickChart": kein Kommando des Models',
     'command: resources/view.html: x-param="nope": kein Parameter von pickChart',
   ]);
 });

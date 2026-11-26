@@ -670,6 +670,22 @@ suite('x-dialog', () => {
     assertEqual(dialog.open, null);
   });
 
+  test('data-dialog-command und data-dialog-delete nehmen Viewmodel-Kommandos; das Löschen fragt genau einmal', async () => {
+    const { $, dialog, vm, asked } = await mount(`
+      <button class="edit" x-dialog="noteForm" data-dialog-command="setNote" data-dialog-delete="dropAll">e</button>
+      <div hidden><form x-ref="noteForm" x-command-form="setNote"><input x-param="note"></form></div>`);
+    const input = $('input');
+    $('.edit').click();
+    assertEqual(input.value, 'alt');
+    assertEqual(typeof dialog.open.opts.onDelete, 'function');
+    dialog.open.api.remove();
+    await flush();
+    assertEqual(asked.length, 1);
+    assertEqual(asked[0].message, 'modules.ct.confirm.dropAll');
+    assertDeepEqual([...vm.picked], ['dropped']);
+    assertEqual(dialog.open, null);
+  });
+
   test('ohne Formular: kein Bestätigen-Knopf, x-command darin schließt bei Erfolg', async () => {
     const { $, dialog, model } = await mount(`
       <button class="ask" x-dialog="askRef">?</button>

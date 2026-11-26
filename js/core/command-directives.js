@@ -23,6 +23,9 @@
  * keine hat, die allgemeine „Wirklich löschen?“. Ebenso der Löschen-Knopf
  * eines `x-dialog` mit `data-dialog-delete`.
  *
+ * `data-dialog-command` und `data-dialog-delete` eines `x-dialog` nennen wie
+ * `x-command` ein Model- oder Viewmodel-Kommando.
+ *
  * `x-dialog.dblclick` öffnet beim Doppelklick; aus eigenem Code `openDialogAt`/
  * `ctx.openDialog` mit denselben Optionen wie die `data-dialog-*`-Attribute.
  *
@@ -565,7 +568,7 @@ export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
   }
   const del = opts.delete;
   const deleteArgs = () => {
-    const params = commandDef(ui, del).params;
+    const params = buttonCommandDef(ui, del).params;
     return idsFromAttr(params, Object.fromEntries(Object.entries(opts.args ?? {})
       .map(([k, v]) => [k, typeof v === 'string' && Object.hasOwn(params, k) ? fromAttr(params[k], v) : v])), ui.model);
   };
@@ -756,7 +759,7 @@ export function registerCommandDirectives(Alpine) {
     const ui = uiOf(Alpine, el, 'x-dialog');
     const target = findRef(Alpine, el, ref);
     if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
-    for (const cmd of [el.dataset.dialogCommand, el.dataset.dialogDelete]) if (cmd) commandDef(ui, cmd);
+    for (const cmd of [el.dataset.dialogCommand, el.dataset.dialogDelete]) if (cmd) buttonCommandDef(ui, cmd);
     const cmd = el.dataset.dialogCommand ?? formIn(target)?.getAttribute('x-command-form')?.trim();
     if (cmd) checkDefaultArgs(el, buttonCommandDef(ui, cmd).params);
     if (cmd) setHelpKey(el, `modules.${ui.moduleId}.actions.${cmd}.help`);

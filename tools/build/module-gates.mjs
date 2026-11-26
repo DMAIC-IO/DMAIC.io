@@ -1255,25 +1255,23 @@ export function readCommandForms(files) {
 
 /**
  * Gate Kommando-Bezüge: `x-command`, `x-command-form`, `data-dialog-command`,
- * `data-dialog-delete` nennen ein Kommando des Models (`x-command` und
- * `x-command-form` auch ein Viewmodel-Kommando); `data-command-form-schema` einen
+ * `data-dialog-delete` nennen ein Kommando des Models oder ein
+ * Viewmodel-Kommando; `data-command-form-schema` einen
  * Export aus viewmodel/forms.js; `x-param` einen Parameter des Kommandos
  * bzw. ein Feld des Formulars.
  * @param {{ path: string, text: string }[]} files
  * @param {{ commands: Record<string, { params: object }> }} schema
  * @param {Record<string, { fields: object }>} formSchemas Name → Schema
- * @param {Record<string, { params?: object }>} [vmCommands] Viewmodel-Kommandos (`readViewmodelCommands`); nur `x-command` und `x-command-form` dürfen sie nennen
+ * @param {Record<string, { params?: object }>} [vmCommands] Viewmodel-Kommandos (`readViewmodelCommands`)
  * @returns {string[]}
  */
 export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
   const out = [];
-  const commands = Object.keys(schema.commands);
+  const known = [...Object.keys(schema.commands), ...Object.keys(vmCommands)];
   for (const { path, text } of files) {
     for (const attr of COMMAND_ATTRS) {
-      const withVm = attr === 'x-command' || attr === 'x-command-form';
-      const known = withVm ? [...commands, ...Object.keys(vmCommands)] : commands;
       for (const m of text.matchAll(new RegExp(`\\s${attr}="\\s*([^"]*?)\\s*"`, 'g'))) {
-        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models${withVm ? ' oder Viewmodels' : ''}`);
+        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models oder Viewmodels`);
       }
     }
     for (const m of text.matchAll(/\sdata-command-form-schema="\s*([^"]*?)\s*"/g)) {
