@@ -1048,6 +1048,56 @@ suite('dashboard tiles: dmaic-calendar', () => {
     const host = await render(calendarTile, { _schema: { version: '9.0' }, events: CAL_STATE.events });
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.dmaic-calendar.tileEmpty');
   });
+
+  /** Ein Leser mit einer Aufgabenliste `t1` (Phase measure); bis `ensureLoaded` wirft `read` `not_loaded`. */
+  const todoSource = ({ loaded = false } = {}) => {
+    const calls = { reads: [], loads: [] };
+    const state = { loaded };
+    const items = [
+      { id: 'a', text: 'Messplan', due: addDaysISO(t0, 2), time: '08:00', duration: 45, cal: true },
+      { id: 'b', text: 'Ohne Kalender', due: addDaysISO(t0, 3), cal: false },
+    ];
+    const source = {
+      list: () => [{ instanceId: 't1', moduleId: 'todo', phase: 'measure' }, { instanceId: 'w1', moduleId: 'worksheet', phase: 'measure' }],
+      read(id, o) {
+        calls.reads.push([id, o]);
+        if (!state.loaded) throw Object.assign(new Error('not_loaded'), { code: 'not_loaded' });
+        return { items };
+      },
+      async ensureLoaded(id) { calls.loads.push(id); const fresh = !state.loaded; state.loaded = true; return fresh; },
+    };
+    return { source, calls };
+  };
+
+  test('Aufgabentermine aus ctx.source; gespeicherte Spiegel der Altform zählen nicht', () => {
+    const { source, calls } = todoSource({ loaded: true });
+    const mirror = { id: 'm', title: 'Messplan', date: addDaysISO(t0, 2), time: '09:00', duration: 30, desc: '', phase: 'define', source: 'todo' };
+    const vm = vmOf(calendarTile, { events: [CAL_STATE.events[0], mirror] }, {}, { source });
+    assertDeepEqual(vm.shown.map((e) => [e.title, e.when, e.phase]), [
+      ['Kickoff', `${t0} 10:00`, 'phases.define'],
+      ['Messplan', `${addDaysISO(t0, 2)} 08:00`, 'phases.measure'],
+    ]);
+    assertDeepEqual(calls.reads, [['t1', { fields: ['items'] }]], 'nur die Aufgabenliste, einmal je Rendern');
+    assertEqual(calls.loads.length, 0);
+  });
+
+  test('not_loaded: Laden anstoßen, ohne Aufgabentermine zeichnen; nach dem Laden mit', async () => {
+    const { source, calls } = todoSource();
+    const first = vmOf(calendarTile, { events: [CAL_STATE.events[0]] }, {}, { source });
+    assertDeepEqual(first.shown.map((e) => e.title), ['Kickoff']);
+    assertDeepEqual(calls.loads, ['t1']);
+    await Promise.resolve();
+    const second = vmOf(calendarTile, { events: [CAL_STATE.events[0]] }, {}, { source });
+    assertDeepEqual(second.shown.map((e) => e.title), ['Kickoff', 'Messplan']);
+    assertEqual(calls.loads.length, 1, 'geladen: kein zweites Laden');
+  });
+
+  test('nur Aufgabentermine: kein Leerzustand', () => {
+    const { source } = todoSource({ loaded: true });
+    const vm = vmOf(calendarTile, { events: [] }, {}, { source });
+    assertEqual(vm.empty, false);
+    assertEqual(vm.shown.length, 1);
+  });
 });
 
 const SH_STATE = { stakeholders: [
