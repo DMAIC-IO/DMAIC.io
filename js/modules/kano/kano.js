@@ -29,7 +29,7 @@ import { evaluate, Q_WARN } from '../../engines/kano-engine.js';
 import { kanoScatterConfig } from './kano-chart.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { provisionInstance } from '../../core/examples-registry.js';
-import { treePhaseForCycle } from '../voc-ctx-tree/voc-ctx-tree-phase.js';
+import { treePhaseForCycle } from './kano-tree-phase.js';
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { uid } from '../../core/uid.js';
 

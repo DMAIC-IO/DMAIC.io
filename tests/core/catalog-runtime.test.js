@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { MODULES, CONVERTED, MODULE_ORDER } from '../../js/modules/catalog.generated.js';
 import manifest from '../../js/modules/manifest.js';
-import { treePhaseForCycle } from '../../js/modules/voc-ctx-tree/voc-ctx-tree-phase.js';
+import { treePhaseForCycle } from '../../js/modules/kano/kano-tree-phase.js';
 
 suite('Katalog zur Laufzeit', () => {
   test('MODULES = manifest.js-Einträge plus je umgestelltem Modul einer mit form: module, in MODULE_ORDER', () => {

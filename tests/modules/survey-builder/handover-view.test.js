@@ -183,7 +183,7 @@ suite('survey-builder handover: VoC tree', () => {
     const stacks = fake.stacks();
     assertEqual(stacks.length, 1);
     assertDeepEqual(stacks[0], [
-      { op: 'instance.call', module: 'voc-ctx-tree', instance: 'tree-1', method: 'addVoc', args: ['Brief', de('vocSource', { title: 'Befragung' })] },
+      { op: 'instance.call', module: 'voc-ctx-tree', instance: 'tree-1', method: 'addVoc', args: [{ text: 'Brief', source: de('vocSource', { title: 'Befragung' }) }] },
       { op: 'instance.call', module: 'survey-builder', instance: INSTANCE, method: 'markVocTaken', args: [{ keys: ['resp-c:q2:other'] }] },
     ]);
     assertDeepEqual(h.vm().state.vocSelected, []);
@@ -198,7 +198,7 @@ suite('survey-builder handover: VoC tree', () => {
     assertDeepEqual(out, { status: 'done', value: { taken: 1, instanceId: 'voc-ctx-tree-new' } });
     const stack = fake.stacks()[0];
     assertDeepEqual(stack[0], { op: 'module.add', id: 'tree', module: 'voc-ctx-tree' });
-    assertDeepEqual(stack[1].args, ['Schneller bitte', `${de('vocSource', { title: 'Befragung' })}, Anna`]);
+    assertDeepEqual(stack[1].args, [{ text: 'Schneller bitte', source: `${de('vocSource', { title: 'Befragung' })}, Anna` }]);
   });
 
   test('a taken answer shows its mark', async () => {

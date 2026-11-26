@@ -1,7 +1,7 @@
 /**
- * D.Mike — voc-ctx-tree phase lookup (voc-ctx-tree-phase.js)
+ * D.Mike — voc-ctx-tree phase lookup (kano-tree-phase.js)
  *
- * Pure helper shared by kano and survey-builder. Reads the module catalog
+ * Pure helper of kano, used by kano and its tests. Reads the module catalog
  * (catalog.generated.js, plain data, no bootstrap side effects) because the
  * module context carries no module registry.
  */

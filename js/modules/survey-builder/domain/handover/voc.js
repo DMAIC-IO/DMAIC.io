@@ -42,7 +42,7 @@ export function vocStack({ treeId, entries, sourceLabel, anonymous, surveyInstan
   const instance = treeId ?? { $from: 'tree', path: 'instanceId' };
   if (!treeId) stack.push({ op: 'module.add', id: 'tree', module: 'voc-ctx-tree' });
   for (const e of entries) {
-    stack.push({ op: 'instance.call', module: 'voc-ctx-tree', instance, method: 'addVoc', args: [e.text, vocSource(e, sourceLabel, anonymous)] });
+    stack.push({ op: 'instance.call', module: 'voc-ctx-tree', instance, method: 'addVoc', args: [{ text: e.text, source: vocSource(e, sourceLabel, anonymous) }] });
   }
   stack.push({ op: 'instance.call', module: 'survey-builder', instance: surveyInstanceId, method: 'markVocTaken', args: [{ keys: [...keys] }] });
   return stack;

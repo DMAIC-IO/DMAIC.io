@@ -275,6 +275,11 @@
     "description": "Precise unit conversion (18 categories + timezones)",
     "whenToUse": "When a measured value has to be expressed in another unit — length, area, volume, mass, pressure, temperature, force, torque, energy, power, flow rate, speed, time, angle, rotational speed, pH, concentration, sound or lab values — or when a time has to be converted between two time zones; not for converting a whole data column, that is what the data transformation is for."
   },
+  "voc-ctx-tree": {
+    "name": "VoC → CTx Tree",
+    "description": "Translate Voice of Customer into measurable CTx requirements",
+    "whenToUse": "When customer statements should be translated into a chain of requirements — the voice of the customer, the need behind it, the measurable driver (CTQ, CTD, CTC) and the testable requirement with a target value and a measure; not for collecting or rating customer statements themselves, that is what the survey and Kano tools are for."
+  },
   "worksheet": {
     "name": "Data Collection",
     "description": "Spreadsheet for data entry and management",

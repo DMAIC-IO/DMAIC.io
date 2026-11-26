@@ -158,9 +158,6 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('colFactor')", reason: 'Einstellungen, Eingabetabelle der Zeiteinheiten', count: 1 },
     { match: 'makigami__matrix-step-head', reason: 'Kopf je Prozessschritt (Titel aus den Daten, editierbar)', count: 1 },
   ],
-  'voc-ctx-tree': [
-    { match: 'textLabel()', reason: 'Beschriftung wechselt mit der Knotenart (Stimme, Bedürfnis, Treiber, Anforderung); der Text ist je Aktion beschrieben', count: 1 },
-  ],
   'doe-planner': [
     { match: 'doe__term-chip', reason: 'Schalter je Modellterm; die Termliste ist an setTerm verankert', count: 1 },
     { match: 'doe__forbidden-factor', reason: 'Auswahl je Faktor in der Eingabezeile; die verbotenen Ecken sind an addForbiddenVertex verankert', count: 1 },

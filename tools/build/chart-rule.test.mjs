@@ -14,7 +14,7 @@ const MODULES_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../js/modu
 const CHART_RULE_MODULES = ['voc-ctx-tree', 'project-charter', 'triz-function-analysis', 'histogram'];
 
 /** Converted modules: charts only through chart widgets and `chartSVG`, never the chartManager itself. */
-const WIDGET_ONLY_MODULES = ['project-charter', 'triz-function-analysis', 'histogram'];
+const WIDGET_ONLY_MODULES = ['voc-ctx-tree', 'project-charter', 'triz-function-analysis', 'histogram'];
 
 const FORBIDDEN = [
   { name: 'createElementNS', re: /createElementNS\s*\(/ },

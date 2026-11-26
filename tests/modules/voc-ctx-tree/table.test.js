@@ -14,7 +14,7 @@ import { setModelName } from '../../../js/core/model.js';
 setModelName(State, 'voc-ctx-tree');
 
 const MOD = new URL('../../../js/modules/voc-ctx-tree/', import.meta.url);
-const EXAMPLE = new URL('../../../examples/projects/voc-ctx-pizza-lieferung.json', import.meta.url);
+const EXAMPLE = new URL('../../../js/modules/voc-ctx-tree/resources/examples/projects/voc-ctx-pizza-lieferung.json', import.meta.url);
 
 /** @param {URL} url @returns {Promise<any>} */
 async function fetchJSON(url) {

@@ -21950,6 +21950,7 @@ export const AGENT_REGISTRY = {
   "voc-ctx-tree": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -21959,439 +21960,507 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addVoc": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Wortlaut der Kundenstimme"
-          },
-          {
-            "name": "source",
-            "type": "string",
-            "optional": true,
-            "help": "woher sie stammt; leer heißt ohne Angabe"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Legt eine Kundenstimme an und wählt sie aus."
-      },
-      "updateVoc": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Wortlaut"
-          },
-          {
-            "name": "source",
-            "type": "string",
-            "optional": false,
-            "help": "die neue Herkunft; leer heißt ohne Angabe"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Ändert Wortlaut und Herkunft einer Kundenstimme."
-      },
-      "removeVoc": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt eine Kundenstimme samt ihrem Baum. War sie ausgewählt, rückt die erste verbleibende nach."
-      },
-      "addNeed": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Wortlaut des Bedürfnisses"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Legt ein Bedürfnis unter einer Kundenstimme an."
-      },
-      "updateNeed": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Wortlaut"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Ändert den Wortlaut eines Bedürfnisses."
-      },
-      "removeNeed": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt ein Bedürfnis samt seinen Treibern und Anforderungen."
-      },
-      "addDriver": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Wortlaut des Treibers"
-          },
-          {
-            "name": "type",
-            "type": "'ctq'|'ctd'|'ctc'",
-            "optional": false,
-            "help": "die Treiberart"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Legt einen Treiber unter einem Bedürfnis an."
-      },
-      "updateDriver": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "drvId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Treibers"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Wortlaut"
-          },
-          {
-            "name": "type",
-            "type": "'ctq'|'ctd'|'ctc'",
-            "optional": false,
-            "help": "die neue Treiberart"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Ändert Wortlaut und Art eines Treibers."
-      },
-      "removeDriver": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "drvId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Treibers"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt einen Treiber samt seinen Anforderungen."
-      },
-      "addRequirement": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "drvId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Treibers"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Wortlaut der Anforderung"
-          },
-          {
-            "name": "target",
-            "type": "string",
-            "optional": true,
-            "help": "der Zielwert; leer heißt ohne Zielwert"
-          },
-          {
-            "name": "measure",
-            "type": "string",
-            "optional": true,
-            "help": "die Messgröße; leer heißt ohne Messgröße"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Legt eine Anforderung unter einem Treiber an."
-      },
-      "updateRequirement": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "drvId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Treibers"
-          },
-          {
-            "name": "reqId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Anforderung"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Wortlaut"
-          },
-          {
-            "name": "target",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Zielwert; leer heißt ohne Zielwert"
-          },
-          {
-            "name": "measure",
-            "type": "string",
-            "optional": false,
-            "help": "die neue Messgröße; leer heißt ohne Messgröße"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Ändert Wortlaut, Zielwert und Messgröße einer Anforderung."
-      },
-      "removeReq": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Kundenstimme"
-          },
-          {
-            "name": "needId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Bedürfnisses"
-          },
-          {
-            "name": "drvId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Treibers"
-          },
-          {
-            "name": "reqId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Anforderung"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt eine Anforderung."
-      },
-      "reorderNodes": {
-        "params": [
-          {
-            "name": "kind",
-            "type": "'need'|'driver'|'req'",
-            "optional": false,
-            "help": "die Ebene, auf der verschoben wird"
-          },
-          {
-            "name": "scope",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "die Elternkette: `vocId` für ein Bedürfnis, zusätzlich `needId` für einen Treiber, zusätzlich `drvId` für eine Anforderung"
-          },
-          {
-            "name": "fromId",
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addVoc",
+        "keysHelp": "actions.addVoc.params",
+        "keys": {
+          "text": {
             "type": "string",
-            "optional": false,
-            "help": "id des Knotens, der verschoben wird"
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
           },
-          {
-            "name": "toId",
+          "source": {
             "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          }
+        }
+      },
+      "updateVoc": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Geschwisterknotens, an dessen Stelle er rückt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "updateVoc",
+        "keysHelp": "actions.updateVoc.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim"
+            ]
+          }
+        }
+      },
+      "removeVoc": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeVoc",
+        "keysHelp": "actions.removeVoc.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addNeed": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addNeed",
+        "keysHelp": "actions.addNeed.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "updateNeed": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "updateNeed",
+        "keysHelp": "actions.updateNeed.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "removeNeed": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeNeed",
+        "keysHelp": "actions.removeNeed.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addDriver": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addDriver",
+        "keysHelp": "actions.addDriver.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "type": {
+            "type": "'ctq'|'ctd'|'ctc'",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "updateDriver": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "updateDriver",
+        "keysHelp": "actions.updateDriver.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "drvId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "type": {
+            "type": "'ctq'|'ctd'|'ctc'",
+            "help": ""
+          }
+        }
+      },
+      "removeDriver": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeDriver",
+        "keysHelp": "actions.removeDriver.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "drvId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addRequirement": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addRequirement",
+        "keysHelp": "actions.addRequirement.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "drvId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          },
+          "measure": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim"
+            ]
+          }
+        }
+      },
+      "updateRequirement": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "updateRequirement",
+        "keysHelp": "actions.updateRequirement.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "drvId": {
+            "type": "string",
+            "help": ""
+          },
+          "reqId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim"
+            ]
+          },
+          "measure": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim"
+            ]
+          }
+        }
+      },
+      "removeReq": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeReq",
+        "keysHelp": "actions.removeReq.params",
+        "keys": {
+          "vocId": {
+            "type": "string",
+            "help": ""
+          },
+          "needId": {
+            "type": "string",
+            "help": ""
+          },
+          "drvId": {
+            "type": "string",
+            "help": ""
+          },
+          "reqId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "reorderNodes": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "boolean",
-        "help": "Verschiebt einen Knoten an die Stelle eines Geschwisterknotens."
-      },
-      "setBorderWidth": {
-        "params": [
-          {
-            "name": "width",
-            "type": "number",
-            "optional": false,
-            "help": "die Randstärke in Pixeln, von 0 bis 4 in Schritten von 0,5"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Randstärke der Knoten."
-      },
-      "setNodeColor": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'voc'|'need'|'ctq'|'ctd'|'ctc'|'req'",
-            "optional": false,
-            "help": "welcher Knotentyp"
-          },
-          {
-            "name": "color",
-            "type": "string",
-            "optional": false,
-            "help": "die Farbe als rgb(…) oder rgba(…)"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Farbe einer Knotenart.",
-        "keysOf": "NodeColors",
+        "help": "",
+        "keysOf": "reorderNodes",
+        "keysHelp": "actions.reorderNodes.params",
         "keys": {
-          "voc": {
-            "type": "string",
-            "help": "Kundenstimme"
+          "kind": {
+            "type": "'need'|'driver'|'req'",
+            "help": ""
           },
-          "need": {
+          "vocId": {
             "type": "string",
-            "help": "Bedürfnis"
+            "help": ""
           },
-          "ctq": {
+          "needId": {
             "type": "string",
-            "help": "Treiber Qualität (CTQ)"
+            "help": "",
+            "optional": true
           },
-          "ctd": {
+          "drvId": {
             "type": "string",
-            "help": "Treiber Lieferung (CTD)"
+            "help": "",
+            "optional": true
           },
-          "ctc": {
+          "fromId": {
             "type": "string",
-            "help": "Treiber Kosten (CTC)"
+            "help": ""
           },
-          "req": {
+          "toId": {
             "type": "string",
-            "help": "Anforderung"
+            "help": ""
           }
         }
       }
     },
     "fields": {
       "vocs": {
-        "type": "Array<{id:string,text:string,source:string,needs:Array<{id:string,text:string,drivers:Array<{id:string,text:string,type:'ctq'|'ctd'|'ctc',requirements:Array<{id:string,text:string,target:string,measure:string}>}>}>}>",
-        "help": "die Kundenstimmen in Anlegereihenfolge; je Stimme `id` (zum Ansprechen), `text`, `source` (woher sie stammt) und `needs` — je Bedürfnis `id`, `text` und `drivers`, je Treiber `id`, `text`, `type` (`ctq`, `ctd` oder `ctc`) und `requirements`, je Anforderung `id`, `text`, `target` (der Zielwert) und `measure` (die Messgröße)",
+        "type": "Array<{ id: string, text: string, source: string, needs: Array<{ id: string, text: string, drivers: Array<{ id: string, text: string, type: 'ctq'|'ctd'|'ctc', requirements: { id: string, text: string, target: string, measure: string }[] }> }> }>",
+        "help": "",
         "bulk": true,
         "bulkKind": "tree"
       },
       "styles": {
-        "type": "{ borderWidth: number, colors: object }",
-        "help": "die Darstellung des Baums: `borderWidth` als Randstärke der Knoten in Pixeln von 0 bis 4 in Schritten von 0,5 und `colors` mit je einer Farbe als `rgba(r,g,b,a)` unter `voc`, `need`, `ctq`, `ctd`, `ctc` und `req`",
+        "type": "{ borderWidth: number, colors: Record<'voc'|'need'|'ctq'|'ctd'|'ctc'|'req', string> }",
+        "help": "",
         "bulk": false
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "activeVocId"
+    ],
+    "settable": [
+      "styles"
+    ],
+    "invariants": [
+      "uniqueIds",
+      "validColors",
+      "borderWidthStep",
+      "knownActiveVoc"
     ]
   },
   "worksheet": {

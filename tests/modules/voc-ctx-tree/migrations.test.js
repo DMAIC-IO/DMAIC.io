@@ -20,6 +20,7 @@ setModelName(State, 'voc-ctx-tree');
 const SCHEMA = { _schema: { name: 'voc-ctx-tree', version: '1.0' } };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
 const EXAMPLES = new URL('../../../examples/projects/', import.meta.url);
+const OWN_EXAMPLES = new URL('../../../js/modules/voc-ctx-tree/resources/examples/projects/', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 const DEFAULT_STYLES = { borderWidth: 1, colors: { ...DEFAULT_COLORS } };
@@ -192,7 +193,7 @@ suite('voc-ctx-tree Migration 0→1.0 — Golden-Fixtures, Beispiele, Kano-Bäum
   });
   test('beide Beispiele laden streng, Inhalt und ids bleiben', async () => {
     for (const f of ['voc-ctx-pizza-lieferung.json', 'voc-ctx-tree-hubschrauber-flyer.json']) {
-      const old = await fetchJSON(new URL(f, EXAMPLES));
+      const old = await fetchJSON(new URL(f, OWN_EXAMPLES));
       const m = State.fromJSON(plain(old));
       assertDeepEqual(repaired(plain(old)).fields, [], f);
       assertDeepEqual(m.vocs.map((v) => [v.id, v.text]), old.vocs.map((v) => [v.id, v.text]), f);

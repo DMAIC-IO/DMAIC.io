@@ -49,20 +49,6 @@ export default [
 
   // ─── Define ───────────────────────────────────────────────────
   {
-    id: 'voc-ctx-tree',
-    phase: 'define',
-    group: 'customer',
-    singleton: true,
-    allowedPhases: ['define'],
-    load: () => import('./voc-ctx-tree/voc-ctx-tree.js'),
-    loadTile: () => import('./voc-ctx-tree/voc-ctx-tree.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define',  allowedPhases: ['define']  },
-      dmadv:  { phase: 'define',  allowedPhases: ['define']  },
-      eightd: { phase: 'problem', allowedPhases: ['problem'] },
-    },
-  },
-  {
     id: 'kano',
     phase: 'define',
     group: 'customer',

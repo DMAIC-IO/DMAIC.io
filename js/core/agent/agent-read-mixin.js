@@ -40,7 +40,6 @@ export const MIXIN_READ_MODULES = Object.freeze([
   'deployment-flowchart',
   'makigami',
   'process-map',
-  'voc-ctx-tree',
 ]);
 
 /**

@@ -4,7 +4,7 @@ import { MODULES as manifest, CONVERTED } from '../../js/modules/catalog.generat
 import fmeaTile from '../../js/modules/fmea/tile/tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/tile/tile.js';
 import charterTiles from '../../js/modules/project-charter/tile/tile.js';
-import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
+import vocTile from '../../js/modules/voc-ctx-tree/tile/tile.js';
 import raciTile from '../../js/modules/raci-matrix/tile/tile.js';
 import spcTile from '../../js/modules/control-chart/tile/tile.js';
 import todoTile from '../../js/modules/todo/tile/tile.js';
@@ -500,15 +500,15 @@ suite('dashboard tiles: voc', () => {
 
   test('viewModel: stats, driver bar, legend and statements as display data', () => {
     const vm = vmOf(vocTile, VOC_STATE);
-    assertPlain(vm);
+    assertEqual(vm._templateTile, true);
     assertDeepEqual(vm.stats, [
-      { value: '8', label: ' VoC' },
+      { value: '8', label: ' modules.voc-ctx-tree.tile.vocUnit' },
       { value: '8', label: ' dashboard.vocNeeds' },
       { value: '8', label: ' dashboard.vocDrivers' },
       { value: '0', label: ' dashboard.vocReqs' },
     ]);
-    assertDeepEqual(vm.segments, [{ key: 'ctq', style: 'width:100%;background:var(--color-voc-ctq, rgba(39,174,96,1))', title: 'CTQ: 8' }]);
-    assertDeepEqual(vm.legend, [{ key: 'ctq', dot: 'background:var(--color-voc-ctq, rgba(39,174,96,1))', text: 'CTQ: 8' }]);
+    assertDeepEqual(vm.segments, [{ key: 'ctq', style: 'width:100%;background:var(--vct-tile-ctq)', title: 'CTQ: 8' }]);
+    assertDeepEqual(vm.legend, [{ key: 'ctq', dot: 'background:var(--vct-tile-ctq)', text: 'CTQ: 8' }]);
     assertEqual(vm.listLabel, 'dashboard.vocStatements');
     assertEqual(vm.items.length, 6);
     assertDeepEqual(vm.items[0], { quote: '„S0“', source: null });

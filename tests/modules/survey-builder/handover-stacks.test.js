@@ -16,7 +16,7 @@ import { worksheetColumnsFor } from '../../../js/modules/survey-builder/domain/h
 import { vocStack, openTexts } from '../../../js/modules/survey-builder/domain/handover/voc.js';
 import { kanoOwnEntries, kanoBackups, kanoStack } from '../../../js/modules/survey-builder/domain/handover/kano.js';
 import { worksheetColumns } from '../../../js/modules/survey-builder/domain/stats.js';
-import { treePhaseForCycle } from '../../../js/modules/voc-ctx-tree/voc-ctx-tree-phase.js';
+import { treePhaseForCycle } from '../../../js/modules/kano/kano-tree-phase.js';
 import { defaultPhaseFor } from '../../../js/core/router/instance-ops.js';
 import { CYCLES } from '../../../js/core/cycles/cycles.js';
 import { MODULES } from '../../../js/modules/catalog.generated.js';
@@ -151,7 +151,7 @@ function run(world, stack) {
       } else if (op.module === 'voc-ctx-tree') {
         const tree = w.trees[op.instance];
         if (op.method !== 'addVoc') throw new Error(op.method);
-        const [text, source] = op.args;
+        const [{ text, source }] = op.args;
         const id = freshId('voc');
         tree.vocs.push({ id, text: text.trim(), source: source.trim(), needs: [] });
         tree.activeVocId = id;
@@ -552,16 +552,16 @@ suite('survey-builder handover — vocStack', () => {
         ({ vocsFromAnswers }) => vocsFromAnswers(copy(ENTRIES), 'Umfrage: Befragung', anonymous).map(({ text, source }) => ({ text, source })));
       const stack = vocStack({ treeId: 'tree-1', entries: ENTRIES, sourceLabel: 'Umfrage: Befragung', anonymous, surveyInstanceId: S1, keys: KEYS });
       const calls = stack.filter((op) => op.method === 'addVoc');
-      assertDeepEqual(calls.map((op) => ({ text: op.args[0], source: op.args[1] })), want);
-      if (anonymous) assertTrue(calls.every((op) => op.args[1] === 'Umfrage: Befragung'), 'no name');
+      assertDeepEqual(calls.map((op) => op.args[0]), want);
+      if (anonymous) assertTrue(calls.every((op) => op.args[0].source === 'Umfrage: Befragung'), 'no name');
     });
   }
 
   test('into an existing tree: one addVoc per entry, then markVocTaken', () => {
     const stack = vocStack({ treeId: 'tree-1', entries: ENTRIES, sourceLabel: 'Umfrage: Befragung', anonymous: false, surveyInstanceId: S1, keys: KEYS });
     assertDeepEqual(stack, [
-      { op: 'instance.call', module: 'voc-ctx-tree', instance: 'tree-1', method: 'addVoc', args: ['Schneller bitte', 'Umfrage: Befragung, Anna'] },
-      { op: 'instance.call', module: 'voc-ctx-tree', instance: 'tree-1', method: 'addVoc', args: ['Mehr Farbe', 'Umfrage: Befragung'] },
+      { op: 'instance.call', module: 'voc-ctx-tree', instance: 'tree-1', method: 'addVoc', args: [{ text: 'Schneller bitte', source: 'Umfrage: Befragung, Anna' }] },
+      { op: 'instance.call', module: 'voc-ctx-tree', instance: 'tree-1', method: 'addVoc', args: [{ text: 'Mehr Farbe', source: 'Umfrage: Befragung' }] },
       { op: 'instance.call', module: 'survey-builder', instance: S1, method: 'markVocTaken', args: [{ keys: KEYS }] },
     ]);
   });

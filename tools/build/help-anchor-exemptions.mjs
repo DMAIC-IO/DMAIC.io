@@ -216,4 +216,16 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setAnalysisResponse', reason: 'keine Oberfläche: die Auswertung nimmt die erste Zielgröße, nur der Agent wählt eine andere' },
     { name: 'actions.viewPhase', reason: 'Klick je Phase in der Zeitleiste; die Zeitleiste ist an types.Evop.phases verankert' },
   ],
+  'voc-ctx-tree': [
+    { name: 'actions.updateVoc', reason: 'Bearbeiten-Knopf je Karte; ein Fragezeichen je Karte wäre Rauschen, die Formularfelder sind an fields.vocs.<feld> verankert' },
+    { name: 'actions.removeVoc', reason: 'Löschknopf je Karte; ein Fragezeichen je Karte wäre Rauschen' },
+    { name: 'actions.updateNeed', reason: 'Bearbeiten-Knopf je Knoten; ein Fragezeichen je Knoten wäre Rauschen, die Formularfelder sind verankert' },
+    { name: 'actions.removeNeed', reason: 'Löschknopf je Knoten; ein Fragezeichen je Knoten wäre Rauschen' },
+    { name: 'actions.updateDriver', reason: 'Bearbeiten-Knopf je Knoten; ein Fragezeichen je Knoten wäre Rauschen, die Formularfelder sind verankert' },
+    { name: 'actions.removeDriver', reason: 'Löschknopf je Knoten; ein Fragezeichen je Knoten wäre Rauschen' },
+    { name: 'actions.updateRequirement', reason: 'Bearbeiten-Knopf je Knoten; ein Fragezeichen je Knoten wäre Rauschen, die Formularfelder sind verankert' },
+    { name: 'actions.removeReq', reason: 'Löschknopf je Knoten; ein Fragezeichen je Knoten wäre Rauschen' },
+    { name: 'actions.reorderNodes', reason: 'Ziehen am Abzeichen je Knoten; ein Fragezeichen je Griff wäre Rauschen' },
+    { name: 'fields.vocs', reason: 'der Baum selbst hat keine Beschriftung (Karten und Knoten); verankert sind seine Formularfelder an fields.vocs.<feld>' },
+  ],
 };

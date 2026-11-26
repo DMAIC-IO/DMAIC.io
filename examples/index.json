@@ -1090,31 +1090,6 @@
       ]
     },
     {
-      "id": "voc-ctx-pizza-lieferung",
-      "type": "project",
-      "title": {
-        "de": "VoC → CTQ Pizza-Lieferung",
-        "en": "VoC → CTQ Pizza Delivery"
-      },
-      "description": {
-        "de": "3 Voice-of-Customer-Aussagen (kalte Pizza, lange Lieferzeit, Adressprobleme) übersetzt in CTQs mit messbaren Anforderungen.",
-        "en": "3 Voice-of-Customer quotes (cold pizza, long delivery, address issues) translated into CTQs with measurable requirements."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/voc-ctx-pizza-lieferung.json",
-      "format": "json",
-      "modules": [
-        "voc-ctx-tree"
-      ],
-      "tags": [
-        "define",
-        "voc",
-        "ctq",
-        "pizza-lehrcase"
-      ]
-    },
-    {
       "id": "makigami-auftragsabwicklung",
       "type": "project",
       "title": {
@@ -1367,30 +1342,6 @@
         "regression",
         "optimization",
         "desirability"
-      ]
-    },
-    {
-      "id": "voc-ctx-tree-hubschrauber-flyer",
-      "type": "project",
-      "title": {
-        "de": "Papier-Hubschrauber — VoC/CTQ",
-        "en": "Paper Helicopter — VoC/CTQ"
-      },
-      "description": {
-        "de": "VoC „soll lange fliegen und sanft trudeln“ übersetzt in drei CTQs: Flugzeit ≥ 3,0 s, Streuung σ ≤ 0,15 s und Autorotation (qualitativ). Bildet die Baum-Grundlage für das verknüpfte Kano-Beispiel.",
-        "en": "VoC \"should fly long and glide down gently\" translated into three CTQs: flight time ≥ 3.0 s, spread σ ≤ 0.15 s, and autorotation (qualitative). Forms the tree basis for the linked Kano example."
-      },
-      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
-      "license": "public-domain",
-      "file": "projects/voc-ctx-tree-hubschrauber-flyer.json",
-      "format": "json",
-      "modules": [
-        "voc-ctx-tree"
-      ],
-      "tags": [
-        "helicopter",
-        "doe-training",
-        "sequential-blocks"
       ]
     },
     {

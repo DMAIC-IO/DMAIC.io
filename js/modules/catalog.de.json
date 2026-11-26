@@ -275,6 +275,11 @@
     "description": "Maßeinheiten präzise konvertieren (18 Kategorien + Zeitzonen)",
     "whenToUse": "Wenn ein Messwert in eine andere Einheit gebracht werden muss — Länge, Fläche, Volumen, Masse, Druck, Temperatur, Kraft, Drehmoment, Energie, Leistung, Durchfluss, Geschwindigkeit, Zeit, Winkel, Drehzahl, pH, Konzentration, Schall oder Laborwerte — oder wenn eine Uhrzeit zwischen zwei Zeitzonen umgerechnet werden soll; nicht für das Umrechnen einer ganzen Datenspalte, dafür ist die Datentransformation da."
   },
+  "voc-ctx-tree": {
+    "name": "VoC → CTx-Baum",
+    "description": "Voice of Customer in messbare CTx-Anforderungen übersetzen",
+    "whenToUse": "Wenn Kundenaussagen in eine Anforderungskette übersetzt werden sollen — Kundenstimme, daraus das Bedürfnis, daraus der messbare Treiber (CTQ, CTD, CTC) und daraus die prüfbare Anforderung mit Zielwert und Messgröße; nicht für das Sammeln oder Bewerten von Kundenaussagen selbst, dafür sind die Befragungs- und Kano-Werkzeuge da."
+  },
   "worksheet": {
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",
