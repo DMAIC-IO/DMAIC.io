@@ -1,0 +1,329 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "currentDist": {
+      "help": "Die gewählte Verteilung: eine der stetigen oder diskreten Verteilungen links oder die attributive Verteilung mit gewichteten Kategorien. Die Werte werden sofort neu erzeugt; die Parameter jeder Verteilung bleiben gespeichert, auch nach einem Wechsel."
+    },
+    "params": {
+      "help": "Die Parameter je stetiger oder diskreter Verteilung, nach Verteilung und Parameter-id, je mit Vorgabe und Grenzen; alle Verteilungen sind gespeichert, wirksam sind die der gewählten (activeParams). Ein Agent schreibt das ganze Objekt mit instance.set.",
+      "normal": {
+        "help": "Die Parameter der Verteilung „Normalverteilung“.",
+        "mu": {
+          "help": "Mittelwert (μ): die Lage der Verteilung, um die die Werte streuen. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "sigma": {
+          "help": "Std.-Abw. (σ): die Skala, die Streuung der Werte um die Lage. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        },
+        "epsilon": {
+          "help": "Schiefe (ε): die Asymmetrie: 0 erzeugt symmetrische Werte, positive Werte machen die Verteilung rechtsschief (langer rechter Rand), negative linksschief. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "delta": {
+          "help": "Tailweight (δ): wie schwer die Ränder sind: 1 ergibt die Normalverteilung, Werte unter 1 machen die Ränder schwerer, Werte über 1 leichter. Zulässig: Zahl ab 0,01; Vorgabe 1."
+        }
+      },
+      "chisquare": {
+        "help": "Die Parameter der Verteilung „Chi-Quadrat-Verteilung“.",
+        "k": {
+          "help": "Freiheitsgrade (k): sie bestimmen die Form der Chi-Quadrat-Verteilung; je größer, desto symmetrischer. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 5."
+        }
+      },
+      "f_dist": {
+        "help": "Die Parameter der Verteilung „F-Verteilung“.",
+        "d1": {
+          "help": "Freiheitsgrade d₁: die Zahl der Freiheitsgrade im Zähler der F-Verteilung. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 5."
+        },
+        "d2": {
+          "help": "Freiheitsgrade d₂: die Zahl der Freiheitsgrade im Nenner der F-Verteilung. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
+        }
+      },
+      "t_dist": {
+        "help": "Die Parameter der Verteilung „t-Verteilung“.",
+        "nu": {
+          "help": "Freiheitsgrade (ν): sie bestimmen die Form der t-Verteilung; je größer, desto näher liegt sie an der Normalverteilung. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
+        }
+      },
+      "uniform": {
+        "help": "Die Parameter der Verteilung „Gleichverteilung (stetig)“.",
+        "a": {
+          "help": "Untergrenze (a): die untere Grenze, unter der keine Werte liegen. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "b": {
+          "help": "Obergrenze (b): die obere Grenze, über der keine Werte liegen; sie darf nicht kleiner als die Untergrenze sein. Zulässig: beliebige Zahl; Vorgabe 1."
+        }
+      },
+      "beta": {
+        "help": "Die Parameter der Verteilung „Beta-Verteilung“.",
+        "alpha": {
+          "help": "Form α: die erste Form der Beta-Verteilung; sie bestimmt zusammen mit β, ob die Werte zwischen 0 und 1 eher links oder rechts liegen. Zulässig: Zahl ab 0,01; Vorgabe 2."
+        },
+        "beta": {
+          "help": "Form β: die zweite Form der Beta-Verteilung; sie bestimmt zusammen mit α, ob die Werte zwischen 0 und 1 eher links oder rechts liegen. Zulässig: Zahl ab 0,01; Vorgabe 5."
+        }
+      },
+      "cauchy": {
+        "help": "Die Parameter der Verteilung „Cauchy-Verteilung“.",
+        "x0": {
+          "help": "Lage (x₀): die Lage, die Mitte der Cauchy-Verteilung (ihr Median). Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "gamma": {
+          "help": "Skala (γ): die Skala, die Breite der Cauchy-Verteilung. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "exponential": {
+        "help": "Die Parameter der Verteilung „Exponentialverteilung“.",
+        "lambda": {
+          "help": "Rate (λ): die Rate: wie viele Ereignisse pro Einheit auftreten; der Mittelwert der Werte ist 1/λ. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "gamma_dist": {
+        "help": "Die Parameter der Verteilung „Gamma-Verteilung“.",
+        "alpha": {
+          "help": "Form (α): die Form der Gamma-Verteilung; bei 1 entsteht die Exponentialverteilung, größere Werte machen sie symmetrischer. Zulässig: Zahl ab 0,01; Vorgabe 2."
+        },
+        "beta": {
+          "help": "Skala (β): die Skala der Gamma-Verteilung, mit der alle Werte gestreckt werden. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "laplace": {
+        "help": "Die Parameter der Verteilung „Laplace-Verteilung“.",
+        "mu": {
+          "help": "Lage (μ): die Lage, die Mitte der Laplace-Verteilung. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "b": {
+          "help": "Skala (b): die Skala, die Breite der Laplace-Verteilung. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "gumbel_max": {
+        "help": "Die Parameter der Verteilung „Größter Extremwert (Gumbel)“.",
+        "mu": {
+          "help": "Lage (μ): die Lage der Gumbel-Verteilung für Maxima (ihr Modus). Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "beta": {
+          "help": "Skala (β): die Skala, die Breite der Gumbel-Verteilung für Maxima. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "logistic": {
+        "help": "Die Parameter der Verteilung „Logistische Verteilung“.",
+        "mu": {
+          "help": "Lage (μ): die Lage, die Mitte der logistischen Verteilung. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "s": {
+          "help": "Skala (s): die Skala, die Breite der logistischen Verteilung. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "loglogistic": {
+        "help": "Die Parameter der Verteilung „Log-Logistische Verteilung“.",
+        "alpha": {
+          "help": "Skala (α): die Skala der log-logistischen Verteilung; zugleich ihr Median. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        },
+        "beta": {
+          "help": "Form (β): die Form der log-logistischen Verteilung; je größer, desto enger liegen die Werte um die Skala. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "lognormal": {
+        "help": "Die Parameter der Verteilung „Lognormalverteilung“.",
+        "mu": {
+          "help": "Log-Mittelwert (μ): der Mittelwert der logarithmierten Werte (nicht der Werte selbst). Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "sigma": {
+          "help": "Log-Std.Abw. (σ): die Standardabweichung der logarithmierten Werte (nicht der Werte selbst). Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "gumbel_min": {
+        "help": "Die Parameter der Verteilung „Kleinster Extremwert (Gumbel)“.",
+        "mu": {
+          "help": "Lage (μ): die Lage der Gumbel-Verteilung für Minima (ihr Modus). Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "beta": {
+          "help": "Skala (β): die Skala, die Breite der Gumbel-Verteilung für Minima. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "triangular": {
+        "help": "Die Parameter der Verteilung „Dreiecksverteilung“.",
+        "a": {
+          "help": "Minimum (a): das Minimum, der kleinste mögliche Wert. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "c": {
+          "help": "Modus (c): der Modus, der häufigste Wert; er muss zwischen Minimum und Maximum liegen. Zulässig: beliebige Zahl; Vorgabe 0,5."
+        },
+        "b": {
+          "help": "Maximum (b): das Maximum, der größte mögliche Wert; es darf nicht kleiner als das Minimum sein. Zulässig: beliebige Zahl; Vorgabe 1."
+        }
+      },
+      "weibull": {
+        "help": "Die Parameter der Verteilung „Weibull-Verteilung“.",
+        "alpha": {
+          "help": "Form (α): die Form der Weibull-Verteilung; bei 1 entsteht die Exponentialverteilung, über 1 steigt die Ausfallrate mit der Zeit. Zulässig: Zahl ab 0,0001; Vorgabe 1,5."
+        },
+        "beta": {
+          "help": "Skala (β): die Skala der Weibull-Verteilung (charakteristische Lebensdauer: 63,2 % der Werte liegen darunter). Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        }
+      },
+      "bernoulli": {
+        "help": "Die Parameter der Verteilung „Bernoulli-Verteilung“.",
+        "p": {
+          "help": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein Versuch gelingt und 1 ergibt; sonst entsteht 0. Zulässig: Zahl von 0 bis 1; Vorgabe 0,5."
+        }
+      },
+      "binomial": {
+        "help": "Die Parameter der Verteilung „Binomialverteilung“.",
+        "n": {
+          "help": "Versuche (n): wie oft der Versuch je erzeugtem Wert wiederholt wird; der Wert zählt die Erfolge. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
+        },
+        "p": {
+          "help": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein einzelner Versuch gelingt. Zulässig: Zahl von 0 bis 1; Vorgabe 0,5."
+        }
+      },
+      "geometric": {
+        "help": "Die Parameter der Verteilung „Geometrische Verteilung“.",
+        "p": {
+          "help": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein einzelner Versuch gelingt; der Wert zählt die Fehlversuche vor dem ersten Erfolg. Zulässig: Zahl von 0,0001 bis 1; Vorgabe 0,3."
+        }
+      },
+      "negbinomial": {
+        "help": "Die Parameter der Verteilung „Negativ Binomialverteilung“.",
+        "r": {
+          "help": "Erfolge (r): wie viele Erfolge abgewartet werden; der Wert zählt die Fehlversuche bis dahin. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 5."
+        },
+        "p": {
+          "help": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein einzelner Versuch gelingt. Zulässig: Zahl von 0,0001 bis 1; Vorgabe 0,5."
+        }
+      },
+      "hypergeometric": {
+        "help": "Die Parameter der Verteilung „Hypergeometrische Verteilung“.",
+        "N": {
+          "help": "Populationsgröße (N): die Zahl aller Elemente, aus denen ohne Zurücklegen gezogen wird. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 100."
+        },
+        "K": {
+          "help": "Erfolgszust. (K): wie viele der N Elemente Erfolge sind; höchstens so viele wie N. Zulässig: Zahl ab 0, üblich sind ganze Zahlen; Vorgabe 30."
+        },
+        "n": {
+          "help": "Stichprobe (n): wie viele Elemente je erzeugtem Wert gezogen werden, höchstens so viele wie N; der Wert zählt die Erfolge darin. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
+        }
+      },
+      "integer": {
+        "help": "Die Parameter der Verteilung „Ganze Zahlen (Gleichvert.)“.",
+        "a": {
+          "help": "Minimum (a): die kleinste ganze Zahl, die vorkommen kann; sie sollte nicht größer als das Maximum sein. Zulässig: beliebige Zahl, Nachkommastellen werden abgerundet; Vorgabe 1."
+        },
+        "b": {
+          "help": "Maximum (b): die größte ganze Zahl, die vorkommen kann; sie sollte nicht kleiner als das Minimum sein. Zulässig: beliebige Zahl, Nachkommastellen werden abgerundet; Vorgabe 6."
+        }
+      },
+      "poisson": {
+        "help": "Die Parameter der Verteilung „Poisson-Verteilung“.",
+        "lambda": {
+          "help": "Rate (λ): die mittlere Zahl der Ereignisse je Einheit; sie ist zugleich Mittelwert und Varianz der Werte. Zulässig: Zahl ab 0,01; Vorgabe 5."
+        }
+      },
+      "mvnormal": {
+        "help": "Die Parameter der Verteilung „Multivariat Normal (2D)“.",
+        "mu1": {
+          "help": "Mittelwert μ₁: die Lage der ersten Komponente der zweidimensionalen Normalverteilung; sie bestimmt die erzeugten Werte. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "mu2": {
+          "help": "Mittelwert μ₂: die Lage der zweiten Komponente; die erzeugte Spalte enthält nur die erste Komponente, daher ändert μ₂ sie derzeit nicht. Zulässig: beliebige Zahl; Vorgabe 0."
+        },
+        "sigma1": {
+          "help": "Std.Abw. σ₁: die Streuung der ersten Komponente um ihren Mittelwert μ₁. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        },
+        "sigma2": {
+          "help": "Std.Abw. σ₂: die Streuung der zweiten Komponente um ihren Mittelwert μ₂; die erzeugte Spalte enthält nur die erste Komponente, daher ändert σ₂ sie derzeit nicht. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+        },
+        "rho": {
+          "help": "Korrelation ρ: wie stark die beiden Komponenten zusammenhängen (-1 gegenläufig, 0 unabhängig, 1 gleichläufig); die erzeugte Spalte enthält nur die erste Komponente, daher ändert ρ sie derzeit nicht. Zulässig: Zahl von -0,999 bis 0,999; Vorgabe 0,5."
+        }
+      }
+    },
+    "count": {
+      "help": "Anzahl (n): der Stichprobenumfang bei einer stetigen oder diskreten Verteilung, eine ganze Zahl von 1 bis 100 000. Eine Änderung erzeugt die Werte sofort neu."
+    },
+    "seed": {
+      "help": "Seed: der Startwert des Zufallsgenerators bei einer stetigen oder diskreten Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl, auch 0; ein leeres Feld gilt als 42. Eine Änderung erzeugt die Werte sofort neu."
+    },
+    "attributes": {
+      "help": "Die Kategorien der attributiven Verteilung, je mit id, Name und Gewicht; anlegen, ändern und entfernen über addAttribute, setAttribute und removeAttribute.",
+      "id": {
+        "help": "Die Kennung der Kategorie."
+      },
+      "name": {
+        "help": "Attribut: der Name der Kategorie. Er darf leer sein; Kategorien ohne Namen werden beim Erzeugen übergangen."
+      },
+      "weight": {
+        "help": "Gewicht der Kategorie, eine Zahl ab 0. Der Anteil einer Kategorie ist ihr Gewicht geteilt durch die Summe aller Gewichte; die Spalte „Anteil“ zeigt ihn in Prozent. Eine Kategorie mit Gewicht 0 wird beim Erzeugen übergangen."
+      }
+    },
+    "attrCount": {
+      "help": "Anzahl (n): der Stichprobenumfang bei der attributiven Verteilung, eine ganze Zahl von 1 bis 100 000. Eine Änderung erzeugt die Werte sofort neu."
+    },
+    "attrSeed": {
+      "help": "Seed: der Startwert des Zufallsgenerators bei der attributiven Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl, auch 0; ein leeres Feld gilt als 42. Eine Änderung erzeugt die Werte sofort neu."
+    },
+    "generated": {
+      "help": "Zusammenfassung der erzeugten Werte, jede Angabe unter keys einzeln beschrieben; null ohne gewählte Verteilung, ohne gültige Kategorie oder wenn die Verteilung keine Werte erzeugen konnte. Die Werte folgen sofort jeder Änderung; die Karten zeigen die Kennzahlen mit vier Nachkommastellen, Beträge ab 10⁶ oder unter 0,001 in Exponentialschreibweise."
+    },
+    "activeParams": {
+      "help": "Die Pfade, die im aktuellen Stand wirken: params.<Verteilung>.<id> der gewählten Verteilung, dann count und seed; bei der attributiven Verteilung attrCount und attrSeed; ohne gewählte Verteilung leer."
+    },
+    "targetColumns": {
+      "help": "Die Ziele, die toWorksheet annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Je Blatt mit einer leeren Spalte stehen dort seine leeren Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt. Ein Ziel null legt ein neues Arbeitsblatt an."
+    }
+  },
+  "actions": {
+    "addAttribute": {
+      "help": "Legt eine Kategorie der attributiven Verteilung an, mit leerem Namen und Gewicht 1; die Werte werden sofort neu erzeugt. Kategorien ohne Namen werden beim Erzeugen übergangen. Der Agent erhält die Kennung der Kategorie.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "removeAttribute": {
+      "help": "Entfernt eine Kategorie der attributiven Verteilung; die Werte werden sofort neu erzeugt. Auch die letzte Kategorie lässt sich entfernen, dann gibt es keine Werte.",
+      "params": {
+        "attrId": "Die id einer Kategorie aus attributes; jede andere wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit attrId."
+      }
+    },
+    "setAttribute": {
+      "help": "Setzt Name oder Gewicht einer Kategorie der attributiven Verteilung; die Werte werden sofort neu erzeugt. Kategorien mit leerem Namen oder einem Gewicht von 0 werden beim Erzeugen übergangen.",
+      "params": {
+        "attrId": "Die id einer Kategorie aus attributes oder die von addAttribute; jede andere wird abgelehnt.",
+        "key": "Welches Feld: name oder weight; jeder andere Wert wird abgelehnt.",
+        "value": "Der Wert: bei name ein Text (leer erlaubt), bei weight eine Zahl ab 0; alles andere wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit attrId, key und value."
+      }
+    }
+  },
+  "asyncTasks": {
+    "toWorksheet": {
+      "help": "Sendet die erzeugten Werte als Spalte an ein neues Arbeitsblatt, in eine bestehende leere Spalte oder als neue Spalte an ein bestehendes Blatt, ganz oder gar nicht; danach erscheint eine Bestätigung. Gibt es keine Werte, wird nichts gesendet.",
+      "params": {
+        "target": "Das Ziel: ein neues Arbeitsblatt, eine leere Spalte eines Blatts oder eine neue Spalte an einem Blatt. Angeboten werden nur Blätter mit einer leeren Spalte; ein Ziel, das inzwischen nicht mehr frei ist, wird abgelehnt."
+      },
+      "cancel": {
+        "help": "Bricht das Senden ab, solange es noch nicht geschrieben ist."
+      }
+    }
+  },
+  "types": {
+    "Generated": {
+      "n": "n: die Zahl der erzeugten Werte, gleich der eingestellten Anzahl (n).",
+      "mean": "Mittelwert x̄ = Σx / n, die Summe der erzeugten Werte geteilt durch ihre Anzahl. Nur bei stetigen und diskreten Verteilungen.",
+      "sd": "Std.Abw. s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung der erzeugten Werte mit dem Nenner n − 1. Bei nur einem gezogenen Wert nicht definiert: das Ergebnis ist dann leer. Nur bei stetigen und diskreten Verteilungen.",
+      "median": "Median: der mittlere Wert der aufsteigend sortierten erzeugten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Nur bei stetigen und diskreten Verteilungen.",
+      "min": "Min: der kleinste der erzeugten Werte. Nur bei stetigen und diskreten Verteilungen.",
+      "max": "Max: der größte der erzeugten Werte. Nur bei stetigen und diskreten Verteilungen.",
+      "skewness": "Schiefe g₁ = m₃ / m₂^1,5 mit den zentrierten Momenten m₂ = Σ(x − x̄)² / n und m₃ = Σ(x − x̄)³ / n (Nenner n, nicht korrigiert). Positiv: der lange Ausläufer liegt rechts, negativ: links; 0 bei symmetrischen Werten. Nur bei stetigen und diskreten Verteilungen.",
+      "kurtosis": "Kurtosis als Exzess: m₄ / m₂² − 3 mit m₂ = Σ(x − x̄)² / n und m₄ = Σ(x − x̄)⁴ / n (Nenner n, nicht korrigiert). 0 entspricht der Normalverteilung, positiv heißt spitzer mit schweren Rändern, negativ flacher. Nur bei stetigen und diskreten Verteilungen.",
+      "frequency": "Die Häufigkeit je Kategorie, absteigend nach Anzahl sortiert; jeder Eintrag nennt Name und Anzahl. Die Karte „Kategorien“ zählt die Einträge, die Karte „Häufigstes“ nennt den ersten. Nur bei der attributiven Verteilung."
+    },
+    "FrequencyRow": {
+      "name": "Der Name der Kategorie.",
+      "count": "Wie oft die Kategorie unter den erzeugten Werten vorkommt.",
+      "share": "Der Anteil der Kategorie an allen erzeugten Werten, als Zahl von 0 bis 1 (Anzahl geteilt durch Zahl der Werte); die Anzeige zeigt ihn in Prozent."
+    },
+    "TargetColumn": {
+      "key": "Das Ziel als 'instanceId|sheetId|columnId'; columnId '__new__' hängt eine neue Spalte an das Blatt an.",
+      "name": "Der Name der leeren Spalte, beim Eintrag „neue Spalte“ der Name des Blatts."
+    }
+  }
+}

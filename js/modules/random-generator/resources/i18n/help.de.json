@@ -1,0 +1,84 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der Zufallsgenerator erzeugt synthetische Datensätze aus statistischen Verteilungen. Er dient dazu, Methoden zu üben, ohne echte Daten zu benötigen, Annahmen zu prüfen, Schulungsbeispiele aufzubauen und die Robustheit von Analysen zu testen."
+        },
+        {
+          "type": "definition",
+          "term": "Verteilungen",
+          "content": "Verfügbar sind unter anderem Normal-, Lognormal-, Exponential-, Weibull-, Gleich-, Dreieck-, Beta-, Gamma-, Poisson- und Binomialverteilung. Jede Verteilung hat ihre eigenen Parameter (z. B. μ und σ für die Normalverteilung)."
+        },
+        {
+          "type": "definition",
+          "term": "Attributiver Modus",
+          "content": "Statt einer kontinuierlichen Verteilung lässt sich auch ein Anteilswert simulieren — z. B. „2 % defekt“ — und erzeugt eine Folge von 0/1-Werten oder „i.O./n.i.O.“ für SPC-, Fähigkeits- und Stichprobenbeispiele."
+        },
+        {
+          "type": "definition",
+          "term": "Seed (Saat)",
+          "content": "Mit einem festen Seed wird derselbe Datensatz reproduzierbar erzeugt. Praktisch für Schulungen oder Vergleichstests, bei denen alle Teilnehmer dieselben Werte sehen sollen."
+        },
+        {
+          "type": "definition",
+          "term": "Stichprobenstatistik & Histogramm",
+          "content": "Direkt nach der Generierung werden {{term:mittelwert|Mittelwert}}, {{term:standardabweichung|Standardabweichung}}, {{term:schiefe|Schiefe}}, Min/Max und ein {{term:histogramm|Histogramm}} der erzeugten Werte angezeigt — so lässt sich auf einen Blick prüfen, ob die Stichprobe der theoretischen Verteilung entspricht."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Verteilung wählen und die zugehörigen Parameter eintragen.",
+            "Stichprobenumfang n festlegen — typischerweise zwischen 10 und mehreren tausend.",
+            "Optional einen Seed setzen (z. B. 42) für {{term:reproduzierbarkeit|Reproduzierbarkeit}}.",
+            "Auf „Generieren“ klicken — Histogramm und Statistik erscheinen sofort.",
+            "Mit „In Worksheet übernehmen“ werden die erzeugten Werte als neue Spalte ins Arbeitsblatt geschrieben.",
+            "Optional: Export als CSV für externe Tools."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Typische Einsatzfälle: Cpk-Beispiele, MSA-Schulungen, Hypothesentests demonstrieren, Kontrollkarten testen, Verteilungsanpassung auf bekannten Verteilungen üben."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Synthetische Daten ≠ Realität",
+          "content": "Generierte Daten haben eine bekannte, saubere Verteilung. Echte Prozesse zeigen Ausreißer, Drift, Mischverteilungen und Mess-Rauschen — Schlussfolgerungen aus Simulationen vorsichtig auf reale Prozesse übertragen."
+        },
+        {
+          "type": "definition",
+          "term": "Zu kleines n",
+          "content": "Bei n < 30 können die Stichprobenstatistiken stark von den eingestellten Parametern abweichen — auch wenn der Generator korrekt arbeitet. Das ist kein Fehler, sondern reine Stichprobenstreuung."
+        },
+        {
+          "type": "definition",
+          "term": "Falsche Parameter-Interpretation",
+          "content": "Bei der Lognormalverteilung ist μ der Mittelwert des Logarithmus, nicht des Werts selbst. Bei Weibull steuert der Shape-Parameter die Form, der Scale-Parameter die typische Größenordnung. Bei Unsicherheit das Histogramm prüfen."
+        },
+        {
+          "type": "definition",
+          "term": "Nicht reproduzierbar ohne Seed",
+          "content": "Ohne festen Seed entsteht bei jedem Klick ein anderer Datensatz. Für Vergleiche, Schulungen oder Tests den Seed dokumentieren."
+        },
+        {
+          "type": "definition",
+          "term": "Attributiv vs. kontinuierlich verwechseln",
+          "content": "Der attributive Modus erzeugt 0/1-Werte mit einem Anteilswert. Wer hier eine Cpk-Analyse erwartet, bekommt unsinnige Ergebnisse — für Cpk eine kontinuierliche Verteilung wählen."
+        }
+      ]
+    }
+  }
+}

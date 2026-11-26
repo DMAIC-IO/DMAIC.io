@@ -1,0 +1,84 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The random generator creates synthetic datasets from statistical distributions. It is used to practice methods without real data, check assumptions, build training examples, and test the robustness of analyses."
+        },
+        {
+          "type": "definition",
+          "term": "Distributions",
+          "content": "Available are normal, lognormal, exponential, Weibull, uniform, triangular, beta, gamma, Poisson, and binomial — each with its own parameters (e.g. μ and σ for the normal distribution)."
+        },
+        {
+          "type": "definition",
+          "term": "Attributive mode",
+          "content": "Instead of a continuous distribution, a defect rate can be simulated — e.g. \"2 % defective\" — producing a sequence of 0/1 or \"good/bad\" values for SPC, capability, and sampling examples."
+        },
+        {
+          "type": "definition",
+          "term": "Seed",
+          "content": "With a fixed seed, the same dataset is reproducible. Useful for training sessions or comparison tests where every participant should see identical values."
+        },
+        {
+          "type": "definition",
+          "term": "Sample statistics & histogram",
+          "content": "Right after generation, {{term:mittelwert|mean}}, {{term:standardabweichung|standard deviation}}, {{term:schiefe|skewness}}, min/max, and a histogram of the produced values are displayed — letting you check at a glance whether the sample matches the theoretical distribution."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Operation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Pick a distribution and enter its parameters.",
+            "Set the sample size n — typically between 10 and several thousand.",
+            "Optionally set a seed (e.g. 42) for reproducibility.",
+            "Click \"Generate\" — histogram and statistics appear immediately.",
+            "Use \"Send to worksheet\" to write the generated values as a new column into the worksheet.",
+            "Optional: export as CSV for external tools."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Typical use cases: Cpk examples, MSA training, demonstrating hypothesis tests, testing control charts, practicing distribution fit on known distributions."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Synthetic data ≠ reality",
+          "content": "Generated data has a known, clean distribution. Real processes show outliers, drift, mixed populations, and measurement noise — transfer conclusions from simulations to real processes carefully."
+        },
+        {
+          "type": "definition",
+          "term": "Sample too small",
+          "content": "With n < 30, sample statistics can differ noticeably from the configured parameters — even when the generator works correctly. This is not a bug, just sampling variation."
+        },
+        {
+          "type": "definition",
+          "term": "Wrong parameter interpretation",
+          "content": "For the lognormal distribution, μ is the mean of the logarithm, not of the value itself. For Weibull, the shape parameter controls the form and the scale parameter the typical magnitude. When in doubt, check the histogram."
+        },
+        {
+          "type": "definition",
+          "term": "Not reproducible without a seed",
+          "content": "Without a fixed seed, every click produces a different dataset. For comparisons, training, or tests, document the seed."
+        },
+        {
+          "type": "definition",
+          "term": "Confusing attributive and continuous mode",
+          "content": "Attributive mode produces 0/1 values from a defect rate. Expecting a Cpk analysis here yields nonsense — pick a continuous distribution for Cpk."
+        }
+      ]
+    }
+  }
+}

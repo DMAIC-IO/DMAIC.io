@@ -1,0 +1,329 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "currentDist": {
+      "help": "The selected distribution: one of the continuous or discrete distributions on the left, or the attributive distribution with weighted categories. The values are regenerated at once; the parameters of every distribution stay stored, also after switching."
+    },
+    "params": {
+      "help": "The parameters per continuous or discrete distribution, by distribution and parameter id, each with default and bounds; all distributions are stored, the selected one takes effect (activeParams). An agent writes the whole object with instance.set.",
+      "normal": {
+        "help": "The parameters of the distribution “Normal Distribution”.",
+        "mu": {
+          "help": "Mean (μ): the location of the distribution, around which the values scatter. Allowed: any number; default 0."
+        },
+        "sigma": {
+          "help": "Std. Dev. (σ): the scale, the spread of the values around the location. Allowed: number from 0.0001; default 1."
+        },
+        "epsilon": {
+          "help": "Skewness (ε): the asymmetry: 0 gives symmetric values, positive values make the distribution right-skewed (long right tail), negative values left-skewed. Allowed: any number; default 0."
+        },
+        "delta": {
+          "help": "Tailweight (δ): how heavy the tails are: 1 gives the normal distribution, values below 1 make the tails heavier, values above 1 lighter. Allowed: number from 0.01; default 1."
+        }
+      },
+      "chisquare": {
+        "help": "The parameters of the distribution “Chi-Square Distribution”.",
+        "k": {
+          "help": "Degrees of freedom (k): they set the shape of the chi-square distribution; the larger, the more symmetric. Allowed: number from 1, whole numbers are usual; default 5."
+        }
+      },
+      "f_dist": {
+        "help": "The parameters of the distribution “F-Distribution”.",
+        "d1": {
+          "help": "Degrees of freedom d₁: the number of degrees of freedom in the numerator of the F distribution. Allowed: number from 1, whole numbers are usual; default 5."
+        },
+        "d2": {
+          "help": "Degrees of freedom d₂: the number of degrees of freedom in the denominator of the F distribution. Allowed: number from 1, whole numbers are usual; default 10."
+        }
+      },
+      "t_dist": {
+        "help": "The parameters of the distribution “t-Distribution”.",
+        "nu": {
+          "help": "Degrees of freedom (ν): they set the shape of the t distribution; the larger, the closer it is to the normal distribution. Allowed: number from 1, whole numbers are usual; default 10."
+        }
+      },
+      "uniform": {
+        "help": "The parameters of the distribution “Uniform Distribution (continuous)”.",
+        "a": {
+          "help": "Lower bound (a): the lower bound, below which no values occur. Allowed: any number; default 0."
+        },
+        "b": {
+          "help": "Upper bound (b): the upper bound, above which no values occur; it must not be less than the lower bound. Allowed: any number; default 1."
+        }
+      },
+      "beta": {
+        "help": "The parameters of the distribution “Beta Distribution”.",
+        "alpha": {
+          "help": "Shape α: the first shape of the beta distribution; together with β it decides whether the values between 0 and 1 lie more to the left or to the right. Allowed: number from 0.01; default 2."
+        },
+        "beta": {
+          "help": "Shape β: the second shape of the beta distribution; together with α it decides whether the values between 0 and 1 lie more to the left or to the right. Allowed: number from 0.01; default 5."
+        }
+      },
+      "cauchy": {
+        "help": "The parameters of the distribution “Cauchy Distribution”.",
+        "x0": {
+          "help": "Location (x₀): the location, the center of the Cauchy distribution (its median). Allowed: any number; default 0."
+        },
+        "gamma": {
+          "help": "Scale (γ): the scale, the width of the Cauchy distribution. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "exponential": {
+        "help": "The parameters of the distribution “Exponential Distribution”.",
+        "lambda": {
+          "help": "Rate (λ): the rate: how many events occur per unit; the mean of the values is 1/λ. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "gamma_dist": {
+        "help": "The parameters of the distribution “Gamma Distribution”.",
+        "alpha": {
+          "help": "Shape (α): the shape of the gamma distribution; 1 gives the exponential distribution, larger values make it more symmetric. Allowed: number from 0.01; default 2."
+        },
+        "beta": {
+          "help": "Scale (β): the scale of the gamma distribution, by which all values are stretched. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "laplace": {
+        "help": "The parameters of the distribution “Laplace Distribution”.",
+        "mu": {
+          "help": "Location (μ): the location, the center of the Laplace distribution. Allowed: any number; default 0."
+        },
+        "b": {
+          "help": "Scale (b): the scale, the width of the Laplace distribution. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "gumbel_max": {
+        "help": "The parameters of the distribution “Largest Extreme Value (Gumbel)”.",
+        "mu": {
+          "help": "Location (μ): the location of the Gumbel distribution for maxima (its mode). Allowed: any number; default 0."
+        },
+        "beta": {
+          "help": "Scale (β): the scale, the width of the Gumbel distribution for maxima. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "logistic": {
+        "help": "The parameters of the distribution “Logistic Distribution”.",
+        "mu": {
+          "help": "Location (μ): the location, the center of the logistic distribution. Allowed: any number; default 0."
+        },
+        "s": {
+          "help": "Scale (s): the scale, the width of the logistic distribution. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "loglogistic": {
+        "help": "The parameters of the distribution “Log-Logistic Distribution”.",
+        "alpha": {
+          "help": "Scale (α): the scale of the log-logistic distribution, which is also its median. Allowed: number from 0.0001; default 1."
+        },
+        "beta": {
+          "help": "Shape (β): the shape of the log-logistic distribution; the larger, the more tightly the values lie around the scale. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "lognormal": {
+        "help": "The parameters of the distribution “Lognormal Distribution”.",
+        "mu": {
+          "help": "Log-Mean (μ): the mean of the logarithms of the values (not of the values themselves). Allowed: any number; default 0."
+        },
+        "sigma": {
+          "help": "Log-Std.Dev. (σ): the standard deviation of the logarithms of the values (not of the values themselves). Allowed: number from 0.0001; default 1."
+        }
+      },
+      "gumbel_min": {
+        "help": "The parameters of the distribution “Smallest Extreme Value (Gumbel)”.",
+        "mu": {
+          "help": "Location (μ): the location of the Gumbel distribution for minima (its mode). Allowed: any number; default 0."
+        },
+        "beta": {
+          "help": "Scale (β): the scale, the width of the Gumbel distribution for minima. Allowed: number from 0.0001; default 1."
+        }
+      },
+      "triangular": {
+        "help": "The parameters of the distribution “Triangular Distribution”.",
+        "a": {
+          "help": "Minimum (a): the minimum, the smallest possible value. Allowed: any number; default 0."
+        },
+        "c": {
+          "help": "Mode (c): the mode, the most frequent value; it must lie between the minimum and the maximum. Allowed: any number; default 0.5."
+        },
+        "b": {
+          "help": "Maximum (b): the maximum, the largest possible value; it must not be less than the minimum. Allowed: any number; default 1."
+        }
+      },
+      "weibull": {
+        "help": "The parameters of the distribution “Weibull Distribution”.",
+        "alpha": {
+          "help": "Shape (α): the shape of the Weibull distribution; 1 gives the exponential distribution, above 1 the failure rate rises over time. Allowed: number from 0.0001; default 1.5."
+        },
+        "beta": {
+          "help": "Scale (β): the scale of the Weibull distribution (characteristic life: 63.2 % of the values lie below it). Allowed: number from 0.0001; default 1."
+        }
+      },
+      "bernoulli": {
+        "help": "The parameters of the distribution “Bernoulli Distribution”.",
+        "p": {
+          "help": "Success prob. (p): the probability that a trial succeeds and yields 1; otherwise 0 results. Allowed: number from 0 to 1; default 0.5."
+        }
+      },
+      "binomial": {
+        "help": "The parameters of the distribution “Binomial Distribution”.",
+        "n": {
+          "help": "Trials (n): how often the trial is repeated for each generated value; the value counts the successes. Allowed: number from 1, whole numbers are usual; default 10."
+        },
+        "p": {
+          "help": "Success prob. (p): the probability that a single trial succeeds. Allowed: number from 0 to 1; default 0.5."
+        }
+      },
+      "geometric": {
+        "help": "The parameters of the distribution “Geometric Distribution”.",
+        "p": {
+          "help": "Success prob. (p): the probability that a single trial succeeds; the value counts the failures before the first success. Allowed: number from 0.0001 to 1; default 0.3."
+        }
+      },
+      "negbinomial": {
+        "help": "The parameters of the distribution “Negative Binomial Distribution”.",
+        "r": {
+          "help": "Successes (r): how many successes are waited for; the value counts the failures up to then. Allowed: number from 1, whole numbers are usual; default 5."
+        },
+        "p": {
+          "help": "Success prob. (p): the probability that a single trial succeeds. Allowed: number from 0.0001 to 1; default 0.5."
+        }
+      },
+      "hypergeometric": {
+        "help": "The parameters of the distribution “Hypergeometric Distribution”.",
+        "N": {
+          "help": "Population size (N): the number of all elements drawn from without replacement. Allowed: number from 1, whole numbers are usual; default 100."
+        },
+        "K": {
+          "help": "Success states (K): how many of the N elements are successes; at most as many as N. Allowed: number from 0, whole numbers are usual; default 30."
+        },
+        "n": {
+          "help": "Sample size (n): how many elements are drawn for each generated value, at most as many as N; the value counts the successes among them. Allowed: number from 1, whole numbers are usual; default 10."
+        }
+      },
+      "integer": {
+        "help": "The parameters of the distribution “Integer (Uniform)”.",
+        "a": {
+          "help": "Minimum (a): the smallest whole number that can occur; it should not be larger than the maximum. Allowed: any number, decimals are rounded down; default 1."
+        },
+        "b": {
+          "help": "Maximum (b): the largest whole number that can occur; it should not be smaller than the minimum. Allowed: any number, decimals are rounded down; default 6."
+        }
+      },
+      "poisson": {
+        "help": "The parameters of the distribution “Poisson Distribution”.",
+        "lambda": {
+          "help": "Rate (λ): the mean number of events per unit; it is both the mean and the variance of the values. Allowed: number from 0.01; default 5."
+        }
+      },
+      "mvnormal": {
+        "help": "The parameters of the distribution “Multivariate Normal (2D)”.",
+        "mu1": {
+          "help": "Mean μ₁: the location of the first component of the two-dimensional normal distribution; it determines the generated values. Allowed: any number; default 0."
+        },
+        "mu2": {
+          "help": "Mean μ₂: the location of the second component; the generated column holds only the first component, so μ₂ does not currently change it. Allowed: any number; default 0."
+        },
+        "sigma1": {
+          "help": "Std.Dev. σ₁: the spread of the first component around its mean μ₁. Allowed: number from 0.0001; default 1."
+        },
+        "sigma2": {
+          "help": "Std.Dev. σ₂: the spread of the second component around its mean μ₂; the generated column holds only the first component, so σ₂ does not currently change it. Allowed: number from 0.0001; default 1."
+        },
+        "rho": {
+          "help": "Correlation ρ: how strongly the two components are related (-1 opposite, 0 independent, 1 in step); the generated column holds only the first component, so ρ does not currently change it. Allowed: number from -0.999 to 0.999; default 0.5."
+        }
+      }
+    },
+    "count": {
+      "help": "Count (n): the sample size for a continuous or discrete distribution, a whole number from 1 to 100,000. A change generates the values again at once."
+    },
+    "seed": {
+      "help": "Seed: the starting value of the random generator for a continuous or discrete distribution. The same seed gives the same values, so the sample is reproducible. Any whole number is allowed, 0 included; an empty field counts as 42. A change generates the values again at once."
+    },
+    "attributes": {
+      "help": "The categories of the attributive distribution, each with id, name and weight; add, change and remove them with addAttribute, setAttribute and removeAttribute.",
+      "id": {
+        "help": "The identifier of the category."
+      },
+      "name": {
+        "help": "Attribute: the name of the category. It may be empty; categories without a name are skipped when generating."
+      },
+      "weight": {
+        "help": "Weight of the category, a number from 0. The share of a category is its weight divided by the sum of all weights; the column \"Share\" shows it in percent. A category with weight 0 is skipped when generating."
+      }
+    },
+    "attrCount": {
+      "help": "Count (n): the sample size for the attributive distribution, a whole number from 1 to 100,000. A change generates the values again at once."
+    },
+    "attrSeed": {
+      "help": "Seed: the starting value of the random generator for the attributive distribution. The same seed gives the same values, so the sample is reproducible. Any whole number is allowed, 0 included; an empty field counts as 42. A change generates the values again at once."
+    },
+    "generated": {
+      "help": "Summary of the generated values, each item described under keys; null without a selected distribution, without a valid category or when the distribution could not generate values. The values follow every change at once; the cards show the statistics with four decimals, magnitudes from 10⁶ or below 0.001 in exponential notation."
+    },
+    "activeParams": {
+      "help": "The paths that take effect in the current state: params.<distribution>.<id> of the selected distribution, then count and seed; for the attributive distribution attrCount and attrSeed; empty without a selected distribution."
+    },
+    "targetColumns": {
+      "help": "The targets toWorksheet accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Per sheet with an empty column its empty columns are listed, followed by an entry with columnId '__new__' (name is the sheet name) that appends a new column. A target null creates a new worksheet."
+    }
+  },
+  "actions": {
+    "addAttribute": {
+      "help": "Adds a category to the attributive distribution, with an empty name and weight 1; the values are regenerated at once. Categories without a name are skipped when generating. The agent receives the identifier of the category.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "removeAttribute": {
+      "help": "Removes a category of the attributive distribution; the values are regenerated at once. The last category can be removed too, then there are no values.",
+      "params": {
+        "attrId": "The id of a category from attributes; any other is rejected.",
+        "command": "The command as an object with attrId."
+      }
+    },
+    "setAttribute": {
+      "help": "Sets the name or weight of a category of the attributive distribution; the values are regenerated at once. Categories with an empty name or a weight of 0 are skipped when generating.",
+      "params": {
+        "attrId": "The id of a category from attributes or the one from addAttribute; any other is rejected.",
+        "key": "Which field: name or weight; any other value is rejected.",
+        "value": "The value: for name a text (empty allowed), for weight a number from 0; anything else is rejected.",
+        "command": "The command as an object with attrId, key and value."
+      }
+    }
+  },
+  "asyncTasks": {
+    "toWorksheet": {
+      "help": "Sends the generated values as a column to a new worksheet, into an existing empty column or as a new column to an existing sheet, all or nothing; a confirmation follows. Without values nothing is sent.",
+      "params": {
+        "target": "The target: a new worksheet, an empty column of a sheet or a new column on a sheet. Only sheets with an empty column are offered; a target that is no longer free is rejected."
+      },
+      "cancel": {
+        "help": "Cancels sending as long as nothing is written yet."
+      }
+    }
+  },
+  "types": {
+    "Generated": {
+      "n": "n: the number of generated values, equal to the set count (n).",
+      "mean": "Mean x̄ = Σx / n, the sum of the generated values divided by their count. Only for continuous and discrete distributions.",
+      "sd": "Std.Dev. s = √(Σ(x − x̄)² / (n − 1)), the sample spread of the generated values with denominator n − 1. Not defined for a single drawn value: the result is then empty. Only for continuous and discrete distributions.",
+      "median": "Median: the middle of the generated values sorted ascending, for an even count the mean of the two middle ones. Only for continuous and discrete distributions.",
+      "min": "Min: the smallest of the generated values. Only for continuous and discrete distributions.",
+      "max": "Max: the largest of the generated values. Only for continuous and discrete distributions.",
+      "skewness": "Skewness g₁ = m₃ / m₂^1.5 with the central moments m₂ = Σ(x − x̄)² / n and m₃ = Σ(x − x̄)³ / n (denominator n, not corrected). Positive: the long tail is on the right, negative: on the left; 0 for symmetric values. Only for continuous and discrete distributions.",
+      "kurtosis": "Kurtosis as excess: m₄ / m₂² − 3 with m₂ = Σ(x − x̄)² / n and m₄ = Σ(x − x̄)⁴ / n (denominator n, not corrected). 0 matches the normal distribution, positive means more peaked with heavy tails, negative flatter. Only for continuous and discrete distributions.",
+      "frequency": "The frequency per category, sorted descending by count; each entry gives name and count. The card \"Categories\" counts the entries, the card \"Most frequent\" names the first one. Only for the attributive distribution."
+    },
+    "FrequencyRow": {
+      "name": "The name of the category.",
+      "count": "How often the category occurs among the generated values.",
+      "share": "The share of the category among all generated values, as a number from 0 to 1 (count divided by the number of values); the display shows it as a percentage."
+    },
+    "TargetColumn": {
+      "key": "The target as 'instanceId|sheetId|columnId'; columnId '__new__' appends a new column to the sheet.",
+      "name": "The name of the empty column, for the “new column” entry the name of the sheet."
+    }
+  }
+}

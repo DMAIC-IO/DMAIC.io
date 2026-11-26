@@ -1,0 +1,274 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Zufallszahlen-Generator",
+  "description": "Erzeugt reproduzierbare Stichproben aus statistischen Verteilungen",
+  "whenToUse": "Wenn Zufallsdaten aus einer bekannten Verteilung oder aus gewichteten Kategorien gebraucht werden — zum Üben, für Simulationen oder als Testdaten — reproduzierbar über den Startwert.",
+  "errGenerate": "Die Werte konnten nicht erzeugt werden: {message}",
+  "catContinuous": "Stetige Verteilungen",
+  "catDiscrete": "Diskrete Verteilungen",
+  "distNormal": "Normalverteilung",
+  "distChiSquare": "Chi-Quadrat-Verteilung",
+  "distF": "F-Verteilung",
+  "distT": "t-Verteilung",
+  "distUniform": "Gleichverteilung (stetig)",
+  "distBeta": "Beta-Verteilung",
+  "distCauchy": "Cauchy-Verteilung",
+  "distExponential": "Exponentialverteilung",
+  "distGamma": "Gamma-Verteilung",
+  "distLaplace": "Laplace-Verteilung",
+  "distGumbelMax": "Größter Extremwert (Gumbel)",
+  "distLogistic": "Logistische Verteilung",
+  "distLogLogistic": "Log-Logistische Verteilung",
+  "distLogNormal": "Lognormalverteilung",
+  "distGumbelMin": "Kleinster Extremwert (Gumbel)",
+  "distTriangular": "Dreiecksverteilung",
+  "distWeibull": "Weibull-Verteilung",
+  "distMvNormal": "Multivariat Normal (2D)",
+  "distBernoulli": "Bernoulli-Verteilung",
+  "distBinomial": "Binomialverteilung",
+  "distGeometric": "Geometrische Verteilung",
+  "distNegBinomial": "Negativ Binomialverteilung",
+  "distHypergeometric": "Hypergeometrische Verteilung",
+  "distInteger": "Ganze Zahlen (Gleichvert.)",
+  "distPoisson": "Poisson-Verteilung",
+  "dist": {
+    "normal": {
+      "mu": {
+        "label": "Mittelwert (μ)"
+      },
+      "sigma": {
+        "label": "Std.-Abw. (σ)"
+      },
+      "epsilon": {
+        "label": "Schiefe (ε)",
+        "hint": "0 = symmetrisch"
+      },
+      "delta": {
+        "label": "Tailweight (δ)",
+        "hint": "1 = normal"
+      }
+    },
+    "chisquare": {
+      "k": {
+        "label": "Freiheitsgrade (k)"
+      }
+    },
+    "f_dist": {
+      "d1": {
+        "label": "Freiheitsgrade d₁"
+      },
+      "d2": {
+        "label": "Freiheitsgrade d₂"
+      }
+    },
+    "t_dist": {
+      "nu": {
+        "label": "Freiheitsgrade (ν)"
+      }
+    },
+    "uniform": {
+      "a": {
+        "label": "Untergrenze (a)"
+      },
+      "b": {
+        "label": "Obergrenze (b)"
+      }
+    },
+    "beta": {
+      "alpha": {
+        "label": "Form α"
+      },
+      "beta": {
+        "label": "Form β"
+      }
+    },
+    "cauchy": {
+      "x0": {
+        "label": "Lage (x₀)"
+      },
+      "gamma": {
+        "label": "Skala (γ)"
+      }
+    },
+    "exponential": {
+      "lambda": {
+        "label": "Rate (λ)"
+      }
+    },
+    "gamma_dist": {
+      "alpha": {
+        "label": "Form (α)"
+      },
+      "beta": {
+        "label": "Skala (β)"
+      }
+    },
+    "laplace": {
+      "mu": {
+        "label": "Lage (μ)"
+      },
+      "b": {
+        "label": "Skala (b)"
+      }
+    },
+    "gumbel_max": {
+      "mu": {
+        "label": "Lage (μ)"
+      },
+      "beta": {
+        "label": "Skala (β)"
+      }
+    },
+    "logistic": {
+      "mu": {
+        "label": "Lage (μ)"
+      },
+      "s": {
+        "label": "Skala (s)"
+      }
+    },
+    "loglogistic": {
+      "alpha": {
+        "label": "Skala (α)"
+      },
+      "beta": {
+        "label": "Form (β)"
+      }
+    },
+    "lognormal": {
+      "mu": {
+        "label": "Log-Mittelwert (μ)"
+      },
+      "sigma": {
+        "label": "Log-Std.Abw. (σ)"
+      }
+    },
+    "gumbel_min": {
+      "mu": {
+        "label": "Lage (μ)"
+      },
+      "beta": {
+        "label": "Skala (β)"
+      }
+    },
+    "triangular": {
+      "a": {
+        "label": "Minimum (a)"
+      },
+      "c": {
+        "label": "Modus (c)"
+      },
+      "b": {
+        "label": "Maximum (b)"
+      }
+    },
+    "weibull": {
+      "alpha": {
+        "label": "Form (α)"
+      },
+      "beta": {
+        "label": "Skala (β)"
+      }
+    },
+    "bernoulli": {
+      "p": {
+        "label": "Erfolgswahrsch. (p)"
+      }
+    },
+    "binomial": {
+      "n": {
+        "label": "Versuche (n)"
+      },
+      "p": {
+        "label": "Erfolgswahrsch. (p)"
+      }
+    },
+    "geometric": {
+      "p": {
+        "label": "Erfolgswahrsch. (p)"
+      }
+    },
+    "negbinomial": {
+      "r": {
+        "label": "Erfolge (r)"
+      },
+      "p": {
+        "label": "Erfolgswahrsch. (p)"
+      }
+    },
+    "hypergeometric": {
+      "N": {
+        "label": "Populationsgröße (N)"
+      },
+      "K": {
+        "label": "Erfolgszust. (K)"
+      },
+      "n": {
+        "label": "Stichprobe (n)"
+      }
+    },
+    "integer": {
+      "a": {
+        "label": "Minimum (a)"
+      },
+      "b": {
+        "label": "Maximum (b)"
+      }
+    },
+    "poisson": {
+      "lambda": {
+        "label": "Rate (λ)"
+      }
+    },
+    "mvnormal": {
+      "mu1": {
+        "label": "Mittelwert μ₁"
+      },
+      "mu2": {
+        "label": "Mittelwert μ₂"
+      },
+      "sigma1": {
+        "label": "Std.Abw. σ₁"
+      },
+      "sigma2": {
+        "label": "Std.Abw. σ₂"
+      },
+      "rho": {
+        "label": "Korrelation ρ"
+      }
+    }
+  },
+  "count": "Anzahl (n)",
+  "toWorksheet": "Arbeitsblatt",
+  "histogram": "Histogramm",
+  "generatedData": "Generierte Daten",
+  "statMean": "Mittelwert",
+  "statStd": "Std.Abw.",
+  "seed": "Seed",
+  "statN": "n",
+  "statMin": "Min",
+  "statMax": "Max",
+  "statMedian": "Median",
+  "statSkewness": "Schiefe",
+  "statKurtosis": "Kurtosis",
+  "sentToWorksheet": "Daten an Arbeitsblatt gesendet",
+  "selectTarget": "Ziel wählen",
+  "newColumn": "Neue Spalte",
+  "catAttributive": "Attributiv",
+  "distAttributive": "Attributive Kategorien",
+  "attrName": "Attribut",
+  "attrWeight": "Gewicht",
+  "addAttribute": "Attribut hinzufügen",
+  "removeAttribute": "Attribut entfernen",
+  "probability": "Anteil",
+  "frequency": "Häufigkeitsverteilung",
+  "catCount": "Kategorien",
+  "mostFrequent": "Häufigstes",
+  "invariants": {
+    "uniformOrder": "Bei der Gleichverteilung darf die Obergrenze (b) nicht kleiner als die Untergrenze (a) sein.",
+    "triangularOrder": "Bei der Dreiecksverteilung muss der Modus (c) zwischen Minimum (a) und Maximum (b) liegen.",
+    "hyperK": "Bei der hypergeometrischen Verteilung darf die Zahl der Erfolgszustände (K) die Populationsgröße (N) nicht übersteigen.",
+    "hyperN": "Bei der hypergeometrischen Verteilung darf die Stichprobe (n) die Populationsgröße (N) nicht übersteigen.",
+    "uniqueAttributeIds": "Jede Kategorie der attributiven Verteilung braucht eine eigene Kennung."
+  }
+}
