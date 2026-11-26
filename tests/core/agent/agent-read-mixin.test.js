@@ -14,12 +14,18 @@ function componentFor(moduleId, modelJson) {
   return { ...mixin, model: { toJSON: () => modelJson } };
 }
 
-// `voc-ctx-tree.vocs` ist ein Massenfeld (bulk: true, kind 'tree') — aber
-// um readAgentState()s TABELLEN-Optionen (fields, rows) real
-// zu prüfen, statt sie nur zu behaupten, registrieren wir hier zusätzlich
-// einen synthetischen Eintrag mit Worksheet-Form (title/columns/rows),
-// spiegelt die Form, die agent-read.test.js für projectReadState selbst
-// benutzt.
+// Zwei synthetische Registry-Einträge statt echter Module (die bei ihrer
+// Umstellung das Mixin verlassen): einer mit einem Baum-Massenfeld
+// (bulk: true, kind 'tree') neben einem gewöhnlichen Feld, und einer mit
+// Worksheet-Form (title/columns/rows), um readAgentState()s
+// TABELLEN-Optionen (fields, rows) real zu prüfen, statt sie nur zu
+// behaupten — spiegelt die Form, die agent-read.test.js für
+// projectReadState selbst benutzt.
+const TREE_MODULE_ID = '__agent-read-mixin-test-tree__';
+const TREE_SCHEMA = {
+  vocs: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' },
+  styles: { type: 'object', help: '', bulk: false },
+};
 const BULK_MODULE_ID = '__agent-read-mixin-test-bulk__';
 const BULK_SCHEMA = {
   title: { type: 'string', help: '', bulk: false },
@@ -28,14 +34,19 @@ const BULK_SCHEMA = {
 };
 
 suite('agent read mixin', () => {
-  beforeAll(() => { AGENT_REGISTRY[BULK_MODULE_ID] = { fields: BULK_SCHEMA }; });
-  afterAll(() => { delete AGENT_REGISTRY[BULK_MODULE_ID]; });
+  beforeAll(() => {
+    AGENT_REGISTRY[BULK_MODULE_ID] = { fields: BULK_SCHEMA };
+    AGENT_REGISTRY[TREE_MODULE_ID] = { fields: TREE_SCHEMA };
+  });
+  afterAll(() => {
+    delete AGENT_REGISTRY[BULK_MODULE_ID];
+    delete AGENT_REGISTRY[TREE_MODULE_ID];
+  });
 
   test('read() projects the model JSON through the registry schema', () => {
-    // voc-ctx-tree spreizt das Mixin (MIXIN_READ_MODULES). `vocs` ist ein
-    // Massenfeld (@agentBulk tree) — ohne options.fields kommt nur der
-    // Umfang, kein leeres Array.
-    const component = componentFor('voc-ctx-tree', { vocs: [], styles: { a: 1 }, _idCounter: 7 });
+    // `vocs` ist ein Massenfeld (bulk tree) — ohne options.fields kommt nur
+    // der Umfang, kein leeres Array.
+    const component = componentFor(TREE_MODULE_ID, { vocs: [], styles: { a: 1 }, _idCounter: 7 });
     const state = component.read();
     assertDeepEqual(state.styles, { a: 1 });
     assertDeepEqual(state.vocs, { $bulk: true, kind: 'tree', nodeCount: 0, depth: 0 });
@@ -94,15 +105,15 @@ suite('agent read mixin', () => {
     // `vocs` ist ein Massenfeld: ohne `fields` kommt nur der Umfang, kein
     // Array. Die Vollform holt genau dieser Aufruf ab.
     const live = { vocs: [{ id: 1 }] };
-    const state = readAgentState('voc-ctx-tree', live, { fields: ['vocs'] });
+    const state = readAgentState(TREE_MODULE_ID, live, { fields: ['vocs'] });
     state.vocs[0].id = 99;
     assertEqual(live.vocs[0].id, 1);
   });
 
   test('read() returns the empty-snapshot projection when the model has no toJSON', () => {
-    const mixin = agentReadMixin({ id: 'voc-ctx-tree' });
+    const mixin = agentReadMixin({ id: TREE_MODULE_ID });
     const component = { ...mixin, model: null };
-    // voc-ctx-tree's Schema hat zwei Felder (vocs, styles); über einem
+    // Das Schema hat zwei Felder (vocs, styles); über einem
     // LEEREN Snapshot projiziert FEHLT jedes von beiden. Vorher
     // kamen sie als `undefined` durch — und genau das machte den
     // Driftvergleich der Pilotmodule (Schlüssel von read() == erklärte

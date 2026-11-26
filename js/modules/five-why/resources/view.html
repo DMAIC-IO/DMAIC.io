@@ -5,8 +5,10 @@
     <div class="five-why__problem">
       <label class="five-why__problem-label"
              data-help-key="modules.five-why.fields.problem.help"
+             :for="fieldId('problem')"
              x-text="t('problem')"></label>
       <input type="text" class="field five-why__problem-input"
+             :id="fieldId('problem')"
              data-ref="problemInput"
              :placeholder="t('problemPlaceholder')"
              x-model="model.problem" />
@@ -35,7 +37,7 @@
             <div class="five-why__card-actions">
               <template x-if="n1.children.length > 0">
                 <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
-                        data-action="toggle" :data-id="n1.id" :title="toggleTitle(n1)"
+                        data-action="toggle" :data-id="n1.id" :title="toggleTitle(n1)" :aria-expanded="ariaExpanded(n1)"
                         x-command="toggleCollapse" :data-arg-node-id="n1.id"><span class="icon icon--sm" :data-icon="toggleIcon(n1)" aria-hidden="true"></span></button>
               </template>
               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
@@ -61,7 +63,7 @@
                   <div class="five-why__card-actions">
                     <template x-if="n2.children.length > 0">
                       <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
-                              data-action="toggle" :data-id="n2.id" :title="toggleTitle(n2)"
+                              data-action="toggle" :data-id="n2.id" :title="toggleTitle(n2)" :aria-expanded="ariaExpanded(n2)"
                               x-command="toggleCollapse" :data-arg-node-id="n2.id"><span class="icon icon--sm" :data-icon="toggleIcon(n2)" aria-hidden="true"></span></button>
                     </template>
                     <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
@@ -87,7 +89,7 @@
                         <div class="five-why__card-actions">
                           <template x-if="n3.children.length > 0">
                             <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
-                                    data-action="toggle" :data-id="n3.id" :title="toggleTitle(n3)"
+                                    data-action="toggle" :data-id="n3.id" :title="toggleTitle(n3)" :aria-expanded="ariaExpanded(n3)"
                                     x-command="toggleCollapse" :data-arg-node-id="n3.id"><span class="icon icon--sm" :data-icon="toggleIcon(n3)" aria-hidden="true"></span></button>
                           </template>
                           <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
@@ -113,7 +115,7 @@
                               <div class="five-why__card-actions">
                                 <template x-if="n4.children.length > 0">
                                   <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
-                                          data-action="toggle" :data-id="n4.id" :title="toggleTitle(n4)"
+                                          data-action="toggle" :data-id="n4.id" :title="toggleTitle(n4)" :aria-expanded="ariaExpanded(n4)"
                                           x-command="toggleCollapse" :data-arg-node-id="n4.id"><span class="icon icon--sm" :data-icon="toggleIcon(n4)" aria-hidden="true"></span></button>
                                 </template>
                                 <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""

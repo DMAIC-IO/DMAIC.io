@@ -147,21 +147,31 @@ test('countHelpCoverage survives an absent subtree and a string intermediate seg
    fehlende Kontexthilfe ist ausdrücklich eine ausgewiesene Lücke und
    blockiert nicht; das harte i18n-Tor der freigegebenen Module steht in
    `agent-data.test.mjs`. Zugesichert wird, dass die Zahl die echte
-   Auflösungskette benutzt: `todo` hat über das geteilte `read()` den
-   Parameter `options`, aber keinen modulspezifischen Schlüssel dafür. Ohne
-   den geteilten Rückfall wiese der Report hier eine Phantomlücke aus. */
+   Auflösungskette benutzt: ein synthetisches freigegebenes Modul neben den
+   echten hat über das geteilte `read()` den Parameter `options`, aber im
+   echten Baum keinen modulspezifischen Schlüssel dafür. Ohne den geteilten
+   Rückfall wiese der Report hier eine Phantomlücke aus. Synthetisch, damit
+   der Fall nicht an einem Modul hängt, das bei seiner Umstellung einen
+   eigenen Schlüssel bekommt. */
 test('countHelpCoverage resolves the real tree through the documented chain', async () => {
   const { collectAgentData } = await import('./agent-data.mjs');
   const { APP_DIR } = await import('./build.mjs');
   const { modules } = await collectAgentData(APP_DIR);
-  const out = countHelpCoverage(APP_DIR, modules);
-  assert.ok(out.actions.total > 0, 'kein freigegebenes Modul — die Zahl prüfte nichts');
-  assert.ok(modules['todo']?.actions?.read?.params?.some(p => p.name === 'options'),
-    'todo.read hat den Parameter options nicht mehr — dieser Fall prüft nichts');
+  const SYNTHETIC = '__agent-report-test-shared-read__';
+  const out = countHelpCoverage(APP_DIR, {
+    ...modules,
+    [SYNTHETIC]: { available: true, actions: { read: { params: [{ name: 'options' }] } }, fields: {} },
+  });
+  assert.ok(out.actions.total > 1, 'kein echtes freigegebenes Modul — die Zahl prüfte nichts');
   assert.deepEqual(
-    out.missing.filter(m => m.includes('todo.actions.read.params.options')),
+    out.missing.filter(m => m.includes(`${SYNTHETIC}.actions.read.`)),
     [],
   );
+  // Gegenprobe: ein Parameter ohne geteilten Rückfall IST eine Lücke.
+  const gap = countHelpCoverage(APP_DIR, {
+    [SYNTHETIC]: { available: true, actions: { read: { params: [{ name: '__nope__' }] } }, fields: {} },
+  });
+  assert.ok(gap.missing.some(m => m.includes(`${SYNTHETIC}.actions.read.params.__nope__`)), 'Gegenprobe ohne Lücke');
 });
 
 /* ── Die geteilte Auflösung ────────────────────────────────────────────────

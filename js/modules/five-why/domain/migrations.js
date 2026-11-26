@@ -61,7 +61,8 @@ function treeFromFlat(flat) {
  * Exporte). Je Knoten: ein Nicht-Objekt entfällt samt Teilbaum; eine
  * ganzzahlige id ≥ 1 bleibt, sonst eine neue hinter der größten; `answer`
  * bleibt als Text, sonst leer; `level` und `parentId` aus der Lage;
- * `collapsed: true` (Ebene 1–4) wandert in die Liste `collapsed`; `question`
+ * `collapsed: true` (Ebene 1–4, nur mit Unterfragen) wandert in die Liste
+ * `collapsed`; `question`
  * und fremde Schlüssel entfallen. Auf Ebene 5 fehlt `children`; tiefere
  * Knoten rücken in Anzeigereihenfolge als Geschwister direkt hinter ihren
  * Vorfahren auf Ebene 5, ihre Antworten bleiben.
@@ -97,7 +98,7 @@ export function from0(old) {
     const answer = typeof n.answer === 'string' ? n.answer : '';
     const kids = (Array.isArray(n.children) ? n.children : []).filter(isObject);
     if (level < MAX_LEVEL_1_0) {
-      if (n.collapsed === true && !collapsed.includes(id)) collapsed.push(id);
+      if (n.collapsed === true && kids.length > 0 && !collapsed.includes(id)) collapsed.push(id);
       return [{ id, level, parentId, answer, children: kids.flatMap((c) => convert(c, level + 1, id)) }];
     }
     return [

@@ -124,6 +124,8 @@ export const State = defineModel({
       run() {
         const id = nextId(this.nodes);
         this.nodes = [...copyNodes(this.nodes), { id, level: 1, parentId: null, answer: '', children: [] }];
+        // Eine veraltete id (eines gelöschten Knotens) gilt nicht für den neuen.
+        if (this.collapsed.includes(id)) this.collapsed = this.collapsed.filter((x) => x !== id);
         return id;
       },
     }),
@@ -143,7 +145,9 @@ export const State = defineModel({
           : { id, level, parentId, answer: '' };
         /** @type {TreeNode[]} */ (parent.children).push(child);
         this.nodes = nodes;
-        if (this.collapsed.includes(parentId)) this.collapsed = this.collapsed.filter((x) => x !== parentId);
+        if (this.collapsed.some((x) => x === parentId || x === id)) {
+          this.collapsed = this.collapsed.filter((x) => x !== parentId && x !== id);
+        }
         return id;
       },
     }),
@@ -165,8 +169,12 @@ export const State = defineModel({
       run({ nodeId }) {
         requireKnownId('nodeId', nodeId, allIds(this.nodes));
         const nodes = copyNodes(this.nodes);
+        const parentId = /** @type {TreeNode} */ (findNode(nodes, nodeId)).parentId;
         const removed = new Set(removeSubtree(nodes, nodeId));
         this.nodes = nodes;
+        // Ein Elternknoten ohne Kinder hat nichts mehr einzuklappen.
+        const parent = parentId == null ? null : findNode(nodes, parentId);
+        if (parent && (parent.children?.length ?? 0) === 0) removed.add(parentId);
         if (this.collapsed.some((x) => removed.has(x))) this.collapsed = this.collapsed.filter((x) => !removed.has(x));
       },
     }),
@@ -182,10 +190,12 @@ export const State = defineModel({
     setCollapseAll: command({
       params: { collapsed: boolean({ agentWrite: false }) },
       run({ collapsed }) {
+        if (!collapsed) {
+          if (this.collapsed.length > 0) this.collapsed = [];
+          return;
+        }
         const withKids = parentIds(this.nodes);
-        this.collapsed = collapsed
-          ? [...this.collapsed, ...withKids.filter((id) => !this.collapsed.includes(id))]
-          : this.collapsed.filter((id) => !withKids.includes(id));
+        this.collapsed = [...this.collapsed, ...withKids.filter((id) => !this.collapsed.includes(id))];
       },
     }),
   },

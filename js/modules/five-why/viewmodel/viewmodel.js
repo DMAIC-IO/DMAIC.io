@@ -48,14 +48,33 @@ export default createModule({
     tree() { return toExport(this.model, this.model.collapsed, new Date()); },
   },
   /** @type {import('../../../core/template-module.js').ViewFn<FiveWhyModel, {}>} */
-  view() {
+  view(ctx) {
+    /** @type {ResizeObserver|null} */
+    let shown = null;
     return {
       init() {
         const fitAll = () => this.$root.querySelectorAll(ANSWER).forEach((el) => fitToContent(/** @type {HTMLTextAreaElement} */ (el)));
         this.$nextTick(fitAll);
         // Agent, Rückgängig, Beispiel, Aufklappen: nach jedem Rendern neu messen.
         this.$watch(() => JSON.stringify([this.model.nodes, this.model.collapsed]), () => this.$nextTick(fitAll));
+        // Verborgen (Tab ausgehängt, display:none) misst niemand: beim
+        // Sichtbarwerden — Breite von 0 auf mehr — alle Felder neu messen.
+        if (typeof ResizeObserver === 'undefined') return;
+        let visible = false;
+        shown = new ResizeObserver((entries) => {
+          const now = entries.some((e) => e.contentRect.width > 0);
+          if (now && !visible) fitAll();
+          visible = now;
+        });
+        shown.observe(this.$root);
       },
+      destroy() {
+        shown?.disconnect();
+        shown = null;
+      },
+
+      /** Eindeutige id eines Felds je Instanz (für `<label for>`). @param {string} name @returns {string} */
+      fieldId(name) { return `five-why-${name}-${ctx.instanceId}`; },
 
       /** Höchste Ebene (Grundursache). */
       get maxLevel() { return MAX_LEVEL; },
@@ -80,6 +99,8 @@ export default createModule({
       },
       /** Titel des Umschalters. @param {ViewNode} node @returns {string} */
       toggleTitle(node) { return this.isCollapsed(node.id) ? this.t('expand') : this.t('collapse'); },
+      /** `aria-expanded` des Umschalters. @param {ViewNode} node @returns {'true'|'false'} */
+      ariaExpanded(node) { return this.isCollapsed(node.id) ? 'false' : 'true'; },
       /** Symbol des Umschalters. @param {ViewNode} node @returns {string} */
       toggleIcon(node) { return this.isCollapsed(node.id) ? 'nav.expand-right' : 'nav.expand-down'; },
       /** „Why n hinzufügen“ für die nächste Ebene. @param {ViewNode} node @returns {string} */

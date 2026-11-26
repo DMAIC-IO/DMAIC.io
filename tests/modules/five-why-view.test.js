@@ -3,7 +3,8 @@
  * Modul und der echten Vorlage. Prüft: Leerzustand, Hilfe-Anker, alle Knöpfe
  * je Ebene samt Kennzeichen und Grundursache, Antworten über die Textfelder
  * (ein Schritt je Fokus), Löschen mit genau einer Rückfrage, Einklappen über
- * Umschalter und Werkzeugleiste, die Höhe der Antwortfelder, Rückgängig/
+ * Umschalter und Werkzeugleiste, die Höhe der Antwortfelder (auch verborgen
+ * geschrieben), Rückgängig/
  * Wiederholen, Agent und `instance.set`, zwei Instanzen, den JSON-Export und
  * das Altprojekt ohne Verlaufsschritt.
  */
@@ -201,6 +202,8 @@ suite('five-why: Viewmodel im Browser', () => {
     assertEqual(input.value, '');
     assertEqual(input.placeholder, tr('problemPlaceholder'));
     assertEqual(h.q('.five-why__problem-label').textContent, tr('problem'));
+    assertTrue(input.id !== '', 'Problemfeld ohne id');
+    assertEqual(/** @type {HTMLLabelElement} */ (h.q('.five-why__problem-label')).htmlFor, input.id);
     assertEqual(h.ids().length, 0);
     assertEqual(h.q('[data-ref="addRoot"]').textContent.trim(), tr('addWhy'));
     assertDeepEqual(h.stats(), [`0 ${tr('statsNodes')}`, `0 ${tr('statsDepth')}`, `0 ${tr('statsBranches')}`, `0 ${tr('statsAnswered')}`]);
@@ -329,9 +332,11 @@ suite('five-why: Viewmodel im Browser', () => {
     const read0 = JSON.stringify(h.vm().read({ fields: ['nodes'] }));
     assertEqual(h.inst.historyCan('undo'), false);
     assertEqual(h.open(1), true);
+    assertEqual(h.btn(1, 'toggle').getAttribute('aria-expanded'), 'true');
     await h.click(h.btn(1, 'toggle'));
     await until(() => !h.open(1));
     assertEqual(h.btn(1, 'toggle').title, tr('expand'));
+    assertEqual(h.btn(1, 'toggle').getAttribute('aria-expanded'), 'false');
     assertEqual(h.btn(1, 'toggle').querySelector('.icon').getAttribute('data-icon'), 'nav.expand-right');
     assertDeepEqual(h.saved().collapsed, [1]);
     assertEqual(JSON.stringify(h.vm().read({ fields: ['nodes'] })), read0);
@@ -382,6 +387,21 @@ suite('five-why: Viewmodel im Browser', () => {
     h.vm().model.toggleCollapse({ nodeId: 2 });
     await until(() => h.open(2) && h.answer(3).offsetHeight === six);
     assertEqual(h.answer(3).offsetHeight, six);
+    unmountAll();
+  });
+
+  test('Höhe der Antwortfelder: verborgen geschrieben, beim Einblenden gemessen', async () => {
+    const h = await mount('fw-1', SMALL);
+    const one = h.answer(1).offsetHeight;
+    h.container.style.display = 'none';
+    await settle();
+    h.vm().model.setAnswer({ nodeId: 1, text: 'a\nb\nc\nd\ne\nf' });
+    await settle();
+    h.container.style.display = '';
+    const el = h.answer(1);
+    await until(() => el.offsetHeight > one && Math.abs(el.offsetHeight - el.scrollHeight) <= 1);
+    assertTrue(el.offsetHeight > one, `Höhe nach dem Einblenden ${el.offsetHeight} ≤ ${one}`);
+    assertTrue(Math.abs(el.offsetHeight - el.scrollHeight) <= 1, `Höhe ${el.offsetHeight} ≠ scrollHeight ${el.scrollHeight}`);
     unmountAll();
   });
 

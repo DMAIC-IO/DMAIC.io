@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT,
          readAgentReadTypedef, readDerivedReturns } from './agent-data.mjs';
-import { readHelpTables, lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
+import { readHelpTables, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
   BOUND_HELP_KEY_FAMILIES } from './help-anchors.mjs';
 import ts from 'typescript';
@@ -1685,16 +1685,23 @@ test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die do
   assert.deepEqual(missing, [], `unauflösbare read-Hilfetexte:\n${missing.join('\n')}`);
 });
 
-test('i18n-Tor: das deutsche read-Hilfetext von kano bleibt der modulspezifische', async () => {
+test('i18n-Tor: ein modulspezifischer read-Hilfetext gewinnt vor dem geteilten', async () => {
   // Der geteilte Rückfall (`modules.shared.actions.read.help`) ist additiv: der
-  // Modulschlüssel gewinnt weiterhin. Dieser Fall hält fest, dass die
-  // Freigabe von kano ihren eigenen Text behält.
+  // Modulschlüssel gewinnt weiterhin. Dieser Fall hält am echten Baum fest,
+  // dass Module mit eigenem Text ihn über die Kette behalten — ohne ein
+  // bestimmtes Modul zu nennen, dessen Text bei der Umstellung umzieht.
   const appDir = join(import.meta.dirname, '..', '..');
-  const de = JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8'));
-  assert.equal(lookup(de, 'modules.kano.actions.read.help'),
-    'Liefert die Erfassung, die Befragten und die wählbaren Bäume.');
-  assert.ok(lookup(de, 'modules.shared.actions.read.help'));
+  const { de } = readHelpTables(appDir);
+  const shared = lookup(de, 'modules.shared.actions.read.help');
+  assert.ok(shared);
   assert.ok(lookup(de, 'modules.shared.actions.read.params.options'));
+  const own = Object.keys(de.modules).filter((id) => id !== 'shared'
+    && ![undefined, shared].includes(lookup(de, `modules.${id}.actions.read.help`)));
+  assert.ok(own.length > 0, 'kein Modul mit eigenem read-Hilfetext — dieser Fall prüft nichts');
+  for (const id of own) {
+    const resolved = helpKeys(id, 'actions.read.help').map((k) => lookup(de, k)).find(Boolean);
+    assert.equal(resolved, lookup(de, `modules.${id}.actions.read.help`), id);
+  }
 });
 
 /* ── Domänen-Tor ────────────────────────────────────────────────────────

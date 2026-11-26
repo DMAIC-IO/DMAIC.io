@@ -6,6 +6,13 @@ import { createInstances } from '../../js/core/instances.js';
 import { defineModel, number, command, setCommandObserver } from '../../js/core/model.js';
 import { initialModel } from '../../js/core/initial-model.js';
 import { StateManager } from '../../js/core/state-manager.js';
+import { MIXIN_READ_MODULES } from '../../js/core/agent/agent-read-mixin.js';
+
+/**
+ * Ein Modul der Altform mit dem geteilten read() — irgendeins aus der Liste,
+ * damit die Tests nicht an einem Modul hängen, das bald umgestellt wird.
+ */
+export const LEGACY_MODULE_ID = MIXIN_READ_MODULES[MIXIN_READ_MODULES.length - 1];
 
 export const Doc = defineModel({
   version: '1.0',
@@ -86,7 +93,7 @@ export const PHASES = () => ({
   define: [
     { instanceId: 'd2', moduleId: 'sipoc', order: 1 },
     { instanceId: 'd1', moduleId: 'sipoc', order: 0, customName: 'Erster' },
-    { instanceId: 'dx', moduleId: 'todo', order: 2 },
+    { instanceId: 'dx', moduleId: LEGACY_MODULE_ID, order: 2 },
   ],
   measure: [
     { instanceId: 'm1', moduleId: 'sipoc', order: 0 },
@@ -97,7 +104,7 @@ export const PHASES = () => ({
 export function setup({ states = {}, completed = false, modules = {}, live, workspace, i18n } = {}) {
   const bus = makeBus();
   const sm = makeState({ phases: PHASES(), states, completed, bus });
-  const mods = { sipoc: targetModule(), todo: { id: 'todo' }, kano: { id: 'kano' }, ...modules };
+  const mods = { sipoc: targetModule(), [LEGACY_MODULE_ID]: { id: LEGACY_MODULE_ID }, kano: { id: 'kano' }, ...modules };
   const loaded = new Set(Object.keys(mods));
   const moduleRegistry = { loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null) };
   const ws = workspace ?? makeWorkspace(live);

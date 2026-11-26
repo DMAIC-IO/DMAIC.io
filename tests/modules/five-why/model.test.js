@@ -234,6 +234,16 @@ suite('five-why Model — addRoot', () => {
     m.removeNode({ nodeId: id });
     assertEqual(m.addRoot({}), id);
   });
+  test('eine veraltete id in collapsed (nodes allein gesetzt) gilt nicht für die neue Wurzel', () => {
+    const m = new State();
+    m.addRoot({});
+    const id = m.addRoot({});
+    m.collapsed = [id];
+    m.nodes = [{ id: 1, level: 1, parentId: null, answer: '', children: [] }];
+    assertDeepEqual(m.collapsed, [id]);
+    assertEqual(m.addRoot({}), id);
+    assertDeepEqual(m.collapsed, []);
+  });
 });
 
 suite('five-why Model — addChild', () => {
@@ -253,6 +263,16 @@ suite('five-why Model — addChild', () => {
   test('klappt den Elternknoten auf', () => {
     const m = legacy();
     m.addChild({ parentId: 5 });
+    assertDeepEqual(m.collapsed, []);
+  });
+  test('eine veraltete id in collapsed (nodes allein gesetzt) gilt nicht für den neuen Knoten', () => {
+    const m = new State();
+    const a = m.addRoot({});
+    const b = m.addChild({ parentId: a });
+    m.collapsed = [b];
+    m.nodes = [{ id: a, level: 1, parentId: null, answer: '', children: [] }];
+    assertDeepEqual(m.collapsed, [b]);
+    assertEqual(m.addChild({ parentId: a }), b);
     assertDeepEqual(m.collapsed, []);
   });
   test('Ebene 5 abgelehnt mit param parentId, Zustand unverändert', () => {
@@ -311,6 +331,18 @@ suite('five-why Model — removeNode', () => {
     assertDeepEqual(findNode(m.nodes, 12)?.children, []);
     assertDeepEqual(m.collapsed, [5]);
   });
+  test('letztes Kind entfernt: der Elternknoten fällt aus collapsed', () => {
+    const m = legacy();
+    m.removeNode({ nodeId: 6 });
+    assertDeepEqual(findNode(m.nodes, 5)?.children, []);
+    assertDeepEqual(m.collapsed, []);
+  });
+  test('Geschwister bleiben: der Elternknoten bleibt in collapsed', () => {
+    const m = legacy();
+    m.toggleCollapse({ nodeId: 3 });
+    m.removeNode({ nodeId: 11 });
+    assertDeepEqual(m.collapsed, [5, 3]);
+  });
   test('unbekannte id abgelehnt mit param nodeId', () => {
     const m = legacy();
     assertEqual(thrown(() => m.removeNode({ nodeId: 99 }))?.param, 'nodeId');
@@ -344,11 +376,12 @@ suite('five-why Model — Einklappen', () => {
     m.setCollapseAll({ collapsed: true });
     assertDeepEqual(m.collapsed, [5, 3, 7, 8, 12]);
   });
-  test('setCollapseAll false: nur Knoten mit Unterfragen klappen auf', () => {
+  test('setCollapseAll false: leert collapsed ganz, auch ids ohne Unterfragen', () => {
     const m = legacy();
     m.toggleCollapse({ nodeId: 11 });
+    m.toggleCollapse({ nodeId: 3 });
     m.setCollapseAll({ collapsed: false });
-    assertDeepEqual(m.collapsed, [11]);
+    assertDeepEqual(m.collapsed, []);
   });
   test('Einklappen ändert weder Inhalt noch stats', () => {
     const m = legacy();

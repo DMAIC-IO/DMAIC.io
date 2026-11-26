@@ -149,10 +149,21 @@ suite('five-why Migration 0→1.0 — Grundfälle', () => {
   });
   test('collapsed: true wandert nach collapsed, Tiefe zuerst; false und andere Werte nicht', () => {
     const out = from0({ nodes: [
-      oldNode(1, 1, null, '', [oldNode(2, 2, 1, '', [], true), oldNode(3, 2, 1, '', [], 'true')], true),
-      oldNode(4, 1, null, '', [], true),
+      oldNode(1, 1, null, '', [
+        oldNode(2, 2, 1, '', [oldNode(5, 3, 2, '')], true),
+        oldNode(3, 2, 1, '', [oldNode(6, 3, 3, '')], 'true'),
+      ], true),
+      oldNode(4, 1, null, '', [oldNode(7, 2, 4, '')], true),
     ] });
     assertDeepEqual(out.collapsed, [1, 2, 4]);
+  });
+  test('collapsed: true ohne Unterfragen entfällt', () => {
+    const out = from0({ nodes: [
+      oldNode(1, 1, null, '', [oldNode(2, 2, 1, '', [], true)], true),
+      oldNode(3, 1, null, '', [], true),
+      oldNode(4, 1, null, '', ['kaputt'], true),
+    ] });
+    assertDeepEqual(out.collapsed, [1]);
   });
   test('collapsed auf Ebene 5 entfällt (die Grundursache hat keine Unterfragen)', () => {
     const old = chain(5);
