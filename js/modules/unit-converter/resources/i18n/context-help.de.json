@@ -5,7 +5,7 @@
       "help": "Der Schlüssel der aktiven Größenart, etwa laenge oder masse. Gewechselt wird über das Kommando, das auch beide Einheiten auf die Vorgaben der Größenart stellt."
     },
     "fromUnit": {
-      "help": "Eingang: die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Wählbar sind die Einheiten der aktiven Größenart; passt die Zieleinheit danach nicht mehr, wird sie mitgezogen."
+      "help": "Eingang: die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Wählbar sind die Einheiten der aktiven Größenart; passt die Ausgangseinheit danach nicht mehr, wird sie mitgezogen."
     },
     "toUnit": {
       "help": "Ausgang: die Einheit, in die umgerechnet wird; darunter steht das Ergebnis. Wählbar sind nur Einheiten, die zur Eingangseinheit passen; bei den Laborwerten die Einheiten derselben Gruppe."
@@ -14,10 +14,10 @@
       "help": "Der Wert, der umgerechnet wird, als freier Text; ein Komma gilt als Dezimaltrennzeichen, ein Punkt vor drei Ziffern als Tausendertrenner. Leer heißt nichts eingegeben; ein Text, der keine Zahl ergibt, ergibt kein Ergebnis."
     },
     "tzFrom": {
-      "help": "Von Zeitzone: die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden. Gespeichert wird die Position in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin."
+      "help": "Von Zeitzone: die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden."
     },
     "tzTo": {
-      "help": "Nach Zeitzone: die Zielzeitzone, in der darunter das umgerechnete Ergebnis erscheint. Gespeichert wird die Position in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin."
+      "help": "Nach Zeitzone: die Zielzeitzone, in der darunter das umgerechnete Ergebnis erscheint."
     },
     "tzTime": {
       "help": "Die Uhrzeit, die umgerechnet wird, als HH:MM von 00:00 bis 23:59 in der Ausgangszeitzone; leer heißt nicht gesetzt, dann gibt es kein Ergebnis."
@@ -47,7 +47,7 @@
       }
     },
     "setFromUnit": {
-      "help": "Setzt die Einheit, aus der umgerechnet wird, und zieht die Zieleinheit in einem Schritt nach, wenn sie dazu nicht mehr passt.",
+      "help": "Setzt die Einheit, aus der umgerechnet wird, und zieht die Ausgangseinheit in einem Schritt nach, wenn sie dazu nicht mehr passt.",
       "params": {
         "unitKey": "Der Schlüssel einer Einheit der aktiven Größenart. Eine Einheit einer anderen Größenart wird abgelehnt; die Meldung nennt die zulässigen Schlüssel.",
         "command": "Das Kommando als ein Objekt mit unitKey."
@@ -62,7 +62,7 @@
     "swapTimezones": {
       "help": "Tauscht Ausgangs- und Zielzeitzone; Uhrzeit und Datum bleiben.",
       "params": {
-        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben. Die Zeitzonen selbst setzt instance.set über tzFrom und tzTo; gespeichert ist die Position in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin."
       }
     },
     "tzSetNow": {

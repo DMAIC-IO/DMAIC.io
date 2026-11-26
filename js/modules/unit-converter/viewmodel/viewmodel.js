@@ -3,9 +3,9 @@
  *
  * Felder, Kommandos, Invarianten und Ergebnisse liegen im Model
  * (domain/model.js); die Agentenfläche entsteht aus dessen Schema. Größenart,
- * Tauschen und „Jetzt“ laufen über `x-command`, die Zieleinheit über
+ * Tauschen und „Jetzt“ laufen über `x-command`, die Ausgangseinheit über
  * `x-model`, die Zeitzonen über `x-field`. Die Auswahl „Eingang“ ruft das
- * Kommando `setFromUnit`, das die Zieleinheit im selben Schritt nachzieht.
+ * Kommando `setFromUnit`, das die Ausgangseinheit im selben Schritt nachzieht.
  * Hier bleiben die Anzeige (Zahlen, Uhrzeit und Datum in der App-Sprache,
  * Beschriftungen) und die Weltzeituhr mit ihrem Sekundentakt.
  */
@@ -67,7 +67,7 @@ export default createModule({
         return !cat || cat.groups ? [] : Object.keys(cat.units);
       },
       /**
-       * Auswahl „Eingang“: über das Kommando, das die Zieleinheit nachzieht.
+       * Auswahl „Eingang“: über das Kommando, das die Ausgangseinheit nachzieht.
        * @param {Event} e
        */
       onFromUnit(e) {

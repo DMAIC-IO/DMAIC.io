@@ -55,12 +55,12 @@ export function defaultUnits(catKey) {
 }
 
 /**
- * Die Zieleinheit, die zur Ausgangseinheit passt: die bevorzugte, wenn sie
- * passt und nicht die Ausgangseinheit ist; sonst die bisherige, wenn sie
+ * Die Ausgangseinheit, die zur Eingangseinheit passt: die bevorzugte, wenn sie
+ * passt und nicht die Eingangseinheit ist; sonst die bisherige, wenn sie
  * passt; sonst die erste andere verträgliche.
  * @param {string} catKey
  * @param {string} from
- * @param {string} current bisherige Zieleinheit
+ * @param {string} current bisherige Ausgangseinheit
  * @param {string} [preferred]
  * @returns {string}
  */
@@ -86,7 +86,7 @@ export function convert(catKey, from, to, num) {
 }
 
 /**
- * Der Umrechnungsfaktor (eine Ausgangseinheit in der Zieleinheit).
+ * Der Umrechnungsfaktor (eine Eingangseinheit in der Ausgangseinheit).
  * @param {string} catKey @param {string} from @param {string} to
  * @returns {number|null} null bei unbekannter Einheit oder logarithmischer Größe
  */

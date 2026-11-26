@@ -207,7 +207,7 @@
   "tzSaoPaulo": "São Paulo (BRT)",
   "clockTime": "{time} Uhr",
   "invariants": {
-    "unitsValid": "Die Ausgangseinheit gehört zur gewählten Größenart, die Zieleinheit passt zur Ausgangseinheit; bei den Laborwerten heißt das: dieselbe Gruppe.",
+    "unitsValid": "Die Eingangseinheit gehört zur gewählten Größenart, die Ausgangseinheit passt zur Eingangseinheit; bei den Laborwerten heißt das: dieselbe Gruppe.",
     "timeForm": "Die Uhrzeit ist leer oder eine Uhrzeit als HH:MM von 00:00 bis 23:59.",
     "dateForm": "Das Datum ist leer oder ein Kalenderdatum als JJJJ-MM-TT."
   }

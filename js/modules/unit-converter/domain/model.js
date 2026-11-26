@@ -34,7 +34,7 @@ export const CATEGORY_KEYS = [
  *
  * @typedef {object} ConversionResult
  * @property {number|null} value  das umgerechnete Ergebnis, ungerundet
- * @property {number|null} factor  der Wert einer Ausgangseinheit in der Zieleinheit; leer bei logarithmischen Größen
+ * @property {number|null} factor  der Wert einer Eingangseinheit in der Ausgangseinheit; leer bei logarithmischen Größen
  */
 
 /**
@@ -150,7 +150,7 @@ export class State extends defineModel({
       return unitKeysOf(this.activeCat);
     },
     /**
-     * Die Einheitenschlüssel, die zur Ausgangseinheit passen.
+     * Die Einheitenschlüssel, die zur Eingangseinheit passen.
      * @this {import('./model.types.js').StateModel}
      * @returns {string[]}
      */

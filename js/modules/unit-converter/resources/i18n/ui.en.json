@@ -207,7 +207,7 @@
   "tzSaoPaulo": "São Paulo (BRT)",
   "clockTime": "{time}",
   "invariants": {
-    "unitsValid": "The source unit belongs to the selected category and the target unit fits the source unit; for lab values that means the same group.",
+    "unitsValid": "The input unit belongs to the selected category and the output unit fits the input unit; for lab values that means the same group.",
     "timeForm": "The time is empty or a time as HH:MM from 00:00 to 23:59.",
     "dateForm": "The date is empty or a calendar date as YYYY-MM-DD."
   }

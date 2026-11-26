@@ -71,6 +71,11 @@ suite('unit-converter present: Zeitzonen', () => {
     assertEqual(zoneTime(at, 'UTC', 'de', true), '00:00:00');
   });
 
+  test('Mitternacht in en-US als 00, nie 24 (hourCycle h23)', () => {
+    assertEqual(zoneTime(at, 'UTC', 'en'), '00:00');
+    assertEqual(zoneTime(at, 'UTC', 'en', true), '00:00:00');
+  });
+
   test('Datum mit Wochentag: de-DE und en-US', () => {
     assertEqual(zoneDate(at, 'America/New_York', 'de'), 'So., 11.01.2026');
     assertEqual(zoneDate(at, 'America/New_York', 'en'), 'Sun, 01/11/2026');

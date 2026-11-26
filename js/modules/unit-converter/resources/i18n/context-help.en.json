@@ -14,10 +14,10 @@
       "help": "The value to convert, as free text; a comma counts as the decimal separator, a dot before three digits as a thousands separator. Empty means nothing entered; text that is not a number gives no result."
     },
     "tzFrom": {
-      "help": "From Timezone: the source time zone, whose time and date are entered below it. Stored is the position in the time-zone list, from 0; 0 is UTC, 1 Berlin."
+      "help": "From Timezone: the source time zone, whose time and date are entered below it."
     },
     "tzTo": {
-      "help": "To Timezone: the target time zone, in which the converted result appears below it. Stored is the position in the time-zone list, from 0; 0 is UTC, 1 Berlin."
+      "help": "To Timezone: the target time zone, in which the converted result appears below it."
     },
     "tzTime": {
       "help": "The time to convert, as HH:MM from 00:00 to 23:59 in the source time zone; empty means not set, and then there is no result."
@@ -62,7 +62,7 @@
     "swapTimezones": {
       "help": "Swaps the source and the target time zone; time and date stay.",
       "params": {
-        "command": "The command as an empty object; it takes no input."
+        "command": "The command as an empty object; it takes no input. The time zones themselves are set by instance.set via tzFrom and tzTo; stored is the position in the time-zone list, from 0; 0 is UTC, 1 Berlin."
       }
     },
     "tzSetNow": {

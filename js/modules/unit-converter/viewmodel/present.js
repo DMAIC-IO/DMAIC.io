@@ -65,7 +65,7 @@ export function formulaText(hasInput, factor, from, to, lang, t) {
  */
 export function zoneTime(date, tz, lang, seconds = false) {
   return new Intl.DateTimeFormat(localeOf(lang), {
-    timeZone: tz, hour: '2-digit', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}), hour12: false,
+    timeZone: tz, hour: '2-digit', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}), hourCycle: 'h23',
   }).format(date);
 }
 

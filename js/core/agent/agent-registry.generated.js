@@ -21903,7 +21903,7 @@ export const AGENT_REGISTRY = {
           },
           "factor": {
             "type": "number|null",
-            "help": "der Wert einer Ausgangseinheit in der Zieleinheit; leer bei logarithmischen Größen"
+            "help": "der Wert einer Eingangseinheit in der Ausgangseinheit; leer bei logarithmischen Größen"
           }
         }
       },
