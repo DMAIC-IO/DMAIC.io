@@ -15,6 +15,11 @@
     "description": "Horizontale Boxplots zum Vergleich von Verteilungen",
     "whenToUse": "Streuung, Median und Ausreißer einer oder mehrerer numerischer Spalten vergleichen, optional nach einer Gruppe aufgeteilt."
   },
+  "calculator": {
+    "name": "Taschenrechner",
+    "description": "Wissenschaftlicher Taschenrechner mit Statistik- und 6σ-Modus",
+    "whenToUse": "Wenn eine Zahl, ein statistischer Kennwert oder eine Prozessfähigkeit schnell gerechnet werden soll, ohne dafür eine Datensammlung anzulegen — wissenschaftlich, als Lage- und Streuungsmaß über eine kurze Werteliste, oder als Cp/Cpk, Sigma-Niveau und DPMO aus Werten und Spezifikationsgrenzen; nicht für eine dauerhafte Auswertung über eine Datentabelle, dafür sind die Datensammlung, das Histogramm und die Prozessfähigkeitsanalyse da."
+  },
   "ce-matrix": {
     "name": "C&E-Matrix",
     "description": "Ursache-Wirkungs-Matrix",

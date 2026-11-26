@@ -15,6 +15,11 @@
     "description": "Horizontal boxplots for comparing distributions",
     "whenToUse": "Compare the spread, median and outliers of one or more numeric columns, optionally split by a group."
   },
+  "calculator": {
+    "name": "Calculator",
+    "description": "Scientific calculator with statistics and 6σ mode",
+    "whenToUse": "When a number, a statistic or a process capability has to be computed quickly without setting up a data collection — scientifically, as a location and spread measure over a short list of values, or as Cp/Cpk, sigma level and DPMO from values and specification limits; not for a lasting analysis over a data table, that is what the data collection, the histogram and the process capability analysis are for."
+  },
   "ce-matrix": {
     "name": "C&E Matrix",
     "description": "Cause and Effect Matrix",

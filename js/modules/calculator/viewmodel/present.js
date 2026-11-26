@@ -121,7 +121,7 @@ function formatDigits(v, lang, sig, big, expDigits) {
   if (Math.abs(v) < 0.0001 || Math.abs(v) >= big) {
     return v.toExponential(expDigits).replace('.', decimalSeparator(lang));
   }
-  return formatNumber(parseFloat(v.toPrecision(sig)), lang);
+  return formatNumber(Number(v.toPrecision(sig)), lang);
 }
 
 /** Ein Kennwert: 8 signifikante Stellen, Exponent ab 1e8. @param {number} v @param {string} lang @returns {string} */

@@ -17,10 +17,7 @@ import { join, relative } from 'node:path';
  * Click handlers that delete but deliberately do not ask.
  * Key: `<path below js/>#<method>`, value: the reason.
  */
-export const DELETE_CONFIRM_EXEMPTIONS = {
-  'modules/calculator/calculator.html#removeLast': 'backspace key of the calculator input, not a delete of data',
-  'modules/calculator/calculator.html#removeLastSS': 'backspace key of the calculator input, not a delete of data',
-};
+export const DELETE_CONFIRM_EXEMPTIONS = {};
 
 const OPENING_TAG = /<([a-zA-Z][\w-]*)\b[^<>]*>/g;
 const CLICK_ATTR = /(?<![\w-])(?:@click|x-on:click)(?:\.[\w.-]+)?\s*=\s*"([^"]*)"/;

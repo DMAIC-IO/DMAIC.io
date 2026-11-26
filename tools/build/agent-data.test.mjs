@@ -1814,11 +1814,17 @@ test('class State extends State wird gemeldet, nicht still terminiert', async ()
     `kein Befund: ${JSON.stringify(modules.foo.violations)}`);
 });
 
-test('calculator führt alle neun Modellfelder', async () => {
+test('calculator führt alle neun Modellfelder aus dem Schema, ohne die Setter der Altform', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = await collectAgentData(appDir);
-  assert.deepEqual(Object.keys(modules.calculator.fields).sort(),
+  const calc = modules.calculator;
+  assert.equal(calc.schema, true);
+  assert.deepEqual(Object.keys(calc.fields).sort(),
     ['angleMode', 'dataset', 'expression', 'lastResult', 'lsl', 'memory', 'mode', 'ssDataset', 'usl']);
+  assert.equal(calc.fields.lsl.type, 'number|null');
+  for (const name of ['setAngleMode', 'setMemory', 'setLsl', 'setUsl', 'toggleAngle']) {
+    assert.ok(!Object.hasOwn(calc.actions, name), name);
+  }
 });
 
 test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein Befund', async () => {

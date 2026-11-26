@@ -1,5 +1,6 @@
 <div class="module-calculator" x-data="calculator" @keydown.window="onKey($event)">
   <!-- data-help-key="" an Ziffern, Operatoren und Funktionstasten ist gewollt: ein Abzeichen je Taste wäre Rauschen; die Hilfe hängt an den Aktionstasten, den Kennwerttasten und den Beschriftungen. -->
+  <!-- data-confirm-delete="off" an „Letzter ×“: die Taste nimmt wie Rückschritt den zuletzt getippten Wert zurück (Rückgängig holt ihn wieder), keine Rückfrage wie bisher. -->
   <div class="module-calculator__wrap">
 
     <div class="dmike-tabs" role="tablist" x-tablist data-help-key="modules.calculator.actions.switchMode.help">
@@ -112,7 +113,7 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="0" x-command="inputText" data-arg-ch="0" data-help-key="">0</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="." x-command="inputText" data-arg-ch="." data-help-key="">.</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="-" x-command="inputText" data-arg-ch="-" data-help-key="">-</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last" data-help-key="modules.calculator.actions.removeLast.help" x-command="removeLast" x-text="t('removeLast')"></button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last" data-confirm-delete="off" data-help-key="modules.calculator.actions.removeLast.help" x-command="removeLast" x-text="t('removeLast')"></button>
 
         <button class="module-calculator__key module-calculator__key--stat" data-stat="mean" data-help-key="modules.calculator.types.StatKey.mean" x-command="calcStat" data-arg-type="mean" x-text="statLabel('mean')"></button>
         <button class="module-calculator__key module-calculator__key--stat" data-stat="median" data-help-key="modules.calculator.types.StatKey.median" x-command="calcStat" data-arg-type="median" x-text="statLabel('median')"></button>
@@ -173,7 +174,7 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="0" x-command="inputText" data-arg-ch="0" data-help-key="">0</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="." x-command="inputText" data-arg-ch="." data-help-key="">.</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="-" x-command="inputText" data-arg-ch="-" data-help-key="">-</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" data-help-key="modules.calculator.actions.removeLastSS.help" x-command="removeLastSS" x-text="t('removeLast')"></button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" data-confirm-delete="off" data-help-key="modules.calculator.actions.removeLastSS.help" x-command="removeLastSS" x-text="t('removeLast')"></button>
 
         <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" data-help-key="modules.calculator.types.CapabilityKey.cp" x-command="calcSS" data-arg-type="cp" x-text="ssLabel('cp')"></button>
         <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" data-help-key="modules.calculator.types.CapabilityKey.cpk" x-command="calcSS" data-arg-type="cpk" x-text="ssLabel('cpk')"></button>

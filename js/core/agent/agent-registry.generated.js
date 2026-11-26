@@ -1340,6 +1340,7 @@ export const AGENT_REGISTRY = {
   "calculator": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -1349,365 +1350,395 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "inputText": {
+        "target": "model",
         "params": [
           {
-            "name": "ch",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "das Zeichen, oder eine Zahl in Dezimalschreibweise. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Hängt ein Zeichen oder eine Zahl an die Eingabezeile an."
+        "help": "",
+        "keysOf": "inputText",
+        "keysHelp": "actions.inputText.params",
+        "keys": {
+          "ch": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "inputFn": {
+        "target": "model",
         "params": [
           {
-            "name": "fn",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Funktion, mit öffnender Klammer: sin(, cos(, tan(, asin(, acos(, atan(, log(, ln(, sqrt(, cbrt(, exp(, fact(. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Hängt eine Funktion samt öffnender Klammer an die Eingabezeile an."
+        "help": "",
+        "keysOf": "inputFn",
+        "keysHelp": "actions.inputFn.params",
+        "keys": {
+          "fn": {
+            "type": "'sin('|'cos('|'tan('|'asin('|'acos('|'atan('|'log('|'ln('|'sqrt('|'cbrt('|'exp('|'fact('",
+            "help": ""
+          }
+        }
       },
       "backspace": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Löscht das letzte Zeichen der Eingabezeile."
+        "help": "",
+        "keysOf": "backspace",
+        "keysHelp": "actions.backspace.params",
+        "keys": {}
       },
       "clear": {
-        "params": [],
-        "returns": "void",
-        "help": "Leert die Eingabezeile und das letzte Ergebnis."
-      },
-      "setAngleMode": {
+        "target": "model",
         "params": [
           {
-            "name": "mode",
-            "type": "'DEG'|'RAD'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "DEG rechnet in Grad, RAD in Radiant"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Winkeleinheit der trigonometrischen Funktionen."
+        "help": "",
+        "keysOf": "clear",
+        "keysHelp": "actions.clear.params",
+        "keys": {}
       },
       "memStore": {
-        "params": [],
-        "returns": "number",
-        "help": "Legt den angezeigten Wert in den Speicher — das letzte Ergebnis, sonst den gerechneten Wert der Eingabezeile."
-      },
-      "setMemory": {
+        "target": "model",
         "params": [
           {
-            "name": "value",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der neue Speicherwert; 0 heißt leer. Ein Wert, der keine endliche Zahl ist, ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "void",
-        "help": "Setzt den Speicherwert."
+        "returns": "number",
+        "help": "",
+        "keysOf": "memStore",
+        "keysHelp": "actions.memStore.params",
+        "keys": {}
       },
       "memRecall": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Hängt den Speicherwert an die Eingabezeile an."
+        "help": "",
+        "keysOf": "memRecall",
+        "keysHelp": "actions.memRecall.params",
+        "keys": {}
       },
       "switchMode": {
+        "target": "model",
         "params": [
           {
-            "name": "m",
-            "type": "'sci'|'stats'|'sixsigma'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "sci rechnet wissenschaftlich, stats wertet den Statistikdatensatz aus, sixsigma den Prozessdatensatz. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "void",
-        "help": "Wechselt den Rechenbereich und leert die Eingabezeile. Der schon aktive Bereich (Leertaste auf seinem Reiter, erneuter Klick) behält die Eingabe."
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "switchMode",
+        "keysHelp": "actions.switchMode.params",
+        "keys": {
+          "m": {
+            "type": "'sci'|'stats'|'sixsigma'",
+            "help": ""
+          }
+        }
       },
       "calculate": {
-        "params": [],
-        "returns": "string|null",
-        "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis."
-      },
-      "calcStat": {
+        "target": "model",
         "params": [
           {
-            "name": "type",
-            "type": "'mean'|'median'|'mode'|'range'|'stdS'|'stdP'|'varS'|'varP'|'sum'|'min'|'max'|'count'|'q1'|'q3'|'iqr'|'skew'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string|null",
-        "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis.",
-        "keysOf": "StatKey",
+        "returns": "{ value: number|null, reason: 'error'|null, expression: string }",
+        "help": "",
+        "keysOf": "calculate",
+        "keysHelp": "actions.calculate.params",
+        "keys": {}
+      },
+      "calcStat": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ value: number|null, modes: number[]|null, reason: 'noData'|'noMode'|'needN2'|'needN3'|null }",
+        "help": "",
+        "keysOf": "calcStat",
+        "keysHelp": "actions.calcStat.params",
         "keys": {
-          "mean": {
-            "type": "string",
-            "help": "Mittelwert"
-          },
-          "median": {
-            "type": "string",
-            "help": "Median"
-          },
-          "mode": {
-            "type": "string",
-            "help": "Modalwert"
-          },
-          "range": {
-            "type": "string",
-            "help": "Spannweite"
-          },
-          "stdS": {
-            "type": "string",
-            "help": "Standardabweichung der Stichprobe"
-          },
-          "stdP": {
-            "type": "string",
-            "help": "Standardabweichung der Grundgesamtheit"
-          },
-          "varS": {
-            "type": "string",
-            "help": "Varianz der Stichprobe"
-          },
-          "varP": {
-            "type": "string",
-            "help": "Varianz der Grundgesamtheit"
-          },
-          "sum": {
-            "type": "string",
-            "help": "Summe"
-          },
-          "min": {
-            "type": "string",
-            "help": "kleinster Wert"
-          },
-          "max": {
-            "type": "string",
-            "help": "größter Wert"
-          },
-          "count": {
-            "type": "string",
-            "help": "Anzahl der Werte"
-          },
-          "q1": {
-            "type": "string",
-            "help": "unteres Quartil"
-          },
-          "q3": {
-            "type": "string",
-            "help": "oberes Quartil"
-          },
-          "iqr": {
-            "type": "string",
-            "help": "Quartilsabstand"
-          },
-          "skew": {
-            "type": "string",
-            "help": "Schiefe der Stichprobe"
+          "type": {
+            "type": "'mean'|'median'|'mode'|'range'|'stdS'|'stdP'|'varS'|'varP'|'sum'|'min'|'max'|'count'|'q1'|'q3'|'iqr'|'skew'",
+            "help": ""
           }
         }
       },
       "calcSS": {
+        "target": "model",
         "params": [
           {
-            "name": "type",
-            "type": "'cp'|'cpk'|'pp'|'ppk'|'sigma'|'dpmo'|'yield'|'zscore'|'mean'|'std'|'ucl'|'lcl'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string|null",
-        "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis.",
-        "keysOf": "CapabilityKey",
+        "returns": "{ value: number|null, percent: number|null, reason: 'needData'|'needN2'|'needDataAndLimits'|null }",
+        "help": "",
+        "keysOf": "calcSS",
+        "keysHelp": "actions.calcSS.params",
         "keys": {
-          "cp": {
-            "type": "string",
-            "help": "Cp, mit σ innerhalb"
-          },
-          "cpk": {
-            "type": "string",
-            "help": "Cpk, mit σ innerhalb"
-          },
-          "pp": {
-            "type": "string",
-            "help": "Pp, mit Gesamtstreuung"
-          },
-          "ppk": {
-            "type": "string",
-            "help": "Ppk, mit Gesamtstreuung"
-          },
-          "sigma": {
-            "type": "string",
-            "help": "Sigma-Level (Z.bench), ohne 1,5-σ-Verschiebung"
-          },
-          "dpmo": {
-            "type": "string",
-            "help": "Fehler je Million"
-          },
-          "yield": {
-            "type": "string",
-            "help": "erwarteter Anteil gut in Prozent"
-          },
-          "zscore": {
-            "type": "string",
-            "help": "Z-Score zum Fehleranteil"
-          },
-          "mean": {
-            "type": "string",
-            "help": "Mittelwert"
-          },
-          "std": {
-            "type": "string",
-            "help": "Standardabweichung der Stichprobe"
-          },
-          "ucl": {
-            "type": "string",
-            "help": "obere Kontrollgrenze"
-          },
-          "lcl": {
-            "type": "string",
-            "help": "untere Kontrollgrenze"
+          "type": {
+            "type": "'cp'|'cpk'|'pp'|'ppk'|'sigma'|'dpmo'|'yield'|'zscore'|'mean'|'std'|'ucl'|'lcl'",
+            "help": ""
           }
         }
       },
       "addData": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "number|null",
-        "help": "Übernimmt die Eingabezeile als Wert in den Statistikdatensatz."
+        "help": "",
+        "keysOf": "addData",
+        "keysHelp": "actions.addData.params",
+        "keys": {}
       },
       "addDataValue": {
+        "target": "model",
         "params": [
           {
-            "name": "value",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Wert; eine Zahl in Dezimalschreibweise als Zeichenkette geht auch. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Hängt eine Zahl an den Statistikdatensatz an."
+        "help": "",
+        "keysOf": "addDataValue",
+        "keysHelp": "actions.addDataValue.params",
+        "keys": {
+          "value": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "removeLast": {
-        "params": [],
-        "returns": "void",
-        "help": "Entfernt den letzten Wert des Statistikdatensatzes."
-      },
-      "clearData": {
-        "params": [],
-        "returns": "void",
-        "help": "Leert den Statistikdatensatz."
-      },
-      "addSSData": {
-        "params": [],
-        "returns": "number|null",
-        "help": "Übernimmt die Eingabezeile als Wert in den Prozessdatensatz."
-      },
-      "addSSDataValue": {
+        "target": "model",
         "params": [
           {
-            "name": "value",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Wert; eine Zahl in Dezimalschreibweise als Zeichenkette geht auch. Jeder andere Wert ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeLast",
+        "keysHelp": "actions.removeLast.params",
+        "keys": {}
+      },
+      "clearData": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "clearData",
+        "keysHelp": "actions.clearData.params",
+        "keys": {}
+      },
+      "addSSData": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number|null",
+        "help": "",
+        "keysOf": "addSSData",
+        "keysHelp": "actions.addSSData.params",
+        "keys": {}
+      },
+      "addSSDataValue": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Hängt eine Zahl an den Prozessdatensatz an."
+        "help": "",
+        "keysOf": "addSSDataValue",
+        "keysHelp": "actions.addSSDataValue.params",
+        "keys": {
+          "value": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "removeLastSS": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Entfernt den letzten Wert des Prozessdatensatzes."
+        "help": "",
+        "keysOf": "removeLastSS",
+        "keysHelp": "actions.removeLastSS.params",
+        "keys": {}
       },
       "clearSSData": {
-        "params": [],
-        "returns": "void",
-        "help": "Leert den Prozessdatensatz."
-      },
-      "setLsl": {
+        "target": "model",
         "params": [
           {
-            "name": "value",
-            "type": "number|string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Grenze; der leere Text löscht sie. Ein Wert, der weder leer noch eine endliche Zahl ist, ist ein Fehler."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die untere Spezifikationsgrenze."
-      },
-      "setUsl": {
-        "params": [
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "die Grenze; der leere Text löscht sie. Ein Wert, der weder leer noch eine endliche Zahl ist, ist ein Fehler."
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die obere Spezifikationsgrenze."
+        "help": "",
+        "keysOf": "clearSSData",
+        "keysHelp": "actions.clearSSData.params",
+        "keys": {}
       }
     },
     "fields": {
       "mode": {
         "type": "'sci'|'stats'|'sixsigma'",
-        "help": "der aktive Rechenbereich: sci wissenschaftlich, stats Statistik, sixsigma Prozessfähigkeit",
+        "help": "",
         "bulk": false
       },
       "expression": {
         "type": "string",
-        "help": "der eingegebene Ausdruck, so wie er in der Anzeige steht",
+        "help": "",
         "bulk": false
       },
       "lastResult": {
         "type": "number|null",
-        "help": "das Ergebnis der letzten Rechnung; null, solange keines vorliegt",
+        "help": "",
         "bulk": false
       },
       "memory": {
         "type": "number",
-        "help": "der Speicherwert; 0 heißt leer",
+        "help": "",
         "bulk": false
       },
       "angleMode": {
         "type": "'DEG'|'RAD'",
-        "help": "die Winkeleinheit der Trigonometrie: DEG Grad, RAD Radiant",
+        "help": "",
         "bulk": false
       },
       "dataset": {
         "type": "number[]",
-        "help": "die Werte des Statistikbereichs in Eingabereihenfolge",
+        "help": "",
         "bulk": false
       },
       "ssDataset": {
         "type": "number[]",
-        "help": "die Werte des Prozessbereichs in Eingabereihenfolge",
+        "help": "",
         "bulk": false
       },
       "lsl": {
-        "type": "string",
-        "help": "die untere Spezifikationsgrenze als Text; leer heißt nicht gesetzt",
+        "type": "number|null",
+        "help": "",
         "bulk": false
       },
       "usl": {
-        "type": "string",
-        "help": "die obere Spezifikationsgrenze als Text; leer heißt nicht gesetzt",
+        "type": "number|null",
+        "help": "",
         "bulk": false
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "mode",
+      "memory",
+      "angleMode",
+      "dataset",
+      "ssDataset",
+      "lsl",
+      "usl"
+    ],
+    "invariants": []
   },
   "ce-matrix": {
     "tagged": true,

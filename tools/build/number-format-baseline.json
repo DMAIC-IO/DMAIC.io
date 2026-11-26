@@ -20,15 +20,6 @@
   "js/modules/attribute-test/attribute-test.js": {
     "count": 1
   },
-  "js/modules/calculator/calculator-model.js": {
-    "count": 5
-  },
-  "js/modules/calculator/calculator.html": {
-    "count": 2
-  },
-  "js/modules/calculator/calculator.js": {
-    "count": 2
-  },
   "js/modules/correlation/correlation-model.js": {
     "count": 1
   },
