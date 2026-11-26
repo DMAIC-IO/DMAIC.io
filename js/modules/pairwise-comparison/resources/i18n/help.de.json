@@ -1,0 +1,89 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der Paarweise Vergleich ist eine einfache, aber effektive Technik zur Priorisierung. Statt eine Liste auf einmal zu sortieren, werden die Elemente paarweise gegenübergestellt — pro Vergleich wird entschieden, welches wichtiger ist. Aus den vielen Einzelentscheidungen ergibt sich am Ende eine eindeutige Rangfolge, auch wenn das Team sich bei einer Globalbewertung uneinig wäre."
+        },
+        {
+          "type": "definition",
+          "term": "Vergleichsobjekte",
+          "content": "Die zu priorisierenden Elemente — z. B. Verbesserungsideen, Anforderungen, Risiken, Lieferantenoptionen. Idealerweise 5–10 Stück; bei mehr wird die Anzahl der Vergleiche unhandlich."
+        },
+        {
+          "type": "definition",
+          "term": "Paarvergleich",
+          "content": "Zwei Objekte werden direkt verglichen — „Ist A wichtiger als B?“. Bei n Objekten ergeben sich n × (n−1) / 2 Vergleiche (z. B. 10 Objekte → 45 Paare)."
+        },
+        {
+          "type": "definition",
+          "term": "Bewertungsskala",
+          "content": "Pro Vergleich wird entweder binär (A oder B) oder gewichtet (z. B. 1–9 nach Saaty) entschieden. Binär ist schneller, gewichtet liefert feinere Differenzierung."
+        },
+        {
+          "type": "definition",
+          "term": "Ergebnis",
+          "content": "Pro Objekt wird gezählt, wie oft es als wichtiger gewählt wurde. Die Summen ergeben die Rangfolge — höchste Punktzahl = höchste Priorität."
+        },
+        {
+          "type": "paragraph",
+          "content": "Der Paarweise Vergleich eignet sich besonders, wenn ein Team eine schlecht vergleichbare Liste von Optionen ordnen muss und der erste Versuch einer Direkt-Sortierung in Streit endet. Durch das Aufteilen in Einzelentscheidungen wird der Prozess greifbarer und konsensfähiger."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Liste der zu priorisierenden Objekte aufstellen — eindeutig und klar formuliert.",
+            "Bewertungskriterium festlegen: „wichtiger für …“, „dringender als …“, „mehr Wirkung als …“.",
+            "Skala wählen: binär (einfach) oder gewichtet (Saaty 1–9).",
+            "Im Team alle Paare durchgehen — jede Entscheidung kurz begründen.",
+            "Punktsummen pro Objekt berechnen.",
+            "Ergebnis als Rangfolge präsentieren und mit dem Team auf Plausibilität prüfen."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu viele Objekte",
+          "content": "Bei 20 Objekten sind es 190 Paare — die Sitzung wird zur Tortur und die Konzentration sinkt. Vorher grob filtern, dann erst paarweise vergleichen."
+        },
+        {
+          "type": "definition",
+          "term": "Unklares Vergleichskriterium",
+          "content": "Wenn nicht definiert ist, wonach verglichen wird, antwortet jeder gegen ein anderes Kriterium. Vorher festlegen: „wichtiger im Sinne von Kundennutzen“, „im Sinne von Kosten“ usw."
+        },
+        {
+          "type": "definition",
+          "term": "Unentschieden zulassen",
+          "content": "Wer „beide gleich wichtig“ wählen kann, vermeidet Entscheidungen — das macht das Verfahren wirkungslos. Im Zweifel zwingen, sich für eines zu entscheiden."
+        },
+        {
+          "type": "definition",
+          "term": "Inkonsistente Bewertungen",
+          "content": "Wenn A > B und B > C, müsste auch A > C gelten. In der Praxis passiert das nicht immer — bei systematischen Widersprüchen ist das Kriterium schwammig oder die Diskussion ist abgedriftet."
+        },
+        {
+          "type": "definition",
+          "term": "Einzelentscheidung statt Team",
+          "content": "Eine paarweise Bewertung von einer Person reproduziert deren Vorlieben. Im Team werden andere Perspektiven sichtbar — und das Ergebnis ist tragfähiger."
+        },
+        {
+          "type": "definition",
+          "term": "Ergebnis blind übernehmen",
+          "content": "Die Rangfolge ist eine Entscheidungshilfe, kein Urteil. Wenn das Bauchgefühl klar widerspricht, hat oft das Kriterium oder die Liste eine Lücke — nicht das Verfahren versagt."
+        }
+      ]
+    }
+  }
+}

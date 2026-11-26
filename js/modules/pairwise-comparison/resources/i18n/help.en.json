@@ -1,0 +1,89 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Pairwise comparison is a simple but effective prioritization technique. Instead of sorting a list all at once, items are compared in pairs — for each comparison, the team decides which is more important. The many individual decisions yield a clear ranking, even when the team would disagree on a global assessment."
+        },
+        {
+          "type": "definition",
+          "term": "Items to compare",
+          "content": "The elements to prioritize — e.g. improvement ideas, requirements, risks, supplier options. Ideally 5–10; with more, the number of comparisons becomes unwieldy."
+        },
+        {
+          "type": "definition",
+          "term": "Pair comparison",
+          "content": "Two items are compared directly — \"Is A more important than B?\". With n items there are n × (n−1) / 2 comparisons (e.g. 10 items → 45 pairs)."
+        },
+        {
+          "type": "definition",
+          "term": "Rating scale",
+          "content": "Each comparison is decided either binary (A or B) or weighted (e.g. 1–9 Saaty scale). Binary is faster, weighted gives finer differentiation."
+        },
+        {
+          "type": "definition",
+          "term": "Result",
+          "content": "For each item, count how often it was chosen as more important. The sums give the ranking — highest score = highest priority."
+        },
+        {
+          "type": "paragraph",
+          "content": "Pairwise comparison especially fits when a team must order a list of poorly comparable options and the first direct-sort attempt ends in argument. Splitting into individual decisions makes the process more tangible and consensual."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "List the items to prioritize — uniquely and clearly phrased.",
+            "Define the comparison criterion: \"more important for …\", \"more urgent than …\", \"higher impact than …\".",
+            "Choose scale: binary (simple) or weighted (Saaty 1–9).",
+            "Walk through all pairs as a team — briefly justify each decision.",
+            "Calculate the score totals per item.",
+            "Present the result as a ranking and sanity-check it with the team."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Too many items",
+          "content": "With 20 items there are 190 pairs — the session becomes torture and focus drops. Pre-filter roughly first, then compare pairwise."
+        },
+        {
+          "type": "definition",
+          "term": "Unclear comparison criterion",
+          "content": "If it is not defined what is compared, everyone answers against a different criterion. Set it beforehand: \"more important in terms of customer value\", \"in terms of cost\", etc."
+        },
+        {
+          "type": "definition",
+          "term": "Allowing ties",
+          "content": "Letting people pick \"both equally important\" avoids decisions — and makes the method ineffective. When in doubt, force a choice."
+        },
+        {
+          "type": "definition",
+          "term": "Inconsistent ratings",
+          "content": "If A > B and B > C, then A > C should also hold. In practice this is not always true — systematic contradictions point to a fuzzy criterion or a derailed discussion."
+        },
+        {
+          "type": "definition",
+          "term": "Individual instead of team",
+          "content": "A pairwise scoring done by one person reproduces their preferences. In a team, other perspectives surface — and the result is more robust."
+        },
+        {
+          "type": "definition",
+          "term": "Blindly accepting the result",
+          "content": "The ranking is a decision aid, not a verdict. When gut feeling clearly disagrees, it is often the criterion or list that has a gap — not the method that failed."
+        }
+      ]
+    }
+  }
+}

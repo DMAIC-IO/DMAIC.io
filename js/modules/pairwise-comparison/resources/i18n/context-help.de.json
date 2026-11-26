@@ -1,0 +1,83 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "criteria": {
+      "help": "Die Kriterien in Eingabereihenfolge, adressiert über ihre Nummer ab 0. Höchstens 15; ein Vergleich braucht mindestens 3."
+    },
+    "matrix": {
+      "help": "Die Vergleichsmatrix: matrix[i][j] sagt, wie Kriterium i gegen Kriterium j abgeschnitten hat — 1 gewonnen, 0.5 unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne Bedeutung."
+    },
+    "pairs": {
+      "help": "Die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft; bei n Kriterien sind es n·(n−1)/2 Paare. Jeder Start des Vergleichs mischt die Folge neu."
+    },
+    "currentPair": {
+      "help": "Wie viele Paare schon entschieden sind — und damit der Index des nächsten in pairs. Gleich der Länge von pairs heißt fertig. chooseLeft, chooseRight und tieCurrent entscheiden das anstehende Paar und zählen weiter."
+    },
+    "viewPhase": {
+      "help": "Der angezeigte Reiter: Kriterien, Vergleich oder Ergebnis. Vergleich ist nur bei laufendem, Ergebnis nur bei abgeschlossenem Vergleich erreichbar; jede Änderung der Kriterien führt zurück zu den Kriterien."
+    },
+    "result": {
+      "help": "Die Auswertung: Punkte je Kriterium und Rangfolge, jede Kennzahl unter keys einzeln beschrieben; null, solange nicht alle Paare entschieden sind."
+    }
+  },
+  "actions": {
+    "addCriterion": {
+      "help": "Hängt ein Kriterium an die Liste an und liefert seine Nummer, von 0 an gezählt. Ein laufender oder abgeschlossener Vergleich wird dadurch ungültig: Matrix, Paarfolge und Fortschritt gehen zurück auf leer, die Ansicht zeigt wieder die Kriterien.",
+      "params": {
+        "text": "Der Name des Kriteriums; Leerzeichen am Rand fallen weg. Ein leerer Text, ein Name, der schon in der Liste steht, und ein Kriterium über die Höchstzahl von 15 hinaus werden abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit text."
+      }
+    },
+    "removeCriterion": {
+      "help": "Entfernt ein Kriterium. Ein laufender oder abgeschlossener Vergleich wird dadurch ungültig: Matrix, Paarfolge und Fortschritt gehen zurück auf leer, die Ansicht zeigt wieder die Kriterien.",
+      "params": {
+        "i": "Die Nummer des Kriteriums, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit i."
+      }
+    },
+    "startComparison": {
+      "help": "Startet den Vergleich: bildet alle Paare der Kriterien in gemischter Reihenfolge und wechselt auf den Reiter Vergleich. Unter drei Kriterien wird der Start abgelehnt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "chooseLeft": {
+      "help": "Entscheidet das anstehende Paar für das linke Kriterium (Taste Pfeil links): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, wird die Entscheidung abgelehnt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "chooseRight": {
+      "help": "Entscheidet das anstehende Paar für das rechte Kriterium (Taste Pfeil rechts): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, wird die Entscheidung abgelehnt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "tieCurrent": {
+      "help": "Wertet das anstehende Paar als gleichwertig (Leertaste): beide Kriterien bekommen 0,5 Punkte. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, wird die Entscheidung abgelehnt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "cycleCell": {
+      "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0,5, 0,5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt. Auf der Diagonale — ein Kriterium gegen sich selbst — und solange kein Vergleich gestartet ist, wird die Änderung abgelehnt.",
+      "params": {
+        "i": "Die Nummer des Kriteriums der Zeile, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, wird abgelehnt.",
+        "j": "Die Nummer des Kriteriums der Spalte, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, und dieselbe Nummer wie i werden abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit i und j."
+      }
+    }
+  },
+  "types": {
+    "Result": {
+      "scores": "Die Punkte je Kriterium, in der Reihenfolge der Kriterienliste — die Spalte Σ der Vergleichsmatrix. Jeder Vergleich bringt 1 Punkt für einen Sieg, 0,5 für gleichwertig und 0 für eine Niederlage; die Punkte sind die Summe einer Matrixzeile ohne die Diagonale. Bei n Kriterien sind höchstens n − 1 Punkte möglich, und alle Punkte zusammen ergeben n·(n − 1)/2, die Zahl der Paare.",
+      "maxScore": "Die höchste erreichte Punktzahl. Der längste Balken im Ranking gehört zu ihr; jeder andere Balken ist im Verhältnis seiner Punkte zu ihr kürzer.",
+      "ranking": "Das Ranking: alle Kriterien absteigend nach Punkten. Bei gleicher Punktzahl bleibt die Reihenfolge der Kriterienliste erhalten; Platz 1 bis 3 sind farbig hervorgehoben."
+    },
+    "RankEntry": {
+      "name": "Der Name des Kriteriums, wie er in der Kriterienliste steht.",
+      "score": "Die Punkte des Kriteriums: 1 je gewonnenem Vergleich, 0,5 je gleichwertigem, 0 je verlorenem. Das Ranking zeigt sie mit einer Nachkommastelle.",
+      "idx": "Die Nummer des Kriteriums in der Kriterienliste, von 0 an gezählt — dieselbe Nummer wie Zeile und Spalte der Vergleichsmatrix."
+    }
+  }
+}
