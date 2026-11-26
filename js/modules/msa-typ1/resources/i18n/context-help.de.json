@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "params": {
-      "help": "Die Eingaben der Studie, je Schlüssel unter keys beschrieben; Referenzwert und Grenzen als Zahl oder leer, k₁ und k₂ als Zahl aus der Auswahl.",
+      "help": "Die sieben Eingaben der Studie: name und unit frei, ref, lsl und usl als Zahl oder leer, k1 (0,2/0,15/0,1) und k2 (3/4/6) als Zahl aus der Auswahl.",
       "ref": {
         "help": "Der Referenzwert des Normals, Beschriftung „Referenzwert (x_ref)“, als Zahl. Ohne ihn gibt es kein Ergebnis."
       },

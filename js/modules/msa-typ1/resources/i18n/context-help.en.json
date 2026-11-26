@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "params": {
-      "help": "The inputs of the study, each key described under keys; reference value and limits as a number or empty, k₁ and k₂ as a number from the list.",
+      "help": "The seven inputs of the study: name and unit free, ref, lsl and usl as a number or empty, k1 (0.2/0.15/0.1) and k2 (3/4/6) as a number from the list.",
       "ref": {
         "help": "The reference value of the master part, label “Reference value (x_ref)”, as a number. Without it there is no result."
       },
