@@ -32,6 +32,17 @@ async function until(fn) {
   await settle();
 }
 
+/**
+ * Sichtbarkeit eines `x-show`-Elements nach einer Änderung prüfen. Alpine
+ * blendet bei sichtbarem Dokument erst im nächsten Bild (requestAnimationFrame)
+ * ein oder aus, `settle()` reicht dafür nicht: also auf den Zustand warten.
+ * @param {HTMLElement} el @param {''|'none'} want @param {string} [msg]
+ */
+async function assertDisplay(el, want, msg) {
+  await until(() => el.style.display === want);
+  assertEqual(el.style.display, want, msg);
+}
+
 /** Text des Moduls unter einem Punktpfad, `{name}` aus `params`; sonst der Pfad. */
 function tr(path, params) {
   const v = path.split('.').reduce((o, k) => (o == null ? o : o[k]), UI);
@@ -356,7 +367,7 @@ suite('triz-9-windows: Viewmodel im Browser', () => {
     assertValid(h.states['9w-1']);
     assertEqual(h.preview(2, 1).getAttribute('src'), url);
     assertEqual(h.preview(2, 1).alt, tr('imageAlt', { row: tr('rowSuper'), col: tr('colPresent') }));
-    assertEqual(h.upload(2, 1).style.display, 'none');
+    await assertDisplay(h.upload(2, 1), 'none');
     assertEqual(h.upload(2, 0).style.display, '');
     assertEqual(h.fileInput(2, 1).value, '');
     assertTrue(h.inst.historyCan('undo'), 'kein Verlaufsschritt');
@@ -365,7 +376,7 @@ suite('triz-9-windows: Viewmodel im Browser', () => {
     await settle();
     assertEqual(vm.model.cells[2][1].image, null);
     assertEqual(h.preview(2, 1), null);
-    assertEqual(h.upload(2, 1).style.display, '');
+    await assertDisplay(h.upload(2, 1), '');
     assertEqual(h.inst.historyCan('undo'), false, 'mehr als ein Schritt je Bild');
     assertTrue(h.inst.historyStep('redo'), 'Wiederholen (Bild) ohne Wirkung');
     await settle();
@@ -390,7 +401,7 @@ suite('triz-9-windows: Viewmodel im Browser', () => {
     const imgs = h.images();
     assertTrue(imgs[0][2].startsWith('data:image/png;base64,'), String(imgs[0][2]).slice(0, 30));
     assertEqual(imgs.flat().filter(Boolean).length, 1);
-    assertEqual(h.upload(0, 2).style.display, 'none');
+    await assertDisplay(h.upload(0, 2), 'none');
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig ohne Wirkung');
     await settle();
     assertEqual(vm.model.cells[0][2].image, null);
@@ -435,7 +446,7 @@ suite('triz-9-windows: Viewmodel im Browser', () => {
     assertEqual(h.states['9w-1'].cells[0][2].image, null);
     assertValid(h.states['9w-1']);
     assertEqual(h.preview(0, 2), null);
-    assertEqual(h.upload(0, 2).style.display, '');
+    await assertDisplay(h.upload(0, 2), '');
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Entfernen) ohne Wirkung');
     await settle();
     assertEqual(vm.model.cells[0][2].image, PNG);
