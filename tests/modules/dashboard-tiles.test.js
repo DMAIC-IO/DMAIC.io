@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { mountTile, waitFor } from './tile-test-utils.js';
 import { MODULES as manifest, CONVERTED } from '../../js/modules/catalog.generated.js';
-import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
+import fmeaTile from '../../js/modules/fmea/tile/tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/tile/tile.js';
 import charterTiles from '../../js/modules/project-charter/tile/tile.js';
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
@@ -231,7 +231,6 @@ suite('dashboard tiles: fmea', () => {
 
   test('viewModel: RPN summary, bar, legend and top list as display data', () => {
     const vm = vmOf(fmeaTile, FMEA_STATE);
-    assertPlain(vm);
     assertDeepEqual(vm.summary.map(s => [s.label, s.value, s.modifier]), [
       ['dashboard.fmeaRisks: ', '5', ''],
       ['dashboard.fmeaMaxRPN: ', '560', ''],

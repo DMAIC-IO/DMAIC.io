@@ -192,18 +192,6 @@ export default [
     },
   },
   {
-    id: 'fmea',
-    phase: 'analyze',
-    group: 'causes',
-    load: () => import('./fmea/fmea.js'),
-    loadTile: () => import('./fmea/fmea.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze', allowedPhases: ['analyze', 'design']  },
-      eightd: { phase: 'prevent', allowedPhases: ['rootcause', 'corrective', 'prevent'] },
-    },
-  },
-  {
     id: 'attribute-test',
     phase: 'analyze',
     group: 'statistics',

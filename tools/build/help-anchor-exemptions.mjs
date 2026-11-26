@@ -148,6 +148,17 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setAnswer', reason: 'Antwortfelder je Knoten ohne Beschriftung; die Oberfläche schreibt direkt ins Feld' },
     { name: 'fields.nodes', reason: 'Antwortfelder je Knoten ohne Beschriftung' },
   ],
+  fmea: [
+    { name: 'actions.addRisk', reason: 'Knopf der Werkzeugleiste; die Hilfe kommt dort als title und aria-describedby, ein Fragezeichen im Knopf schriebe der Rahmen weg' },
+    { name: 'actions.sortByPriority', reason: 'Knopf der Werkzeugleiste; die Hilfe kommt dort als title und aria-describedby, ein Fragezeichen im Knopf schriebe der Rahmen weg' },
+    { name: 'actions.removeRisk', reason: 'Mülleimer im Kopf der Risikokarte; ein Fragezeichen je Karte wäre Rauschen' },
+    { name: 'actions.removeRiskAction', reason: 'Mülleimer je Maßnahmenzeile; ein Fragezeichen je Zeile wäre Rauschen' },
+    { name: 'actions.setRiskValue', reason: 'die Oberfläche schreibt direkt ins Feld (x-model/x-field); jedes Feld der Karte ist an fields.risks.<k> verankert' },
+    { name: 'actions.setActionValue', reason: 'die Oberfläche schreibt direkt ins Feld (x-model/x-field); die Spalten sind an fields.risks.actions.<k> verankert' },
+    { name: 'actions.setScaleValue', reason: 'die Oberfläche tippt in die Skalenzelle; ein Fragezeichen je Zelle wäre Rauschen, die Skalen sind an fields.scales verankert' },
+    { name: 'fields.burndown', reason: 'Reihen des Burndown-Diagramms im Fenster des Leistenknopfs; kein eigenes beschriftetes Element' },
+    { name: 'fields.risks', reason: 'Liste der Risikokarten; jedes Feld der Karte ist einzeln an fields.risks.<k> verankert' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

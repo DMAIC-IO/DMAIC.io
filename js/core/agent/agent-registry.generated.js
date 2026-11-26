@@ -5716,6 +5716,7 @@ export const AGENT_REGISTRY = {
   "fmea": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -5725,355 +5726,401 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
-      },
-      "setMethod": {
-        "params": [
-          {
-            "name": "m",
-            "type": "'ap'|'rpn'",
-            "optional": false,
-            "help": "`ap` bewertet nach Aufgabenpriorität (AIAG-VDA), `rpn` nach der Risikoprioritätszahl"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Bewertungsmethode der FMEA."
-      },
-      "setFmeaType": {
-        "params": [
-          {
-            "name": "type",
-            "type": "'process'|'design'",
-            "optional": false,
-            "help": "`process` für eine Prozess-FMEA, `design` für eine Konstruktions-FMEA"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Art der FMEA; sie wählt die Skalentexte der Aufgabenpriorität aus."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addRisk": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Legt ein leeres Risiko an."
+        "help": "",
+        "keysOf": "addRisk",
+        "keysHelp": "actions.addRisk.params",
+        "keys": {}
       },
       "removeRisk": {
+        "target": "model",
         "params": [
           {
-            "name": "id",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Risikos"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt ein Risiko samt seinen Maßnahmen."
-      },
-      "resetScales": {
-        "params": [],
-        "returns": "void",
-        "help": "Verwirft alle eigenen Skalentexte; es gelten wieder die mitgelieferten."
-      },
-      "sortByPriority": {
-        "params": [],
-        "returns": "void",
-        "help": "Sortiert die Risiken nach der aktiven Bewertungsmethode, das dringendste zuerst."
-      },
-      "setScaleValue": {
-        "params": [
-          {
-            "name": "key",
+        "help": "",
+        "keysOf": "removeRisk",
+        "keysHelp": "actions.removeRisk.params",
+        "keys": {
+          "id": {
             "type": "string",
-            "optional": false,
-            "help": "der Schlüssel des Skalentexts — bei der Risikoprioritätszahl etwa `sevHigh` oder `occModRate`, bei der Aufgabenpriorität `ap.<art>.<dimension>.<stufe>.meaning` bzw. `.criterion`"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Text; die leere Zeichenkette lässt die Zelle leer"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Setzt einen eigenen Skalentext; er ersetzt den mitgelieferten."
+        }
       },
       "setRiskValue": {
+        "target": "model",
         "params": [
           {
-            "name": "riskId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Risikos"
-          },
-          {
-            "name": "field",
-            "type": "'step'|'failureMode'|'effect'|'cause'|'prevention'|'control'|'specialChar'|'justification'|'sev'|'occ'|'det'",
-            "optional": false,
-            "help": "welches Feld der Risikozeile"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert; S/O/D als Zahl oder Text (abgelegt als Text), Bereich je Feld siehe `RiskField`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt ein Feld eines Risikos.",
-        "keysOf": "RiskField",
+        "help": "",
+        "keysOf": "setRiskValue",
+        "keysHelp": "actions.setRiskValue.params",
         "keys": {
-          "step": {
+          "riskId": {
             "type": "string",
-            "help": "Prozessschritt bzw. Bauteil"
+            "help": ""
           },
-          "failureMode": {
-            "type": "string",
-            "help": "potenzieller Fehlermodus"
+          "field": {
+            "type": "'step'|'failureMode'|'effect'|'cause'|'prevention'|'control'|'specialChar'|'justification'|'sev'|'occ'|'det'",
+            "help": ""
           },
-          "effect": {
-            "type": "string",
-            "help": "Fehlerfolge"
-          },
-          "cause": {
-            "type": "string",
-            "help": "Fehlerursache"
-          },
-          "prevention": {
-            "type": "string",
-            "help": "Vermeidungsmaßnahme"
-          },
-          "control": {
-            "type": "string",
-            "help": "Entdeckungsmaßnahme"
-          },
-          "specialChar": {
-            "type": "''|'CC'|'SC'",
-            "help": "besonderes Merkmal"
-          },
-          "justification": {
-            "type": "string",
-            "help": "Begründung ohne Maßnahme"
-          },
-          "sev": {
-            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
-            "help": "Bedeutung S"
-          },
-          "occ": {
-            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
-            "help": "Auftreten O"
-          },
-          "det": {
-            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
-            "help": "Entdeckung D"
+          "value": {
+            "type": "string|number|null",
+            "help": ""
           }
         }
       },
       "addRiskAction": {
+        "target": "model",
         "params": [
           {
-            "name": "riskId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Risikos"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "number",
-        "help": "Hängt einem Risiko eine leere Maßnahme an."
-      },
-      "removeRiskAction": {
-        "params": [
-          {
-            "name": "riskId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Risikos"
-          },
-          {
-            "name": "actionIndex",
-            "type": "number",
-            "optional": false,
-            "help": "die Position der Maßnahme, bei 0 beginnend"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt eine Maßnahme eines Risikos."
-      },
-      "setActionValue": {
-        "params": [
-          {
-            "name": "riskId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Risikos"
-          },
-          {
-            "name": "actionIndex",
-            "type": "number",
-            "optional": false,
-            "help": "die Position der Maßnahme, bei 0 beginnend"
-          },
-          {
-            "name": "field",
-            "type": "'text'|'resp'|'date'|'done'|'deltaS'|'deltaO'|'deltaD'",
-            "optional": false,
-            "help": "welches Feld der Maßnahme"
-          },
-          {
-            "name": "value",
-            "type": "string|number|boolean",
-            "optional": false,
-            "help": "der Wert; Bereich je Feld siehe `ActionField`"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt ein Feld einer Maßnahme.",
-        "keysOf": "ActionField",
+        "returns": "string",
+        "help": "",
+        "keysOf": "addRiskAction",
+        "keysHelp": "actions.addRiskAction.params",
         "keys": {
-          "text": {
+          "riskId": {
             "type": "string",
-            "help": "die Maßnahme"
-          },
-          "resp": {
-            "type": "string",
-            "help": "verantwortlich"
-          },
-          "date": {
-            "type": "string",
-            "help": "Zieldatum (`JJJJ-MM-TT` oder leer)"
-          },
-          "done": {
-            "type": "boolean",
-            "help": "umgesetzt"
-          },
-          "deltaS": {
-            "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
-            "help": "erwartete Senkung von S"
-          },
-          "deltaO": {
-            "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
-            "help": "erwartete Senkung von O"
-          },
-          "deltaD": {
-            "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
-            "help": "erwartete Senkung von D"
+            "help": ""
           }
         }
+      },
+      "removeRiskAction": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeRiskAction",
+        "keysHelp": "actions.removeRiskAction.params",
+        "keys": {
+          "riskId": {
+            "type": "string",
+            "help": ""
+          },
+          "actionId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setActionValue": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setActionValue",
+        "keysHelp": "actions.setActionValue.params",
+        "keys": {
+          "riskId": {
+            "type": "string",
+            "help": ""
+          },
+          "actionId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'text'|'resp'|'date'|'done'|'deltaS'|'deltaO'|'deltaD'",
+            "help": ""
+          },
+          "value": {
+            "type": "string|number|boolean",
+            "help": ""
+          }
+        }
+      },
+      "setScaleValue": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setScaleValue",
+        "keysHelp": "actions.setScaleValue.params",
+        "keys": {
+          "key": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "resetScales": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "resetScales",
+        "keysHelp": "actions.resetScales.params",
+        "keys": {}
+      },
+      "sortByPriority": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "sortByPriority",
+        "keysHelp": "actions.sortByPriority.params",
+        "keys": {}
       }
     },
     "fields": {
-      "risks": {
-        "type": "RiskEntry[]",
-        "help": "die Risiken in Bearbeitungsreihenfolge, jede Angabe unter keys einzeln beschrieben",
-        "bulk": true,
-        "bulkKind": "table",
-        "keysOf": "RiskEntry",
-        "keys": {
-          "id": {
-            "type": "string",
-            "help": "Kennung"
-          },
-          "step": {
-            "type": "string",
-            "help": "Prozessschritt bzw. Bauteil"
-          },
-          "failureMode": {
-            "type": "string",
-            "help": "Fehlerart"
-          },
-          "effect": {
-            "type": "string",
-            "help": "Fehlerfolge"
-          },
-          "cause": {
-            "type": "string",
-            "help": "Fehlerursache"
-          },
-          "prevention": {
-            "type": "string",
-            "help": "Vermeidungsmaßnahme"
-          },
-          "control": {
-            "type": "string",
-            "help": "Entdeckungsmaßnahme"
-          },
-          "specialChar": {
-            "type": "''|'CC'|'SC'",
-            "help": "besonderes Merkmal"
-          },
-          "justification": {
-            "type": "string",
-            "help": "Begründung ohne Maßnahme"
-          },
-          "sev": {
-            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
-            "help": "Bedeutung"
-          },
-          "occ": {
-            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
-            "help": "Auftreten"
-          },
-          "det": {
-            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
-            "help": "Entdeckung"
-          },
-          "actions": {
-            "type": "RiskActionEntry[]",
-            "help": "Maßnahmen",
-            "keysOf": "RiskActionEntry",
-            "keys": {
-              "text": {
-                "type": "string",
-                "help": "die Maßnahme"
-              },
-              "resp": {
-                "type": "string",
-                "help": "verantwortlich"
-              },
-              "date": {
-                "type": "string",
-                "help": "Zieldatum JJJJ-MM-TT oder leer"
-              },
-              "done": {
-                "type": "boolean",
-                "help": "umgesetzt"
-              },
-              "deltaS": {
-                "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
-                "help": "erwartete Senkung der Bedeutung"
-              },
-              "deltaO": {
-                "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
-                "help": "erwartete Senkung des Auftretens"
-              },
-              "deltaD": {
-                "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
-                "help": "erwartete Senkung der Entdeckung"
-              }
-            }
-          }
-        }
-      },
-      "scales": {
-        "type": "object|null",
-        "help": "die eigenen Skalentexte, je Schlüssel einer Skalenzelle ein Text; `null` heißt, es gelten die mitgelieferten",
-        "bulk": false
-      },
       "method": {
         "type": "'ap'|'rpn'",
-        "help": "die Bewertungsmethode: `ap` nach Aufgabenpriorität (AIAG-VDA), `rpn` nach Risikoprioritätszahl. Eine neue FMEA nutzt `ap`",
+        "help": "",
         "bulk": false
       },
       "fmeaType": {
         "type": "'process'|'design'",
-        "help": "die Art der FMEA; sie wählt die Skalentexte der Aufgabenpriorität aus",
+        "help": "",
         "bulk": false
+      },
+      "risks": {
+        "type": "Array<{ id: string, step: string, failureMode: string, effect: string, cause: string, prevention: string, control: string, specialChar: ''|'CC'|'SC', justification: string, sev: number|null, occ: number|null, det: number|null, actions: { id: string, text: string, resp: string, date: string, done: boolean, deltaS: number, deltaO: number, deltaD: number }[] }>",
+        "help": "",
+        "bulk": true
+      },
+      "scales": {
+        "type": "Record<string, string>",
+        "help": "",
+        "bulk": false
+      },
+      "stats": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "FmeaStats",
+        "keys": {
+          "kind": {
+            "type": "'ap'|'rpn'",
+            "help": "aktive Bewertungsmethode"
+          },
+          "total": {
+            "type": "number",
+            "help": "Zahl der Risiken"
+          },
+          "rated": {
+            "type": "number",
+            "help": "bewertete Risiken (nur ap)",
+            "optional": true
+          },
+          "critical": {
+            "type": "number",
+            "help": "RPN über 200 (nur rpn)",
+            "optional": true
+          },
+          "high": {
+            "type": "number",
+            "help": "ap: Stufe H; rpn: RPN 125–200"
+          },
+          "medium": {
+            "type": "number",
+            "help": "ap: Stufe M; rpn: RPN 50–124"
+          },
+          "low": {
+            "type": "number",
+            "help": "ap: Stufe L; rpn: RPN unter 50"
+          },
+          "unjustified": {
+            "type": "number",
+            "help": "Stufe H ohne Maßnahme und ohne Begründung (nur ap)",
+            "optional": true
+          },
+          "highSeverity": {
+            "type": "number",
+            "help": "S 9 oder 10 (nur rpn)",
+            "optional": true
+          },
+          "avg": {
+            "type": "number|null",
+            "help": "gerundeter Mittelwert der RPN bewerteter Risiken, ohne solche leer (nur rpn)",
+            "optional": true
+          },
+          "max": {
+            "type": "number",
+            "help": "größte RPN, 0 ohne bewertetes Risiko (nur rpn)",
+            "optional": true
+          }
+        }
+      },
+      "riskRatings": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "RiskRating",
+        "keys": {
+          "riskId": {
+            "type": "string",
+            "help": "Kennung des Risikos"
+          },
+          "rpn": {
+            "type": "number",
+            "help": "S × O × D, 0 solange eine Stufe fehlt"
+          },
+          "ap": {
+            "type": "'H'|'M'|'L'|null",
+            "help": "Aufgabenpriorität, leer solange eine Stufe fehlt"
+          },
+          "projRpn": {
+            "type": "number",
+            "help": "RPN nach allen Senkungen der Maßnahmen, 0 ohne RPN"
+          },
+          "projAp": {
+            "type": "'H'|'M'|'L'|null",
+            "help": "Aufgabenpriorität nach allen Senkungen"
+          },
+          "needsJustification": {
+            "type": "boolean",
+            "help": "Stufe H ohne Maßnahme und ohne Begründung"
+          }
+        }
+      },
+      "burndown": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Burndown",
+        "keys": {
+          "kind": {
+            "type": "'ap'|'rpn'",
+            "help": "aktive Bewertungsmethode"
+          },
+          "planX": {
+            "type": "number[]",
+            "help": "Zeitpunkte des Plans (alle datierten Maßnahmen)"
+          },
+          "actX": {
+            "type": "number[]",
+            "help": "Zeitpunkte des Ist (nur erledigte Maßnahmen)"
+          },
+          "planY": {
+            "type": "number[]",
+            "help": "RPN-Summe im Plan (nur rpn)",
+            "optional": true
+          },
+          "actY": {
+            "type": "number[]",
+            "help": "RPN-Summe im Ist (nur rpn)",
+            "optional": true
+          },
+          "totalRPN": {
+            "type": "number",
+            "help": "RPN-Summe vor allen Maßnahmen (nur rpn)",
+            "optional": true
+          },
+          "planH": {
+            "type": "number[]",
+            "help": "Zahl der H-Risiken im Plan (nur ap)",
+            "optional": true
+          },
+          "planHM": {
+            "type": "number[]",
+            "help": "Zahl der H- und M-Risiken im Plan (nur ap)",
+            "optional": true
+          },
+          "actH": {
+            "type": "number[]",
+            "help": "Zahl der H-Risiken im Ist (nur ap)",
+            "optional": true
+          },
+          "actHM": {
+            "type": "number[]",
+            "help": "Zahl der H- und M-Risiken im Ist (nur ap)",
+            "optional": true
+          }
+        }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
-      "risks[].collapsed"
+      "collapsed",
+      "burndownEdits"
+    ],
+    "settable": [
+      "method",
+      "fmeaType",
+      "risks",
+      "scales"
+    ],
+    "invariants": [
+      "riskIds",
+      "actionIds",
+      "knownCollapsed",
+      "knownScaleKeys"
     ]
   },
   "gage-run-chart": {

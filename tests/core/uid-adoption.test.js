@@ -19,7 +19,7 @@ const FILES = [
   'js/modules/deployment-flowchart/deployment-flowchart-model.js',
   'js/modules/dmaic-calendar/domain/model.js',
   'js/modules/dmaic-calendar/domain/migrations.js',
-  'js/modules/fmea/fmea-model.js',
+  'js/modules/fmea/domain/model.js',
   'js/modules/lessons-learned/lessons-learned-model.js',
   'js/modules/makigami/makigami-model.js',
   'js/modules/process-map/process-map-model.js',

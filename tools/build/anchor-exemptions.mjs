@@ -148,20 +148,6 @@ export const ANCHOR_EXEMPTIONS = {
   'triz-sufield': [
     { match: 'triz-sf__filter-label', reason: 'Optionsfeld-Paar: nur das letzte trägt den Anker (ein Kreis je Gruppe)', count: 1 },
   ],
-  fmea: [
-    { match: '<th style="width:28px"><span class="icon icon--sm" data-icon="action.confirm"', reason: 'Schmale Symbolspalte „Umgesetzt“; ein Kreis läge über dem Kopf „Maßnahme“', count: 1 },
-    { match: "t('rating')", reason: 'Gruppentitel über S, O, D; jede der drei Beschriftungen ist einzeln erklärt', count: 1 },
-    { match: "t('scaleValue')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte (Wert 1–10)', count: 4 },
-    { match: "t('scaleMeaning')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 2 },
-    { match: "t('scaleDescription')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 2 },
-    { match: "t('scaleProbability')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
-    { match: "t('scaleRate')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
-    { match: "t('scaleDetect')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
-    { match: "t('apScaleCriterion')", reason: 'AP-Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
-    { match: "t('abbrS')", reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
-    { match: "t('abbrO')", reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
-    { match: "t('abbrD') + ' ' + d", reason: 'Kopf je D-Stufe der festen AP-Nachschlagematrix', count: 1 },
-  ],
   makigami: [
     { match: "t('colCode')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
     { match: "t('colLabel')", reason: 'Einstellungen, Eingabetabellen (Verschwendungsarten, Zeiteinheiten)', count: 2 },

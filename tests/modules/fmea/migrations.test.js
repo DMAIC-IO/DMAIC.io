@@ -15,7 +15,7 @@ import { LEGACY_STATE } from './legacy.js';
 setModelName(State, 'fmea');
 
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLE = new URL('../../../examples/projects/fmea-pizza-lieferprozess.json', import.meta.url);
+const EXAMPLE = new URL('../../../js/modules/fmea/resources/examples/projects/fmea-pizza-lieferprozess.json', import.meta.url);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 /** @param {URL} url */

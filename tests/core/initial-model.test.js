@@ -1,7 +1,6 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { initialModel, loadModel } from '../../js/core/initial-model.js';
 import { defineModel, text, number } from '../../js/core/model.js';
-import { State, fmeaCreateDefault } from '../../js/modules/fmea/fmea-model.js';
 
 class Plain {
   constructor() { this.origin = 'new'; }
@@ -27,24 +26,6 @@ suite('initialModel', () => {
   test('a throwing or empty createDefault falls back to new Model()', () => {
     assertEqual(initialModel(Plain, null, () => { throw new Error('x'); }, {}).origin, 'new');
     assertEqual(initialModel(Plain, null, () => null, {}).origin, 'new');
-  });
-});
-
-suite('FMEA createDefault from settings', () => {
-  const ctxWith = (value) => ({ stateManager: { get: (k) => (k === 'settings.fmea' ? value : undefined) } });
-
-  test('rpn/design settings are applied', () => {
-    const s = initialModel(State, null, fmeaCreateDefault, ctxWith({ defaultMethod: 'rpn', defaultType: 'design' }));
-    assertEqual(s.method, 'rpn');
-    assertEqual(s.fmeaType, 'design');
-  });
-
-  test('missing or corrupt settings fall back to ap/process', () => {
-    for (const v of [undefined, null, 'rpn', { defaultMethod: 'xyz', defaultType: 7 }]) {
-      const s = initialModel(State, null, fmeaCreateDefault, ctxWith(v));
-      assertEqual(s.method, 'ap', JSON.stringify(v));
-      assertEqual(s.fmeaType, 'process', JSON.stringify(v));
-    }
   });
 });
 

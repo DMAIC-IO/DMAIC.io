@@ -60,6 +60,11 @@
     "description": "Root cause analysis with branching question paths",
     "whenToUse": "When a single concrete incident is to be traced to its root and the domain knowledge is in the room — not for statistical relationships across many cases."
   },
+  "fmea": {
+    "name": "FMEA",
+    "description": "Failure Mode and Effects Analysis with RPN calculation",
+    "whenToUse": "When a process or a design should be surveyed systematically for what can go wrong, what effect it has, how often it occurs and how reliably it is detected — rated by action priority (AIAG-VDA) or risk priority number, with actions and their effect on the rating; not for collecting possible causes without rating them, that is what Ishikawa and the cause-and-effect matrix are for."
+  },
   "gage-run-chart": {
     "name": "Gage Run Chart",
     "description": "Plots every single measurement grouped by part and appraiser against a common reference line — reveals appraiser bias and unusual parts.",

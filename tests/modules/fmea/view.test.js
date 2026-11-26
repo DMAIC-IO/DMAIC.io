@@ -66,9 +66,9 @@ const legacy = () => JSON.parse(JSON.stringify(LEGACY_STATE));
 
 /**
  * Eine Instanz einhängen (eigene Kopie des Moduls wie in der Registry).
- * @param {string} instanceId @param {object|null} model @param {{ keep?: boolean }} [opts]
+ * @param {string} instanceId @param {object|null} model @param {{ keep?: boolean, settings?: any }} [opts]
  */
-async function mount(instanceId, model, { keep = false } = {}) {
+async function mount(instanceId, model, { keep = false, settings } = {}) {
   await prepare();
   if (!keep) unmountAll();
   const states = { [instanceId]: model };
@@ -89,7 +89,7 @@ async function mount(instanceId, model, { keep = false } = {}) {
       getModuleState: (id) => states[id] ?? null,
       setModuleState: (id, s) => { states[id] = s; },
       getProjectCycle: () => 'dmaic',
-      get: () => undefined,
+      get: (k) => (k === 'settings.fmea' ? settings : undefined),
       getChartEdits: () => null,
       setChartEdit: () => {},
     },
@@ -315,5 +315,16 @@ suite('fmea: Viewmodel im Browser', () => {
     const idb = b.card('r1').querySelector('select[name="sev"]').id;
     assertTrue(ida !== '' && ida !== idb, `${ida} / ${idb}`);
     assertEqual(a.card('r1').querySelector(`label[for="${ida}"]`)?.textContent, tr('abbrS'));
+  });
+
+  test('neue FMEA: Methode und Art aus den Einstellungen, Unbekanntes → ap/process', async () => {
+    const h = await mount('f-1', null, { settings: { defaultMethod: 'rpn', defaultType: 'design' } });
+    assertEqual(h.vm().model.method, 'rpn');
+    assertEqual(h.vm().model.fmeaType, 'design');
+    for (const v of [undefined, null, 'rpn', { defaultMethod: 'xyz', defaultType: 7 }]) {
+      const g = await mount('f-1', null, { settings: v });
+      assertEqual(g.vm().model.method, 'ap', JSON.stringify(v));
+      assertEqual(g.vm().model.fmeaType, 'process', JSON.stringify(v));
+    }
   });
 });

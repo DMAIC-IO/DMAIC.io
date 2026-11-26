@@ -16,7 +16,7 @@ import {
 import { CYCLES } from '../../core/cycles/cycles.js';
 import { agentSettingsData } from './settings-agent.js';
 // The first entry of each list is the model's fallback for a missing or unknown value.
-import { METHODS as FMEA_METHODS, FMEA_TYPES } from '../../modules/fmea/fmea-model.js';
+import { METHODS as FMEA_METHODS, FMEA_TYPES } from '../../modules/fmea/domain/rating.js';
 
 /** Default 10-color chart series palette (identical to legacy DEFAULT_COLORS). */
 export const DEFAULT_CHART_COLORS = [

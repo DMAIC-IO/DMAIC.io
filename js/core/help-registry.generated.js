@@ -6,24 +6,23 @@ import h3 from '../modules/correlation/correlation-help.js';
 import h4 from '../modules/data-transformation/data-transformation-help.js';
 import h5 from '../modules/deployment-flowchart/deployment-flowchart-help.js';
 import h6 from '../modules/doe-advisor/doe-advisor-help.js';
-import h7 from '../modules/fmea/fmea-help.js';
-import h8 from '../modules/glm-regression/glm-regression-help.js';
-import h9 from '../modules/kano/kano-help.js';
-import h10 from '../modules/lessons-learned/lessons-learned-help.js';
-import h11 from '../modules/makigami/makigami-help.js';
-import h12 from '../modules/model-data-generator/model-data-generator-help.js';
-import h13 from '../modules/msa-typ1/msa-typ1-help.js';
-import h14 from '../modules/msa-typ4/msa-typ4-help.js';
-import h15 from '../modules/msa-typ6/msa-typ6-help.js';
-import h16 from '../modules/process-map/process-map-help.js';
-import h17 from '../modules/random-generator/random-generator-help.js';
-import h18 from '../modules/regression/regression-help.js';
-import h19 from '../modules/response-optimization/response-optimization-help.js';
-import h20 from '../modules/rest-api/rest-api-help.js';
-import h21 from '../modules/sample-size/sample-size-help.js';
-import h22 from '../modules/todo/todo-help.js';
-import h23 from '../modules/unit-converter/unit-converter-help.js';
-import h24 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h7 from '../modules/glm-regression/glm-regression-help.js';
+import h8 from '../modules/kano/kano-help.js';
+import h9 from '../modules/lessons-learned/lessons-learned-help.js';
+import h10 from '../modules/makigami/makigami-help.js';
+import h11 from '../modules/model-data-generator/model-data-generator-help.js';
+import h12 from '../modules/msa-typ1/msa-typ1-help.js';
+import h13 from '../modules/msa-typ4/msa-typ4-help.js';
+import h14 from '../modules/msa-typ6/msa-typ6-help.js';
+import h15 from '../modules/process-map/process-map-help.js';
+import h16 from '../modules/random-generator/random-generator-help.js';
+import h17 from '../modules/regression/regression-help.js';
+import h18 from '../modules/response-optimization/response-optimization-help.js';
+import h19 from '../modules/rest-api/rest-api-help.js';
+import h20 from '../modules/sample-size/sample-size-help.js';
+import h21 from '../modules/todo/todo-help.js';
+import h22 from '../modules/unit-converter/unit-converter-help.js';
+import h23 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -33,22 +32,21 @@ export const HELP = {
   "data-transformation": h4,
   "deployment-flowchart": h5,
   "doe-advisor": h6,
-  "fmea": h7,
-  "glm-regression": h8,
-  "kano": h9,
-  "lessons-learned": h10,
-  "makigami": h11,
-  "model-data-generator": h12,
-  "msa-typ1": h13,
-  "msa-typ4": h14,
-  "msa-typ6": h15,
-  "process-map": h16,
-  "random-generator": h17,
-  "regression": h18,
-  "response-optimization": h19,
-  "rest-api": h20,
-  "sample-size": h21,
-  "todo": h22,
-  "unit-converter": h23,
-  "voc-ctx-tree": h24,
+  "glm-regression": h7,
+  "kano": h8,
+  "lessons-learned": h9,
+  "makigami": h10,
+  "model-data-generator": h11,
+  "msa-typ1": h12,
+  "msa-typ4": h13,
+  "msa-typ6": h14,
+  "process-map": h15,
+  "random-generator": h16,
+  "regression": h17,
+  "response-optimization": h18,
+  "rest-api": h19,
+  "sample-size": h20,
+  "todo": h21,
+  "unit-converter": h22,
+  "voc-ctx-tree": h23,
 };

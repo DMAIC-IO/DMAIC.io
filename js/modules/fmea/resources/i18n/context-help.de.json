@@ -133,6 +133,12 @@
         "command": "Das Kommando als ein Objekt mit riskId und actionId."
       }
     },
+    "toggleRiskCollapsed": {
+      "help": "Klappt eine Risikokarte zu oder auf, nur über die Oberfläche: über den Pfeil im Kopf der Karte. Zugeklappt zeigt die Karte nur ihre Kopfzeile; der Inhalt bleibt.",
+      "params": {
+        "riskId": "Die Kennung des Risikos."
+      }
+    },
     "setActionValue": {
       "help": "Setzt ein Feld einer Maßnahme.",
       "params": {

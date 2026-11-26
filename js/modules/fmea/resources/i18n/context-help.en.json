@@ -133,6 +133,12 @@
         "command": "The command as one object with riskId and actionId."
       }
     },
+    "toggleRiskCollapsed": {
+      "help": "Collapses or expands a risk card, only through the interface: via the arrow in the card header. Collapsed, the card shows only its header row; the content stays.",
+      "params": {
+        "riskId": "The id of the risk."
+      }
+    },
     "setActionValue": {
       "help": "Sets one field of an action.",
       "params": {

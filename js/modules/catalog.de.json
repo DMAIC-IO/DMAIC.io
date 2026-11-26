@@ -60,6 +60,11 @@
     "description": "Ursachenanalyse mit verzweigten Fragepfaden",
     "whenToUse": "Wenn ein konkreter Einzelvorfall bis zur Wurzel verfolgt werden soll und das Fachwissen im Raum ist — nicht für statistische Zusammenhänge über viele Fälle."
   },
+  "fmea": {
+    "name": "FMEA",
+    "description": "Fehlermöglichkeits- und Einflussanalyse mit RPN-Berechnung",
+    "whenToUse": "Wenn für einen Prozess oder eine Konstruktion systematisch erhoben werden soll, was fehlgehen kann, welche Folge das hat, wie oft es auftritt und wie sicher es entdeckt wird — bewertet nach Aufgabenpriorität (AIAG-VDA) oder Risikoprioritätszahl, mit Maßnahmen und deren Wirkung auf die Bewertung; nicht für das Sammeln möglicher Ursachen ohne Bewertung, dafür sind Ishikawa und die Ursache-Wirkungs-Matrix da."
+  },
   "gage-run-chart": {
     "name": "Messverlaufsdiagramm",
     "description": "Zeigt jede Einzelmessung, gruppiert nach Prüfeinheit und Prüfer, gegen eine gemeinsame Referenzlinie — deckt Prüfer-Bias und auffällige Prüfeinheiten auf.",
