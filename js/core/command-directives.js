@@ -114,6 +114,18 @@ function ownHint(ui, error) {
   return typeof error?.hintKey === 'string' ? ui.i18n.t(`modules.${ui.moduleId}.${error.hintKey}`) : null;
 }
 
+/**
+ * Die Meldung einer Ablehnung für den Nutzer: der eigene Hinweis des Moduls
+ * (`hintKey`, siehe `ownHint`), sonst der Prüftext des Fehlers. Für
+ * `x-command`, den Löschen-Knopf eines `x-dialog` und die Aktionsknöpfe der
+ * Werkzeugleiste (`runActionCommand` in js/ui/workspace.js).
+ * @param {{ i18n: { t: (key: string) => string }, moduleId: string }} ui @param {any} error
+ * @returns {string}
+ */
+export function commandErrorText(ui, error) {
+  return ownHint(ui, error) ?? error?.message ?? String(error);
+}
+
 /** Setzt den Hilfeanker, sofern das Element keinen trägt. @param {HTMLElement} el @param {string} key */
 export function setHelpKey(el, key) {
   if (!el.hasAttribute('data-help-key')) el.setAttribute('data-help-key', key);
@@ -576,7 +588,7 @@ export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
           if (done) return true;
           runUiCommand(ui, del, deleteArgs(), { confirmDelete: true }).then((r) => {
             if (r.ok) finish();
-            else if ('error' in r) ui.notify(r.error?.message ?? String(r.error), 'error');
+            else if ('error' in r) ui.notify(commandErrorText(ui, r.error), 'error');
           });
           return false;
         },
@@ -651,7 +663,7 @@ export function registerCommandDirectives(Alpine) {
       const current = data._ui;
       const r = await runUiCommand(current, name, readFixedArgs(el, params, current.model), { confirmDelete: isDeleteButton(el) });
       if (r.ok) closeDialogAround(el);
-      else if ('error' in r) current.notify(r.error?.message ?? String(r.error), 'error');
+      else if ('error' in r) current.notify(commandErrorText(current, r.error), 'error');
     };
     el.addEventListener('click', onClick);
     cleanup(() => el.removeEventListener('click', onClick));

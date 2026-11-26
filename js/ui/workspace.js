@@ -7,7 +7,7 @@
 import { h, isShown } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
-import { runUiCommand } from '../core/command-directives.js';
+import { runUiCommand, commandErrorText } from '../core/command-directives.js';
 import { runExport } from '../core/exporter.js';
 import { describeElement } from '../core/context-help.js';
 import { findInstancePhase } from '../core/router/instance-ops.js';
@@ -59,7 +59,7 @@ async function runActionCommand(vm, inst) {
   const ui = inst.getActionData?.()?._ui;
   if (!ui) return;
   const r = await runUiCommand(ui, vm.command, vm.args);
-  if (!r.ok && 'error' in r) ui.notify(r.error?.message ?? String(r.error), 'error');
+  if (!r.ok && 'error' in r) ui.notify(commandErrorText(ui, r.error), 'error');
 }
 
 /**

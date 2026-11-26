@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
-import { registerCommandDirectives, runUiCommand, openDialogAt, closeDialogsIn } from '../../js/core/command-directives.js';
+import { registerCommandDirectives, runUiCommand, openDialogAt, closeDialogsIn, commandErrorText } from '../../js/core/command-directives.js';
 import { defineModel, defineForm, command, text, number, oneOf, index, list, record, runCommand } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
@@ -38,6 +38,7 @@ const Board = defineModel({
     setLimit: command({ params: { limit: number({ min: 0, max: 9, integer: true }), rate: number({ min: 0, max: 1, default: 0.5 }) }, run() {} }),
     taken: command({ params: { text: text() }, run() { throw Object.assign(new Error('vergeben'), { param: 'text', hintKey: 'nameTaken' }); } }),
     clash: command({ params: { text: text() }, run() { throw Object.assign(new Error('Doppel'), { param: 'labels', hintKey: 'labelsClash' }); } }),
+    keepLast: command({ params: {}, run() { throw Object.assign(new Error('invalid col; allowed: any but the last'), { param: 'col', hintKey: 'lastItem' }); } }),
   },
 });
 
@@ -270,6 +271,20 @@ suite('x-command', () => {
     await flush();
     assertTrue(/^invalid idx 5/.test(notified[0][0]));
     assertEqual(notified[0][1], 'error');
+  });
+
+  test('Ablehnung mit eigenem Hinweis (hintKey): der Modulhinweis statt des Prüftexts', async () => {
+    const { $, notified } = await mount('<button x-command="keepLast">x</button>');
+    $('button').click();
+    await flush();
+    assertDeepEqual(notified, [['modules.ct.lastItem', 'error']]);
+  });
+
+  test('commandErrorText: Modulhinweis, sonst der Rohtext wie bisher', () => {
+    const ui = { i18n: I18N, moduleId: 'ct' };
+    assertEqual(commandErrorText(ui, Object.assign(new Error('roh'), { hintKey: 'lastItem' })), 'modules.ct.lastItem');
+    assertEqual(commandErrorText(ui, new Error('roh')), 'roh');
+    assertEqual(commandErrorText(ui, 'nur Text'), 'nur Text');
   });
 
   test('Anker aus dem Kommando, vorhandener bleibt', async () => {

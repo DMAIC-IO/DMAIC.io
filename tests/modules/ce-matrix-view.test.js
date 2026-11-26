@@ -499,9 +499,10 @@ suite('ce-matrix: Viewmodel im Browser', () => {
     await until(() => h.notes.length > 0);
     assertEqual(h.inputNames().length, 1);
     assertEqual(h.vm().model.scores['i1:o1'], 3);
-    assertEqual(h.notes.length, 1);
+    assertDeepEqual(h.notes, [['modules.ce-matrix.lastInput', 'error']]);
     await h.click(h.delOutput('o1'));
     await until(() => h.notes.length > 1);
+    assertDeepEqual(h.notes[1], ['modules.ce-matrix.lastOutput', 'error']);
     assertEqual(h.outputNames().length, 1);
     assertEqual(h.inst.historyCan('undo'), false);
     unmountAll();
