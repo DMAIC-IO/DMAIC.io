@@ -1,4 +1,5 @@
 {
+  "_schema": { "name": "triz-sufield", "version": "1.0" },
   "s1": "Bohrer",
   "s2": "Werkstück (Beton)",
   "field": "M",

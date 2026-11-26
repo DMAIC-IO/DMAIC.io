@@ -1309,31 +1309,6 @@
       ]
     },
     {
-      "id": "triz-sufield-bohrer-beton",
-      "type": "project",
-      "title": {
-        "de": "TRIZ Substanz-Feld: Bohrer / Beton",
-        "en": "TRIZ Substance-Field: Drill / Concrete"
-      },
-      "description": {
-        "de": "Su-Field-Modell für eine unzureichende mechanische Wirkung (Bohrer auf Beton). Diagnose: Klasse 2 — gepulster Betrieb (Schlagbohren) ausgewählt.",
-        "en": "Su-Field model for an insufficient mechanical action (drill on concrete). Diagnosis: class 2 — pulsed mode (hammer drilling) selected."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/triz-sufield-bohrer-beton.json",
-      "format": "json",
-      "modules": [
-        "triz-sufield"
-      ],
-      "tags": [
-        "improve",
-        "triz",
-        "sufield",
-        "standards"
-      ]
-    },
-    {
       "id": "makigami-auftragsabwicklung",
       "type": "project",
       "title": {

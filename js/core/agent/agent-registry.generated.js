@@ -20798,6 +20798,7 @@ export const AGENT_REGISTRY = {
   "triz-sufield": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -20813,166 +20814,134 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setS1": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "Name oder kurze Beschreibung von S1"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Stoff S1 — den Stoff, der die Wirkung auslöst."
-      },
-      "setS2": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "Name oder kurze Beschreibung von S2"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Stoff S2 — den Stoff, auf den gewirkt wird."
-      },
-      "setFieldType": {
-        "params": [
-          {
-            "name": "field",
-            "type": "string",
-            "optional": false,
-            "help": "Feldart: M, A, T, C, E oder Mg; ein leerer Text nimmt die Wahl zurück"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Feldart, die zwischen den beiden Stoffen wirkt."
-      },
-      "setLink": {
-        "params": [
-          {
-            "name": "link",
-            "type": "string",
-            "optional": false,
-            "help": "Verknüpfung: useful, insufficient, excessive, harmful oder missing; ein leerer Text nimmt die Wahl zurück"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Art der Verknüpfung zwischen den beiden Stoffen."
-      },
-      "setProblemNote": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Problemnotiz"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Problemnotiz zum Stoff-Feld-Modell."
-      },
       "setStandardNote": {
+        "target": "model",
         "params": [
           {
-            "name": "stdId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Standardlösung, zum Beispiel 2.2.5"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Notiz zu dieser Standardlösung"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Notiz zu einer Standardlösung; ein leerer Text löscht sie."
+        "help": "",
+        "keysOf": "setStandardNote",
+        "keysHelp": "actions.setStandardNote.params",
+        "keys": {
+          "stdId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setStandardSelected": {
+        "target": "model",
         "params": [
           {
-            "name": "stdId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Standardlösung, zum Beispiel 2.2.5"
-          },
-          {
-            "name": "selected",
-            "type": "boolean",
-            "optional": false,
-            "help": "`true` merkt vor, `false` nimmt zurück"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Merkt eine Standardlösung als in Betracht gezogen vor oder nimmt die Vormerkung zurück."
+        "help": "",
+        "keysOf": "setStandardSelected",
+        "keysHelp": "actions.setStandardSelected.params",
+        "keys": {
+          "stdId": {
+            "type": "string",
+            "help": ""
+          },
+          "selected": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "setExpandedClasses": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setExpandedClasses",
+        "keysHelp": "actions.setExpandedClasses.params",
+        "keys": {
+          "classes": {
+            "type": "number[]",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "s1": {
         "type": "string",
-        "help": "der Stoff S1",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "s2": {
         "type": "string",
-        "help": "der Stoff S2",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "field": {
-        "type": "string",
-        "help": "Feldart, leer solange keine gewählt ist",
-        "bulk": false,
-        "derived": true
+        "type": "''|'M'|'A'|'T'|'C'|'E'|'Mg'",
+        "help": "",
+        "bulk": false
       },
       "link": {
-        "type": "string",
-        "help": "Verknüpfung, leer solange keine gewählt ist",
-        "bulk": false,
-        "derived": true
+        "type": "''|'useful'|'insufficient'|'excessive'|'harmful'|'missing'",
+        "help": "",
+        "bulk": false
       },
       "problemNote": {
         "type": "string",
-        "help": "Problemnotiz",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "notes": {
         "type": "Record<string, string>",
-        "help": "Notiz je vermerkter Standardlösung, adressiert über ihre id",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "selected": {
         "type": "Record<string, boolean>",
-        "help": "vorgemerkte Standardlösungen, adressiert über ihre id",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "diagnosis": {
-        "type": "Diagnosis",
-        "help": "die aus den vier Werten abgeleitete Diagnose",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Diagnosis",
         "keys": {
           "situation": {
             "type": "'partial'|'incomplete'|'complete-useful'|'complete-insufficient'|'complete-excessive'|'complete-harmful'",
-            "help": "Lage des Modells"
+            "help": "partial: a substance is missing; incomplete: no field, no link chosen or the link is missing; complete-<link>: the model is complete with this link"
           },
           "suggestedClasses": {
             "type": "number[]",
-            "help": "empfohlene Standardklassen, 1 bis 5"
+            "help": "the recommended classes of standard solutions, 1 to 5"
           }
         }
       },
       "standards": {
-        "type": "StandardEntry[]",
-        "help": "alle 78 Standardlösungen, Titel und Auslöser in der aktiven Sprache",
+        "type": "object[]",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
         "derived": true,
@@ -20980,30 +20949,45 @@ export const AGENT_REGISTRY = {
         "keys": {
           "id": {
             "type": "string",
-            "help": "Nummer der Standardlösung, Klasse.Gruppe.Lösung"
+            "help": "number of the standard solution, class.group.solution"
           },
           "class": {
             "type": "number",
-            "help": "Standardklasse, 1 bis 5"
+            "help": "class of standard solutions, 1 to 5"
           },
           "group": {
             "type": "string",
-            "help": "Gruppe, Klasse.Gruppe"
+            "help": "group, class.group"
           },
           "title": {
             "type": "string",
-            "help": "Titel in der aktiven Sprache"
+            "help": "title in the active language"
           },
           "trigger": {
             "type": "string",
-            "help": "wann die Lösung greift, in der aktiven Sprache"
+            "help": "when the solution applies, in the active language"
           }
         }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "filterMode",
       "expandedClasses"
+    ],
+    "settable": [
+      "s1",
+      "s2",
+      "field",
+      "link",
+      "problemNote",
+      "notes",
+      "selected"
+    ],
+    "invariants": [
+      "knownNotes",
+      "knownSelections",
+      "validExpandedClasses"
     ]
   },
   "unit-converter": {

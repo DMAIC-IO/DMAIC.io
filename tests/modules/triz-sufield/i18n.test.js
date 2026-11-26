@@ -1,8 +1,7 @@
 /**
  * Stoff-Feld-Analyse (TRIZ): Texte in resources/i18n/ui.<lang>.json — die
  * vier Texte je Standardlösung vollständig in beiden Sprachen, passend zur
- * Tabelle und wortgleich mit der früheren Quelldatei `data/standards.json`
- * (dazu Prüfsummen, gebildet, als beide gleich waren); Namen der Klassen,
+ * Tabelle, festgehalten über eine Prüfsumme je Sprache; Namen der Klassen,
  * Feldarten, Verknüpfungen und Lagen vollständig.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
@@ -33,8 +32,15 @@ const entryOf = (standards, id) => {
 const idsOf = (standards) => Object.entries(standards).flatMap(([c, groups]) =>
   Object.entries(groups).flatMap(([g, entries]) => Object.keys(entries).map((n) => `${c}.${g}.${n}`)));
 
-/** cyrb53 über JSON der Texte der Standardlösungen je Sprache. */
-const CHECKSUMS = { de: 4958143086221194, en: 3389924795424250 };
+/**
+ * cyrb53 über JSON der Texte der Standardlösungen je Sprache. Gebildet, als
+ * die Texte wortgleich mit der früheren Quelldatei `data/standards.json`
+ * waren; danach sind im Deutschen fünf Stellen bewusst typografisch
+ * korrigiert worden („z.B.“ → „z. B.“ in den Auslösern von 1.1.7 und 2.4.12
+ * und den Beschreibungen von 2.4.7, 4.2.2 und 5.2.2), die Prüfsumme `de` ist
+ * danach neu gebildet. Die englischen Texte sind unverändert.
+ */
+const CHECKSUMS = { de: 1444517045237691, en: 3389924795424250 };
 
 suite('triz-sufield Texte der Standardlösungen in ui.<lang>.json', () => {
   test('78 Standardlösungen in DE und EN, je mit vier nichtleeren Texten, in Tabellenreihenfolge', async () => {
@@ -51,15 +57,10 @@ suite('triz-sufield Texte der Standardlösungen in ui.<lang>.json', () => {
     }
   });
 
-  test('wortgleich mit data/standards.json', async () => {
-    const { standards: source } = await fetchJson('data/standards.json');
-    for (const lang of LANGS) {
-      const { standards } = await ui(lang);
-      for (const s of source) {
-        const { title, description, trigger, example } = s[lang];
-        assertDeepEqual(entryOf(standards, s.id), { title, description, trigger, example }, `${lang} ${s.id}`);
-      }
-    }
+  test('deutsch ohne „z.B.“ (typografisch „z. B.“)', async () => {
+    const { standards } = await ui('de');
+    assertTrue(!JSON.stringify(standards).includes('z.B.'), 'z.B.');
+    assertEqual(entryOf(standards, '1.1.7').trigger.includes('z. B.'), true, '1.1.7');
   });
 
   test('Prüfsumme je Sprache', async () => {

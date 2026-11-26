@@ -350,12 +350,4 @@ export default [
   // Modules with cycles: {} land in the trailing extras tile (⋯) —
   // the registry's cycle-mapping check (`m.cycles?.[cycleId]`) returns
   // undefined for every cycle, so getByCycleAndPhase('extras') matches.
-  {
-    id: 'triz-sufield',
-    phase: 'improve',
-    load: () => import('./triz-sufield/triz-sufield.js'),
-    cycles: {
-      eightd: { phase: 'corrective' },
-    },
-  },
 ];

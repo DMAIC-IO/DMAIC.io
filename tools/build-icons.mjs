@@ -87,7 +87,7 @@ if (unmapped.length) {
 /**
  * Dateien, die ein Icon berechtigt selbst zeichnen: die vier
  * SVG-Export-Generatoren erzeugen Dateien, in denen es keine CSS-Maske gibt,
- * und das Diagramm von triz-sufield (Alt- und Zielvorlage) zeichnet sein
+ * und das Diagramm von triz-sufield zeichnet sein
  * Dreieck samt Pfeilspitze.
  */
 const GLYPH_EXEMPT = [
@@ -95,7 +95,6 @@ const GLYPH_EXEMPT = [
   'js/modules/process-map/process-map-export.js',
   'js/modules/makigami/makigami.js',
   'js/modules/response-optimization/response-optimization.js',
-  'js/modules/triz-sufield/triz-sufield.html',
   'js/modules/triz-sufield/resources/view.html',
 ];
 

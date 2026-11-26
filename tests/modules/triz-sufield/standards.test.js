@@ -1,8 +1,8 @@
 /**
  * Tests for modules/triz-sufield/domain/standards.js — Form der Tabelle der
  * 78 Standardlösungen (ids, Klassen, Gruppen, Reihenfolge), Gruppierung je
- * Klasse, Einfrieren, Gleichheit mit der früheren Quelldatei
- * `data/standards.json` und eine Prüfsumme über die ganze Tabelle.
+ * Klasse, Einfrieren und eine Prüfsumme über die ganze Tabelle (gebildet, als
+ * sie der früheren Quelldatei `data/standards.json` glich).
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { cyrb53 } from '../../../js/core/hash.js';
@@ -74,14 +74,7 @@ suite('triz-sufield Standardlösungen — eingefroren', () => {
   });
 });
 
-suite('triz-sufield Standardlösungen — Quelldatei und Prüfsumme', () => {
-  test('gleich data/standards.json in id, class, group und Reihenfolge', async () => {
-    const url = new URL('../../../js/modules/triz-sufield/data/standards.json', import.meta.url);
-    const res = await fetch(url, { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch standards.json: HTTP ${res.status}`);
-    const { standards } = await res.json();
-    assertEqual(JSON.stringify(STANDARDS), JSON.stringify(standards.map((s) => ({ id: s.id, class: s.class, group: s.group }))));
-  });
+suite('triz-sufield Standardlösungen — Prüfsumme', () => {
   test('cyrb53 über JSON der Tabelle', () => {
     assertEqual(cyrb53(JSON.stringify(STANDARDS)), 4855512947701641);
   });

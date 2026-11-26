@@ -175,7 +175,8 @@ export function findGlyphsInHtml(text) {
  *  - `<defs>` ist nur ausgenommen, wenn außer dem `<defs>`-Block NICHTS im
  *    Element steht (reine Marker-/Gradienten-Definition ohne eigenen
  *    Zeicheninhalt). Steht daneben ein `<path>`, `<circle>` o. Ä., ist es ein
- *    Fund — genau wie das legitime triz-sufield-Diagramm, das neben seiner
+ *    Fund — genau wie das legitime triz-sufield-Diagramm
+ *    (`triz-sufield/resources/view.html`), das neben seiner
  *    Pfeilspitzen-`<defs>` selbst Linien und Knoten zeichnet und deshalb
  *    namentlich in `GLYPH_EXEMPT` steht statt strukturell durchzurutschen.
  */

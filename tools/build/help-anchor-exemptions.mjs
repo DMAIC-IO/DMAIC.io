@@ -102,6 +102,13 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setCellText', reason: 'der Text wird in der Oberfläche direkt ins Fenster geschrieben; die Fenster sind an fields.cells verankert' },
     { name: 'actions.clearImage', reason: 'Löschknopf je Bild; ein Fragezeichen je Fenster wäre Rauschen, verankert ist fields.cells' },
   ],
+  'triz-sufield': [
+    { name: 'fields.problemNote', reason: 'Freitextfeld unter der Diagnose ohne sichtbare Beschriftung; der Platzhalter benennt es' },
+    { name: 'fields.notes', reason: 'Notizfeld je Standardlösung ohne sichtbare Beschriftung; ein Fragezeichen je Lösung wäre Rauschen' },
+    { name: 'actions.setStandardNote', reason: 'die Oberfläche tippt direkt ins Notizfeld' },
+    { name: 'actions.setStandardSelected', reason: 'die Oberfläche hakt das Kästchen an, verankert an fields.selected' },
+    { name: 'actions.setExpandedClasses', reason: 'die Oberfläche klappt über die Klassenköpfe auf, verankert an fields.expandedClasses' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

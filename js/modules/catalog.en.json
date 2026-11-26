@@ -220,6 +220,11 @@
     "description": "Systematic inventory of substances, fields, space, time, information and functions",
     "whenToUse": "When you want to inventory what the system and its environment already provide at no cost, before searching for solutions — not to judge solutions or resolve contradictions."
   },
+  "triz-sufield": {
+    "name": "Substance-Field Analysis (TRIZ)",
+    "description": "Model the interaction as an S1-S2-field triangle and apply Altshuller's 76 standard solutions",
+    "whenToUse": "When an action between two substances is too weak, too strong, harmful or missing altogether and the matching TRIZ standard solutions are to be found; not to resolve a contradiction between two parameters — that is what the contradiction matrix is for."
+  },
   "worksheet": {
     "name": "Data Collection",
     "description": "Spreadsheet for data entry and management",

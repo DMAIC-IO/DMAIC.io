@@ -220,6 +220,11 @@
     "description": "Systematische Inventarisierung von Stoffen, Feldern, Raum, Zeit, Information und Funktionen",
     "whenToUse": "Wenn vor der Lösungssuche aufgenommen werden soll, was im System und seiner Umgebung schon vorhanden ist und nichts kostet — nicht, um Lösungen zu bewerten oder Widersprüche aufzulösen."
   },
+  "triz-sufield": {
+    "name": "Substanz-Feld-Analyse (TRIZ)",
+    "description": "Wechselwirkung als S1-S2-Feld-Dreieck modellieren und Altschullers 76 Standardlösungen anwenden",
+    "whenToUse": "Wenn eine Wirkung zwischen zwei Stoffen zu schwach, zu stark, schädlich oder gar nicht vorhanden ist und die TRIZ-Standardlösungen dazu gefunden werden sollen; nicht, um einen Widerspruch zwischen zwei Parametern aufzulösen — dafür ist die Widerspruchsmatrix da."
+  },
   "worksheet": {
     "name": "Datensammlung",
     "description": "Tabellenblatt zur Dateneingabe und -verwaltung",

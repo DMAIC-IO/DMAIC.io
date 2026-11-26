@@ -116,7 +116,7 @@
         "7": {
           "title": "Selektive Feldwirkung",
           "description": "Wenn das Feld auf manchen Bereichen maximal und auf anderen minimal wirken soll, nutze eine Schutzsubstanz bzw. einen Modifikator.",
-          "trigger": "Inhomogene Wirkung auf S2 gefordert (z.B. lokal härten).",
+          "trigger": "Inhomogene Wirkung auf S2 gefordert (z. B. lokal härten).",
           "example": "Lokal-induktives Härten — Feld wirkt nur auf den induzierten Bereich, Rest bleibt weich."
         },
         "8": {
@@ -283,7 +283,7 @@
         },
         "7": {
           "title": "Natürlichen Ferromagnetismus nutzen",
-          "description": "Suche, ob die Umgebung bereits ferromagnetische Substanzen enthält (z.B. Eisen, Stahl).",
+          "description": "Suche, ob die Umgebung bereits ferromagnetische Substanzen enthält (z. B. Eisen, Stahl).",
           "trigger": "Industrielle Umgebung mit metallischen Anteilen.",
           "example": "Magnetische Aufrichtung von Eisenpartikeln im Schmierstoff zur Verschleißüberwachung."
         },
@@ -314,7 +314,7 @@
         "12": {
           "title": "Elektrisches statt magnetisches Feld",
           "description": "Wenn Magnetfeld nicht passt, ersetze es durch ein elektrisches Feld oder kombiniere beide.",
-          "trigger": "Magnetische Lösung scheitert (z.B. nicht-ferromagnetisches Material).",
+          "trigger": "Magnetische Lösung scheitert (z. B. nicht-ferromagnetisches Material).",
           "example": "Elektrostatische Pulverbeschichtung statt magnetischer Anziehung."
         }
       }
@@ -391,7 +391,7 @@
         },
         "2": {
           "title": "Inneres komplexes Mess-Su-Field",
-          "description": "Verändere das Objekt, sodass es selbst Information abgibt (z.B. fluoreszierend bei Belastung).",
+          "description": "Verändere das Objekt, sodass es selbst Information abgibt (z. B. fluoreszierend bei Belastung).",
           "trigger": "Objekt darf modifiziert werden.",
           "example": "Spannungs-anzeigende Lacke (Tribolumineszenz) für Belastungsanalysen."
         },
@@ -511,7 +511,7 @@
         },
         "2": {
           "title": "Felder aus Umgebungssubstanzen erzeugen",
-          "description": "Erzeuge ein Feld aus den vorhandenen Substanzen heraus (z.B. Verbrennung, Verdampfung).",
+          "description": "Erzeuge ein Feld aus den vorhandenen Substanzen heraus (z. B. Verbrennung, Verdampfung).",
           "trigger": "Externer Energie-Eintrag soll vermieden werden.",
           "example": "Selbsterhitzende Mahlzeit — chemische Reaktion erzeugt Wärme aus Reagenzien."
         },

@@ -2,8 +2,8 @@
  * Tests for modules/triz-sufield/domain/migrations.js — '0→1.0' bildet das
  * alte `State.fromJSON` nach: Texte, Feldart, Verknüpfung, Listenfilter,
  * Klassen, Notizen und Vormerkungen je Fall, `null`/`undefined`/`{}`, fremde
- * Schlüssel, Reihenfolge. Dazu das Beispiel am bisherigen Ort (ohne `_schema`)
- * über das Model.
+ * Schlüssel, Reihenfolge. Dazu das Beispiel in der Form ohne `_schema` über
+ * das Model.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { from0 } from '../../../js/modules/triz-sufield/domain/migrations.js';
@@ -114,24 +114,18 @@ suite('triz-sufield Migration 0→1.0 — über das Model', () => {
   });
 });
 
-suite('triz-sufield Migration — Beispiel am bisherigen Ort', () => {
-  test('bohrer-beton (ohne _schema) lädt über 0→1.0 ohne Reparatur, toJSON = _schema + Datei', async () => {
-    const url = new URL('../../../examples/projects/triz-sufield-bohrer-beton.json', import.meta.url);
+suite('triz-sufield Migration — Beispiel ohne _schema', () => {
+  test('bohrer-beton ohne _schema lädt über 0→1.0 ohne Reparatur, toJSON = _schema + Datei', async () => {
+    const url = new URL('../../../js/modules/triz-sufield/resources/examples/projects/triz-sufield-bohrer-beton.json', import.meta.url);
     const res = await fetch(url, { cache: 'no-cache' });
     assertTrue(res.ok, `could not fetch example: HTTP ${res.status}`);
-    const file = await res.json();
-    assertEqual(file._schema, undefined);
+    const { _schema, ...file } = await res.json();
+    assertDeepEqual(_schema, SCHEMA._schema);
     assertDeepEqual(Object.keys(file), KEYS);
     const fields = [];
     const m = State.fromJSON(plain(file), { repair: true, onRepair: (f) => fields.push(f) });
     assertDeepEqual(fields, []);
     assertEqual(json(m.toJSON()), json({ ...SCHEMA, ...file }));
     assertEqual(json(from0(plain(file))), json(file));
-  });
-  test('mit _schema 1.0 (Form nach dem Umzug) lädt es streng ohne Schritt', async () => {
-    const url = new URL('../../../examples/projects/triz-sufield-bohrer-beton.json', import.meta.url);
-    const file = await (await fetch(url, { cache: 'no-cache' })).json();
-    const withSchema = { ...SCHEMA, ...file };
-    assertEqual(json(State.fromJSON(plain(withSchema)).toJSON()), json(withSchema));
   });
 });
