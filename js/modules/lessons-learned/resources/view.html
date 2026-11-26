@@ -1,0 +1,212 @@
+<section class="module-container lessons-learned" x-data="lessonsLearned">
+  <!-- data-help-key="" an Formular, Eingaben, Auswahllisten und Filter-Chips ist gewollt: die Hilfe hängt an den Beschriftungen bzw. an der Chip-Gruppe. -->
+  <!-- Entwurfs-Maßnahme entfernen fragt nicht (data-confirm-delete="off"): Abbrechen im Dialog verwirft ohnehin alles. -->
+  <div class="module-container__body">
+    <div class="ll__stats-bar">
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--total" aria-hidden="true">&Sigma;</span>
+        <div>
+          <div class="ll__stat-label" data-help-key="modules.lessons-learned.fields.stats.help" x-text="t('statTotal')"></div>
+          <div class="ll__stat-value" x-text="statValue('total')"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--success" aria-hidden="true">&check;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statSuccess')"></div>
+          <div class="ll__stat-value" x-text="statValue('success')"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--problem" aria-hidden="true">&times;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statProblem')"></div>
+          <div class="ll__stat-value" x-text="statValue('problem')"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--improve" aria-hidden="true">&uarr;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statImprove')"></div>
+          <div class="ll__stat-value" x-text="statValue('improve')"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--actions" aria-hidden="true">&#9673;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statOpenActions')"></div>
+          <div class="ll__stat-value" x-text="statValue('openActions')"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ll__toolbar">
+      <div class="ll__search" data-help-key="modules.lessons-learned.state.search.help">
+        <input type="text" class="field ll__search-input" data-ref="search"
+          :aria-label="t('searchPlaceholder')"
+          :placeholder="t('searchPlaceholder')"
+          x-model="state.search" data-help-key="">
+      </div>
+      <!-- Optionsfelder: Pfeiltasten wählen den Nachbarn, die Beschriftung sieht aus wie bisher der Chip. -->
+      <div class="ll__filters" role="radiogroup" x-set="state.filter" :aria-label="t('filterAll')"
+        data-help-key="modules.lessons-learned.state.filter.help">
+        <label class="ll__filter-chip" data-help-key="" :class="chipClass('all')" data-filter="all"><input type="radio" class="dmike-sr-only" value="all"><span x-text="t('filterAll')"></span></label>
+        <label class="ll__filter-chip" data-help-key="" :class="chipClass('success')" data-filter="success"><input type="radio" class="dmike-sr-only" value="success"><span x-text="t('filterSuccess')"></span></label>
+        <label class="ll__filter-chip" data-help-key="" :class="chipClass('problem')" data-filter="problem"><input type="radio" class="dmike-sr-only" value="problem"><span x-text="t('filterProblem')"></span></label>
+        <label class="ll__filter-chip" data-help-key="" :class="chipClass('improve')" data-filter="improve"><input type="radio" class="dmike-sr-only" value="improve"><span x-text="t('filterImprove')"></span></label>
+      </div>
+    </div>
+
+    <div class="ll__list" data-ref="list">
+      <template x-if="noneShown">
+        <div class="ll__empty" x-text="emptyText"></div>
+      </template>
+      <template x-for="lesson in shown" :key="lesson.id">
+        <div class="ll__card" :class="cardClass(lesson)" :data-lesson-id="lesson.id">
+          <button type="button" class="ll__card-head" data-action="toggle-card" :aria-expanded="ariaExpanded(lesson)"
+            @click="toggleCard(lesson.id)">
+            <span class="ll__cat-dot" :class="catDotClass(lesson)"></span>
+            <span class="ll__card-content">
+              <span class="ll__card-title-row">
+                <span class="ll__card-title" x-text="lesson.title"></span>
+                <span class="ll__phase-tag" :class="phaseClass(lesson)" x-text="phaseName(lesson.phase)"></span>
+                <span class="ll__impact-badge" data-help-key="modules.lessons-learned.fields.lessons.impact.help" :class="impactClass(lesson)"
+                  x-text="impactLabel(lesson.impact)"></span>
+              </span>
+              <span class="ll__card-meta">
+                <span x-text="catLabel(lesson.category)"></span>
+                <span x-show="lesson.owner" x-text="lesson.owner"></span>
+                <span x-text="formatDate(lesson.createdAt)"></span>
+                <span x-show="hasActions(lesson)" x-text="actionsSummary(lesson)"></span>
+              </span>
+            </span>
+            <span class="ll__chevron icon icon--sm" :data-icon="chevronIcon(lesson)" aria-hidden="true"></span>
+          </button>
+
+          <div x-show="isOpen(lesson)" class="ll__card-body">
+            <template x-if="lesson.description">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelDescription')"></div>
+                <p class="ll__section-text" x-text="lesson.description"></p>
+              </div>
+            </template>
+            <template x-if="lesson.rootCause">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelRootCause')"></div>
+                <p class="ll__section-text" x-text="lesson.rootCause"></p>
+              </div>
+            </template>
+            <template x-if="lesson.recommendation">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelRecommendation')"></div>
+                <p class="ll__section-text" x-text="lesson.recommendation"></p>
+              </div>
+            </template>
+            <template x-if="hasActions(lesson)">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelActions')"></div>
+                <ul class="ll__action-list">
+                  <template x-for="(a, i) in lesson.actions">
+                    <li class="ll__action-item">
+                      <button type="button" class="ll__action-check" :class="checkClass(a)" data-action="toggle-action"
+                        x-command="setActionDone" :data-arg-lesson-id="lesson.id" :data-arg-action-index="i" :data-arg-done="nextDone(a)"
+                        :aria-label="a.text" :aria-pressed="nextDone(a) === 'false'"
+                        data-help-key="modules.lessons-learned.actions.setActionDone.help"><span x-show="a.done">&check;</span></button>
+                      <span class="ll__action-text" :class="actionTextClass(a)" x-text="a.text"></span>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+            </template>
+            <div class="ll__card-actions">
+              <button type="button" class="btn btn--sm btn--ghost" data-action="edit"
+                x-dialog="lessonForm" data-dialog-command="updateLesson" :data-arg-lesson-id="lesson.id" :data-dialog-title="t('editTitle')"
+                data-help-key="modules.lessons-learned.actions.updateLesson.help" x-text="t('edit')"></button>
+              <button type="button" class="btn btn--sm btn--ghost btn--danger" data-action="delete"
+                data-confirm-delete x-command="removeLesson" :data-arg-lesson-id="lesson.id"
+                data-help-key="modules.lessons-learned.actions.removeLesson.help" x-text="t('delete')"></button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Dateiauswahl für „Importieren“ (Werkzeugleiste): ohne eigene Fläche. -->
+  <div hidden x-ref="importDrop" data-ref="importDrop" x-file-drop="importFile" data-file-drop-accept=".json"></div>
+
+  <!-- Formular zum Anlegen und Bearbeiten: verborgen hier, beim Öffnen in den Dialog ausgeliehen. -->
+  <div class="ll__modal-forms" hidden>
+    <form class="ll__form" x-ref="lessonForm" x-command-form="addLesson" data-command-form-schema="LessonForm" novalidate data-help-key="">
+      <div class="ll__form-group">
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.title.help" :for="fieldId('title')" x-text="t('fieldTitle')"></label>
+        <input :id="fieldId('title')" type="text" class="field ll__form-input" data-field="title" x-param="title" required aria-required="true"
+          :placeholder="t('fieldTitlePlaceholder')" data-help-key="">
+      </div>
+      <div class="ll__form-row">
+        <div class="ll__form-group">
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.category.help" :for="fieldId('category')" x-text="t('fieldCategory')"></label>
+          <select :id="fieldId('category')" class="field ll__form-select" data-field="category" x-param="category" data-help-key="">
+            <option value="success" x-text="t('cat_success')"></option>
+            <option value="problem" x-text="t('cat_problem')"></option>
+            <option value="improve" x-text="t('cat_improve')"></option>
+          </select>
+        </div>
+        <div class="ll__form-group">
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.phase.help" :for="fieldId('phase')" x-text="t('fieldPhase')"></label>
+          <select :id="fieldId('phase')" class="field ll__form-select" data-field="phase" x-param="phase" data-help-key="">
+            <template x-for="p in phaseIds" :key="p">
+              <option :value="p" x-text="phaseName(p)"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+      <div class="ll__form-row">
+        <div class="ll__form-group">
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.impact.help" :for="fieldId('impact')" x-text="t('fieldImpact')"></label>
+          <select :id="fieldId('impact')" class="field ll__form-select" data-field="impact" x-param="impact" data-help-key="">
+            <option value="high" x-text="t('impact_high')"></option>
+            <option value="medium" x-text="t('impact_medium')"></option>
+            <option value="low" x-text="t('impact_low')"></option>
+          </select>
+        </div>
+        <div class="ll__form-group">
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.owner.help" :for="fieldId('owner')" x-text="t('fieldOwner')"></label>
+          <input :id="fieldId('owner')" type="text" class="field ll__form-input" data-field="owner" x-param="owner"
+            :placeholder="t('fieldOwnerPlaceholder')" data-help-key="">
+        </div>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.description.help" :for="fieldId('description')" x-text="t('fieldDescription')"></label>
+        <textarea :id="fieldId('description')" class="field ll__form-textarea" data-field="description" x-param="description"
+          :placeholder="t('fieldDescriptionPlaceholder')" data-help-key=""></textarea>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.rootCause.help" :for="fieldId('rootCause')" x-text="t('fieldRootCause')"></label>
+        <textarea :id="fieldId('rootCause')" class="ll__form-textarea ll__form-textarea--sm" data-field="rootCause" x-param="rootCause"
+          :placeholder="t('fieldRootCausePlaceholder')" data-help-key=""></textarea>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.recommendation.help" :for="fieldId('recommendation')" x-text="t('fieldRecommendation')"></label>
+        <textarea :id="fieldId('recommendation')" class="field ll__form-textarea" data-field="recommendation" x-param="recommendation"
+          :placeholder="t('fieldRecommendationPlaceholder')" data-help-key=""></textarea>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.fields.lessons.actions.help" :for="fieldId('actionText')" x-text="t('fieldActions')"></label>
+        <div class="ll__action-input-row">
+          <input :id="fieldId('actionText')" type="text" class="field ll__form-input" data-ref="actionInput" x-param="actionText"
+            :placeholder="t('fieldActionPlaceholder')" @keydown.enter.prevent="addDraftAction(form)" data-help-key="">
+          <button class="btn btn--sm" data-ref="addActionBtn" type="button" :aria-label="t('fieldActionPlaceholder')" @click="addDraftAction(form)">+</button>
+        </div>
+        <div class="ll__action-tags" data-ref="actionTags">
+          <template x-for="(a, i) in form.actions" :key="i">
+            <span class="ll__action-tag">
+              <span x-text="a.text"></span><button class="ll__action-tag-remove" type="button" data-confirm-delete="off" :aria-label="t('delete')"
+                @click="removeDraftAction(form, i)">&times;</button>
+            </span>
+          </template>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

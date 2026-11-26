@@ -1,3 +1,502 @@
+/**
+ * D.Mike — Lessons Learned: Stil von Modul und Kachel
+ * BEM-light naming: .ll__*, Kachel .dashboard-lessons__*
+ */
+
+/* ── Modulfarben (Phasen, Kennzahlen, Wirkung; hell und dunkel gleich) ── */
+.lessons-learned {
+  --ll-accent-bg: rgb(56 189 248 / 12%);
+  --ll-success-bg: rgb(52 211 153 / 12%);
+  --ll-danger-bg: rgb(248 113 113 / 12%);
+  --ll-warning-bg: rgb(251 191 36 / 12%);
+  --ll-phase-define: #a78bfa;
+  --ll-phase-define-bg: rgb(167 139 250 / 12%);
+  --ll-phase-measure: #38bdf8;
+  --ll-phase-measure-bg: rgb(56 189 248 / 12%);
+  --ll-phase-analyze: #fbbf24;
+  --ll-phase-analyze-bg: rgb(251 191 36 / 12%);
+  --ll-phase-improve: #34d399;
+  --ll-phase-improve-bg: rgb(52 211 153 / 12%);
+  --ll-phase-control: #fb7185;
+  --ll-phase-control-bg: rgb(248 113 113 / 12%);
+  --ll-font-size-label: 10px;
+  --ll-font-size-chip: 11px;
+}
+
+[data-theme="dark"] .lessons-learned {
+  --ll-accent-bg: rgb(56 189 248 / 12%);
+  --ll-success-bg: rgb(52 211 153 / 12%);
+  --ll-danger-bg: rgb(248 113 113 / 12%);
+  --ll-warning-bg: rgb(251 191 36 / 12%);
+  --ll-phase-define: #a78bfa;
+  --ll-phase-define-bg: rgb(167 139 250 / 12%);
+  --ll-phase-measure: #38bdf8;
+  --ll-phase-measure-bg: rgb(56 189 248 / 12%);
+  --ll-phase-analyze: #fbbf24;
+  --ll-phase-analyze-bg: rgb(251 191 36 / 12%);
+  --ll-phase-improve: #34d399;
+  --ll-phase-improve-bg: rgb(52 211 153 / 12%);
+  --ll-phase-control: #fb7185;
+  --ll-phase-control-bg: rgb(248 113 113 / 12%);
+  --ll-font-size-label: 10px;
+  --ll-font-size-chip: 11px;
+}
+
+
+/* ── Stats Bar ── */
+.ll__stats-bar {
+  display: flex;
+  gap: 1px;
+  background: var(--color-border-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.ll__stat {
+  flex: 1;
+  background: var(--color-bg-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ll__stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-md);
+  flex-shrink: 0;
+}
+
+.ll__stat-icon--total {
+  background: var(--ll-accent-bg);
+  color: var(--color-accent);
+}
+
+.ll__stat-icon--success {
+  background: var(--ll-success-bg);
+  color: var(--color-success);
+}
+
+.ll__stat-icon--problem {
+  background: var(--ll-danger-bg);
+  color: var(--color-error);
+}
+
+.ll__stat-icon--improve {
+  background: var(--ll-warning-bg);
+  color: var(--color-warning);
+}
+
+.ll__stat-icon--actions {
+  background: var(--ll-phase-define-bg);
+  color: var(--ll-phase-define);
+}
+
+.ll__stat-label {
+  font-size: var(--ll-font-size-label);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ll__stat-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* ── Toolbar ── */
+.ll__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.ll__search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.ll__search-input {
+  width: 100%;
+}
+
+.ll__filters {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.ll__filter-chip {
+  font-family: var(--font-family-mono);
+  font-size: var(--ll-font-size-chip);
+  padding: var(--spacing-s) var(--spacing-sm);
+  border-radius: 20px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+
+  /* Eine Beschriftung (Optionsfeld) statt Knopf: die Zeilenhöhe des Knopfs. */
+  line-height: normal;
+}
+
+.ll__filter-chip:has(:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.ll__filter-chip:hover {
+  border-color: var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+
+.ll__filter-chip--active {
+  background: var(--ll-accent-bg);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ── Lesson Card ── */
+.ll__card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-sm);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.ll__card:hover {
+  border-color: var(--color-border-primary);
+}
+
+.ll__card-head {
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ll__card-head {
+  width: 100%;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+
+.ll__card-head:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.ll__cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: var(--spacing-s);
+  flex-shrink: 0;
+}
+
+.ll__cat-dot--success {
+  background: var(--color-success);
+}
+
+.ll__cat-dot--problem {
+  background: var(--color-error);
+}
+
+.ll__cat-dot--improve {
+  background: var(--color-warning);
+}
+
+.ll__card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ll__card-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.ll__card-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+}
+
+.ll__phase-tag {
+  font-family: var(--font-family-mono);
+  font-size: var(--ll-font-size-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.ll__phase-tag--define {
+  background: var(--ll-phase-define-bg);
+  color: var(--ll-phase-define);
+}
+
+.ll__phase-tag--measure {
+  background: var(--ll-phase-measure-bg);
+  color: var(--ll-phase-measure);
+}
+
+.ll__phase-tag--analyze {
+  background: var(--ll-phase-analyze-bg);
+  color: var(--ll-phase-analyze);
+}
+
+.ll__phase-tag--improve {
+  background: var(--ll-phase-improve-bg);
+  color: var(--ll-phase-improve);
+}
+
+.ll__phase-tag--control {
+  background: var(--ll-phase-control-bg);
+  color: var(--ll-phase-control);
+}
+
+.ll__impact-badge {
+  font-family: var(--font-family-mono);
+  font-size: var(--ll-font-size-label);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.ll__impact-badge--high {
+  background: var(--ll-danger-bg);
+  color: var(--color-error);
+}
+
+.ll__impact-badge--medium {
+  background: var(--ll-warning-bg);
+  color: var(--color-warning);
+}
+
+.ll__impact-badge--low {
+  background: var(--ll-success-bg);
+  color: var(--color-success);
+}
+
+.ll__card-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-xs);
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.ll__chevron {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-xs);
+  line-height: 1;
+
+  /* .ll__card-head is align-items:flex-start (title/meta can wrap to
+     multiple lines), which docked the chevron to the top of the row.
+     Center it on the row instead — matches customer feedback ("Chevrons
+     nach rechts sollten weiter unten stehen, in etwa mittig"). */
+  align-self: center;
+}
+
+/* ── Card Body (expanded) ── */
+.ll__card-body {
+  padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
+}
+
+.ll__section {
+  margin-bottom: var(--spacing-md);
+}
+
+.ll__section-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--ll-font-size-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.ll__section-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* ── Action Items ── */
+.ll__action-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ll__action-item {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-s) 0;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.ll__action-item:last-child {
+  border-bottom: none;
+}
+
+.ll__action-check {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-border-primary);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: var(--spacing-2xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: transparent;
+  color: transparent;
+  font-size: 10px;
+  padding: 0;
+}
+
+.ll__action-check:hover {
+  border-color: var(--color-accent);
+}
+
+.ll__action-check--done {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-bg-primary);
+}
+
+.ll__action-text--done {
+  text-decoration: line-through;
+  color: var(--color-text-tertiary);
+}
+
+.ll__card-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-xs);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* ── Empty State ── */
+.ll__empty {
+  text-align: center;
+
+  /* --spacing-xxl existiert nicht in der Skala (nie definiert, Fallback griff
+     immer) — direkt auf --spacing-2xl (60px gerundet) umgestellt. */
+  padding: var(--spacing-2xl) var(--spacing-md);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Modal Form ── */
+.ll__form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.ll__form-label {
+  display: block;
+  font-family: var(--font-family-mono);
+  font-size: var(--ll-font-size-chip);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.ll__form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.ll__form-textarea--sm {
+  min-height: 56px;
+}
+
+.ll__form-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.ll__form-row .ll__form-group {
+  flex: 1;
+}
+
+.ll__action-input-row {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.ll__action-input-row .ll__form-input {
+  flex: 1;
+}
+
+.ll__action-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.ll__action-tag {
+  font-size: var(--font-size-xs);
+  background: var(--color-bg-tertiary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  padding: var(--spacing-xs) var(--spacing-m);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-text-secondary);
+}
+
+.ll__action-tag-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  line-height: 1;
+  padding: 0;
+}
+
+.ll__action-tag-remove:hover {
+  color: var(--color-error);
+}
+
+
 /* ── Kachel auf dem Dashboard ──────────────────────────────────── */
 
 .dashboard-lessons__open--alert strong {
