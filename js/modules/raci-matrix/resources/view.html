@@ -1,7 +1,7 @@
 <div class="module-container raci" x-data="raciMatrix">
   <!-- data-help-key="" an Formularen, Eingaben, Zellen und Löschknöpfen ist gewollt: die Hilfe hängt an den Knöpfen zum Anlegen, am Eckkopf (Rollen schalten) und an der Legende; ein Abzeichen je Zelle wäre Rauschen. -->
   <div class="module-container__body">
-    <div class="raci__legend" data-help-key="modules.raci-matrix.fields.assignments.help">
+    <div class="raci__legend context-help-anchor--overlay" data-help-key="modules.raci-matrix.fields.assignments.help">
       <template x-for="r in roles" :key="r">
         <span class="raci__legend-item" :class="roleClass(r)" x-text="legendLabel(r)"></span>
       </template>

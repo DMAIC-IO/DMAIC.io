@@ -8,6 +8,9 @@
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+  /* Schrumpfbreit: der Hilfe-Anker sitzt rechts neben der letzten Rolle,
+     nicht an der Kante des Moduls. */
+  width: fit-content;
   margin-bottom: var(--spacing-md);
 }
 
