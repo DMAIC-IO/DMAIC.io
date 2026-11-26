@@ -109,6 +109,9 @@ export function todosView(ctx) {
      * @param {Record<string, unknown>|null} changes `null` entfernt die Aufgabe
      */
     patchTodoRead(instanceId, itemId, changes) {
+      // Ein vor dem Ändern gestarteter Lesevorgang kennt die Änderung nicht
+      // und darf die vorläufige Anzeige nicht zurücksetzen.
+      readSeq += 1;
       this.state.todoReads = this.state.todoReads.map((r) => (r.instanceId !== instanceId ? r : {
         ...r,
         items: changes === null

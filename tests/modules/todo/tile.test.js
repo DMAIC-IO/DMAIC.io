@@ -71,6 +71,8 @@ suite('todo Kachel: Anzeige', () => {
 
   test('Zieldatum nach App-Sprache; Text ohne Datum bleibt', () => {
     assertEqual(vmOf(TODO_STATE, {}, 'en').next[0].due, '01/01/2000');
+    // Englisch wie der Kalender: Tag vor Monat (en-GB)
+    assertEqual(vmOf({ items: [{ id: 'y', text: 'T', due: '2026-03-04', status: 'open' }] }, {}, 'en').next[0].due, '04/03/2026');
     const vm = vmOf({ items: [{ id: 'x', text: 'KW', due: 'KW 23', status: 'open' }] });
     assertEqual(vm.next[0].due, 'KW 23');
     assertEqual(vm.next[0].modifier, '');

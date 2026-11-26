@@ -22,10 +22,10 @@
         "help": "Ob die Aufgabe im Projektkalender erscheint. Sie steht dort am Zieldatum, sobald sie einen Text und ein Datum hat; die Spalte gibt es nur, wenn das Projekt einen Kalender hat."
       },
       "time": {
-        "help": "Beginn des Aufgabentermins im Kalender als Uhrzeit im Fünf-Minuten-Raster; ohne Angabe steht er um 09:00. Gesetzt wird er im Kalender."
+        "help": "Beginn des Aufgabentermins im Kalender als Uhrzeit im Fünf-Minuten-Raster; ohne Angabe steht er um 09:00. Die Oberfläche setzt ihn im Kalender; ein Agent setzt ihn über updateTodo."
       },
       "duration": {
-        "help": "Dauer des Aufgabentermins im Kalender in Minuten, mindestens fünf; ohne Angabe 30 Minuten. Gesetzt wird sie im Kalender."
+        "help": "Dauer des Aufgabentermins im Kalender in Minuten, mindestens fünf; ohne Angabe 30 Minuten. Die Oberfläche setzt sie im Kalender; ein Agent setzt sie über updateTodo."
       }
     },
     "filterStatus": {
@@ -103,7 +103,7 @@
       "params": {
         "itemId": "Die Kennung der Aufgabe, die verschoben wird. Eine unbekannte Kennung ist ein Fehler.",
         "to": "Die Stelle, an der die Aufgabe nach dem Verschieben steht, von 0 an gezählt. Ihre bisherige Stelle lässt alles stehen; eine Stelle außerhalb ist ein Fehler.",
-        "shownIds": "Optional die angezeigte Folge als Liste von Kennungen, wie die Oberfläche sie nach Filter und Sortierung zeigt. Sie wird zuerst die gespeicherte Folge, ausgeblendete Aufgaben folgen; die Stelle zählt dann in dieser Folge. Ohne die Liste gilt die gespeicherte Reihenfolge.",
+        "shownIds": "Optional die angezeigte Folge als Liste von Kennungen, wie die Oberfläche sie nach Filter und Sortierung zeigt. Sie wird zuerst die gespeicherte Folge, ausgeblendete Aufgaben folgen; die Stelle zählt dann in dieser Folge. Die verschobene Aufgabe muss in der Liste stehen; fehlt sie oder ist die Liste leer, ist das ein Fehler. Ohne die Liste gilt die gespeicherte Reihenfolge.",
         "command": "Das Kommando als ein Objekt mit itemId, to und optional shownIds."
       }
     },

@@ -74,7 +74,7 @@
             </td>
             <td class="todo__cell-due">
               <input type="date" class="field field--sm field--ghost todo__inline-date" data-field="due" data-help-key=""
-                     x-model="item.due" :aria-label="t('colDue')">
+                     x-model.blur.enter="item.due" :aria-label="t('colDue')">
             </td>
             <td>
               <select class="field field--sm todo__inline-select" data-field="status" data-help-key=""

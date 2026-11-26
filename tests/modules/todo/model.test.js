@@ -239,6 +239,12 @@ suite('todo Model — moveTodo (Endindex)', () => {
     m.moveTodo({ itemId: 'b', to: 0, shownIds: ['a', 'x', 'b'] });
     assertDeepEqual(ids(m), ['b', 'a', 'c']);
   });
+  test('mit shownIds: die gezogene Aufgabe muss darin stehen; leere Folge abgelehnt (param shownIds)', () => {
+    const m = withItems('a', 'b', 'c');
+    assertEqual(thrown(() => m.moveTodo({ itemId: 'c', to: 0, shownIds: ['a', 'b'] }))?.param, 'shownIds');
+    assertEqual(thrown(() => m.moveTodo({ itemId: 'a', to: 0, shownIds: [] }))?.param, 'shownIds');
+    assertDeepEqual(ids(m), ['a', 'b', 'c']);
+  });
 });
 
 suite('todo Model — sortBy', () => {

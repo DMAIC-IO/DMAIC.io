@@ -105,9 +105,12 @@ export const State = defineModel({
         // gespeicherte; Ausgeblendete folgen in ihrer bisherigen Folge.
         let order = this.items.slice();
         if (shownIds) {
+          // Die gezogene Aufgabe muss unter den angezeigten sein; eine leere
+          // Folge zeigt nichts und ist damit ebenfalls abgelehnt.
+          requireForm('shownIds', shownIds, shownIds.includes(itemId), 'a list of shown task ids that contains itemId');
           const byId = new Map(order.map((i) => [i.id, i]));
           const shown = [...new Set(shownIds)].filter((id) => byId.has(id)).map((id) => byId.get(id));
-          requireForm('to', to, to < Math.max(shown.length, 1), 'a position among the shown tasks');
+          requireForm('to', to, to < shown.length, 'a position among the shown tasks');
           const shownSet = new Set(shown);
           order = [...shown, ...order.filter((i) => !shownSet.has(i))];
         }

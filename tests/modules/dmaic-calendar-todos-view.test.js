@@ -222,6 +222,23 @@ suite('dmaic-calendar: Aufgabentermine schreiben', () => {
     assertEqual(h.vm().model.events.length, 1, 'das eigene Model bleibt unberührt');
   });
 
+  test('ein vor dem Ändern gestarteter Lesevorgang setzt die vorläufige Anzeige nicht zurück', async () => {
+    const h = await mount();
+    h.gate.held = [];
+    h.vm().reloadTodos();
+    const stale = h.gate.held.splice(0);
+    // Das Neulesen nach dem Aufruf bleibt angehalten: geprüft wird allein,
+    // was der alte Lesevorgang anrichtet.
+    h.vm().editTodoEvent({ instanceId: 't1', itemId: 'a', title: 'Vorläufig' });
+    stale.forEach((go) => go());
+    await settle();
+    assertEqual(h.vm().todoEventOf('t1', 'a').title, 'Vorläufig');
+    const later = h.gate.held.splice(0);
+    h.gate.held = null;
+    later.forEach((go) => go());
+    await settle();
+  });
+
   test('editTodoEvent nur mit Datum und Beginn (Geste move): nur diese Angaben', async () => {
     const h = await mount();
     h.vm().editTodoEvent({ instanceId: 't2', itemId: 'c', date: T0, time: '07:30' });

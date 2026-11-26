@@ -22,10 +22,10 @@
         "help": "Whether the task appears in the project calendar. It shows there on its due date once it has a text and a date; the column only exists when the project has a calendar."
       },
       "time": {
-        "help": "Start of the task's appointment in the calendar as a time on a five-minute grid; without it the appointment starts at 09:00. It is set in the calendar."
+        "help": "Start of the task's appointment in the calendar as a time on a five-minute grid; without it the appointment starts at 09:00. The interface sets it in the calendar; an agent sets it via updateTodo."
       },
       "duration": {
-        "help": "Length of the task's appointment in the calendar in minutes, at least five; without it 30 minutes. It is set in the calendar."
+        "help": "Length of the task's appointment in the calendar in minutes, at least five; without it 30 minutes. The interface sets it in the calendar; an agent sets it via updateTodo."
       }
     },
     "filterStatus": {
@@ -103,7 +103,7 @@
       "params": {
         "itemId": "The identifier of the task to move. An unknown identifier is an error.",
         "to": "The place the task takes after the move, counted from 0. Its current place leaves everything as it is; a place outside is an error.",
-        "shownIds": "Optionally the displayed order as a list of identifiers, as the interface shows it after filter and sorting. It first becomes the stored order, hidden tasks follow; the place then counts in this order. Without the list the stored order applies.",
+        "shownIds": "Optionally the displayed order as a list of identifiers, as the interface shows it after filter and sorting. It first becomes the stored order, hidden tasks follow; the place then counts in this order. The moved task must be in the list; if it is missing or the list is empty, that is an error. Without the list the stored order applies.",
         "command": "The command as an object with itemId, to and optionally shownIds."
       }
     },

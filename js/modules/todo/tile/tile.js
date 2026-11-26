@@ -23,7 +23,7 @@ const STATUS_COLOR = {
 };
 
 /**
- * Ein Zieldatum nach App-Sprache (Deutsch `de-DE`, sonst `en-US`); ein Text,
+ * Ein Zieldatum nach App-Sprache (Deutsch `de-DE`, sonst `en-GB` wie der Kalender); ein Text,
  * der kein Datum ist, bleibt; leer wird „—“.
  * @param {string} due @param {string} lang @returns {string}
  */
@@ -31,7 +31,7 @@ function dueLabel(due, lang) {
   if (!due) return '—';
   if (!isIsoDate(due)) return due;
   const [y, m, d] = due.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return new Date(y, m - 1, d).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export default createTile({

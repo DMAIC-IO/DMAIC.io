@@ -10,8 +10,8 @@
  * makigami-duration.js. This data-fn owns only view transforms (i18n labels,
  * KPI formatting, validity classes), the event handlers (which call Model
  * methods or mutate the reactive model), the table-header drag-reorder (transient
- * drag state — not the draggableList list mixin, which is clientY/list based and
- * does not fit a 2-axis table grid), and the export handlers. Settings toggle and
+ * drag state — not the `reorder` gesture's list form, which is one-axis
+ * list based and does not fit a 2-axis table grid), and the export handlers. Settings toggle and
  * export are exposed via config.actions (unified workspace action bar) rather
  * than an in-content toolbar. No HTML is built in JS for the UI — the markup
  * lives in makigami.html.
