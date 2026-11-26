@@ -21,8 +21,8 @@
   border-radius: var(--border-radius);
   padding: var(--spacing-sm) var(--spacing-md);
   margin-bottom: var(--spacing-sm);
-  background: rgb(var(--color-accent-rgb, 59, 130, 246), 0.06);
-  border: var(--border-width) solid rgb(var(--color-accent-rgb, 59, 130, 246), 0.2);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
 .smpsize__summary strong {
