@@ -146,7 +146,9 @@ const DEFAULT_IO = { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob,
 
 /**
  * Eine Datei aus den Mappern eines Moduls bauen und herunterladen. Wirft
- * nie: Erfolg und Fehler gehen per `ui.notify`.
+ * nie: Erfolg und Fehler gehen per `ui.notify`. Liefert `table()`, `tree()`
+ * oder `image()` `null`, gibt es nichts zu exportieren: keine Datei, keine
+ * Meldung.
  * @param {{ exports: Record<string, any>, component: object, moduleId: string,
  *   i18n: { t: (key: string, params?: object) => string, getLanguage: () => string },
  *   notify: (message: string, type?: string, titleKey?: string) => void }} ui
@@ -162,15 +164,23 @@ export async function runExport(ui, fmt, io = DEFAULT_IO) {
     const base = typeof def.fileName === 'function' ? def.fileName.call(component) : (def.fileName ?? moduleId);
     const name = `${base}.${fmt}`;
     if (fmt === 'csv') {
-      io.downloadFile(toCsvText(await call('table'), i18n.getLanguage()), name, 'text/csv;charset=utf-8');
+      const rows = await call('table');
+      if (rows === null) return; // nichts zu exportieren: keine Datei, keine Meldung
+      io.downloadFile(toCsvText(rows, i18n.getLanguage()), name, 'text/csv;charset=utf-8');
     } else if (fmt === 'json') {
       const tree = await call('tree');
+      if (tree === null) return;
       if (tree === undefined) throw new Error('tree() returned undefined');
       io.downloadBlob(new Blob([toJsonText(tree)], { type: 'application/json' }), name);
     } else if (fmt === 'xlsx') {
-      const sheets = typeof def.tables === 'function'
-        ? await call('tables')
-        : { [i18n.t(`modules.${moduleId}.name`)]: await call('table') };
+      let sheets;
+      if (typeof def.tables === 'function') {
+        sheets = await call('tables');
+      } else {
+        const rows = await call('table');
+        if (rows === null) return;
+        sheets = { [i18n.t(`modules.${moduleId}.name`)]: rows };
+      }
       let XLSX;
       try { XLSX = await io.ensureXLSX(); } catch { return; } // Ladefehler hat core/chunks.js schon gemeldet
       const wb = XLSX.utils.book_new();

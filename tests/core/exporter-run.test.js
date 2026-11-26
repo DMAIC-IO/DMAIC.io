@@ -134,6 +134,26 @@ suite('runExport', () => {
     }
   });
 
+  test('table() ohne Zeilen (null): CSV und XLSX ohne Datei, ohne Meldung, SheetJS nicht geladen', async () => {
+    for (const fmt of ['csv', 'xlsx']) {
+      const { ui, io, log, files } = setup({ table() { return null; } });
+      let loaded = false;
+      const ensure = io.ensureXLSX;
+      io.ensureXLSX = async () => { loaded = true; return ensure(); };
+      await runExport(ui, fmt, io);
+      assertEqual(Object.keys(files).length, 0, fmt);
+      assertEqual(log.filter(([k]) => k === 'notify').length, 0, fmt);
+      assertEqual(loaded, false, fmt);
+    }
+  });
+
+  test('tree() ohne Wert (null): JSON ohne Datei, ohne Meldung', async () => {
+    const { ui, io, log, files } = setup({ tree() { return null; } });
+    await runExport(ui, 'json', io);
+    assertDeepEqual(Object.keys(files), []);
+    assertDeepEqual(log, []);
+  });
+
   test('png: Größe aus dem SVG, Schriften eingebettet, Meldung erst nach fertigem Bild', async () => {
     const { ui, io, log, files } = setup({ async image() { return SVG; } });
     await runExport(ui, 'png', io);
