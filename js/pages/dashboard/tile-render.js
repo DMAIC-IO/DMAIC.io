@@ -82,6 +82,28 @@ export async function renderTileSafely(tile, body, args, i18n) {
 }
 
 /**
+ * The reader a tile gets on the dashboard: `source` itself, except that
+ * `ensureLoaded` calls `rerender()` once the module of the instance was
+ * loaded just now. A tile that meets `not_loaded` starts the load without
+ * waiting and draws what it has; the host draws it again with the data.
+ * Already loaded or failed: no redraw (a failure rejects as before).
+ * @param {import('../../core/source-reader.js').Source} source
+ * @param {() => void} rerender  redraws this tile (same body, like a `refreshOn` event)
+ * @returns {import('../../core/source-reader.js').Source}
+ */
+export function tileSource(source, rerender) {
+  return Object.freeze({
+    read: (instanceId, options) => source.read(instanceId, options),
+    list: () => source.list(),
+    async ensureLoaded(instanceId) {
+      const fresh = await source.ensureLoaded(instanceId);
+      if (fresh) rerender();
+      return fresh;
+    },
+  });
+}
+
+/**
  * Release a tile: drop pending renders, run its dispose, destroy its Alpine scopes.
  * @param {object|null|undefined} tile
  * @param {HTMLElement|null} body

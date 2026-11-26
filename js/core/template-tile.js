@@ -25,7 +25,9 @@ import { deferredSource, NO_SOURCE } from './source-reader.js';
 /**
  * Was `view(ctx)` einer Kachel bekommt. `source` liest fremde Instanzen
  * (derselbe Leser wie in den Gettern der `derived`; der Host baut bei
- * `refreshOn` neu auf).
+ * `refreshOn` neu auf). Wirft `source.read` `not_loaded`, stößt die Kachel
+ * `source.ensureLoaded(instanceId)` an, ohne zu warten, und zeichnet, was sie
+ * hat; im Dashboard zeichnet der Host sie nach dem Laden neu.
  * @typedef {{ i18n: any, theme: string|undefined, instanceId: string|null, moduleId: string,
  *   source: import('./source-reader.js').Source }} TileContext
  */

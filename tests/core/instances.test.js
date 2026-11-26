@@ -123,6 +123,23 @@ function caught(fn) {
   return null;
 }
 
+suite('instances.load', () => {
+  test('lädt den Code des Moduls ohne Lesen; true nur, wenn es erst jetzt geladen wurde', async () => {
+    const { svc, loaded, sm } = setup({ states: { d1: { n: 5 } } });
+    loaded.clear();
+    assertEqual(await svc.load('d1'), true);
+    loaded.add('sipoc');
+    assertEqual(await svc.load('d1'), false);
+    assertEqual(sm.writes.length, 0, 'load schreibt nichts');
+    assertEqual(caught(() => svc.readSync('d1'))?.code, undefined, 'danach liest readSync ohne not_loaded');
+  });
+
+  test('unbekannte Instanz → unknown_instance', async () => {
+    const { svc } = setup();
+    await assertRejects(() => svc.load('nope'), /unknown_instance/);
+  });
+});
+
 suite('instances.readSync', () => {
   test('nicht geladen → not_loaded', () => {
     const { svc, loaded } = setup({ states: { d1: { n: 5 } } });

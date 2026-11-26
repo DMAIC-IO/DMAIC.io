@@ -33,6 +33,7 @@ import { stripPaths } from './view-fields.js';
  *   list: (opts?: { modules?: string[] }) => InstanceInfo[],
  *   read: (instanceId: string, options?: object) => Promise<object>,
  *   readSync: (instanceId: string, options?: object) => object,
+ *   load: (instanceId: string) => Promise<boolean>,
  *   write: (instanceId: string, fn: (model: any) => any) => Promise<{ mounted: boolean, result: any }>,
  * }} InstancesService
  */
@@ -249,6 +250,20 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
   }
 
   /**
+   * Den Code des Moduls einer Instanz laden, ohne zu lesen oder einzuhängen;
+   * danach wirft `readSync` kein `not_loaded` mehr.
+   * @param {string} instanceId
+   * @returns {Promise<boolean>} `true`, wenn das Modul erst jetzt geladen wurde
+   * @throws {Error} `unknown_instance`
+   */
+  async function load(instanceId) {
+    const { record } = locate(instanceId);
+    if (moduleRegistry.getLoaded(record.moduleId)) return false;
+    await moduleRegistry.loadModule(record.moduleId);
+    return true;
+  }
+
+  /**
    * `fn(model)` nach der Besitzer-Regel anwenden. `fn` ist synchron und ruft
    * `setFields` oder ein Model-Kommando; wirft es, bleibt der gespeicherte
    * Stand unberührt. Gemountet speichert der persist-`$watch` des Moduls,
@@ -273,5 +288,5 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     return { mounted: false, result };
   }
 
-  return { list, read, readSync, write };
+  return { list, read, readSync, load, write };
 }

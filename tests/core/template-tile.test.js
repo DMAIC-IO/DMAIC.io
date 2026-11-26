@@ -159,7 +159,40 @@ suite('createTile: Daten und Diagramm-Manager', () => {
     registerReader(sm, (id) => ({ instanceId: id, rowCount: 4 }));
     tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
     assertEqual(seen.source.read('w', {}).rowCount, 4);
-    assertDeepEqual(seen.source.list(), [{ instanceId: 'w', moduleId: 'worksheet' }]);
+    assertDeepEqual(seen.source.list(), [{ instanceId: 'w', moduleId: 'worksheet', phase: 'measure' }]);
+  });
+
+  test('ensureLoaded: eine Kachel ohne geladenes Fremdmodul liest nach dem Nachladen die Daten', async () => {
+    let loaded = false;
+    const sm = { get: (p) => (p === 'phases' ? { define: [{ instanceId: 't1', moduleId: 'todo' }] } : undefined), getProjectCycle: () => 'dmaic' };
+    registerReader(sm, () => {
+      if (!loaded) throw Object.assign(new Error('not_loaded'), { code: 'not_loaded' });
+      return { items: ['a'] };
+    }, async () => { const fresh = !loaded; loaded = true; return fresh; });
+    const reading = createTile({ descriptor, Model: Doc, view(ctx) {
+      return {
+        get items() { try { return ctx.source.read('t1').items; } catch (e) { return /** @type {any} */ (e).code; } },
+        ensure() { return ctx.source.ensureLoaded('t1'); },
+      };
+    } });
+    const first = reading.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
+    assertEqual(first.items, 'not_loaded');
+    assertEqual(await first.ensure(), true, 'erst jetzt geladen');
+    assertEqual(await first.ensure(), false, 'schon geladen');
+    assertDeepEqual(reading.viewModel({ state: {}, settings: {}, i18n, stateManager: sm }).items, ['a']);
+  });
+
+  test('ensureLoaded ohne Lader oder ohne stateManager lehnt mit not_loaded ab', async () => {
+    const sm = { get: () => undefined, getProjectCycle: () => 'dmaic' };
+    registerReader(sm, () => ({}));
+    tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
+    let err = null;
+    try { await seen.source.ensureLoaded('x'); } catch (e) { err = e; }
+    assertEqual(err?.code, 'not_loaded');
+    tile.viewModel({ state: {}, settings: {}, i18n });
+    err = null;
+    try { await seen.source.ensureLoaded('x'); } catch (e) { err = e; }
+    assertEqual(err?.code, 'not_loaded');
   });
 
   test('ohne chartManager: _ui.services.chartManager null', () => {

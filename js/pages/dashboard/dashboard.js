@@ -11,7 +11,7 @@ import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
 import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices, customRefreshEvents, refreshTargets } from './enumerate-tiles.js';
-import { renderTileSafely, disposeTile } from './tile-render.js';
+import { renderTileSafely, disposeTile, tileSource } from './tile-render.js';
 import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, chartEditsToStoreOnLayoutSave, withCopiedChartEdits, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 import { deferredSource } from '../../core/source.js';
@@ -71,7 +71,9 @@ const page = createPage({
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
-        i18n, theme: theme(), chartManager: chartManager?.forTile?.(descriptor.id) ?? chartManager, stateManager, source,
+        i18n, theme: theme(), chartManager: chartManager?.forTile?.(descriptor.id) ?? chartManager, stateManager,
+        // Nachgeladenes Fremdmodul: dieselbe Kachel neu zeichnen, wie bei einem refreshOn-Ereignis.
+        source: tileSource(source, () => { if (page.isOpen()) void renderTile(tileId); }),
       }, i18n);
     };
 

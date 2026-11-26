@@ -10,7 +10,11 @@
  * Produktivcode importiert `registerReader`/`createSource` aus `core/source.js`.
  */
 
-/** Leser je `stateManager`: `readSync` des Instanzen-Dienstes, in Tests ein Doppel. */
+/**
+ * Leser je `stateManager`: `readSync` des Instanzen-Dienstes und sein `load`,
+ * in Tests ein Doppel.
+ * @type {WeakMap<object, { readSync: (id: string, options?: object) => object, load: ((id: string) => Promise<boolean>)|null }>}
+ */
 const readers = new WeakMap();
 
 /** @type {((key: string) => void)|null} liest den reaktiven Zähler `key` (`'#list'` oder eine Instanz-Id) */
@@ -39,20 +43,31 @@ export function setTouchHook(fn) { const prev = touchHook; touchHook = fn; retur
 
 /**
  * Den Leser für einen `stateManager` hinterlegen. Die App ruft das direkt nach
- * `createInstances` mit `instances.readSync`.
+ * `createInstances` mit `instances.readSync` und `instances.load`.
  * @param {object} stateManager
  * @param {(id: string, options?: object) => object} readSync
+ * @param {(id: string) => Promise<boolean>} [load]  lädt das Modul einer Instanz; `true`, wenn es erst jetzt geladen wurde
  * @returns {void}
  */
-export function registerReader(stateManager, readSync) {
-  readers.set(rawOf(stateManager), readSync);
+export function registerReader(stateManager, readSync, load) {
+  readers.set(rawOf(stateManager), { readSync, load: typeof load === 'function' ? load : null });
 }
 
 /**
- * @typedef {{ instanceId: string, moduleId: string }} SourceInstance
+ * Ein Fehler `not_loaded` für eine Instanz.
+ * @param {string} instanceId
+ * @returns {Error & { code: string }}
+ */
+function notLoaded(instanceId) {
+  return Object.assign(new Error(`not_loaded: ${instanceId}`), { code: 'not_loaded' });
+}
+
+/**
+ * @typedef {{ instanceId: string, moduleId: string, phase: string }} SourceInstance
  * @typedef {Readonly<{
  *   read: (instanceId: string, options?: object) => object,
  *   list: () => SourceInstance[],
+ *   ensureLoaded: (instanceId: string) => Promise<boolean>,
  * }>} Source
  */
 
@@ -60,7 +75,10 @@ export function registerReader(stateManager, readSync) {
  * Der Leser für einen `stateManager`. `read` ist `readSync` des
  * Instanzen-Dienstes und wirft wie dieser (`not_loaded`, `unknown_instance`,
  * `unknown_sheet`, `unknown_column`). `list` nennt die Instanzen des Projekts
- * aus `phases`. Mit dem Haken aus `source.js` hängt `read` zuerst an den Zähler
+ * aus `phases` samt Phase. `ensureLoaded` lädt das Modul einer Instanz, danach
+ * wirft `read` kein `not_loaded` mehr; es liefert `true`, wenn das Modul erst
+ * jetzt geladen wurde, und lehnt ab, wenn kein Lader registriert ist oder das
+ * Laden scheitert. Mit dem Haken aus `source.js` hängt `read` zuerst an den Zähler
  * der Instanz und `list` an `'#list'`.
  * @param {{ get: (path: string) => any }} stateManager  mit registriertem Leser
  * @returns {Source}
@@ -68,43 +86,46 @@ export function registerReader(stateManager, readSync) {
  */
 export function createSource(stateManager) {
   const lookup = () => {
-    const readSync = readers.get(rawOf(stateManager));
-    if (!readSync) throw new Error('worksheet reader not registered');
-    return readSync;
+    const entry = readers.get(rawOf(stateManager));
+    if (!entry) throw new Error('worksheet reader not registered');
+    return entry;
   };
   lookup();
   return Object.freeze({
     // Der Leser wird je Aufruf nachgeschlagen: eine Neuregistrierung gilt auch für eine zwischengespeicherte Source.
     read(instanceId, options) {
-      const readSync = lookup();
+      const { readSync } = lookup();
       touchHook?.(instanceId);
       return readSync(instanceId, options);
     },
     list() {
       touchHook?.('#list');
       const out = [];
-      for (const insts of Object.values(stateManager.get('phases') || {})) {
+      for (const [phase, insts] of Object.entries(stateManager.get('phases') || {})) {
         for (const inst of Array.isArray(insts) ? insts : []) {
-          if (inst && typeof inst.instanceId === 'string') out.push({ instanceId: inst.instanceId, moduleId: inst.moduleId });
+          if (inst && typeof inst.instanceId === 'string') out.push({ instanceId: inst.instanceId, moduleId: inst.moduleId, phase });
         }
       }
       return out;
+    },
+    async ensureLoaded(instanceId) {
+      const { load } = lookup();
+      if (!load) throw notLoaded(instanceId);
+      return (await load(instanceId)) === true;
     },
   });
 }
 
 /**
- * Ein Leser ohne Arbeitsblätter: `read` wirft `not_loaded`, `list` ist leer.
+ * Ein Leser ohne Arbeitsblätter: `read` wirft `not_loaded`, `list` ist leer,
+ * `ensureLoaded` lehnt mit `not_loaded` ab.
  * Für Kacheln ohne `stateManager` (Tests).
  * @type {Source}
  */
 export const NO_SOURCE = Object.freeze({
-  read(instanceId) {
-    const err = new Error(`not_loaded: ${instanceId}`);
-    /** @type {any} */ (err).code = 'not_loaded';
-    throw err;
-  },
+  read(instanceId) { throw notLoaded(instanceId); },
   list() { return []; },
+  ensureLoaded(instanceId) { return Promise.reject(notLoaded(instanceId)); },
 });
 
 /**
@@ -121,5 +142,6 @@ export function deferredSource(stateManager) {
   return Object.freeze({
     read: (instanceId, options) => get().read(instanceId, options),
     list: () => get().list(),
+    ensureLoaded: async (instanceId) => get().ensureLoaded(instanceId),
   });
 }

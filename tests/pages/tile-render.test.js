@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { renderTileSafely, disposeTile } from '../../js/pages/dashboard/tile-render.js';
+import { renderTileSafely, disposeTile, tileSource } from '../../js/pages/dashboard/tile-render.js';
 
 const i18n = { t: (k) => k };
 
@@ -217,5 +217,29 @@ suite('renderTileSafely: neue Form', () => {
     const body = document.createElement('div');
     await renderTileSafely(scopeTile({ title: 'Alt', items: [] }), body, { tileId: 't' }, i18n);
     assertEqual(body.querySelector('.a').textContent, 'Alt');
+  });
+});
+
+suite('tileSource', () => {
+  test('ensureLoaded: zeichnet die Kachel nur nach einem echten Nachladen neu', async () => {
+    let redraws = 0;
+    const inner = { read: (id) => ({ id }), list: () => [], ensureLoaded: async (id) => id === 'fresh' };
+    const src = tileSource(inner, () => { redraws++; });
+    assertEqual(await src.ensureLoaded('fresh'), true);
+    assertEqual(redraws, 1);
+    assertEqual(await src.ensureLoaded('known'), false);
+    assertEqual(redraws, 1, 'schon geladen: kein Neuzeichnen');
+    assertDeepEqual(src.read('x'), { id: 'x' });
+    assertDeepEqual(src.list(), []);
+  });
+
+  test('ein gescheitertes Laden lehnt ab und zeichnet nicht neu', async () => {
+    let redraws = 0;
+    const inner = { read: () => ({}), list: () => [], ensureLoaded: async () => { throw Object.assign(new Error('unknown_instance'), { code: 'unknown_instance' }); } };
+    const src = tileSource(inner, () => { redraws++; });
+    let err = null;
+    try { await src.ensureLoaded('x'); } catch (e) { err = e; }
+    assertEqual(err?.code, 'unknown_instance');
+    assertEqual(redraws, 0);
   });
 });

@@ -92,8 +92,9 @@ async function init() {
     stateManager, moduleRegistry, workspace, eventBus,
     createSource: () => createSource(stateManager), i18n,
   });
-  // Der Leser `Source` (derived, ctx.source, Kacheln, Altleser über worksheet-columns) liest über readSync.
-  registerReader(stateManager, instances.readSync);
+  // Der Leser `Source` (derived, ctx.source, Kacheln, Altleser über worksheet-columns) liest über readSync;
+  // `ensureLoaded` lädt über `load` das Modul einer Instanz nach (Kacheln, Dashboard).
+  registerReader(stateManager, instances.readSync, instances.load);
   // So früh wie möglich, noch vor dem ersten Mount: bis der Arbeitsblatt-Code
   // geladen ist, liefert die Fassade `null` (`not_loaded`). Nicht abwarten —
   // der Start (und der E2E-Griff) darf nicht auf diesen Chunk warten.
