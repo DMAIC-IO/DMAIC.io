@@ -69,6 +69,7 @@
   "status.no-data": "lucide:clipboard-list",
   "status.help": "lucide:circle-question-mark",
   "status.insight": "lucide:lightbulb",
+  "status.selected": "lucide:star",
   "severity.critical": "lucide:octagon-alert",
   "severity.high": "lucide:triangle-alert",
   "severity.medium": "lucide:circle-alert",

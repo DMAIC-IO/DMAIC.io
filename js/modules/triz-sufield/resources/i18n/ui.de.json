@@ -41,6 +41,7 @@
   "problemNoteLabel": "Problemnotiz",
   "filterAuto": "Nur empfohlene Klassen",
   "filterAll": "Alle anzeigen",
+  "filterAria": "Angezeigte Klassen",
   "class": {
     "1": {
       "name": "Aufbau / Zerstörung von Su-Field-Modellen",
@@ -67,6 +68,7 @@
   "exampleLead": "Beispiel",
   "standardNotePlaceholder": "Wie passt dieser Standard auf den konkreten Fall?",
   "considered": "berücksichtigt / anwendbar",
+  "selectFailed": "Die Vormerkung ließ sich nicht speichern.",
   "invariants": {
     "knownNotes": "Eine Notiz gehört zu einer der 78 Standardlösungen.",
     "knownSelections": "Eine Vormerkung gehört zu einer der 78 Standardlösungen.",

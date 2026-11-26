@@ -147,7 +147,7 @@ export const ANCHOR_EXEMPTIONS = {
   ],
   'triz-sufield': [
     { match: 'triz-sf__standard-select', reason: 'Kästchen je Standardlösung (78), in aufklappbaren Klassen', count: 1 },
-    { match: 'triz-sf__filter-label', reason: 'Optionsfeld-Paar: nur das letzte trägt den Anker (ein Kreis je Gruppe)', count: 1 },
+    { match: 'triz-sf__filter-label', reason: 'Optionsfeld-Paar: nur das letzte trägt den Anker (ein Kreis je Gruppe)', count: 2 }, // Alt- und Zielvorlage, bis die Altvorlage entfällt
   ],
   fmea: [
     { match: '<th style="width:28px"><span class="icon icon--sm" data-icon="action.confirm"', reason: 'Schmale Symbolspalte „Umgesetzt“; ein Kreis läge über dem Kopf „Maßnahme“', count: 1 },

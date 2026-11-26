@@ -41,6 +41,7 @@
   "problemNoteLabel": "Problem note",
   "filterAuto": "Suggested classes only",
   "filterAll": "Show all",
+  "filterAria": "Classes shown",
   "class": {
     "1": {
       "name": "Building / destroying Su-Field models",
@@ -67,6 +68,7 @@
   "exampleLead": "Example",
   "standardNotePlaceholder": "How does this standard apply to the case at hand?",
   "considered": "considered / applicable",
+  "selectFailed": "The selection could not be saved.",
   "invariants": {
     "knownNotes": "A note belongs to one of the 78 standard solutions.",
     "knownSelections": "A mark belongs to one of the 78 standard solutions.",
