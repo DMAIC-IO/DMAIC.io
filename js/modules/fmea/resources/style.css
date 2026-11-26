@@ -504,12 +504,12 @@
 }
 
 .fmea__scale-editable:hover {
-  background: var(--color-surface-hover);
+  background: var(--color-bg-tertiary);
   outline: 1px dashed var(--color-border);
 }
 
 .fmea__scale-editable:focus {
-  background: var(--color-surface-hover);
+  background: var(--color-bg-tertiary);
   outline: 1px solid var(--color-accent);
 }
 
