@@ -237,6 +237,7 @@ const SKIP = new Set([
   'modules/unit-converter-view.test.js',
   'modules/five-why-view.test.js',
   'modules/lessons-learned-view.test.js',
+  'modules/voc-ctx-tree-view.test.js',
   'modules/heatmap-view.test.js',
   'modules/process-capability-view.test.js',
   'modules/data-import/viewmodel.test.js',

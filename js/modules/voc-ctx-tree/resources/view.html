@@ -1,0 +1,296 @@
+<div class="module-container vct" x-data="vocCtxTree" data-ref="root" :style="styleVars">
+ <!-- data-help-key="" an Karten, Knöpfen je Knoten, Formularen und Eingaben ist gewollt: die Hilfe hängt an Titel, Beschriftungen und am Knopf für eine neue Stimme. -->
+ <div class="dmike-split vct__split">
+  <!-- Seitenleiste: Kundenstimmen und Darstellung -->
+  <div class="vct__sidebar dmike-split__input">
+   <div class="vct__sidebar-header">
+    <span class="vct__sidebar-title" data-help-key="modules.voc-ctx-tree.actions.setActiveVoc.help" x-text="t('name')"></span>
+    <div class="vct__sidebar-header-right">
+     <span class="vct__counter" x-text="model.vocs.length"></span>
+     <button class="vct__add-btn vct__add-voc-btn" type="button" :title="t('addVoc')" :aria-label="t('addVoc')"
+             x-dialog="vocForm" :data-dialog-title="t('addVoc')"
+             data-help-key="modules.voc-ctx-tree.actions.addVoc.help">+</button>
+    </div>
+   </div>
+   <div class="vct__sidebar-body">
+    <template x-if="isEmpty">
+     <div class="vct__empty"><p class="vct__empty-text" x-text="t('noVocs')"></p></div>
+    </template>
+    <template x-for="voc in model.vocs" :key="voc.id">
+     <div class="vct__card" :class="cardClass(voc)" :data-voc-id="voc.id"
+          x-command="setActiveVoc" :data-arg-voc-id="voc.id" data-confirm-delete="off" data-help-key="">
+      <div class="vct__card-text" x-text="voc.text"></div>
+      <div class="vct__card-meta">
+       <span class="vct__card-count" x-text="cardCountText(voc)"></span>
+       <div class="vct__card-actions">
+        <button class="btn btn--icon-sm vct__card-action-btn vct__edit-voc-btn" type="button" :data-voc-id="voc.id"
+                :title="t('common.edit')" :aria-label="t('editVoc')" @click.stop
+                x-dialog="vocForm" data-dialog-command="updateVoc" :data-arg-voc-id="voc.id" :data-dialog-title="t('editVoc')"
+                data-help-key=""><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+        <button class="btn btn--icon-sm btn--danger vct__card-action-btn vct__del-voc-btn" type="button"
+                :data-voc-id="voc.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click.stop
+                x-command="removeVoc" :data-arg-voc-id="voc.id" data-confirm-delete data-help-key="">×</button>
+       </div>
+      </div>
+     </div>
+    </template>
+   </div>
+   <div class="vct__settings-panel" data-ref="settingsPanel">
+    <div class="dmike-chart-ed-section">
+     <div class="dmike-chart-ed-section-title"><span data-help-key="modules.voc-ctx-tree.fields.styles.help" x-text="t('settings')"></span></div>
+     <div class="dmike-chart-ed-color-pair" :title="t('colorVocTip')">
+      <label data-help-key="modules.voc-ctx-tree.fields.styles.colors.voc.help" :for="fieldId('color-voc')" x-text="t('colorVoc')"></label>
+      <button class="dmike-chart-ed-color-swatch" type="button" :id="fieldId('color-voc')" data-style-key="voc" :style="swatchStyle('voc')"
+              :aria-label="t('colorVoc')" @click="openColor('voc', $event)" data-help-key=""></button>
+     </div>
+     <div class="dmike-chart-ed-color-pair">
+      <label data-help-key="modules.voc-ctx-tree.fields.styles.colors.need.help" :for="fieldId('color-need')" x-text="t('colorNeed')"></label>
+      <button class="dmike-chart-ed-color-swatch" type="button" :id="fieldId('color-need')" data-style-key="need" :style="swatchStyle('need')"
+              :aria-label="t('colorNeed')" @click="openColor('need', $event)" data-help-key=""></button>
+     </div>
+     <div class="dmike-chart-ed-color-pair" :title="t('colorCtqTip')">
+      <label data-help-key="modules.voc-ctx-tree.fields.styles.colors.ctq.help" :for="fieldId('color-ctq')" x-text="t('colorCtq')"></label>
+      <button class="dmike-chart-ed-color-swatch" type="button" :id="fieldId('color-ctq')" data-style-key="ctq" :style="swatchStyle('ctq')"
+              :aria-label="t('colorCtq')" @click="openColor('ctq', $event)" data-help-key=""></button>
+     </div>
+     <div class="dmike-chart-ed-color-pair" :title="t('colorCtdTip')">
+      <label data-help-key="modules.voc-ctx-tree.fields.styles.colors.ctd.help" :for="fieldId('color-ctd')" x-text="t('colorCtd')"></label>
+      <button class="dmike-chart-ed-color-swatch" type="button" :id="fieldId('color-ctd')" data-style-key="ctd" :style="swatchStyle('ctd')"
+              :aria-label="t('colorCtd')" @click="openColor('ctd', $event)" data-help-key=""></button>
+     </div>
+     <div class="dmike-chart-ed-color-pair" :title="t('colorCtcTip')">
+      <label data-help-key="modules.voc-ctx-tree.fields.styles.colors.ctc.help" :for="fieldId('color-ctc')" x-text="t('colorCtc')"></label>
+      <button class="dmike-chart-ed-color-swatch" type="button" :id="fieldId('color-ctc')" data-style-key="ctc" :style="swatchStyle('ctc')"
+              :aria-label="t('colorCtc')" @click="openColor('ctc', $event)" data-help-key=""></button>
+     </div>
+     <div class="dmike-chart-ed-color-pair">
+      <label data-help-key="modules.voc-ctx-tree.fields.styles.colors.req.help" :for="fieldId('color-req')" x-text="t('colorReq')"></label>
+      <button class="dmike-chart-ed-color-swatch" type="button" :id="fieldId('color-req')" data-style-key="req" :style="swatchStyle('req')"
+              :aria-label="t('colorReq')" @click="openColor('req', $event)" data-help-key=""></button>
+     </div>
+     <div class="dmike-slider-row">
+      <label class="dmike-slider-row__label" data-help-key="modules.voc-ctx-tree.fields.styles.borderWidth.help" :for="fieldId('border-width')" x-text="t('borderWidth')"></label>
+      <input type="range" class="dmike-slider" :id="fieldId('border-width')" min="0" max="4" step="0.5" data-style-key="borderWidth"
+             x-field="model.styles.borderWidth" data-help-key="">
+      <output class="dmike-slider-row__value" :for="fieldId('border-width')" x-text="borderWidthText"></output>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <!-- Hauptbereich: Baum der angezeigten Stimme -->
+  <div class="vct__main dmike-split__output">
+   <div class="vct__tree-area" data-ref="treeArea">
+    <template x-if="activeVoc">
+     <div class="vct__tree">
+      <!-- Wurzel: die Kundenstimme -->
+      <div class="vct__node vct__node--voc vct__node--root">
+       <div class="vct__node-text">
+        <div class="vct__node-badge" x-text="t('badgeVoc')"></div>
+        <div x-text="quoted(activeVoc.text)"></div>
+        <template x-if="activeVoc.source">
+         <div class="vct__node-source" x-text="sourceLine(activeVoc.source)"></div>
+        </template>
+       </div>
+       <div class="vct__node-actions">
+        <button class="btn btn--icon-sm vct__node-btn vct__add-need-btn" type="button" :data-voc-id="activeVoc.id"
+                :title="t('addNeed')" :aria-label="t('addNeed')"
+                x-dialog="needForm" :data-arg-voc-id="activeVoc.id" :data-dialog-title="t('addNeed')"
+                data-help-key="">+</button>
+       </div>
+      </div>
+
+      <!-- Bedürfnisse -->
+      <template x-if="activeVoc.needs.length > 0">
+       <div class="vct__children vct__children--voc" :data-reorder-group="groupKey('need', activeVoc.id)" data-reorder-closed
+            :data-reorder-group-label="t('legendNeed')">
+        <!--
+          Absichtlich ausgeschrieben: Alpine (CSP) kann sich nicht selbst
+          einbetten. Die drei Ebenen darunter (Bedürfnis → Treiber →
+          Anforderung) sind durch die Tiefe des Baums begrenzt und müssen bei
+          jeder Änderung am Knoten-Markup gemeinsam angepasst werden.
+        -->
+        <template x-for="(need, nIdx) in activeVoc.needs" :key="need.id">
+         <div class="vct__item" :data-id="need.id" :data-reorder-index="nIdx">
+          <div class="vct__node vct__node--need" :class="dropClass(need.id)" data-drag-type="need"
+               :data-voc-id="activeVoc.id" :data-need-id="need.id">
+           <div class="vct__node-text">
+            <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0"
+                 x-text="t('badgeNeed')"></div>
+            <div x-text="need.text"></div>
+           </div>
+           <div class="vct__node-actions">
+            <button class="btn btn--icon-sm vct__node-btn vct__add-ctx-btn" type="button"
+                    :data-voc-id="activeVoc.id" :data-need-id="need.id"
+                    :title="t('addDriver')" :aria-label="t('addDriver')"
+                    x-dialog="driverForm" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id" :data-dialog-title="t('addDriver')"
+                    data-help-key="">+</button>
+            <button class="btn btn--icon-sm vct__node-btn vct__edit-need-btn" type="button"
+                    :data-voc-id="activeVoc.id" :data-need-id="need.id"
+                    :title="t('common.edit')" :aria-label="t('editNeed')"
+                    x-dialog="needForm" data-dialog-command="updateNeed" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id"
+                    :data-dialog-title="t('editNeed')" data-help-key=""><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+            <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-need-btn" type="button"
+                    :data-voc-id="activeVoc.id" :data-need-id="need.id"
+                    :title="t('common.delete')" :aria-label="t('common.delete')" data-confirm-delete
+                    x-command="removeNeed" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id" data-help-key="">×</button>
+           </div>
+          </div>
+
+          <!-- Treiber -->
+          <template x-if="need.drivers.length > 0">
+           <div class="vct__children vct__children--need" :data-reorder-group="groupKey('driver', need.id)" data-reorder-closed
+                :data-reorder-group-label="t('driverText')">
+            <template x-for="(drv, dIdx) in need.drivers" :key="drv.id">
+             <div class="vct__item" :data-id="drv.id" :data-reorder-index="dIdx">
+              <div class="vct__node" :class="driverNodeClass(drv)" data-drag-type="driver"
+                   :data-voc-id="activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id">
+               <div class="vct__node-text">
+                <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0"
+                     x-text="driverBadge(drv.type)"></div>
+                <div x-text="drv.text"></div>
+               </div>
+               <div class="vct__node-actions">
+                <button class="btn btn--icon-sm vct__node-btn vct__add-req-btn" type="button"
+                        :data-voc-id="activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
+                        :title="t('addReq')" :aria-label="t('addReq')"
+                        x-dialog="reqForm" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id" :data-arg-drv-id="drv.id"
+                        :data-dialog-title="t('addReq')" data-help-key="">+</button>
+                <button class="btn btn--icon-sm vct__node-btn vct__edit-ctx-btn" type="button"
+                        :data-voc-id="activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
+                        :title="t('common.edit')" :aria-label="t('editDriver')"
+                        x-dialog="driverForm" data-dialog-command="updateDriver" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id"
+                        :data-arg-drv-id="drv.id" :data-dialog-title="t('editDriver')" data-help-key=""><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+                <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-ctx-btn" type="button"
+                        :data-voc-id="activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
+                        :title="t('common.delete')" :aria-label="t('common.delete')" data-confirm-delete
+                        x-command="removeDriver" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id" :data-arg-drv-id="drv.id"
+                        data-help-key="">×</button>
+               </div>
+              </div>
+
+              <!-- Anforderungen -->
+              <template x-if="drv.requirements.length > 0">
+               <div class="vct__children" :class="driverChildrenClass(drv)" :data-reorder-group="groupKey('req', drv.id)" data-reorder-closed
+                    :data-reorder-group-label="t('legendReq')">
+                <template x-for="(req, rIdx) in drv.requirements" :key="req.id">
+                 <div class="vct__node vct__node--req vct__item" :class="dropClass(req.id)" data-drag-type="req"
+                      :data-id="req.id" :data-reorder-index="rIdx"
+                      :data-voc-id="activeVoc.id" :data-need-id="need.id"
+                      :data-drv-id="drv.id" :data-req-id="req.id">
+                  <div class="vct__node-text">
+                   <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0"
+                        x-text="t('badgeReq')"></div>
+                   <div x-text="req.text"></div>
+                   <template x-if="req.target">
+                    <div class="vct__req-target" x-text="targetLine(req.target)"></div>
+                   </template>
+                   <template x-if="req.measure">
+                    <div class="vct__req-measure" x-text="measureLine(req.measure)"></div>
+                   </template>
+                  </div>
+                  <div class="vct__node-actions">
+                   <button class="btn btn--icon-sm vct__node-btn vct__edit-req-btn" type="button"
+                           :data-voc-id="activeVoc.id" :data-need-id="need.id"
+                           :data-drv-id="drv.id" :data-req-id="req.id"
+                           :title="t('common.edit')" :aria-label="t('editReq')"
+                           x-dialog="reqForm" data-dialog-command="updateRequirement" :data-arg-voc-id="activeVoc.id"
+                           :data-arg-need-id="need.id" :data-arg-drv-id="drv.id" :data-arg-req-id="req.id"
+                           :data-dialog-title="t('editReq')" data-help-key=""><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+                   <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-req-btn" type="button"
+                           :data-voc-id="activeVoc.id" :data-need-id="need.id"
+                           :data-drv-id="drv.id" :data-req-id="req.id"
+                           :title="t('common.delete')" :aria-label="t('common.delete')" data-confirm-delete
+                           x-command="removeReq" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id"
+                           :data-arg-drv-id="drv.id" :data-arg-req-id="req.id" data-help-key="">×</button>
+                  </div>
+                 </div>
+                </template>
+               </div>
+              </template>
+             </div>
+            </template>
+           </div>
+          </template>
+         </div>
+        </template>
+       </div>
+      </template>
+     </div>
+    </template>
+   </div>
+  </div>
+ </div>
+
+ <!-- Formulare je Knotenart: verborgen hier, beim Öffnen in den Dialog ausgeliehen. -->
+ <div class="vct__modal-forms" hidden>
+  <form class="vct__form" x-ref="vocForm" x-command-form="addVoc" novalidate :style="styleVars"
+        @keydown="commitKey($event)" data-help-key="">
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addVoc.params.text" :for="fieldId('voc-text')"><span x-text="t('vocText')"></span> *</label>
+    <textarea class="field" :id="fieldId('voc-text')" data-field="text" data-ref="modalText" required aria-required="true"
+              :placeholder="t('vocPlaceholder')" maxlength="1000" x-param="text" data-help-key=""></textarea>
+   </div>
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addVoc.params.source" :for="fieldId('voc-source')" x-text="t('vocSource')"></label>
+    <input type="text" class="field" :id="fieldId('voc-source')" data-field="source" :placeholder="t('vocSourcePlaceholder')"
+           maxlength="200" x-param="source" data-help-key="">
+   </div>
+  </form>
+
+  <form class="vct__form" x-ref="needForm" x-command-form="addNeed" novalidate :style="styleVars"
+        @keydown="commitKey($event)" data-help-key="">
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addNeed.params.text" :for="fieldId('need-text')"><span x-text="t('needText')"></span> *</label>
+    <textarea class="field" :id="fieldId('need-text')" data-field="text" data-ref="modalText" required aria-required="true"
+              :placeholder="t('needPlaceholder')" maxlength="500" x-param="text" data-help-key=""></textarea>
+   </div>
+  </form>
+
+  <form class="vct__form" x-ref="driverForm" x-command-form="addDriver" novalidate :style="styleVars"
+        @keydown="commitKey($event)" data-help-key="">
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addDriver.params.type" :id="fieldId('driver-type')" x-text="t('driverType')"></label>
+    <div class="vct__type-selector" data-ref="typeSel" role="radiogroup" :aria-labelledby="fieldId('driver-type')"
+         x-param="type" data-help-key="">
+     <button type="button" class="vct__type-option" role="radio" value="ctq" data-type="ctq">
+      <span class="vct__type-label">CTQ</span>
+      <span class="vct__type-desc" x-text="typeLabel('ctq')"></span>
+     </button>
+     <button type="button" class="vct__type-option" role="radio" value="ctd" data-type="ctd">
+      <span class="vct__type-label">CTD</span>
+      <span class="vct__type-desc" x-text="typeLabel('ctd')"></span>
+     </button>
+     <button type="button" class="vct__type-option" role="radio" value="ctc" data-type="ctc">
+      <span class="vct__type-label">CTC</span>
+      <span class="vct__type-desc" x-text="typeLabel('ctc')"></span>
+     </button>
+    </div>
+   </div>
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addDriver.params.text" :for="fieldId('driver-text')"><span x-text="t('driverText')"></span> *</label>
+    <textarea class="field" :id="fieldId('driver-text')" data-field="text" data-ref="modalText" required aria-required="true"
+              :placeholder="t('driverPlaceholder')" maxlength="500" x-param="text" data-help-key=""></textarea>
+   </div>
+  </form>
+
+  <form class="vct__form" x-ref="reqForm" x-command-form="addRequirement" novalidate :style="styleVars"
+        @keydown="commitKey($event)" data-help-key="">
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.text" :for="fieldId('req-text')"><span x-text="t('reqText')"></span> *</label>
+    <textarea class="field" :id="fieldId('req-text')" data-field="text" data-ref="modalText" required aria-required="true"
+              :placeholder="t('reqPlaceholder')" maxlength="500" x-param="text" data-help-key=""></textarea>
+   </div>
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.target" :for="fieldId('req-target')" x-text="t('reqTarget')"></label>
+    <input type="text" class="field" :id="fieldId('req-target')" data-field="target" :placeholder="t('reqTargetPlaceholder')"
+           maxlength="200" x-param="target" data-help-key="">
+   </div>
+   <div class="vct__form-group">
+    <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.measure" :for="fieldId('req-measure')" x-text="t('reqMeasure')"></label>
+    <input type="text" class="field" :id="fieldId('req-measure')" data-field="measure" :placeholder="t('reqMeasurePlaceholder')"
+           maxlength="200" x-param="measure" data-help-key="">
+   </div>
+  </form>
+ </div>
+</div>
