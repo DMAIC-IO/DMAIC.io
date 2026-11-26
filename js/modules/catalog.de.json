@@ -15,6 +15,11 @@
     "description": "Horizontale Boxplots zum Vergleich von Verteilungen",
     "whenToUse": "Streuung, Median und Ausreißer einer oder mehrerer numerischer Spalten vergleichen, optional nach einer Gruppe aufgeteilt."
   },
+  "ce-matrix": {
+    "name": "C&E-Matrix",
+    "description": "Ursache-Wirkungs-Matrix",
+    "whenToUse": "Wenn mehrere Prozesseingänge danach geordnet werden sollen, wie stark sie auf die kundenwichtigen Ergebnisgrößen wirken — die gewichtete Zeilensumme sagt, welcher Eingang zuerst untersucht wird; nicht zur Bewertung von Fehlerarten nach Auftreten und Entdeckung, dafür ist die FMEA da."
+  },
   "chart-suggestion": {
     "name": "Diagramm-Vorschlag",
     "description": "Schlägt passende Diagrammtypen für die ausgewählten Spalten vor",

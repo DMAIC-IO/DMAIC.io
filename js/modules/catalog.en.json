@@ -15,6 +15,11 @@
     "description": "Horizontal boxplots for comparing distributions",
     "whenToUse": "Compare the spread, median and outliers of one or more numeric columns, optionally split by a group."
   },
+  "ce-matrix": {
+    "name": "C&E Matrix",
+    "description": "Cause and Effect Matrix",
+    "whenToUse": "When several process inputs are to be ranked by how strongly they act on the outputs that matter to the customer — the weighted row sum says which input to investigate first; not for rating failure modes by occurrence and detection, which is what the FMEA is for."
+  },
   "chart-suggestion": {
     "name": "Chart Suggestion",
     "description": "Proposes suitable chart types for the selected columns",

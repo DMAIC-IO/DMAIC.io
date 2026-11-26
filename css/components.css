@@ -164,7 +164,7 @@
 
 /* ===== Inline delete button =====
    Icon (real .icon element, action.delete, in the button's markup — see
-   kano.html/ce-matrix.html/raci-matrix/resources/view.html/todo.html) appears (grey) when
+   kano.html/ce-matrix/resources/view.html/raci-matrix/resources/view.html/todo.html) appears (grey) when
    hovering a host element marked .dmike-del-btn-host, turns red when
    hovering the button itself.
    Module CSS only needs to add positioning rules (absolute/right/top etc.). */

@@ -1,6 +1,6 @@
 /**
- * Tests for js/core/export-utils.js `tableToSVG` — das Bild von
- * `exportTableAsSVG` als SVG-Text ohne Download: Maße aus dem Deskriptor,
+ * Tests for js/core/export-utils.js `tableToSVG` — eine Tabelle als
+ * SVG-Text: Maße aus dem Deskriptor,
  * ein Textpfad je beschrifteter Zelle, Farben der Summenzellen aus dem
  * Deskriptor. Braucht DOM (Themenfarben) und lädt Schriften (Browser).
  */

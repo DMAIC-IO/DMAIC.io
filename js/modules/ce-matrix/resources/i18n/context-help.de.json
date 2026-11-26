@@ -36,6 +36,9 @@
     },
     "paretoEdits": {
       "help": "Die Editor-Einstellungen des Pareto-Diagramms (Titel, Achsen, Schwellenwert, Balken, Linie); sie werden mit dem Modul gespeichert."
+    },
+    "paretoChart": {
+      "help": "Das Pareto-Diagramm neben der Matrix: ein Balken je Eingangsgröße mit ihrer Zeilensumme (rowSums), absteigend sortiert, dazu die kumulierte Summe in Prozent. Bei mehr als 20 Eingangsgrößen fasst ein Sammelposten den Rest zusammen."
     }
   },
   "actions": {

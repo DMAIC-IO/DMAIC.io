@@ -6,8 +6,7 @@
  *  - columnsToSVG / exportColumnsAsSVG — column/card board as SVG text or download
  *  - ensureXLSX — lazy-load SheetJS
  *  - createExportDropdown — reusable dropdown button + menu
- *  - exportTableAsPNG / exportTableAsSVG — render a table descriptor
- *    to a pixel-perfect PNG (2×) or true-vector SVG
+ *  - tableToSVG — a table descriptor as true-vector SVG text
  *
  * @module export-utils
  */
@@ -191,7 +190,7 @@ export function createExportDropdown(formats, onExport) {
 // ─── Table image export ──────────────────────────────────────
 
 /**
- * Descriptor for a table to be rendered to PNG / SVG.
+ * Descriptor for a table to be rendered to SVG (`tableToSVG`).
  *
  * @typedef {Object} TableDescriptor
  * @property {string[]} outputs      - Column header labels
@@ -236,7 +235,7 @@ const _HEADER_H = 120;
 const _WEIGHT_H = 32;
 
 /**
- * Compute total canvas dimensions for a TableDescriptor.
+ * Compute total image dimensions for a TableDescriptor.
  * @param {TableDescriptor} td
  */
 function _dims(td) {
@@ -251,182 +250,6 @@ function _dims(td) {
   const height = (hasWeights ? _WEIGHT_H : 0) + _HEADER_H + rows * _ROW_H
           + (hasSumRow ? _ROW_H : 0) + _PAD * 2;
   return { w, h: height, cols, rows, hasWeights, hasSumCol, hasSumRow, extraCol };
-}
-
-/**
- * Draw a TableDescriptor onto a Canvas 2D context.
- * @param {CanvasRenderingContext2D} ctx
- * @param {TableDescriptor} td
- */
-function _drawTable(ctx, td) {
-  const c = _themeColors();
-  const d = _dims(td);
-
-  const font     = '13px "DM Sans", system-ui, sans-serif';
-  const fontMono = '13px "JetBrains Mono", monospace';
-  const fontMonoSm = '11px "JetBrains Mono", monospace';
-  const fontMonoBold = 'bold 14px "JetBrains Mono", monospace';
-  const fontMonoSmBold = 'bold 11px "JetBrains Mono", monospace';
-
-  ctx.fillStyle = c.bgPrimary;
-  ctx.fillRect(0, 0, d.w, d.h);
-
-  const ox = _PAD;
-  let oy = _PAD;
-  const tableW = _NAME_W + d.cols * _CELL_W + d.extraCol;
-  const sumX = ox + _NAME_W + d.cols * _CELL_W;
-
-  // ── Weight row ──
-  if (d.hasWeights) {
-    ctx.fillStyle = c.bgSecondary;
-    ctx.fillRect(ox, oy, tableW, _WEIGHT_H);
-    ctx.strokeStyle = c.borderColor; ctx.lineWidth = 1;
-    ctx.strokeRect(ox, oy, tableW, _WEIGHT_H);
-
-    ctx.fillStyle = c.textTertiary;
-    ctx.font = fontMonoSm;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(td.weightLabel || '', ox + _NAME_W - 8, oy + _WEIGHT_H / 2);
-
-    ctx.textAlign = 'center';
-    ctx.font = fontMono;
-    ctx.fillStyle = c.textPrimary;
-    for (let i = 0; i < d.cols; i++) {
-      const cx = ox + _NAME_W + i * _CELL_W + _CELL_W / 2;
-      ctx.fillText(String(td.weights[i] ?? ''), cx, oy + _WEIGHT_H / 2);
-      ctx.strokeRect(ox + _NAME_W + i * _CELL_W, oy, _CELL_W, _WEIGHT_H);
-    }
-    if (d.hasSumCol) ctx.strokeRect(sumX, oy, _CELL_W, _WEIGHT_H);
-    oy += _WEIGHT_H;
-  }
-
-  // ── Output header row ──
-  ctx.fillStyle = c.bgTertiary;
-  ctx.fillRect(ox, oy, tableW, _HEADER_H);
-  ctx.strokeStyle = c.borderStrong;
-  ctx.strokeRect(ox, oy, _NAME_W, _HEADER_H);
-
-  ctx.font = font;
-  ctx.fillStyle = c.textSecondary;
-  for (let i = 0; i < d.cols; i++) {
-    const cx = ox + _NAME_W + i * _CELL_W + _CELL_W / 2;
-    ctx.strokeRect(ox + _NAME_W + i * _CELL_W, oy, _CELL_W, _HEADER_H);
-    ctx.save();
-    ctx.translate(cx, oy + _HEADER_H - 8);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(td.outputs[i], 0, 0);
-    ctx.restore();
-  }
-  if (d.hasSumCol) {
-    ctx.strokeRect(sumX, oy, _CELL_W, _HEADER_H);
-    ctx.save();
-    ctx.translate(sumX + _CELL_W / 2, oy + _HEADER_H - 8);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = c.accentColor;
-    ctx.font = fontMonoSmBold;
-    ctx.fillText((td.rowSumLabel || '').toUpperCase(), 0, 0);
-    ctx.restore();
-  }
-  oy += _HEADER_H;
-
-  // ── Data rows ──
-  const rMin = d.hasSumCol ? Math.min(...td.rowSums.map(Number)) : 0;
-  const rMax = d.hasSumCol ? Math.max(...td.rowSums.map(Number)) : 0;
-
-  for (let r = 0; r < d.rows; r++) {
-    const ry = oy + r * _ROW_H;
-
-    ctx.fillStyle = c.bgSecondary;
-    ctx.fillRect(ox, ry, _NAME_W, _ROW_H);
-    ctx.strokeStyle = c.borderColor;
-    ctx.strokeRect(ox, ry, _NAME_W, _ROW_H);
-    ctx.fillStyle = c.textPrimary; ctx.font = font;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(td.inputs[r], ox + 12, ry + _ROW_H / 2);
-
-    for (let col = 0; col < d.cols; col++) {
-      const sx = ox + _NAME_W + col * _CELL_W;
-      ctx.fillStyle = c.bgPrimary;
-      ctx.fillRect(sx, ry, _CELL_W, _ROW_H);
-      ctx.strokeStyle = c.borderColor;
-      ctx.strokeRect(sx, ry, _CELL_W, _ROW_H);
-      const v = td.cells[r]?.[col];
-      if (v !== undefined && v !== '' && v !== null) {
-        ctx.fillStyle = c.textPrimary;
-        ctx.font = fontMonoBold; ctx.textAlign = 'center';
-        ctx.fillText(String(v), sx + _CELL_W / 2, ry + _ROW_H / 2);
-      }
-    }
-
-    if (d.hasSumCol) {
-      const rs = Number(td.rowSums[r]);
-      ctx.fillStyle = td.cellBg ? td.cellBg(rs, rMin, rMax) : 'transparent';
-      ctx.fillRect(sumX, ry, _CELL_W, _ROW_H);
-      ctx.strokeStyle = c.borderColor;
-      ctx.strokeRect(sumX, ry, _CELL_W, _ROW_H);
-      ctx.fillStyle = td.cellFg ? td.cellFg(rs, rMin, rMax) : c.textPrimary;
-      ctx.font = fontMonoBold; ctx.textAlign = 'center';
-      ctx.fillText(String(rs), sumX + _CELL_W / 2, ry + _ROW_H / 2);
-    }
-  }
-
-  // ── Footer row (column sums) ──
-  if (d.hasSumRow) {
-    const fY = oy + d.rows * _ROW_H;
-    const cMin = Math.min(...td.colSums.map(Number));
-    const cMax = Math.max(...td.colSums.map(Number));
-
-    ctx.fillStyle = c.bgTertiary;
-    ctx.fillRect(ox, fY, _NAME_W, _ROW_H);
-    ctx.strokeStyle = c.borderStrong;
-    ctx.strokeRect(ox, fY, _NAME_W, _ROW_H);
-    ctx.fillStyle = c.accentColor;
-    ctx.font = fontMonoSmBold; ctx.textAlign = 'center';
-    ctx.fillText((td.colSumLabel || '').toUpperCase(), ox + _NAME_W / 2, fY + _ROW_H / 2);
-
-    for (let col = 0; col < d.cols; col++) {
-      const sx = ox + _NAME_W + col * _CELL_W;
-      const cs = Number(td.colSums[col]);
-      ctx.fillStyle = td.cellBg ? td.cellBg(cs, cMin, cMax) : 'transparent';
-      ctx.fillRect(sx, fY, _CELL_W, _ROW_H);
-      ctx.strokeStyle = c.borderStrong;
-      ctx.strokeRect(sx, fY, _CELL_W, _ROW_H);
-      ctx.fillStyle = td.cellFg ? td.cellFg(cs, cMin, cMax) : c.textPrimary;
-      ctx.font = fontMonoBold; ctx.textAlign = 'center';
-      ctx.fillText(String(cs), sx + _CELL_W / 2, fY + _ROW_H / 2);
-    }
-
-    if (d.hasSumCol && td.grandTotal !== undefined) {
-      ctx.fillStyle = c.bgTertiary;
-      ctx.fillRect(sumX, fY, _CELL_W, _ROW_H);
-      ctx.strokeStyle = c.borderStrong;
-      ctx.strokeRect(sumX, fY, _CELL_W, _ROW_H);
-      ctx.fillStyle = c.accentColor;
-      ctx.font = fontMonoBold; ctx.textAlign = 'center';
-      ctx.fillText(String(td.grandTotal), sumX + _CELL_W / 2, fY + _ROW_H / 2);
-    }
-  }
-}
-
-/**
- * Export a table as PNG (2× resolution).
- * @param {TableDescriptor} td
- * @param {string} [filename='table.png']
- */
-export function exportTableAsPNG(td, filename = 'table.png') {
-  const { w, h: height } = _dims(td);
-  const scale = 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = w * scale;
-  canvas.height = height * scale;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(scale, scale);
-  _drawTable(ctx, td);
-  canvas.toBlob(blob => downloadBlob(blob, filename), 'image/png');
 }
 
 // ─── opentype.js lazy loader ────────────────────────────────
@@ -499,19 +322,8 @@ function _textPath(font, txt, x, y, fontSize, opts = {}) {
 }
 
 /**
- * Export a table as true-vector SVG with text converted to paths
- * (compatible with Inkscape and all SVG viewers).
- * @param {TableDescriptor} td
- * @param {string} [filename='table.svg']
- */
-export async function exportTableAsSVG(td, filename = 'table.svg') {
-  const svg = await tableToSVG(td);
-  downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
-}
-
-/**
- * A table as true-vector SVG text with text converted to paths — the image
- * of `exportTableAsSVG` without the download (for `exports.image()`).
+ * A table as true-vector SVG text with text converted to paths (compatible
+ * with Inkscape and all SVG viewers), for `exports.image()`.
  * @param {TableDescriptor} td
  * @returns {Promise<string>} SVG markup with `width`/`height` on the root
  */

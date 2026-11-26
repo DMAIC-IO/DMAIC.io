@@ -172,17 +172,6 @@ export default [
 
   // ─── Analyze ──────────────────────────────────────────────────
   {
-    id: 'ce-matrix',
-    phase: 'analyze',
-    group: 'causes',
-    load: () => import('./ce-matrix/ce-matrix.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
-  {
     id: 'makigami',
     phase: 'analyze',
     group: 'flowcharts',

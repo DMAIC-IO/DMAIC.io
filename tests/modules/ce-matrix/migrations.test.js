@@ -16,7 +16,7 @@ setModelName(State, 'ce-matrix');
 
 const SCHEMA = { _schema: { name: 'ce-matrix', version: '1.0' } };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLE = new URL('../../../examples/projects/ce-matrix-pizza-lieferzeit.json', import.meta.url);
+const EXAMPLE = new URL('../../../js/modules/ce-matrix/resources/examples/projects/ce-matrix-pizza-lieferzeit.json', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
 

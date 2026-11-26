@@ -1036,7 +1036,7 @@ export class Workspace {
     //  • notify → no-op, else loadExample() fires one toast per seeded module
     //    (toast storm).
     //  • dialog.confirm → auto-confirm, else modules whose Model.hasContent() is
-    //    truthy by default (e.g. contour-plot, ce-matrix) open an overwrite
+    //    truthy by default (e.g. contour-plot) open an overwrite
     //    modal inside loadExample() that never resolves headless and HANGS the
     //    whole seed. A freshly seeded instance holds only defaults, so there is
     //    nothing to protect — confirming the "overwrite" is always correct.

@@ -527,7 +527,9 @@ suite('control-chart: Viewmodel im Browser', () => {
     assertDeepEqual([err.param, err.hintKey, err.message], ['enabled', 'phase2_needsData', tr('phase2_needsData')]);
     h.q('[data-ref="phase2-toggle"]').click();
     await settle();
-    assertDeepEqual(h.notes.at(-1), { message: tr('phase2_needsData'), type: 'error' });
+    // Die Meldung des Knopfs ist der Hinweis des Moduls (`hintKey`) über den
+    // globalen Übersetzer (hier der Schlüssel).
+    assertDeepEqual(h.notes.at(-1), { message: `modules.${ID}.phase2_needsData`, type: 'error' });
     assertEqual(h.vm().model.frozenLimits, null);
     h = await mount(stored({ stagesText: '12' }));
     const vm = h.vm();

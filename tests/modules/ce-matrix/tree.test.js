@@ -11,7 +11,7 @@ import { setModelName } from '../../../js/core/model.js';
 
 setModelName(State, 'ce-matrix');
 
-const EXAMPLE = new URL('../../../examples/projects/ce-matrix-pizza-lieferzeit.json', import.meta.url);
+const EXAMPLE = new URL('../../../js/modules/ce-matrix/resources/examples/projects/ce-matrix-pizza-lieferzeit.json', import.meta.url);
 
 /** Die Zeilen der Byte-Fixture `example-export.json` (ohne BOM, ohne Schluss-Zeilenende). */
 const EXAMPLE_JSON_LINES = [

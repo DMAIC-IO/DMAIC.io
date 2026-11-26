@@ -1113,30 +1113,6 @@
       ]
     },
     {
-      "id": "ce-matrix-pizza-lieferzeit",
-      "type": "project",
-      "title": {
-        "de": "C&E-Matrix Pizza-Lieferzeit",
-        "en": "C&E Matrix Pizza Delivery"
-      },
-      "description": {
-        "de": "Inputs (Routenplanung, Ofen, Verkehr, …) gegen Outputs (Lieferzeit, Temperatur, Reklamationsquote) — gewichtete 0–9-Bewertung der Zusammenhänge.",
-        "en": "Inputs (routing, oven, traffic, …) versus outputs (delivery time, temperature, complaint rate) — weighted 0–9 ratings of the dependencies."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/ce-matrix-pizza-lieferzeit.json",
-      "format": "json",
-      "modules": [
-        "ce-matrix"
-      ],
-      "tags": [
-        "measure",
-        "ce-matrix",
-        "pizza-lehrcase"
-      ]
-    },
-    {
       "id": "fmea-pizza-lieferprozess",
       "type": "project",
       "title": {

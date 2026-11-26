@@ -36,6 +36,9 @@
     },
     "paretoEdits": {
       "help": "The editor settings of the Pareto chart (title, axes, threshold, bars, line); they are saved with the module."
+    },
+    "paretoChart": {
+      "help": "The Pareto chart next to the matrix: one bar per input with its row sum (rowSums), sorted descending, plus the cumulative sum in percent. With more than 20 inputs, one bucket gathers the rest."
     }
   },
   "actions": {

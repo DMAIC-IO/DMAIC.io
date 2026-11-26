@@ -1712,6 +1712,7 @@ export const AGENT_REGISTRY = {
   "ce-matrix": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -1728,174 +1729,233 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addInput": {
-        "params": [],
-        "returns": "number",
-        "help": "Hängt eine weitere Eingangsgröße (Zeile) an die Matrix an."
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addInput",
+        "keysHelp": "actions.addInput.params",
+        "keys": {}
       },
       "addOutput": {
-        "params": [],
-        "returns": "number",
-        "help": "Hängt eine weitere Ergebnisgröße (Spalte) mit der Kundenwichtigkeit 1 an die Matrix an."
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addOutput",
+        "keysHelp": "actions.addOutput.params",
+        "keys": {}
       },
       "removeInput": {
+        "target": "model",
         "params": [
           {
-            "name": "r",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Zeilennummer, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Entfernt eine Eingangsgröße samt ihrer Bewertungen."
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeInput",
+        "keysHelp": "actions.removeInput.params",
+        "keys": {
+          "inputId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeOutput": {
+        "target": "model",
         "params": [
           {
-            "name": "c",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Spaltennummer, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Entfernt eine Ergebnisgröße samt ihrer Bewertungen und ihrer Kundenwichtigkeit."
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeOutput",
+        "keysHelp": "actions.removeOutput.params",
+        "keys": {
+          "outputId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setScore": {
+        "target": "model",
         "params": [
           {
-            "name": "r",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Zeilennummer der Eingangsgröße, von 0 an gezählt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setScore",
+        "keysHelp": "actions.setScore.params",
+        "keys": {
+          "inputId": {
+            "type": "string",
+            "help": ""
           },
-          {
-            "name": "c",
-            "type": "number",
-            "optional": false,
-            "help": "die Spaltennummer der Ergebnisgröße, von 0 an gezählt"
+          "outputId": {
+            "type": "string",
+            "help": ""
           },
-          {
-            "name": "value",
+          "value": {
             "type": "number|null",
-            "optional": false,
-            "help": "die Bewertung aus der aktiven Skala; `null` löscht die Bewertung"
+            "help": ""
           }
-        ],
-        "returns": "boolean",
-        "help": "Bewertet die Kreuzung einer Eingangs- mit einer Ergebnisgröße."
-      },
-      "setScale": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "die id der Skala"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben unverändert stehen, auch solche, die die neue Skala nicht zulässt."
-      },
-      "setInputName": {
-        "params": [
-          {
-            "name": "r",
-            "type": "number",
-            "optional": false,
-            "help": "die Zeilennummer, von 0 an gezählt"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name"
-          }
-        ],
-        "returns": "void",
-        "help": "Benennt eine Eingangsgröße."
-      },
-      "setOutputName": {
-        "params": [
-          {
-            "name": "c",
-            "type": "number",
-            "optional": false,
-            "help": "die Spaltennummer, von 0 an gezählt"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name"
-          }
-        ],
-        "returns": "void",
-        "help": "Benennt eine Ergebnisgröße."
+        }
       },
       "setWeight": {
+        "target": "model",
         "params": [
           {
-            "name": "c",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Spaltennummer, von 0 an gezählt"
-          },
-          {
-            "name": "value",
-            "type": "number",
-            "optional": false,
-            "help": "die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10 (auch als Zahlentext)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Kundenwichtigkeit einer Ergebnisgröße — den Faktor, mit dem ihre Bewertungen in die Zeilensummen eingehen."
+        "help": "",
+        "keysOf": "setWeight",
+        "keysHelp": "actions.setWeight.params",
+        "keys": {
+          "outputId": {
+            "type": "string",
+            "help": ""
+          },
+          "value": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "setInputName": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setInputName",
+        "keysHelp": "actions.setInputName.params",
+        "keys": {
+          "inputId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setOutputName": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setOutputName",
+        "keysHelp": "actions.setOutputName.params",
+        "keys": {
+          "outputId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "inputs": {
-        "type": "string[]",
-        "help": "the process inputs (rows) in display order",
-        "bulk": false,
-        "derived": true
+        "type": "{ id: string, name: string }[]",
+        "help": "",
+        "bulk": false
       },
       "outputs": {
-        "type": "string[]",
-        "help": "the result variables (columns) in display order",
-        "bulk": false,
-        "derived": true
+        "type": "{ id: string, name: string, weight: number }[]",
+        "help": "",
+        "bulk": false
       },
       "scores": {
-        "type": "object",
-        "help": "the ratings, keyed \"row-column\", e.g. \"0-1\"",
-        "bulk": false,
-        "derived": true
-      },
-      "weights": {
-        "type": "number[]",
-        "help": "the customer importance per output, 1 to 10",
-        "bulk": false,
-        "derived": true
+        "type": "Record<string, number>",
+        "help": "",
+        "bulk": false
       },
       "scale": {
-        "type": "string",
-        "help": "id of the rating scale",
-        "bulk": false,
-        "derived": true
+        "type": "'0-10'|'0-1-3-9'|'0-3-7-10'",
+        "help": "",
+        "bulk": false
       },
       "allowedScores": {
-        "type": "number[]",
-        "help": "the ratings `setScore` accepts on the active scale",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "rowSums": {
-        "type": "number[]",
-        "help": "Zeilensumme je Eingang, in der Reihenfolge von inputs",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "paretoEdits"
+    ],
+    "settable": [
+      "inputs",
+      "outputs",
+      "scores",
+      "scale"
+    ],
+    "invariants": [
+      "inputIds",
+      "outputIds",
+      "knownCells"
+    ]
   },
   "chart-suggestion": {
     "tagged": true,

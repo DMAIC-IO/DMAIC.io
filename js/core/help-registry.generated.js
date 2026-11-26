@@ -2,61 +2,59 @@
 import h0 from '../modules/activity-flowchart/activity-flowchart-help.js';
 import h1 from '../modules/attribute-test/attribute-test-help.js';
 import h2 from '../modules/calculator/calculator-help.js';
-import h3 from '../modules/ce-matrix/ce-matrix-help.js';
-import h4 from '../modules/correlation/correlation-help.js';
-import h5 from '../modules/data-transformation/data-transformation-help.js';
-import h6 from '../modules/deployment-flowchart/deployment-flowchart-help.js';
-import h7 from '../modules/doe-advisor/doe-advisor-help.js';
-import h8 from '../modules/five-why/five-why-help.js';
-import h9 from '../modules/fmea/fmea-help.js';
-import h10 from '../modules/glm-regression/glm-regression-help.js';
-import h11 from '../modules/kano/kano-help.js';
-import h12 from '../modules/lessons-learned/lessons-learned-help.js';
-import h13 from '../modules/makigami/makigami-help.js';
-import h14 from '../modules/model-data-generator/model-data-generator-help.js';
-import h15 from '../modules/msa-typ1/msa-typ1-help.js';
-import h16 from '../modules/msa-typ4/msa-typ4-help.js';
-import h17 from '../modules/msa-typ6/msa-typ6-help.js';
-import h18 from '../modules/pairwise-comparison/pairwise-comparison-help.js';
-import h19 from '../modules/process-map/process-map-help.js';
-import h20 from '../modules/random-generator/random-generator-help.js';
-import h21 from '../modules/regression/regression-help.js';
-import h22 from '../modules/response-optimization/response-optimization-help.js';
-import h23 from '../modules/rest-api/rest-api-help.js';
-import h24 from '../modules/sample-size/sample-size-help.js';
-import h25 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h26 from '../modules/todo/todo-help.js';
-import h27 from '../modules/unit-converter/unit-converter-help.js';
-import h28 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h3 from '../modules/correlation/correlation-help.js';
+import h4 from '../modules/data-transformation/data-transformation-help.js';
+import h5 from '../modules/deployment-flowchart/deployment-flowchart-help.js';
+import h6 from '../modules/doe-advisor/doe-advisor-help.js';
+import h7 from '../modules/five-why/five-why-help.js';
+import h8 from '../modules/fmea/fmea-help.js';
+import h9 from '../modules/glm-regression/glm-regression-help.js';
+import h10 from '../modules/kano/kano-help.js';
+import h11 from '../modules/lessons-learned/lessons-learned-help.js';
+import h12 from '../modules/makigami/makigami-help.js';
+import h13 from '../modules/model-data-generator/model-data-generator-help.js';
+import h14 from '../modules/msa-typ1/msa-typ1-help.js';
+import h15 from '../modules/msa-typ4/msa-typ4-help.js';
+import h16 from '../modules/msa-typ6/msa-typ6-help.js';
+import h17 from '../modules/pairwise-comparison/pairwise-comparison-help.js';
+import h18 from '../modules/process-map/process-map-help.js';
+import h19 from '../modules/random-generator/random-generator-help.js';
+import h20 from '../modules/regression/regression-help.js';
+import h21 from '../modules/response-optimization/response-optimization-help.js';
+import h22 from '../modules/rest-api/rest-api-help.js';
+import h23 from '../modules/sample-size/sample-size-help.js';
+import h24 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
+import h25 from '../modules/todo/todo-help.js';
+import h26 from '../modules/unit-converter/unit-converter-help.js';
+import h27 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
   "attribute-test": h1,
   "calculator": h2,
-  "ce-matrix": h3,
-  "correlation": h4,
-  "data-transformation": h5,
-  "deployment-flowchart": h6,
-  "doe-advisor": h7,
-  "five-why": h8,
-  "fmea": h9,
-  "glm-regression": h10,
-  "kano": h11,
-  "lessons-learned": h12,
-  "makigami": h13,
-  "model-data-generator": h14,
-  "msa-typ1": h15,
-  "msa-typ4": h16,
-  "msa-typ6": h17,
-  "pairwise-comparison": h18,
-  "process-map": h19,
-  "random-generator": h20,
-  "regression": h21,
-  "response-optimization": h22,
-  "rest-api": h23,
-  "sample-size": h24,
-  "stakeholder-analysis": h25,
-  "todo": h26,
-  "unit-converter": h27,
-  "voc-ctx-tree": h28,
+  "correlation": h3,
+  "data-transformation": h4,
+  "deployment-flowchart": h5,
+  "doe-advisor": h6,
+  "five-why": h7,
+  "fmea": h8,
+  "glm-regression": h9,
+  "kano": h10,
+  "lessons-learned": h11,
+  "makigami": h12,
+  "model-data-generator": h13,
+  "msa-typ1": h14,
+  "msa-typ4": h15,
+  "msa-typ6": h16,
+  "pairwise-comparison": h17,
+  "process-map": h18,
+  "random-generator": h19,
+  "regression": h20,
+  "response-optimization": h21,
+  "rest-api": h22,
+  "sample-size": h23,
+  "stakeholder-analysis": h24,
+  "todo": h25,
+  "unit-converter": h26,
+  "voc-ctx-tree": h27,
 };
