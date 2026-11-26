@@ -180,6 +180,13 @@
   border-color: var(--color-accent);
 }
 
+/* Datei über dem Bildknopf (x-file-drop setzt data-file-drop-over am Wirt). */
+.triz-9w__upload[data-file-drop-over] .triz-9w__upload-btn {
+  background: var(--color-accent-light);
+  color: var(--color-text-primary);
+  border-color: var(--color-accent);
+}
+
 .triz-9w__cell-text {
   flex: 1 1 auto;
   width: 100%;

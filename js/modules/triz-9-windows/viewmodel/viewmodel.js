@@ -117,10 +117,10 @@ export default createModule({
        */
       enlarge(row, col) {
         if (!this.hasImage(row, col)) return;
-        dialog?.close();
-        this.state.enlarged = { row, col };
         const content = this.$refs.enlargedView;
         if (!content) return;
+        dialog?.close();
+        this.state.enlarged = { row, col };
         const handle = ctx.dialog.show({
           title: this.imageAlt(row, col),
           size: 'wide',
