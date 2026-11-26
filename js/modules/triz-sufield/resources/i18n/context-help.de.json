@@ -1,0 +1,76 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "s1": {
+      "help": "Der Stoff S1, das Werkzeug: der Stoff, der die Wirkung auslöst, etwa ein Bohrer. Name oder kurze Beschreibung als freier Text; ein leerer Text leert das Feld. Fehlt S1 oder S2, ist das Su-Field-Modell unvollständig."
+    },
+    "s2": {
+      "help": "Der Stoff S2, das Objekt: der Stoff, auf den gewirkt wird, etwa ein Werkstück. Name oder kurze Beschreibung als freier Text; ein leerer Text leert das Feld. Fehlt S1 oder S2, ist das Su-Field-Modell unvollständig."
+    },
+    "field": {
+      "help": "Die Feldart, über die S1 auf S2 wirkt: M (Mechanisch), A (Akustisch), T (Thermisch), C (Chemisch), E (Elektrisch) oder Mg (Magnetisch). Leer heißt: keine gewählt; das Modell gilt dann als unvollständig. Ein anderer Wert wird abgelehnt."
+    },
+    "link": {
+      "help": "Die Art der Wirkung zwischen den Stoffen: useful (nützlich), insufficient (unzureichend, zu schwach), excessive (exzessiv, zu stark), harmful (schädlich) oder missing (fehlend, sollte aber wirken). Aus ihr folgen die Diagnose und die empfohlenen Klassen der Standardlösungen. Leer heißt: keine gewählt. Ein anderer Wert wird abgelehnt."
+    },
+    "problemNote": {
+      "help": "Die Problemnotiz zum Su-Field-Modell: Kontext, Randbedingungen, Verweise auf andere TRIZ-Werkzeuge. Freier Text; ein leerer Text leert die Notiz."
+    },
+    "notes": {
+      "help": "Die Notizen zu den Standardlösungen: je Standardlösung ein freier Text, wie er im Notizfeld der aufgeklappten Lösung steht, nach ihrer Nummer in der Form Klasse.Gruppe.Nummer, etwa 2.2.5. Nur Lösungen mit Notiz stehen darin. Die gültigen Nummern stehen bei den Standardlösungen; eine andere wird abgelehnt."
+    },
+    "selected": {
+      "help": "Die vorgemerkten Standardlösungen, nach ihrer Nummer in der Form Klasse.Gruppe.Nummer, je mit dem Wert true. In der Oberfläche das Kästchen „berücksichtigt / anwendbar“ in der aufgeklappten Lösung; vorgemerkte Lösungen tragen einen Stern. Nur vorgemerkte stehen darin. Die gültigen Nummern stehen bei den Standardlösungen; eine andere wird abgelehnt."
+    },
+    "filterMode": {
+      "help": "Der Listenfilter der Standardlösungen: auto (Nur empfohlene Klassen) zeigt nur die Klassen, die die Diagnose empfiehlt, all (Alle anzeigen) alle fünf. Er ändert nur die Ansicht, nicht das Su-Field-Modell."
+    },
+    "expandedClasses": {
+      "help": "Die aufgeklappten Klassen der Standardlösungen, als Nummern von 1 bis 5, jede höchstens einmal. Ein Klick auf den Kopf einer Klasse klappt sie auf oder zu. Zu Beginn sind die empfohlenen Klassen offen. Es ändert nur die Ansicht, nicht das Su-Field-Modell."
+    },
+    "diagnosis": {
+      "help": "Die Diagnose des Su-Field-Modells, abgeleitet aus S1, S2, Feldart und Wirkung und nicht gespeichert: die Lage des Modells und die empfohlenen Klassen der Standardlösungen."
+    },
+    "standards": {
+      "help": "Die 78 Standardlösungen in fünf Klassen, unabhängig vom Listenfilter, je mit Nummer, Klasse, Gruppe, Titel und Auslöser in der eingestellten Sprache. Ihre Nummer ist die, unter der Notiz und Vormerkung einer Lösung stehen. Die Liste kommt erst auf Nachfrage vollständig, sonst steht nur ihr Umfang da."
+    }
+  },
+  "actions": {
+    "setStandardNote": {
+      "help": "Schreibt die Notiz zu einer Standardlösung, wie das Tippen in das Notizfeld der aufgeklappten Lösung. Ein leerer Text entfernt die Notiz.",
+      "params": {
+        "stdId": "Die Nummer einer der 78 Standardlösungen in der Form Klasse.Gruppe.Nummer, etwa 2.2.5. Eine andere wird abgelehnt.",
+        "text": "Die Notiz zu dieser Standardlösung; ein leerer Text entfernt sie.",
+        "command": "Das Kommando als ein Objekt mit stdId und text."
+      }
+    },
+    "setStandardSelected": {
+      "help": "Merkt eine Standardlösung vor oder nimmt die Vormerkung zurück, wie das Kästchen „berücksichtigt / anwendbar“ in der aufgeklappten Lösung.",
+      "params": {
+        "stdId": "Die Nummer einer der 78 Standardlösungen in der Form Klasse.Gruppe.Nummer, etwa 2.2.5. Eine andere wird abgelehnt.",
+        "selected": "true merkt vor, false nimmt die Vormerkung zurück.",
+        "command": "Das Kommando als ein Objekt mit stdId und selected."
+      }
+    },
+    "setExpandedClasses": {
+      "help": "Legt fest, welche Klassen der Standardlösungen aufgeklappt sind, wie die Klicks auf die Köpfe der Klassen. Die übrigen Klassen sind danach zu. Es ändert nur die Ansicht, nicht das Su-Field-Modell.",
+      "params": {
+        "classes": "Die Nummern der aufgeklappten Klassen, je 1 bis 5 und jede höchstens einmal; eine leere Liste klappt alle zu. Eine andere Nummer oder eine doppelte wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit classes."
+      }
+    }
+  },
+  "types": {
+    "Diagnosis": {
+      "situation": "Die Lage des Modells: partial (S1 oder S2 fehlt), incomplete (unvollständig: keine Feldart, keine Wirkung gewählt oder Wirkung fehlend), complete-useful (vollständig, Wirkung nützlich), complete-insufficient (vollständig, Wirkung unzureichend), complete-excessive (vollständig, Wirkung exzessiv) oder complete-harmful (vollständig, Wirkung schädlich). Die Zeile „Diagnose“ zeigt sie als Satz.",
+      "suggestedClasses": "Die Nummern der empfohlenen Klassen der Standardlösungen, 1 bis 5: Klasse 1 bei fehlendem Stoff, unvollständigem Modell und schädlicher Wirkung, Klasse 2 bei nützlicher, unzureichender und exzessiver Wirkung, dazu Klasse 3 bei nützlicher und Klasse 5 bei exzessiver und schädlicher Wirkung. Die Zeile „Diagnose“ zeigt sie unter „Empfohlene Klassen“."
+    },
+    "StandardEntry": {
+      "id": "Die Nummer der Standardlösung in der Form Klasse.Gruppe.Nummer, etwa 2.2.5.",
+      "class": "Die Klasse der Standardlösung, 1 bis 5.",
+      "group": "Die Gruppe in der Form Klasse.Gruppe, etwa 2.2.",
+      "title": "Der Titel der Standardlösung in der eingestellten Sprache.",
+      "trigger": "Wann die Standardlösung greift, in der eingestellten Sprache, so wie „Anwenden, wenn“ in der aufgeklappten Lösung."
+    }
+  }
+}

@@ -1,0 +1,591 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Substanz-Feld-Analyse (TRIZ)",
+  "description": "Wechselwirkung als S1-S2-Feld-Dreieck modellieren und Altschullers 76 Standardlösungen anwenden",
+  "whenToUse": "Wenn eine Wirkung zwischen zwei Stoffen zu schwach, zu stark, schädlich oder gar nicht vorhanden ist und die TRIZ-Standardlösungen dazu gefunden werden sollen; nicht, um einen Widerspruch zwischen zwei Parametern aufzulösen — dafür ist die Widerspruchsmatrix da.",
+  "s1Label": "Werkzeug (S1)",
+  "s1Placeholder": "z. B. Bohrer",
+  "s2Label": "Objekt (S2)",
+  "s2Placeholder": "z. B. Werkstück",
+  "fieldLabel": "Feld (F)",
+  "linkLabel": "Wirkungstyp",
+  "selectPlaceholder": "— bitte wählen —",
+  "fieldEmpty": "— kein Feld —",
+  "field": {
+    "M": "Mechanisch",
+    "A": "Akustisch",
+    "T": "Thermisch",
+    "C": "Chemisch",
+    "E": "Elektrisch",
+    "Mg": "Magnetisch"
+  },
+  "link": {
+    "useful": "nützlich (Wirkung okay)",
+    "insufficient": "unzureichend (zu schwach)",
+    "excessive": "exzessiv (zu stark)",
+    "harmful": "schädlich (Nebeneffekt)",
+    "missing": "fehlend (sollte wirken)"
+  },
+  "diagramAria": "Su-Field-Modell: Substanz-Substanz-Feld-Dreieck",
+  "diagnosisLabel": "Diagnose",
+  "suggestedClasses": "Empfohlene Klassen",
+  "situation": {
+    "partial": "S1 oder S2 fehlt — bitte beide Substanzen benennen.",
+    "incomplete": "Unvollständiges Modell (kein Feld) — neue Wechselwirkung muss aufgebaut werden.",
+    "complete-useful": "Vollständig, Wirkung nützlich — Verbesserung & nächster Generationssprung möglich.",
+    "complete-insufficient": "Vollständig, aber Wirkung unzureichend — Feld verstärken oder dynamisieren.",
+    "complete-excessive": "Vollständig, aber Wirkung exzessiv — Wirkung dämpfen / selbsttätig begrenzen.",
+    "complete-harmful": "Vollständig, aber Wirkung schädlich — Su-Field zerstören oder neutralisieren."
+  },
+  "problemNotePlaceholder": "Optional: Kontext, Randbedingungen, Verweis auf 9-Fenster / IFR / Widerspruchsmatrix …",
+  "problemNoteLabel": "Problemnotiz",
+  "filterAuto": "Nur empfohlene Klassen",
+  "filterAll": "Alle anzeigen",
+  "class": {
+    "1": {
+      "name": "Aufbau / Zerstörung von Su-Field-Modellen",
+      "description": "Für unvollständige Modelle (1.1 Synthese) oder schädliche Wechselwirkungen (1.2 Zerstörung)."
+    },
+    "2": {
+      "name": "Entwicklung von Su-Field-Modellen",
+      "description": "Für vollständige Modelle mit unzureichender oder ausbaufähiger Wirkung — Übergang zu komplexen, dynamischen oder ferromagnetischen Su-Fields."
+    },
+    "3": {
+      "name": "Übergang zu Supersystem / Mikroebene",
+      "description": "Wenn das System an seine Grenzen stößt — Bi-/Poly-System oder Sprung in die Mikroebene."
+    },
+    "4": {
+      "name": "Messung & Detektion",
+      "description": "Mess- und Steuerungsprobleme — Messung umgehen, indirekt messen, ferromagnetische Detektion."
+    },
+    "5": {
+      "name": "Hilfsstandards",
+      "description": "Vereinfachung und Idealität — bestehende Substanzen / Felder nutzen, Phasenwechsel, selbstgesteuerte Übergänge."
+    }
+  },
+  "triggerLead": "Anwenden, wenn",
+  "exampleLead": "Beispiel",
+  "standardNotePlaceholder": "Wie passt dieser Standard auf den konkreten Fall?",
+  "considered": "berücksichtigt / anwendbar",
+  "invariants": {
+    "knownNotes": "Eine Notiz gehört zu einer der 78 Standardlösungen.",
+    "knownSelections": "Eine Vormerkung gehört zu einer der 78 Standardlösungen.",
+    "validExpandedClasses": "Aufgeklappt sind nur die Klassen 1 bis 5, jede höchstens einmal."
+  },
+  "standards": {
+    "1": {
+      "1": {
+        "1": {
+          "title": "Synthese eines Substanz-Feld-Modells",
+          "description": "Wenn die Wechselwirkung schwach oder unbekannt ist und das Modell unvollständig ist, füge das fehlende Element (Substanz oder Feld) hinzu.",
+          "trigger": "Unvollständiges Su-Field (eines der drei Elemente fehlt).",
+          "example": "Wenn zwei Werkstücke verklebt werden sollen, fehlt das Feld — füge Wärme (thermisches Feld) hinzu, damit der Kleber aushärtet."
+        },
+        "2": {
+          "title": "Innere komplexe Substanz-Substanz-Feld-Synthese",
+          "description": "Wenn die Eigenschaften der Objekte den Aufbau eines klassischen Su-Field-Modells verhindern, modifiziere S2 von innen durch Beimischung einer Hilfssubstanz.",
+          "trigger": "S2 widersteht direkter Wechselwirkung; Eigenschaften sind nicht direkt veränderbar.",
+          "example": "Stahl, der sich nicht weich biegen lässt — durch Wasserstoff-Einlagerung im Inneren weicher (Hydrieren)."
+        },
+        "3": {
+          "title": "Äußere komplexe Substanz-Feld-Synthese",
+          "description": "Wenn S2 nicht intern verändert werden kann, befestige eine Hilfssubstanz außen (Beschichtung, Beilage).",
+          "trigger": "S2 darf nicht modifiziert werden, aber eine Oberflächenbeschichtung ist akzeptabel.",
+          "example": "Werkstück mit Anti-Haft-Beschichtung statt Materialwechsel."
+        },
+        "4": {
+          "title": "Su-Field-Synthese unter Nutzung der Umgebung",
+          "description": "Verwende eine bereits in der Umgebung vorhandene Substanz als S1 oder Vermittler.",
+          "trigger": "Eine geeignete Substanz ist in der Umgebung bereits präsent (Luft, Wasser, Staub).",
+          "example": "Luftpolster (Luftkissen) statt mechanischer Rolle für reibungsarme Bewegung."
+        },
+        "5": {
+          "title": "Su-Field-Synthese mit modifizierter Umgebung",
+          "description": "Wenn die natürliche Umgebung allein nicht reicht, verändere sie chemisch oder physikalisch.",
+          "trigger": "Umgebung ist verfügbar, aber zu schwach oder ungeeignet.",
+          "example": "Atmosphäre durch Schutzgas (Argon) ersetzen, damit das Werkstück nicht oxidiert."
+        },
+        "6": {
+          "title": "Maximalwirkung trotz Beschränkungen",
+          "description": "Wenn maximale Feldwirkung nötig ist, aber das Feld nicht direkt auf S2 wirken darf, wirke auf einen Zwischenträger.",
+          "trigger": "Direkte Maximalwirkung würde S2 beschädigen.",
+          "example": "Hochfrequenz-Schweißen über einen Zwischenträger statt direkt auf das empfindliche Bauteil."
+        },
+        "7": {
+          "title": "Selektive Feldwirkung",
+          "description": "Wenn das Feld auf manchen Bereichen maximal und auf anderen minimal wirken soll, nutze eine Schutzsubstanz bzw. einen Modifikator.",
+          "trigger": "Inhomogene Wirkung auf S2 gefordert (z.B. lokal härten).",
+          "example": "Lokal-induktives Härten — Feld wirkt nur auf den induzierten Bereich, Rest bleibt weich."
+        },
+        "8": {
+          "title": "Ferromagnetische Substanz + Magnetfeld",
+          "description": "Verwende eine ferromagnetische Substanz und ein Magnetfeld, wenn herkömmliche Felder die Aufgabe nicht erfüllen.",
+          "trigger": "Klassische Felder reichen nicht, magnetische Manipulation ist möglich.",
+          "example": "Eisenpulver + Magnetfeld als formanpassbares Werkzeug."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Drittsubstanz zur Neutralisierung",
+          "description": "Wenn zwei Substanzen eine schädliche Wechselwirkung haben, führe eine dritte Substanz ein, die diese trennt oder neutralisiert.",
+          "trigger": "Schädliche Wechselwirkung zwischen S1 und S2 vorhanden.",
+          "example": "Schmierfilm zwischen reibenden Flächen reduziert Verschleiß."
+        },
+        "2": {
+          "title": "Modifikation einer der Substanzen",
+          "description": "Verändere eine der beiden Substanzen so, dass die schädliche Wechselwirkung verschwindet.",
+          "trigger": "Schädliche Wechselwirkung; eine Modifikation von S1 oder S2 ist akzeptabel.",
+          "example": "Anti-Reflex-Beschichtung auf Linse — schädliche Reflexion verschwindet."
+        },
+        "3": {
+          "title": "Entfernen / Ableiten des schädlichen Feldes",
+          "description": "Wenn ein Feld einen schädlichen Effekt erzeugt, leite es ab oder schirme es ab.",
+          "trigger": "Schädliches Feld zwischen S1 und S2.",
+          "example": "Faraday-Käfig schirmt elektromagnetische Störungen ab."
+        },
+        "4": {
+          "title": "Gegenfeld zur Neutralisierung",
+          "description": "Erzeuge ein Gegenfeld, das das schädliche Feld auslöscht.",
+          "trigger": "Schädliches Feld; Erzeugung eines Gegenfeldes ist möglich.",
+          "example": "Aktive Geräuschunterdrückung (ANC) — Gegenschall löscht Lärm aus."
+        },
+        "5": {
+          "title": "Schädliche Wechselwirkung über eine Hilfssubstanz absorbieren",
+          "description": "Führe eine Substanz ein, die die schädliche Wechselwirkung aufnimmt und unschädlich macht.",
+          "trigger": "Schädliche Wirkung soll absorbiert (nicht nur abgeleitet) werden.",
+          "example": "Aktivkohlefilter bindet Schadstoffe im Abgas."
+        }
+      }
+    },
+    "2": {
+      "1": {
+        "1": {
+          "title": "Übergang zum Ketten-Su-Field",
+          "description": "Wenn ein einfaches Su-Field nicht reicht, verkette mehrere Su-Felder (S1 wirkt über S3 auf S2).",
+          "trigger": "Einfacher Aufbau zu schwach; Zwischenschritt ist machbar.",
+          "example": "Hebel-Übersetzung: Kraft → Zwischenträger → Werkstück."
+        },
+        "2": {
+          "title": "Übergang zum Doppel-Su-Field",
+          "description": "Verwende eine zweite Substanz oder ein zweites Feld parallel, um die Wirkung zu verstärken oder zu spezialisieren.",
+          "trigger": "Eine Wirkung reicht nicht; eine zweite, ergänzende Wirkung ist nötig.",
+          "example": "Schleifscheibe + Kühlmittel: mechanisches + thermisches Feld parallel."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Von unkontrolliertem zu kontrolliertem Feld",
+          "description": "Ersetze ein schwer steuerbares Feld durch ein leichter steuerbares (oft elektromagnetisch).",
+          "trigger": "Mechanisches / chemisches Feld ist schwer dosierbar.",
+          "example": "Mechanische Bremse → elektromagnetische Wirbelstrombremse."
+        },
+        "2": {
+          "title": "Fragmentierung / Aufteilung einer Substanz",
+          "description": "Teile eine massive Substanz in kleinere Teile (Pulver, Partikel) für feinere Kontrolle.",
+          "trigger": "Kontrolle über S1 oder S2 muss feinkörniger werden.",
+          "example": "Pulver-Lack statt Lack-Block — feinere Schichtdicke steuerbar."
+        },
+        "3": {
+          "title": "Übergang zur porösen Struktur",
+          "description": "Mache eine Substanz porös, damit sie Felder und andere Substanzen aufnehmen kann.",
+          "trigger": "Substanz muss Stoffe / Wärme / Felder zwischenspeichern.",
+          "example": "Poröser Sinterkörper als Wärmespeicher."
+        },
+        "4": {
+          "title": "Dynamisierung",
+          "description": "Wechsle vom statischen zum beweglichen System (starr → gelenkig → elastisch → flüssig → Feld).",
+          "trigger": "Statische Lösung erreicht Grenzen; Anpassung an Bedingungen nötig.",
+          "example": "Starres Tragwerk → gelenkig → Hydraulik → Elektromagnet."
+        },
+        "5": {
+          "title": "Von konstantem zu variablem / gepulstem Feld",
+          "description": "Ersetze konstante Wirkung durch zeitlich variable, gepulste oder modulierte Wirkung.",
+          "trigger": "Konstante Wirkung verschwendet Energie oder schädigt S2.",
+          "example": "Gepulste statt kontinuierliche Laser für saubere Materialbearbeitung."
+        },
+        "6": {
+          "title": "Strukturierung des Feldes / der Substanz",
+          "description": "Bringe Struktur ins Feld oder die Substanz — räumlich (Muster) oder zeitlich (Sequenz).",
+          "trigger": "Homogene Wirkung ist suboptimal; Struktur erhöht Wirkungsgrad.",
+          "example": "Strukturierte Laser-Strahlen für Hologramme oder Mustererzeugung."
+        }
+      },
+      "3": {
+        "1": {
+          "title": "Anpassung an die Eigenfrequenz",
+          "description": "Stimme die Feldfrequenz auf die Eigen-/Resonanzfrequenz des Objekts ab.",
+          "trigger": "Energie soll effizient eingekoppelt werden.",
+          "example": "Ultraschall-Reinigung: Frequenz angepasst an Kavitationsblasen."
+        },
+        "2": {
+          "title": "Mehrere Frequenzen für mehrere Aufgaben",
+          "description": "Wenn das System mehrere Aufgaben hat, verwende unterschiedliche Frequenzen für jede.",
+          "trigger": "Mehrere unabhängige Aufgaben sollen mit einem Träger erfüllt werden.",
+          "example": "Multiplexing — verschiedene Frequenzbänder transportieren parallel verschiedene Signale."
+        },
+        "3": {
+          "title": "Pausen für andere Aktionen nutzen",
+          "description": "Während der Pausen einer Aktion können andere Aktionen ablaufen — keine Konflikte, gemeinsame Ressourcen.",
+          "trigger": "Aktion arbeitet nicht kontinuierlich; Pausen sind nutzbar.",
+          "example": "MRI-Sequenzen — verschiedene Pulse zwischen Datenerfassungs-Phasen."
+        },
+        "4": {
+          "title": "Anpassung an unkontrollierbaren Rhythmus",
+          "description": "Wenn ein Rhythmus nicht kontrollierbar ist, passe das System an seinen natürlichen Takt an.",
+          "trigger": "Externer / natürlicher Rhythmus ist gegeben (Tageszeit, Maschinentakt).",
+          "example": "Energiespeicher passt sich an die natürliche Pulsation der PV-Anlage an."
+        },
+        "5": {
+          "title": "Resonanz nutzen",
+          "description": "Erzeuge gezielt Resonanz, um Wirkung mit minimaler Eingangsenergie zu erzielen.",
+          "trigger": "Energieeffizienz ist entscheidend; resonanzfähiges System vorhanden.",
+          "example": "Schwingender Förderer nutzt Eigenresonanz für niedrigen Energieverbrauch."
+        }
+      },
+      "4": {
+        "1": {
+          "title": "Ferromagnetisches Material + Magnetfeld",
+          "description": "Führe ferromagnetische Partikel oder Bauteile ein, die mit einem Magnetfeld gesteuert werden.",
+          "trigger": "Steuerbarkeit über klassische Felder unzureichend.",
+          "example": "Magnetorheologische Flüssigkeit als adaptive Stoßdämpfer-Füllung."
+        },
+        "2": {
+          "title": "Magnetische Flüssigkeit (Ferrofluid)",
+          "description": "Verwende eine Flüssigkeit mit suspendierten ferromagnetischen Partikeln für formfreie magnetfeldgesteuerte Wirkung.",
+          "trigger": "Form / Position muss formfrei und feldsteuerbar sein.",
+          "example": "Ferrofluid als Lager-Dichtung in Computer-Festplatten."
+        },
+        "3": {
+          "title": "Kapillar-Porenstrukturen mit Magnetflüssigkeit",
+          "description": "Kombiniere Magnetflüssigkeit mit kapillaren Strukturen für gerichteten Transport.",
+          "trigger": "Flüssigkeitstransport muss gerichtet und feldgesteuert sein.",
+          "example": "Magnetisch gesteuerte Mikrofluidik in Lab-on-a-chip-Geräten."
+        },
+        "4": {
+          "title": "Komplexes ferromagnetisches Su-Field",
+          "description": "Baue ein komplexes Modell mit mehreren ferromagnetischen Komponenten auf.",
+          "trigger": "Einfaches ferromagnetisches Modell reicht nicht.",
+          "example": "Stapel-Magnetisierung zur räumlichen Mustererzeugung."
+        },
+        "5": {
+          "title": "Zusatzstoffe in der Umgebung",
+          "description": "Verteile ferromagnetische Zusätze in der Arbeitsumgebung, um Wirkung dort zu erzielen.",
+          "trigger": "Direkter Eingriff am Werkstück ist schwierig.",
+          "example": "Magnetit-Tracer in einer Strömung machen den Volumenstrom messbar."
+        },
+        "6": {
+          "title": "Magnetische Substanz in die Umgebung einbringen",
+          "description": "Wenn die Umgebung selbst nicht magnetisch ist, mache sie magnetisch.",
+          "trigger": "Umgebung kann modifiziert werden; magnetische Trennung gewünscht.",
+          "example": "Magnetit-Anreicherung im Schlamm zur magnetischen Phasentrennung."
+        },
+        "7": {
+          "title": "Natürlichen Ferromagnetismus nutzen",
+          "description": "Suche, ob die Umgebung bereits ferromagnetische Substanzen enthält (z.B. Eisen, Stahl).",
+          "trigger": "Industrielle Umgebung mit metallischen Anteilen.",
+          "example": "Magnetische Aufrichtung von Eisenpartikeln im Schmierstoff zur Verschleißüberwachung."
+        },
+        "8": {
+          "title": "Physikalische Effekte nutzen (Curie-Punkt, Hysterese)",
+          "description": "Verwende physikalische Effekte wie Curie-Temperatur oder magnetische Hysterese als selbstgesteuerten Schalter.",
+          "trigger": "Selbsttätige Steuerung an einem Schwellwert ist nötig.",
+          "example": "Selbstregelnde Heizpatrone: Material verliert oberhalb der Curie-Temperatur sein Magnetfeld und reduziert den Strom."
+        },
+        "9": {
+          "title": "Dynamisierung des ferromagnetischen Su-Fields",
+          "description": "Wechsel von statischer ferromagnetischer Konstruktion zu beweglichen / variablen.",
+          "trigger": "Statisches Magnetfeld reicht nicht; Variabilität verbessert Wirkung.",
+          "example": "Drehender Magnet erzeugt rotierendes Feld für berührungslose Motoren."
+        },
+        "10": {
+          "title": "Strukturierung des Magnetfeldes",
+          "description": "Erzeuge gezielte räumliche Strukturen im Magnetfeld (Inhomogenitäten, Gradienten).",
+          "trigger": "Räumlich differenzierte Wirkung gewünscht.",
+          "example": "Magnetische Gradientenfelder in MRI für räumliche Kodierung."
+        },
+        "11": {
+          "title": "Rhythmus-Anpassung in ferromagnetischen Systemen",
+          "description": "Stimme magnetische Pulsfrequenzen auf die natürliche Frequenz des ferromagnetischen Systems ab.",
+          "trigger": "Effizienz der magnetischen Wechselwirkung soll maximal werden.",
+          "example": "Resonanz-Drahtloses-Laden: optimale Frequenz für maximale Energieübertragung."
+        },
+        "12": {
+          "title": "Elektrisches statt magnetisches Feld",
+          "description": "Wenn Magnetfeld nicht passt, ersetze es durch ein elektrisches Feld oder kombiniere beide.",
+          "trigger": "Magnetische Lösung scheitert (z.B. nicht-ferromagnetisches Material).",
+          "example": "Elektrostatische Pulverbeschichtung statt magnetischer Anziehung."
+        }
+      }
+    },
+    "3": {
+      "1": {
+        "1": {
+          "title": "Bi-System: zwei gleiche Systeme koppeln",
+          "description": "Kopple zwei gleichartige Systeme miteinander, um Synergie zu schaffen.",
+          "trigger": "Einzelsystem ist gesättigt; Verdopplung bringt neue Eigenschaften.",
+          "example": "Doppelschneider — zwei parallele Klingen erzeugen feinere Schnitte."
+        },
+        "2": {
+          "title": "Poly-System: viele gleiche Systeme",
+          "description": "Kombiniere viele gleichartige Systeme zu einem Poly-System (Array).",
+          "trigger": "Massive Parallelisierung möglich, einzelne Einheit unwesentlich.",
+          "example": "LED-Matrix als Scheinwerfer statt einer einzelnen Lampe."
+        },
+        "3": {
+          "title": "Differenzierung der Bi-/Poly-Systeme",
+          "description": "Bi-/Poly-Systeme werden ergiebiger, wenn ihre Eigenschaften differenziert (nicht identisch) sind.",
+          "trigger": "Bi-/Poly-System mit identischen Einheiten erreicht Grenzen.",
+          "example": "Stereo statt Mono — zwei Lautsprecher mit unterschiedlichem Signal."
+        },
+        "4": {
+          "title": "Gegensätzliche Eigenschaften kombinieren",
+          "description": "Kombiniere Systeme mit entgegengesetzten Eigenschaften (heiß + kalt, hart + weich, schwarz + weiß).",
+          "trigger": "Widerspruch zwischen den Anforderungen.",
+          "example": "Sandwich-Bauteil mit harter Außen- und weicher Innenschicht."
+        },
+        "5": {
+          "title": "Faltung — Bi-System zurück in Mono-System",
+          "description": "Wenn das Bi-System seine Aufgabe erfüllt hat, integriere die Funktionalität in ein einzelnes System.",
+          "trigger": "Bi-System überdimensioniert; Integration in Monolith möglich.",
+          "example": "Doppelter Schraubendreher (Phillips + Schlitz) als Reversiblefassung."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Übergang zur Mikroebene",
+          "description": "Ersetze makroskopische Elemente durch mikroskopische / molekulare / Feldlösungen.",
+          "trigger": "Makro-System ist gesättigt; Mikro-Lösung verfügbar.",
+          "example": "Mikrofluidik statt Pumpen-Schlauch-System für kleine Volumenströme."
+        }
+      }
+    },
+    "4": {
+      "1": {
+        "1": {
+          "title": "Messung vermeiden durch Systemänderung",
+          "description": "Wenn etwas schwer zu messen ist, ändere das System so, dass die Messung überflüssig wird.",
+          "trigger": "Messung ist teuer oder unzuverlässig.",
+          "example": "Selbstdiagnose-Sensoren mit Schwellwert-Schaltung statt Messung + Logik."
+        },
+        "2": {
+          "title": "Kopien / Modelle verwenden",
+          "description": "Statt das Original zu messen, miss ein einfacheres Modell oder eine Kopie.",
+          "trigger": "Originalsystem zu komplex oder unzugänglich.",
+          "example": "Modellversuch im Windkanal statt Vollskala-Flugzeug."
+        },
+        "3": {
+          "title": "Sukzessive Änderungen messen",
+          "description": "Messe relative Änderungen statt Absolutwerte — oft genauer und einfacher.",
+          "trigger": "Absolute Messung schwierig; Relativwerte ausreichend.",
+          "example": "Vergleichsmessung mit Referenzmuster (Differenz statt Absolutwert)."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Indirektes Mess-Su-Field synthetisieren",
+          "description": "Wenn ein Effekt nicht direkt messbar ist, koppele ihn an ein leicht messbares Feld.",
+          "trigger": "Effekt ist nicht direkt messbar.",
+          "example": "Druckmessung über Verformung eines Membrans (mechanisch → elektrisch)."
+        },
+        "2": {
+          "title": "Inneres komplexes Mess-Su-Field",
+          "description": "Verändere das Objekt, sodass es selbst Information abgibt (z.B. fluoreszierend bei Belastung).",
+          "trigger": "Objekt darf modifiziert werden.",
+          "example": "Spannungs-anzeigende Lacke (Tribolumineszenz) für Belastungsanalysen."
+        },
+        "3": {
+          "title": "Äußeres komplexes Mess-Su-Field",
+          "description": "Bringe einen Mess-Marker außen am Objekt an (Beschichtung, aufgeklebter Sensor).",
+          "trigger": "Objekt darf nicht intern verändert werden.",
+          "example": "Tape-Sensor für Dehnungsmessung."
+        },
+        "4": {
+          "title": "Die Umgebung als Messträger nutzen",
+          "description": "Lass die Umgebung um das Objekt herum die Information liefern (Schatten, Verzerrung, Echo).",
+          "trigger": "Berührungslose Messung gewünscht.",
+          "example": "Radar-Messung — Echo der Umgebung beschreibt das Objekt."
+        }
+      },
+      "3": {
+        "1": {
+          "title": "Physikalische Effekte zur Messung nutzen",
+          "description": "Greife auf physikalische Effekte zurück (Piezo, Doppler, Hall), um eine Größe in ein elektrisches Signal zu wandeln.",
+          "trigger": "Mechanische / chemische Messung soll elektrifiziert werden.",
+          "example": "Doppler-Effekt zur Geschwindigkeitsmessung (Radar, Ultraschall-Sonde)."
+        },
+        "2": {
+          "title": "Resonanz für die Messung nutzen",
+          "description": "Eigenfrequenz oder Resonanz eines Bauteils gibt Aufschluss über seinen Zustand.",
+          "trigger": "Zustand korreliert mit Eigenfrequenz.",
+          "example": "Stimmgabel-Frequenz misst Flüssigkeitsstand / Dichte."
+        },
+        "3": {
+          "title": "Resonanz eines assoziierten Objekts",
+          "description": "Wenn das Hauptobjekt schwer messbar ist, messe ein assoziiertes Objekt mit gekoppelter Resonanz.",
+          "trigger": "Direkte Messung an S2 schwierig; assoziiertes Objekt verfügbar.",
+          "example": "Kavitationsblasen-Resonanz misst Ultraschall-Intensität indirekt."
+        }
+      },
+      "4": {
+        "1": {
+          "title": "Magnetfeld + Ferromagnetik zur Messung",
+          "description": "Verwende magnetische Felder und ferromagnetische Materialien als Messelement.",
+          "trigger": "Berührungslose / verschleißfreie Messung gewünscht.",
+          "example": "Hall-Sensor misst Strom über das erzeugte Magnetfeld."
+        },
+        "2": {
+          "title": "Magnetisch markierte Indikatoren",
+          "description": "Bringe einen ferromagnetischen Marker an einem zu messenden Teil an und detektiere ihn.",
+          "trigger": "Position / Bewegung eines Bauteils muss berührungslos gemessen werden.",
+          "example": "Drehzahlerfassung mit Zahnscheibe + Hall-Sensor."
+        },
+        "3": {
+          "title": "Magnetische Substanz + Curie-Punkt zur Temperaturmessung",
+          "description": "Verwende den Curie-Punkt eines ferromagnetischen Materials als selbsttätige Temperaturschwelle.",
+          "trigger": "Temperaturschaltung an genau einem Schwellwert gewünscht.",
+          "example": "Magnet-Schalter, der oberhalb der Curie-Temperatur abfällt."
+        },
+        "4": {
+          "title": "Strukturierung in der magnetischen Messung",
+          "description": "Erzeuge magnetische Gradienten / Muster, um räumliche Information zu kodieren.",
+          "trigger": "Räumliche Auflösung der Messung gefordert.",
+          "example": "MRI — Gradientenfelder kodieren Ort in Frequenz."
+        },
+        "5": {
+          "title": "Rhythmusanpassung in der magnetischen Messung",
+          "description": "Stimme Mess-Pulse auf die Eigendynamik des magnetischen Systems ab (Larmor-Frequenz etc.).",
+          "trigger": "Effizienz / Empfindlichkeit der Messung soll maximal werden.",
+          "example": "Larmor-Resonanz in NMR — Pulsfolge passt zur Eigenfrequenz der Kernspins."
+        }
+      },
+      "5": {
+        "1": {
+          "title": "Übergang Bi → Poly-System in der Messung",
+          "description": "Mehrere Sensoren parallel — Mittelung, Fehlerkorrektur, räumliche Verteilung.",
+          "trigger": "Einzelsensor ist unzuverlässig oder zu eindimensional.",
+          "example": "Sensor-Array (mehrere Mikrofone, redundante Hall-Sensoren)."
+        },
+        "2": {
+          "title": "Evolution der Mess-Systeme",
+          "description": "Messsysteme entwickeln sich von einfach → komplex → intelligent (auto-kalibrierend, lernend).",
+          "trigger": "Genauigkeit / Selbstkorrektur muss langfristig steigen.",
+          "example": "Smart-Sensor mit Selbstkalibrierung und Drift-Korrektur."
+        }
+      }
+    },
+    "5": {
+      "1": {
+        "1": {
+          "title": "Indirekt: bestehende Substanz nutzen",
+          "description": "Verwende eine bereits vorhandene Substanz, statt eine neue einzuführen.",
+          "trigger": "Vermeidung neuer Komponenten gefordert.",
+          "example": "Eigenes Werkstückmaterial als Späne-Bürste verwenden."
+        },
+        "2": {
+          "title": "Substanz erscheint nur, wenn nötig",
+          "description": "Eine Substanz wird nur lokal / temporär erzeugt — nicht dauerhaft vorhanden.",
+          "trigger": "Permanente Existenz der Substanz wäre störend.",
+          "example": "Eis als temporäres Werkzeug, das nach Gebrauch verdunstet."
+        },
+        "3": {
+          "title": "Substanz verschwindet nach Gebrauch",
+          "description": "Verbrauchsstoff, der sich nach getaner Arbeit auflöst, verdunstet oder zerfällt.",
+          "trigger": "Rückstände müssen vermieden werden.",
+          "example": "Auflösbare chirurgische Nähte."
+        },
+        "4": {
+          "title": "Aufblasbare / hohle / schaumartige Strukturen",
+          "description": "Verwende minimal Masse, indem du das System aufblasbar / hohl / schaumförmig konstruierst.",
+          "trigger": "Masse / Volumen muss minimal sein.",
+          "example": "Airbag — riesiges Volumen aus minimalem Materialeinsatz."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Bestehendes Feld der Umgebung nutzen",
+          "description": "Statt ein Feld zu erzeugen, nutze ein bereits vorhandenes (Erdmagnetfeld, Schwerkraft, Sonnenstrahlung).",
+          "trigger": "Energieeinsparung; vorhandenes Feld ist nutzbar.",
+          "example": "Solarzelle nutzt die Sonnenstrahlung der Umgebung."
+        },
+        "2": {
+          "title": "Felder aus Umgebungssubstanzen erzeugen",
+          "description": "Erzeuge ein Feld aus den vorhandenen Substanzen heraus (z.B. Verbrennung, Verdampfung).",
+          "trigger": "Externer Energie-Eintrag soll vermieden werden.",
+          "example": "Selbsterhitzende Mahlzeit — chemische Reaktion erzeugt Wärme aus Reagenzien."
+        },
+        "3": {
+          "title": "Ferromagnetische Substanz + Magnetfeld als Helfer",
+          "description": "Bring im Notfall ein Mini-Su-Field aus Ferromagnetik + Magnetfeld ein.",
+          "trigger": "Fallback, wenn andere Lösungen versagen.",
+          "example": "Magnetischer Späne-Sammler im Bohrwasser."
+        }
+      },
+      "3": {
+        "1": {
+          "title": "Phasenübergang für neue Eigenschaft",
+          "description": "Nutze Phasenübergänge (fest ↔ flüssig ↔ gasförmig) für sprunghafte Eigenschaftsänderungen.",
+          "trigger": "Eine Eigenschaft soll sich plötzlich / drastisch ändern.",
+          "example": "Latentwärmespeicher — Phasenwechsel bei konstanter Temperatur."
+        },
+        "2": {
+          "title": "Doppelte Eigenschaften an Phasenübergängen",
+          "description": "Bei Phasenübergängen liegen oft zwei Eigenschaften gleichzeitig vor (Übergangszone).",
+          "trigger": "Zwei gegensätzliche Eigenschaften gefordert.",
+          "example": "Wasserdampf bei 100 °C: kondensiert UND verdampft — Wärme wird gehalten."
+        },
+        "3": {
+          "title": "Physikalische Effekte beim Phasenwechsel",
+          "description": "Nutze Volumen-, Wärme- oder Leitfähigkeitsänderungen beim Phasenwechsel als Funktionsträger.",
+          "trigger": "Effekt am Phasenwechsel ist nutzbar.",
+          "example": "Bimetall-Schalter nutzt unterschiedliche Wärmeausdehnung."
+        },
+        "4": {
+          "title": "Zweiphasensystem nutzen",
+          "description": "System mit zwei stabilen Phasen — Eigenschaften können durch Phasenwahl gesteuert werden.",
+          "trigger": "Diskrete Zustände gewünscht.",
+          "example": "Schaltbare Optik mit Flüssigkristallphasen."
+        },
+        "5": {
+          "title": "Wechselwirkung zwischen Phasen",
+          "description": "Erzeuge gezielte Wechselwirkungen zwischen koexistierenden Phasen (Verdampfungs-Kühlung etc.).",
+          "trigger": "Phasen sind koexistent; ihre Wechselwirkung ist nutzbar.",
+          "example": "Verdunstungskühlung — Verdampfung entzieht der Flüssigkeit Wärme."
+        }
+      },
+      "4": {
+        "1": {
+          "title": "Selbstgesteuerte Übergänge (Curie, Hysterese, Sättigung)",
+          "description": "Nutze physikalische Effekte, die das System selbst auf Schwellwerte reagieren lassen.",
+          "trigger": "Selbsttätige Reaktion auf Bedingung gewünscht.",
+          "example": "Selbstregelnde Heizung mit Curie-Punkt-Schalter."
+        },
+        "2": {
+          "title": "Effekte kombinieren für stärkere Wirkung",
+          "description": "Mehrere physikalische Effekte in Kette / parallel kombinieren für eine starke Gesamtwirkung.",
+          "trigger": "Einzeleffekt ist zu schwach.",
+          "example": "Piezo-Effekt + Resonanz erzeugt hohe Spannung aus mechanischer Vibration (Energy Harvesting)."
+        }
+      },
+      "5": {
+        "1": {
+          "title": "Selbstbedienung",
+          "description": "Das System erfüllt eine Funktion selbst, ohne externe Eingabe (vgl. IFR-1).",
+          "trigger": "Eingriff von außen soll minimiert werden.",
+          "example": "Selbstreinigender Ofen (Pyrolyse-Modus)."
+        },
+        "2": {
+          "title": "Erzeugung von Teilchen durch Zerlegung",
+          "description": "Gewinne neue Substanzen durch Zerlegen vorhandener (Elektrolyse, Photolyse, Pyrolyse).",
+          "trigger": "Eine spezielle Substanz wird vor Ort benötigt.",
+          "example": "Sauerstoffgewinnung aus Wasser durch Elektrolyse."
+        },
+        "3": {
+          "title": "Erzeugung von Teilchen durch Verbindung",
+          "description": "Vereinige vorhandene Substanzen / Partikel zu einer neuen Substanz mit gewünschten Eigenschaften.",
+          "trigger": "Neue Substanz mit spezifischen Eigenschaften gefordert.",
+          "example": "Pulverbettverfahren — Partikel sintern zu einem Festkörper zusammen."
+        }
+      }
+    }
+  }
+}

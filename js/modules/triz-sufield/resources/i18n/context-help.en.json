@@ -1,0 +1,76 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "s1": {
+      "help": "Substance S1, the tool: the substance that exerts the action, such as a drill. Name or short description as free text; an empty text clears the field. Without S1 or S2 the Su-Field model is incomplete."
+    },
+    "s2": {
+      "help": "Substance S2, the object: the substance being acted upon, such as a workpiece. Name or short description as free text; an empty text clears the field. Without S1 or S2 the Su-Field model is incomplete."
+    },
+    "field": {
+      "help": "The field type through which S1 acts on S2: M (Mechanical), A (Acoustic), T (Thermal), C (Chemical), E (Electric) or Mg (Magnetic). Empty means none is chosen; the model then counts as incomplete. Any other value is rejected."
+    },
+    "link": {
+      "help": "The kind of action between the substances: useful, insufficient (too weak), excessive (too strong), harmful or missing (should act but does not). The diagnosis and the suggested classes of standard solutions follow from it. Empty means none is chosen. Any other value is rejected."
+    },
+    "problemNote": {
+      "help": "The problem note for the Su-Field model: context, boundary conditions, references to other TRIZ tools. Free text; an empty text clears the note."
+    },
+    "notes": {
+      "help": "The notes on the standard solutions: one free text per standard solution, as it stands in the note field of the expanded solution, keyed by its number in the form class.group.number, such as 2.2.5. Only solutions carrying a note appear. The valid numbers are listed with the standard solutions; any other is rejected."
+    },
+    "selected": {
+      "help": "The standard solutions marked as under consideration, keyed by their number in the form class.group.number, each with the value true. In the interface the “considered / applicable” checkbox in the expanded solution; marked solutions carry a star. Only marked ones appear. The valid numbers are listed with the standard solutions; any other is rejected."
+    },
+    "filterMode": {
+      "help": "The list filter of the standard solutions: auto (Suggested classes only) shows only the classes the diagnosis suggests, all (Show all) shows all five. It changes the view only, not the Su-Field model."
+    },
+    "expandedClasses": {
+      "help": "The expanded classes of standard solutions, as numbers from 1 to 5, each at most once. A click on the header of a class expands or collapses it. At first the suggested classes are open. It changes the view only, not the Su-Field model."
+    },
+    "diagnosis": {
+      "help": "The diagnosis of the Su-Field model, derived from S1, S2, field type and action and not stored: the state of the model and the suggested classes of standard solutions."
+    },
+    "standards": {
+      "help": "The 78 standard solutions in five classes, regardless of the list filter, each with number, class, group, title and trigger in the current language. Their number is the one under which a solution's note and mark are kept. The list only comes in full on request; otherwise only its size is shown."
+    }
+  },
+  "actions": {
+    "setStandardNote": {
+      "help": "Writes the note on a standard solution, like typing into the note field of the expanded solution. An empty text removes the note.",
+      "params": {
+        "stdId": "The number of one of the 78 standard solutions in the form class.group.number, such as 2.2.5. Any other is rejected.",
+        "text": "The note on this standard solution; an empty text removes it.",
+        "command": "The command as one object with stdId and text."
+      }
+    },
+    "setStandardSelected": {
+      "help": "Marks a standard solution as under consideration or takes the mark back, like the “considered / applicable” checkbox in the expanded solution.",
+      "params": {
+        "stdId": "The number of one of the 78 standard solutions in the form class.group.number, such as 2.2.5. Any other is rejected.",
+        "selected": "true marks it, false takes the mark back.",
+        "command": "The command as one object with stdId and selected."
+      }
+    },
+    "setExpandedClasses": {
+      "help": "Sets which classes of standard solutions are expanded, like clicks on the class headers. All other classes are collapsed afterwards. It changes the view only, not the Su-Field model.",
+      "params": {
+        "classes": "The numbers of the expanded classes, each 1 to 5 and each at most once; an empty list collapses all. Any other number or a duplicate is rejected.",
+        "command": "The command as one object with classes."
+      }
+    }
+  },
+  "types": {
+    "Diagnosis": {
+      "situation": "The state of the model: partial (S1 or S2 missing), incomplete (no field type, no action chosen or the action is missing), complete-useful (complete, useful action), complete-insufficient (complete, insufficient action), complete-excessive (complete, excessive action) or complete-harmful (complete, harmful action). The “Diagnosis” line shows it as a sentence.",
+      "suggestedClasses": "The numbers of the suggested classes of standard solutions, 1 to 5: class 1 for a missing substance, an incomplete model and a harmful action, class 2 for a useful, insufficient and excessive action, plus class 3 for a useful and class 5 for an excessive and harmful action. The “Diagnosis” line shows them under “Suggested classes”."
+    },
+    "StandardEntry": {
+      "id": "The number of the standard solution in the form class.group.number, such as 2.2.5.",
+      "class": "The class of the standard solution, 1 to 5.",
+      "group": "The group in the form class.group, such as 2.2.",
+      "title": "The title of the standard solution in the current language.",
+      "trigger": "When the standard solution applies, in the current language, as “Apply when” in the expanded solution."
+    }
+  }
+}

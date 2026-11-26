@@ -1,0 +1,591 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Substance-Field Analysis (TRIZ)",
+  "description": "Model the interaction as an S1-S2-field triangle and apply Altshuller's 76 standard solutions",
+  "whenToUse": "When an action between two substances is too weak, too strong, harmful or missing altogether and the matching TRIZ standard solutions are to be found; not to resolve a contradiction between two parameters — that is what the contradiction matrix is for.",
+  "s1Label": "Tool (S1)",
+  "s1Placeholder": "e.g. drill",
+  "s2Label": "Object (S2)",
+  "s2Placeholder": "e.g. workpiece",
+  "fieldLabel": "Field (F)",
+  "linkLabel": "Link type",
+  "selectPlaceholder": "— please select —",
+  "fieldEmpty": "— no field —",
+  "field": {
+    "M": "Mechanical",
+    "A": "Acoustic",
+    "T": "Thermal",
+    "C": "Chemical",
+    "E": "Electric",
+    "Mg": "Magnetic"
+  },
+  "link": {
+    "useful": "useful (works fine)",
+    "insufficient": "insufficient (too weak)",
+    "excessive": "excessive (too strong)",
+    "harmful": "harmful (side effect)",
+    "missing": "missing (should act)"
+  },
+  "diagramAria": "Su-Field model: substance-substance-field triangle",
+  "diagnosisLabel": "Diagnosis",
+  "suggestedClasses": "Suggested classes",
+  "situation": {
+    "partial": "S1 or S2 missing — please name both substances.",
+    "incomplete": "Incomplete model (no field) — a new interaction must be built.",
+    "complete-useful": "Complete, useful — improvement & next-generation jump possible.",
+    "complete-insufficient": "Complete but insufficient — strengthen or dynamise the field.",
+    "complete-excessive": "Complete but excessive — damp the action / self-limit.",
+    "complete-harmful": "Complete but harmful — destroy or neutralise the Su-Field."
+  },
+  "problemNotePlaceholder": "Optional: context, boundary conditions, cross-reference to 9-Windows / IFR / matrix …",
+  "problemNoteLabel": "Problem note",
+  "filterAuto": "Suggested classes only",
+  "filterAll": "Show all",
+  "class": {
+    "1": {
+      "name": "Building / destroying Su-Field models",
+      "description": "For incomplete models (1.1 synthesis) or harmful interactions (1.2 destruction)."
+    },
+    "2": {
+      "name": "Developing Su-Field models",
+      "description": "For complete models with insufficient or improvable action — transition to complex, dynamic or ferromagnetic Su-Fields."
+    },
+    "3": {
+      "name": "Transition to supersystem / microlevel",
+      "description": "When the system reaches its limits — bi-/poly-system or jump to the microlevel."
+    },
+    "4": {
+      "name": "Detection & measurement",
+      "description": "Measurement / control problems — avoid measurement, measure indirectly, ferromagnetic detection."
+    },
+    "5": {
+      "name": "Helper standards",
+      "description": "Simplification and ideality — use existing substances / fields, phase changes, self-controlled transitions."
+    }
+  },
+  "triggerLead": "Apply when",
+  "exampleLead": "Example",
+  "standardNotePlaceholder": "How does this standard apply to the case at hand?",
+  "considered": "considered / applicable",
+  "invariants": {
+    "knownNotes": "A note belongs to one of the 78 standard solutions.",
+    "knownSelections": "A mark belongs to one of the 78 standard solutions.",
+    "validExpandedClasses": "Only the classes 1 to 5 are expanded, each at most once."
+  },
+  "standards": {
+    "1": {
+      "1": {
+        "1": {
+          "title": "Synthesis of a Su-Field model",
+          "description": "When the interaction is weak or unknown and the model is incomplete, add the missing element (substance or field).",
+          "trigger": "Incomplete Su-Field (one of the three elements is missing).",
+          "example": "If two workpieces need to be glued, the field is missing — add heat (thermal field) so the adhesive cures."
+        },
+        "2": {
+          "title": "Inner complex Su-Field",
+          "description": "When the object’s properties block a classical Su-Field, modify S2 internally by adding an auxiliary substance.",
+          "trigger": "S2 resists direct interaction; properties cannot be changed directly.",
+          "example": "Steel that cannot be bent — soften from inside by hydrogen embedding (hydriding)."
+        },
+        "3": {
+          "title": "Outer complex Su-Field",
+          "description": "When S2 cannot be changed internally, attach an auxiliary substance externally (coating, additive).",
+          "trigger": "S2 must not be modified, but a surface coating is acceptable.",
+          "example": "Workpiece with a non-stick coating instead of changing the material."
+        },
+        "4": {
+          "title": "Su-Field synthesis using the environment",
+          "description": "Use a substance already present in the environment as S1 or mediator.",
+          "trigger": "A suitable substance already exists in the environment (air, water, dust).",
+          "example": "Air cushion instead of mechanical rollers for low-friction motion."
+        },
+        "5": {
+          "title": "Su-Field synthesis using modified environment",
+          "description": "If the natural environment alone is insufficient, alter it chemically or physically.",
+          "trigger": "Environment is available but too weak or unsuitable.",
+          "example": "Replace the atmosphere with inert gas (argon) so the workpiece does not oxidise."
+        },
+        "6": {
+          "title": "Maximum action where prohibited",
+          "description": "When maximum field action is required but the field must not act on S2 directly, act on an intermediate carrier.",
+          "trigger": "Direct maximum action would damage S2.",
+          "example": "High-frequency welding via an intermediate carrier rather than directly on the sensitive part."
+        },
+        "7": {
+          "title": "Selective field action",
+          "description": "When the field should act with maximum effect in some regions and minimum in others, use a protective or modifying substance.",
+          "trigger": "Inhomogeneous effect on S2 is required (e.g. local hardening).",
+          "example": "Local induction hardening — field acts only on the induced region; the rest stays soft."
+        },
+        "8": {
+          "title": "Ferromagnetic substance + magnetic field",
+          "description": "Use a ferromagnetic substance and a magnetic field when ordinary fields cannot do the job.",
+          "trigger": "Classical fields are insufficient; magnetic manipulation is possible.",
+          "example": "Iron powder + magnetic field as a shape-adaptive tool."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Introducing a third substance to neutralise",
+          "description": "When two substances interact harmfully, introduce a third substance that separates or neutralises them.",
+          "trigger": "Harmful interaction between S1 and S2 is present.",
+          "example": "Lubrication film between rubbing surfaces reduces wear."
+        },
+        "2": {
+          "title": "Modification of one substance",
+          "description": "Modify one of the two substances so the harmful interaction disappears.",
+          "trigger": "Harmful interaction; modification of S1 or S2 is acceptable.",
+          "example": "Anti-reflective coating on a lens — harmful reflection disappears."
+        },
+        "3": {
+          "title": "Removing or diverting the harmful field",
+          "description": "When a field causes a harmful effect, divert or shield it.",
+          "trigger": "Harmful field between S1 and S2.",
+          "example": "Faraday cage shields against electromagnetic interference."
+        },
+        "4": {
+          "title": "Counter-field for neutralisation",
+          "description": "Generate a counter-field that cancels the harmful field.",
+          "trigger": "Harmful field; generating a counter-field is possible.",
+          "example": "Active noise cancellation (ANC) — counter-sound nulls the noise."
+        },
+        "5": {
+          "title": "Absorbing the harmful interaction via an auxiliary substance",
+          "description": "Introduce a substance that absorbs the harmful interaction and renders it harmless.",
+          "trigger": "Harmful effect should be absorbed (not just diverted).",
+          "example": "Activated-carbon filter binds pollutants in exhaust gas."
+        }
+      }
+    },
+    "2": {
+      "1": {
+        "1": {
+          "title": "Transition to a chain Su-Field",
+          "description": "When a simple Su-Field is insufficient, chain several Su-Fields (S1 acts on S2 via S3).",
+          "trigger": "Simple model too weak; an intermediate step is feasible.",
+          "example": "Lever transmission: force → intermediate carrier → workpiece."
+        },
+        "2": {
+          "title": "Transition to a double Su-Field",
+          "description": "Use a second substance or a second field in parallel to amplify or specialise the action.",
+          "trigger": "One action is insufficient; a complementary second action is needed.",
+          "example": "Grinding wheel + coolant: mechanical + thermal field in parallel."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "From uncontrolled to controlled field",
+          "description": "Replace a hard-to-control field with a more controllable one (often electromagnetic).",
+          "trigger": "Mechanical / chemical field is hard to meter.",
+          "example": "Mechanical brake → electromagnetic eddy-current brake."
+        },
+        "2": {
+          "title": "Fragmenting a substance",
+          "description": "Break a solid substance into smaller parts (powder, particles) for finer control.",
+          "trigger": "Control over S1 or S2 needs to be more fine-grained.",
+          "example": "Powder coating instead of a solid coating block — finer thickness control."
+        },
+        "3": {
+          "title": "Transition to porous structure",
+          "description": "Make a substance porous so it can hold fields and other substances.",
+          "trigger": "Substance needs to buffer materials / heat / fields.",
+          "example": "Porous sintered body as a heat store."
+        },
+        "4": {
+          "title": "Dynamisation",
+          "description": "Switch from a static to a moving system (rigid → jointed → elastic → fluid → field).",
+          "trigger": "Static solution hits limits; adaptation to conditions is needed.",
+          "example": "Rigid structure → jointed → hydraulic → electromagnet."
+        },
+        "5": {
+          "title": "From constant to variable / pulsed field",
+          "description": "Replace constant action with time-varying, pulsed or modulated action.",
+          "trigger": "Constant action wastes energy or damages S2.",
+          "example": "Pulsed instead of continuous laser for clean machining."
+        },
+        "6": {
+          "title": "Structuring the field or substance",
+          "description": "Add structure to the field or substance — spatial (pattern) or temporal (sequence).",
+          "trigger": "Homogeneous action is suboptimal; structure raises efficiency.",
+          "example": "Structured laser beams for holography or pattern generation."
+        }
+      },
+      "3": {
+        "1": {
+          "title": "Matching natural frequency",
+          "description": "Tune the field frequency to the natural / resonance frequency of the object.",
+          "trigger": "Energy should couple efficiently.",
+          "example": "Ultrasonic cleaning: frequency tuned to cavitation bubbles."
+        },
+        "2": {
+          "title": "Multiple frequencies for multiple tasks",
+          "description": "If the system has several tasks, use different frequencies for each.",
+          "trigger": "Multiple independent tasks should be served by one carrier.",
+          "example": "Multiplexing — different frequency bands carry different signals in parallel."
+        },
+        "3": {
+          "title": "Use pauses for other actions",
+          "description": "During pauses of one action, other actions can run — no conflicts, shared resources.",
+          "trigger": "Action does not run continuously; pauses are usable.",
+          "example": "MRI sequences — different pulses between acquisition windows."
+        },
+        "4": {
+          "title": "Matching an uncontrollable rhythm",
+          "description": "When a rhythm cannot be controlled, align the system to its natural cadence.",
+          "trigger": "External / natural rhythm is given (time of day, machine cycle).",
+          "example": "Energy storage matches the natural pulsation of the PV plant."
+        },
+        "5": {
+          "title": "Using resonance",
+          "description": "Deliberately drive a resonance to maximise effect at minimal input energy.",
+          "trigger": "Energy efficiency is critical; system can resonate.",
+          "example": "Vibratory conveyor exploits resonance for low energy use."
+        }
+      },
+      "4": {
+        "1": {
+          "title": "Ferromagnetic material + magnetic field",
+          "description": "Introduce ferromagnetic particles or parts controlled via a magnetic field.",
+          "trigger": "Controllability via classical fields is insufficient.",
+          "example": "Magneto-rheological fluid as adaptive shock-absorber fill."
+        },
+        "2": {
+          "title": "Magnetic fluid (ferrofluid)",
+          "description": "Use a liquid with suspended ferromagnetic particles for shape-free, field-controlled action.",
+          "trigger": "Shape / position must be free and field-controllable.",
+          "example": "Ferrofluid as a bearing seal in hard-disk drives."
+        },
+        "3": {
+          "title": "Capillary porous structures with magnetic liquid",
+          "description": "Combine magnetic liquid with capillary structures for directed transport.",
+          "trigger": "Liquid transport must be directional and field-controlled.",
+          "example": "Magnetically steered microfluidics in lab-on-a-chip devices."
+        },
+        "4": {
+          "title": "Complex ferromagnetic Su-Field",
+          "description": "Build a complex model with several ferromagnetic components.",
+          "trigger": "Simple ferromagnetic model is insufficient.",
+          "example": "Stacked magnetisation to create spatial patterns."
+        },
+        "5": {
+          "title": "Additives in the environment",
+          "description": "Distribute ferromagnetic additives into the environment to achieve the effect there.",
+          "trigger": "Direct intervention on the workpiece is hard.",
+          "example": "Magnetite tracers in a flow make the volume rate measurable."
+        },
+        "6": {
+          "title": "Adding magnetic substance to the environment",
+          "description": "When the environment itself is non-magnetic, make it magnetic.",
+          "trigger": "Environment can be modified; magnetic separation is desired.",
+          "example": "Magnetite enrichment of sludge for magnetic phase separation."
+        },
+        "7": {
+          "title": "Using natural ferromagnetism",
+          "description": "Check whether the environment already contains ferromagnetic substances (iron, steel).",
+          "trigger": "Industrial environment with metallic components.",
+          "example": "Magnetic alignment of iron particles in lubricant for wear monitoring."
+        },
+        "8": {
+          "title": "Using physical effects (Curie point, hysteresis)",
+          "description": "Use physical effects such as the Curie temperature or magnetic hysteresis as a self-controlled switch.",
+          "trigger": "Self-acting control at a threshold is needed.",
+          "example": "Self-regulating heater cartridge: material loses its magnetism above the Curie point, reducing current."
+        },
+        "9": {
+          "title": "Dynamising the ferromagnetic Su-Field",
+          "description": "Move from a static ferromagnetic construction to a moving / variable one.",
+          "trigger": "Static magnetic field insufficient; variability improves effect.",
+          "example": "Rotating magnet creates a rotating field for contactless motors."
+        },
+        "10": {
+          "title": "Structuring the magnetic field",
+          "description": "Create deliberate spatial structures in the magnetic field (inhomogeneities, gradients).",
+          "trigger": "Spatially differentiated action desired.",
+          "example": "Magnetic gradient fields in MRI for spatial encoding."
+        },
+        "11": {
+          "title": "Rhythm matching in ferromagnetic systems",
+          "description": "Tune magnetic pulse frequencies to the natural frequency of the ferromagnetic system.",
+          "trigger": "Efficiency of the magnetic interaction must be maximised.",
+          "example": "Resonant wireless charging: optimal frequency for maximum energy transfer."
+        },
+        "12": {
+          "title": "Electric instead of magnetic field",
+          "description": "When magnetic fields fail, replace them with an electric field or combine both.",
+          "trigger": "Magnetic solution fails (e.g. non-ferromagnetic material).",
+          "example": "Electrostatic powder coating instead of magnetic attraction."
+        }
+      }
+    },
+    "3": {
+      "1": {
+        "1": {
+          "title": "Bi-system: pair two identical systems",
+          "description": "Pair two identical systems for synergy.",
+          "trigger": "Single system saturated; doubling brings new properties.",
+          "example": "Double cutter — two parallel blades create finer cuts."
+        },
+        "2": {
+          "title": "Poly-system: many identical systems",
+          "description": "Combine many identical systems into a poly-system (array).",
+          "trigger": "Massive parallelisation possible; individual unit insignificant.",
+          "example": "LED matrix as headlight instead of a single lamp."
+        },
+        "3": {
+          "title": "Differentiating bi- / poly-systems",
+          "description": "Bi- / poly-systems become richer when their elements have differentiated (not identical) properties.",
+          "trigger": "Bi- / poly-system with identical units saturates.",
+          "example": "Stereo instead of mono — two speakers carrying different signals."
+        },
+        "4": {
+          "title": "Combining opposite properties",
+          "description": "Combine systems with opposite properties (hot + cold, hard + soft, black + white).",
+          "trigger": "Conflict between requirements.",
+          "example": "Sandwich part with a hard outer and a soft inner layer."
+        },
+        "5": {
+          "title": "Folding — bi-system back into mono",
+          "description": "When the bi-system has done its job, integrate the functionality into a single system.",
+          "trigger": "Bi-system over-dimensioned; integration into one system possible.",
+          "example": "Reversible Phillips + slot screwdriver bit head."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Transition to the microlevel",
+          "description": "Replace macroscopic elements with microscopic / molecular / field solutions.",
+          "trigger": "Macro system saturated; micro solution available.",
+          "example": "Microfluidics replacing pump-hose systems for small flow rates."
+        }
+      }
+    },
+    "4": {
+      "1": {
+        "1": {
+          "title": "Avoid measurement by changing the system",
+          "description": "When something is hard to measure, change the system so measurement is no longer required.",
+          "trigger": "Measurement is expensive or unreliable.",
+          "example": "Self-diagnostic sensors with threshold switches instead of measure + logic."
+        },
+        "2": {
+          "title": "Use copies / models",
+          "description": "Rather than measuring the original, measure a simpler model or copy.",
+          "trigger": "Original system too complex or inaccessible.",
+          "example": "Wind-tunnel model instead of full-scale aircraft."
+        },
+        "3": {
+          "title": "Measure successive changes",
+          "description": "Measure relative changes instead of absolute values — often more accurate and simpler.",
+          "trigger": "Absolute measurement is hard; relative values are sufficient.",
+          "example": "Comparator measurement against a reference (difference, not absolute)."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Synthesise an indirect measuring Su-Field",
+          "description": "When an effect cannot be measured directly, couple it to an easily measurable field.",
+          "trigger": "Effect is not directly measurable.",
+          "example": "Pressure measurement via membrane deformation (mechanical → electrical)."
+        },
+        "2": {
+          "title": "Inner complex measuring Su-Field",
+          "description": "Modify the object so it itself emits information (e.g. fluoresces under load).",
+          "trigger": "Object may be modified.",
+          "example": "Stress-indicating paints (tribo-luminescence) for load analysis."
+        },
+        "3": {
+          "title": "Outer complex measuring Su-Field",
+          "description": "Attach a measurement marker externally (coating, applied sensor).",
+          "trigger": "Object may not be internally modified.",
+          "example": "Strain-gauge tape sensor."
+        },
+        "4": {
+          "title": "Use the environment as a measurement carrier",
+          "description": "Let the environment around the object carry the information (shadow, distortion, echo).",
+          "trigger": "Non-contact measurement desired.",
+          "example": "Radar measurement — the environment’s echo describes the object."
+        }
+      },
+      "3": {
+        "1": {
+          "title": "Use physical effects for measurement",
+          "description": "Use physical effects (piezo, Doppler, Hall) to convert a quantity into an electrical signal.",
+          "trigger": "Mechanical / chemical measurement should be electrified.",
+          "example": "Doppler effect for speed measurement (radar, ultrasonic probe)."
+        },
+        "2": {
+          "title": "Use resonance for measurement",
+          "description": "Natural frequency or resonance of a part reveals its state.",
+          "trigger": "State correlates with natural frequency.",
+          "example": "Tuning-fork frequency measures liquid level / density."
+        },
+        "3": {
+          "title": "Resonance of an associated object",
+          "description": "When the main object is hard to measure, measure an associated object with coupled resonance.",
+          "trigger": "Direct measurement on S2 hard; associated object available.",
+          "example": "Cavitation bubble resonance measures ultrasound intensity indirectly."
+        }
+      },
+      "4": {
+        "1": {
+          "title": "Magnetic field + ferromagnetism for measurement",
+          "description": "Use magnetic fields and ferromagnetic materials as the measuring element.",
+          "trigger": "Non-contact / wear-free measurement desired.",
+          "example": "Hall sensor measures current via its induced magnetic field."
+        },
+        "2": {
+          "title": "Magnetically marked indicators",
+          "description": "Attach a ferromagnetic marker to the part of interest and detect it.",
+          "trigger": "Position / motion of a part must be measured contactlessly.",
+          "example": "Speed measurement with a toothed wheel + Hall sensor."
+        },
+        "3": {
+          "title": "Magnetic substance + Curie point for temperature",
+          "description": "Use the Curie point of a ferromagnetic material as a self-acting temperature threshold.",
+          "trigger": "Temperature switching at a precise threshold desired.",
+          "example": "Magnet switch that drops out above the Curie temperature."
+        },
+        "4": {
+          "title": "Structuring in magnetic measurement",
+          "description": "Create magnetic gradients / patterns to encode spatial information.",
+          "trigger": "Spatial resolution of the measurement is required.",
+          "example": "MRI — gradient fields encode location in frequency."
+        },
+        "5": {
+          "title": "Rhythm matching in magnetic measurement",
+          "description": "Tune measurement pulses to the inherent dynamics of the magnetic system (Larmor frequency etc.).",
+          "trigger": "Efficiency / sensitivity of measurement must be maximised.",
+          "example": "Larmor resonance in NMR — pulse sequence matches the natural frequency of nuclear spins."
+        }
+      },
+      "5": {
+        "1": {
+          "title": "Transition bi → poly in measurement",
+          "description": "Multiple sensors in parallel — averaging, error correction, spatial coverage.",
+          "trigger": "Single sensor is unreliable or one-dimensional.",
+          "example": "Sensor array (multiple microphones, redundant Hall sensors)."
+        },
+        "2": {
+          "title": "Evolution of measurement systems",
+          "description": "Measurement systems evolve from simple → complex → intelligent (auto-calibrating, learning).",
+          "trigger": "Accuracy / self-correction must improve long-term.",
+          "example": "Smart sensor with self-calibration and drift compensation."
+        }
+      }
+    },
+    "5": {
+      "1": {
+        "1": {
+          "title": "Indirect: use an existing substance",
+          "description": "Use a substance already present rather than introducing a new one.",
+          "trigger": "Avoid new components.",
+          "example": "Use the workpiece’s own chips as a brush."
+        },
+        "2": {
+          "title": "Substance appears only when needed",
+          "description": "A substance is generated only locally / temporarily — not present permanently.",
+          "trigger": "Permanent existence of the substance would be problematic.",
+          "example": "Ice as a temporary tool that disappears after use."
+        },
+        "3": {
+          "title": "Substance disappears after use",
+          "description": "Consumable that dissolves, evaporates or degrades after doing its job.",
+          "trigger": "Residues must be avoided.",
+          "example": "Dissolvable surgical sutures."
+        },
+        "4": {
+          "title": "Inflatable / hollow / foam structures",
+          "description": "Use minimum mass by building the system inflatable / hollow / foamed.",
+          "trigger": "Mass / volume must be minimal.",
+          "example": "Airbag — huge volume from minimal material."
+        }
+      },
+      "2": {
+        "1": {
+          "title": "Use an existing field from the environment",
+          "description": "Rather than generating a field, use one already present (Earth’s magnetism, gravity, solar radiation).",
+          "trigger": "Energy saving; ambient field is usable.",
+          "example": "Solar cell uses ambient sunlight."
+        },
+        "2": {
+          "title": "Generate fields from environmental substances",
+          "description": "Generate a field from existing substances (combustion, evaporation).",
+          "trigger": "External energy input should be avoided.",
+          "example": "Self-heating meal — chemical reaction generates heat from reagents."
+        },
+        "3": {
+          "title": "Ferromagnetic substance + magnetic field helper",
+          "description": "As a fallback, drop in a mini-Su-Field of ferromagnet + magnetic field.",
+          "trigger": "Fallback when other solutions fail.",
+          "example": "Magnetic chip collector in drilling coolant."
+        }
+      },
+      "3": {
+        "1": {
+          "title": "Phase transition for new properties",
+          "description": "Use phase changes (solid ↔ liquid ↔ gas) for stepwise property changes.",
+          "trigger": "A property should change suddenly / drastically.",
+          "example": "Latent heat storage — phase change at constant temperature."
+        },
+        "2": {
+          "title": "Dual properties at phase transitions",
+          "description": "Phase transitions often combine two properties (transition zone).",
+          "trigger": "Two opposing properties required.",
+          "example": "Water vapour at 100 °C: condenses AND evaporates — heat is held."
+        },
+        "3": {
+          "title": "Physical effects at phase transitions",
+          "description": "Use volume, heat or conductivity changes at phase transitions as function carriers.",
+          "trigger": "Effect at the phase change is usable.",
+          "example": "Bimetallic switch uses differential thermal expansion."
+        },
+        "4": {
+          "title": "Two-phase system",
+          "description": "System with two stable phases — properties controlled by phase choice.",
+          "trigger": "Discrete states desired.",
+          "example": "Switchable optics with liquid-crystal phases."
+        },
+        "5": {
+          "title": "Interaction between phases",
+          "description": "Engineer deliberate interactions between coexisting phases (evaporative cooling etc.).",
+          "trigger": "Phases coexist; their interaction is usable.",
+          "example": "Evaporative cooling — vaporisation removes heat from the liquid."
+        }
+      },
+      "4": {
+        "1": {
+          "title": "Self-controlled transitions (Curie, hysteresis, saturation)",
+          "description": "Use physical effects that let the system respond to thresholds on its own.",
+          "trigger": "Self-acting response to a condition desired.",
+          "example": "Self-regulating heater with Curie-point switch."
+        },
+        "2": {
+          "title": "Combine effects for stronger action",
+          "description": "Combine several physical effects in series / parallel for a strong total effect.",
+          "trigger": "Single effect is too weak.",
+          "example": "Piezo effect + resonance generates high voltage from mechanical vibration (energy harvesting)."
+        }
+      },
+      "5": {
+        "1": {
+          "title": "Self-service",
+          "description": "The system performs a function on its own, with no external input (cf. IFR-1).",
+          "trigger": "External intervention should be minimised.",
+          "example": "Self-cleaning oven (pyrolysis mode)."
+        },
+        "2": {
+          "title": "Particle generation by decomposition",
+          "description": "Generate new substances by decomposing existing ones (electrolysis, photolysis, pyrolysis).",
+          "trigger": "A specific substance is needed locally.",
+          "example": "Oxygen produced from water by electrolysis."
+        },
+        "3": {
+          "title": "Particle generation by combination",
+          "description": "Combine existing substances / particles into a new substance with desired properties.",
+          "trigger": "New substance with specific properties required.",
+          "example": "Powder-bed processes — particles sinter into a solid."
+        }
+      }
+    }
+  }
+}
