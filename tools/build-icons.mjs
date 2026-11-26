@@ -98,10 +98,19 @@ const GLYPH_EXEMPT = [
   'js/modules/triz-sufield/resources/view.html',
 ];
 
+/**
+ * `js/chunks/` ist Ausgabe von `tools/build/build.mjs` (gitignored): die
+ * Vorlagen dort sind Kopien der Modulvorlagen, die der Scan ohnehin an der
+ * Quelle liest. Gescannt fände er die Kopie einer freigestellten Vorlage
+ * (`GLYPH_EXEMPT`) unter ihrem Ausgabepfad als neuen Fund.
+ */
+const SKIP_DIR = join(APP, 'js', 'chunks');
+
 function walk(dir, ext) {
   const out = [];
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
+    if (path === SKIP_DIR) continue;
     if (statSync(path).isDirectory()) { out.push(...walk(path, ext)); continue; }
     if (!ext.test(entry) || SKIP_FILE.test(entry)) continue;
     out.push(path);
