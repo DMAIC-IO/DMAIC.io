@@ -6657,9 +6657,9 @@
   },
   "agent": {
     "backgroundChange": {
-      "one": "Agent hat {module} „{name}“ geändert",
-      "oneUnnamed": "Agent hat {module} geändert",
-      "many": "Agent hat {n} Instanzen geändert",
+      "one": "{module} „{name}“ wurde geändert",
+      "oneUnnamed": "{module} wurde geändert",
+      "many": "{n} Instanzen wurden geändert",
       "show": "Anzeigen"
     },
     "errors": {
