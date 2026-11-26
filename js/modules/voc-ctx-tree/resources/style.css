@@ -416,6 +416,14 @@
 .vct__settings-panel .dmike-chart-ed-color-pair label {
   font-size: var(--font-size-xs);
   min-width: 0;
+  overflow: visible;
+}
+
+/* Die Auslassung sitzt am Text, nicht am Label: das Label trägt den
+   Hilfe-Anker (`context-help-anchor--overlay`, der Kreis liegt auf dem
+   Textende), der sonst mit abgeschnitten würde. */
+.vct__color-label-text {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
