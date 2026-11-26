@@ -5,6 +5,8 @@
  * die Parameter der Kommandos, dazu das Eingabefeld einer neuen Maßnahme
  * (`actionText`), das kein Parameter ist. Die Maßnahmen-Liste ändern die
  * Knöpfe des Formulars (viewmodel.js `addDraftAction`/`removeDraftAction`).
+ * Steht beim Speichern noch Text im Maßnahmenfeld, hängt `toParams` ihn als
+ * offene Maßnahme an — im selben Kommando, also ein Verlaufsschritt.
  */
 import { defineForm, text, oneOf, list, object, boolean } from '../../../core/model.js';
 
@@ -24,7 +26,9 @@ export const LessonForm = defineForm({
   fromParams(p) {
     return { ...p, actionText: '' };
   },
-  toParams({ actionText: _draft, ...p }) {
-    return p;
+  toParams({ actionText, ...p }) {
+    const draft = String(actionText ?? '').trim();
+    if (draft === '') return p;
+    return { ...p, actions: [...(p.actions ?? []), { text: draft, done: false }] };
   },
 });

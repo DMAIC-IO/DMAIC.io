@@ -9,6 +9,7 @@ import {
   CATEGORIES, IMPACTS, statsOf, openHighImpact, shownLessons, toLesson, lastPhase,
 } from '../../../js/modules/lessons-learned/domain/lessons.js';
 import { State } from '../../../js/modules/lessons-learned/domain/model.js';
+import { LessonForm } from '../../../js/modules/lessons-learned/viewmodel/forms.js';
 
 /** @param {object} l */
 const lesson = (l) => ({
@@ -113,5 +114,20 @@ suite('lessons-learned lessons — toLesson', () => {
   test('ohne Phase: letzte Phase des Standardzyklus; Zahl-Phase ebenso', () => {
     assertEqual(toLesson({}).phase, 'control');
     assertEqual(toLesson({ phase: 3 }).phase, 'control');
+  });
+});
+
+suite('lessons-learned Formular — getippte Maßnahme beim Speichern', () => {
+  const base = { title: 'T', actions: [{ text: 'alt', done: true }] };
+  test('Text im Maßnahmenfeld wird als offene Maßnahme angehängt (getrimmt)', () => {
+    assertDeepEqual(LessonForm.toParams({ ...base, actionText: '  neu  ' }, {}).actions,
+      [{ text: 'alt', done: true }, { text: 'neu', done: false }]);
+  });
+  test('leeres oder nur Leerzeichen: Maßnahmen wie gehabt, actionText kein Parameter', () => {
+    for (const actionText of ['', '   ']) {
+      const p = LessonForm.toParams({ ...base, actionText }, {});
+      assertDeepEqual(p.actions, [{ text: 'alt', done: true }]);
+      assertEqual(Object.hasOwn(p, 'actionText'), false);
+    }
   });
 });

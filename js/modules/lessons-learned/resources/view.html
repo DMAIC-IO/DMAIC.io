@@ -48,7 +48,7 @@
           x-model="state.search" data-help-key="">
       </div>
       <!-- Optionsfelder: Pfeiltasten wählen den Nachbarn, die Beschriftung sieht aus wie bisher der Chip. -->
-      <div class="ll__filters" role="radiogroup" x-set="state.filter" :aria-label="t('filterAll')"
+      <div class="ll__filters" role="radiogroup" x-set="state.filter" :aria-label="t('fieldCategory')"
         data-help-key="modules.lessons-learned.state.filter.help">
         <label class="ll__filter-chip" data-help-key="" :class="chipClass('all')" data-filter="all"><input type="radio" class="dmike-sr-only" value="all"><span x-text="t('filterAll')"></span></label>
         <label class="ll__filter-chip" data-help-key="" :class="chipClass('success')" data-filter="success"><input type="radio" class="dmike-sr-only" value="success"><span x-text="t('filterSuccess')"></span></label>

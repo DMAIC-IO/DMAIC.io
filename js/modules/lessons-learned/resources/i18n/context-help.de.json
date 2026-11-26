@@ -10,13 +10,13 @@
         "help": "Der Titel der Erfahrung, er steht als Überschrift auf der Karte. Er ist die einzige Pflichtangabe; Leerzeichen am Rand werden entfernt."
       },
       "category": {
-        "help": "Die Art der Erfahrung: Erfolg (success), Problem (problem) oder Verbesserung (improve); ohne Angabe Erfolg. Danach richten sich der Farbpunkt an der Karte und die Filter über der Liste. Ein unbekannter Wert aus einem Import wird zu Erfolg."
+        "help": "Die Art der Erfahrung: Erfolg, Problem oder Verbesserung; ohne Angabe Erfolg. Danach richten sich der Farbpunkt an der Karte und die Filter über der Liste. Ein unbekannter Wert aus einem Import wird zu Erfolg."
       },
       "phase": {
         "help": "Die Phase des Zyklus, zu der die Erfahrung gehört; neu angelegt nur eine Phase des aktiven Zyklus, ohne Angabe dessen letzte. Sie steht als Marke auf der Karte. Aus einem Import oder einem älteren Projekt kann auch die Phase eines anderen Zyklus stammen; sie bleibt stehen, bis jemand die Erfahrung im Formular ändert und speichert."
       },
       "impact": {
-        "help": "Die Auswirkung der Erfahrung auf das Projekt in drei Stufen: Hoch (high), Mittel (medium) oder Niedrig (low); ohne Angabe Mittel. Sie steht als Marke auf der Karte. Ein unbekannter Wert aus einem Import wird zu Mittel."
+        "help": "Die Auswirkung der Erfahrung auf das Projekt in drei Stufen: Hoch, Mittel oder Niedrig; ohne Angabe Mittel. Sie steht als Marke auf der Karte. Ein unbekannter Wert aus einem Import wird zu Mittel."
       },
       "owner": {
         "help": "Wer für die Erfahrung verantwortlich ist, als freier Text. Darf leer bleiben."
@@ -76,7 +76,7 @@
       }
     },
     "updateLesson": {
-      "help": "Ändert die genannten Angaben einer Erfahrung; alle übrigen bleiben stehen. Die Zeit der letzten Änderung setzt die App.",
+      "help": "Öffnet die Erfahrung im Formular. Was Sie dort ändern, übernimmt „Speichern“; alle übrigen Angaben bleiben stehen. Die Zeit der letzten Änderung setzt die App.",
       "params": {
         "lessonId": "Die Kennung der Erfahrung, wie sie unter lessons steht. Eine unbekannte Kennung wird abgelehnt.",
         "title": "Der neue Titel; Leerzeichen am Rand fallen weg. Ein leerer Titel wird abgelehnt und lässt alles stehen.",
@@ -126,7 +126,7 @@
     "importLessons": {
       "help": "Stellt Erfahrungen aus einer Exportdatei dieses Moduls wieder her, mit ihren Kennungen und Zeitpunkten, und hängt sie hinten an. Eine Kennung, die schon vergeben ist, wird durch eine neue ersetzt. Liefert die Zahl der übernommenen Erfahrungen.",
       "params": {
-        "json": "Der Text der Exportdatei: eine JSON-Liste von Erfahrungen. Einträge, die keine Objekte sind, entfallen; unbekannte Kategorien und Wirkungen werden zu success und medium. Ein Text, der keine solche Liste ist, wird abgelehnt und lässt alles stehen.",
+        "json": "Der Text der Exportdatei: eine JSON-Liste von Erfahrungen. Einträge, die keine Objekte sind, entfallen; unbekannte Kategorien und Wirkungen werden zu success und medium. Ein Text, der keine solche Liste ist, wird abgelehnt und lässt alles stehen. Phase und Titel bleiben, wie sie in der Datei stehen.",
         "command": "Das Kommando als ein Objekt mit json."
       }
     }
@@ -134,7 +134,7 @@
   "forms": {
     "LessonForm": {
       "actionText": {
-        "help": "Eine neue Maßnahme: Text eingeben und mit Plus oder der Eingabetaste anhängen. Gespeichert wird sie erst mit der Erfahrung."
+        "help": "Eine neue Maßnahme: Text eingeben und mit Plus oder der Eingabetaste anhängen. Gespeichert wird sie erst mit der Erfahrung. Steht beim Speichern noch Text im Feld, wird er als offene Maßnahme mitgespeichert."
       }
     }
   },

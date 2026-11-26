@@ -34,7 +34,7 @@
   "fieldTitle": "Title",
   "fieldTitlePlaceholder": "Short, concise description",
   "fieldCategory": "Category",
-  "fieldPhase": "DMAIC Phase",
+  "fieldPhase": "Phase",
   "fieldImpact": "Impact",
   "fieldOwner": "Owner",
   "fieldOwnerPlaceholder": "Name / Role",

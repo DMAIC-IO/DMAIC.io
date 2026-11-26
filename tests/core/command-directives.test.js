@@ -62,6 +62,13 @@ const TagsForm = defineForm({
   toParams({ text: t, extra }) { return { text: [t, ...extra].join(' ').trim() }; },
 });
 
+/** Wie TagsForm, aber die Liste startet mit den Wörtern nach dem ersten. */
+const SplitForm = defineForm({
+  fields: { text: text(), extra: list(text()) },
+  fromParams({ text: t = '' }) { const [first = '', ...rest] = t.split(' ').filter(Boolean); return { text: first, extra: rest }; },
+  toParams({ text: t, extra }) { return { text: [t, ...extra].join(' ').trim() }; },
+});
+
 /** Viewmodel-Kommandos wie aus createModule({ commands }): `this` ist die Komponente. */
 const VM_COMMANDS = {
   pickType: command({
@@ -142,7 +149,7 @@ function build(html, { confirmAnswer = true, columns = {} } = {}) {
     }
     Object.defineProperty(comp, '_ui', {
       enumerable: false,
-      get() { return { model: this.model, notify: (...a) => notified.push(a), dialog, i18n: I18N, moduleId: 'ct', forms: { ItemForm, TagsForm }, vmCommands: VM_COMMANDS, component: this }; },
+      get() { return { model: this.model, notify: (...a) => notified.push(a), dialog, i18n: I18N, moduleId: 'ct', forms: { ItemForm, TagsForm, SplitForm }, vmCommands: VM_COMMANDS, component: this }; },
     });
     return comp;
   });
@@ -531,6 +538,34 @@ suite('x-command-form', () => {
     await flush();
     assertEqual(dialog.open, null);
     assertEqual(model.columns.a[0], 'eins');
+  });
+
+  test('Formular-Schema: Liste im Dialog geleert → speichert', async () => {
+    const { $, dialog, model } = await mount(`
+      <button class="edit" x-dialog="splitForm" data-dialog-command="setItem" data-arg-col="a" data-arg-idx="0">e</button>
+      <div hidden><form x-ref="splitForm" x-command-form="setItem" data-command-form-schema="SplitForm"><input x-param="text"></form></div>`,
+    { columns: { a: ['eins zwei'] } });
+    $('.edit').click();
+    Alpine.$data(dialog.open.body.querySelector('input')).form.extra.splice(0);
+    dialog.open.api.confirm();
+    await flush();
+    assertEqual(model.columns.a[0], 'eins');
+    assertEqual(dialog.open, null);
+  });
+
+  test('Formular-Schema: Listeneintrag angehängt und wieder entfernt → wie Abbrechen', async () => {
+    const { $, dialog, model } = await mount(`
+      <button class="edit" x-dialog="splitForm" data-dialog-command="setItem" data-arg-col="a" data-arg-idx="0">e</button>
+      <div hidden><form x-ref="splitForm" x-command-form="setItem" data-command-form-schema="SplitForm"><input x-param="text"></form></div>`,
+    { columns: { a: ['eins zwei'] } });
+    $('.edit').click();
+    const { extra } = Alpine.$data(dialog.open.body.querySelector('input')).form;
+    extra.push('drei');
+    extra.pop();
+    dialog.open.api.confirm();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertEqual(model.columns.a[0], 'eins zwei');
   });
 
   test('Anker am Formular aus dem Kommando', async () => {

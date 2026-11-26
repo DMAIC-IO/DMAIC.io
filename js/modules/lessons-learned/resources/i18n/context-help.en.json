@@ -10,13 +10,13 @@
         "help": "The title of the lesson, shown as the heading on the card. It is the only required entry; spaces at the edges are removed."
       },
       "category": {
-        "help": "The kind of lesson: Success (success), Problem (problem) or Improvement (improve); Success when not given. The coloured dot on the card and the filters above the list follow it. An unknown value from an import becomes Success."
+        "help": "The kind of lesson: Success, Problem or Improvement; Success when not given. The coloured dot on the card and the filters above the list follow it. An unknown value from an import becomes Success."
       },
       "phase": {
         "help": "The phase of the cycle the lesson belongs to; a new lesson takes only a phase of the active cycle, its last one when not given. It is shown as a tag on the card. An import or an older project can also bring the phase of another cycle; it stays until someone changes the lesson in the form and saves it."
       },
       "impact": {
-        "help": "The effect of the lesson on the project in three levels: High (high), Medium (medium) or Low (low); Medium when not given. It is shown as a tag on the card. An unknown value from an import becomes Medium."
+        "help": "The effect of the lesson on the project in three levels: High, Medium or Low; Medium when not given. It is shown as a tag on the card. An unknown value from an import becomes Medium."
       },
       "owner": {
         "help": "Who is responsible for the lesson, as free text. May stay empty."
@@ -76,7 +76,7 @@
       }
     },
     "updateLesson": {
-      "help": "Changes the named entries of a lesson; all others stay as they are. The app sets the time of the last change.",
+      "help": "Opens the lesson in the form. What you change there is applied by “Save”; all other entries stay as they are. The app sets the time of the last change.",
       "params": {
         "lessonId": "The identifier of the lesson as listed under lessons. An unknown identifier is rejected.",
         "title": "The new title; spaces at the edges are dropped. An empty title is rejected and leaves everything as it was.",
@@ -126,7 +126,7 @@
     "importLessons": {
       "help": "Restores lessons from an export file of this module, with their identifiers and times, and appends them. An identifier that is already taken is replaced by a new one. Returns the number of lessons taken over.",
       "params": {
-        "json": "The text of the export file: a JSON list of lessons. Entries that are not objects are dropped; unknown categories and impacts become success and medium. A text that is no such list is rejected and leaves everything as it was.",
+        "json": "The text of the export file: a JSON list of lessons. Entries that are not objects are dropped; unknown categories and impacts become success and medium. A text that is no such list is rejected and leaves everything as it was. Phase and title are kept as they are in the file.",
         "command": "The command as one object with json."
       }
     }
@@ -134,7 +134,7 @@
   "forms": {
     "LessonForm": {
       "actionText": {
-        "help": "A new action: type the text and append it with plus or the Enter key. It is saved only together with the lesson."
+        "help": "A new action: type the text and append it with plus or the Enter key. It is saved only together with the lesson. Text still in the field when saving is saved as an open action."
       }
     }
   },
