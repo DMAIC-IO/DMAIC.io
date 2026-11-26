@@ -162,20 +162,27 @@
   color: var(--color-error);
 }
 
-/* ── Answer Textarea (inline, grows with card) ── */
+/* ── Answer Textarea (inline, grows with its content) ──
+   `field-sizing: content` lässt das Feld mit dem Text wachsen, ohne Messung
+   per JavaScript. Maße wie bisher (damals Höhe = scrollHeight, der untere
+   Rahmen lag im Innenabstand): unten 1 px weniger Innenabstand, Grundhöhe
+   zwei Zeilen (2 × line-height 1.4) plus Innenabstand, ganzzahlig 42 px.
+   Ohne Unterstützung bleibt das Feld in der Grundhöhe und bekommt einen
+   Scrollbalken statt den Text abzuschneiden. */
 .five-why__answer {
   flex: 1;
-  min-height: 28px;
+  field-sizing: content;
+  min-height: 42px;
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-xs) calc(var(--spacing-xs) - 1px);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   outline: none;
   resize: none;
-  overflow: hidden;
+  overflow-y: auto;
   transition: border-color var(--transition-speed);
   line-height: 1.4;
 }

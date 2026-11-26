@@ -21,8 +21,8 @@
       Schema-Literale lässt keinen Helfer zu). Jede Änderung an der Karte gilt
       für alle Ebenen gemeinsam. Ebene 5 (Grundursache, `maxLevel`) hat weder
       Umschalter noch Unterfragen. Eingeklappt über `hidden` statt x-show:
-      x-show blendet erst im nächsten Frame ein, die Höhenmessung der
-      Antwortfelder liefe davor.
+      `hidden` wirkt sofort, x-show erst im nächsten Frame. Die Antwortfelder
+      wachsen per CSS (`field-sizing: content`), ohne Messung.
     -->
     <div class="five-why__tree" data-ref="tree">
       <template x-for="(n1, i1) in model.nodes" :key="n1.id">
@@ -32,8 +32,7 @@
             <textarea class="five-why__answer" data-field="answer" :data-id="n1.id" data-help-key=""
                       :aria-label="answerPlaceholder(n1)"
                       :placeholder="answerPlaceholder(n1)"
-                      x-model="n1.answer"
-                      @input="fit($event.target)" @focus="fit($event.target)"></textarea>
+                      x-model="n1.answer"></textarea>
             <div class="five-why__card-actions">
               <template x-if="n1.children.length > 0">
                 <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
@@ -58,8 +57,7 @@
                   <textarea class="five-why__answer" data-field="answer" :data-id="n2.id" data-help-key=""
                             :aria-label="answerPlaceholder(n2)"
                             :placeholder="answerPlaceholder(n2)"
-                            x-model="n2.answer"
-                            @input="fit($event.target)" @focus="fit($event.target)"></textarea>
+                            x-model="n2.answer"></textarea>
                   <div class="five-why__card-actions">
                     <template x-if="n2.children.length > 0">
                       <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
@@ -84,8 +82,7 @@
                         <textarea class="five-why__answer" data-field="answer" :data-id="n3.id" data-help-key=""
                                   :aria-label="answerPlaceholder(n3)"
                                   :placeholder="answerPlaceholder(n3)"
-                                  x-model="n3.answer"
-                                  @input="fit($event.target)" @focus="fit($event.target)"></textarea>
+                                  x-model="n3.answer"></textarea>
                         <div class="five-why__card-actions">
                           <template x-if="n3.children.length > 0">
                             <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
@@ -110,8 +107,7 @@
                               <textarea class="five-why__answer" data-field="answer" :data-id="n4.id" data-help-key=""
                                         :aria-label="answerPlaceholder(n4)"
                                         :placeholder="answerPlaceholder(n4)"
-                                        x-model="n4.answer"
-                                        @input="fit($event.target)" @focus="fit($event.target)"></textarea>
+                                        x-model="n4.answer"></textarea>
                               <div class="five-why__card-actions">
                                 <template x-if="n4.children.length > 0">
                                   <button class="btn btn--icon-sm five-why__icon-btn" type="button" data-help-key=""
@@ -139,8 +135,7 @@
                                     <textarea class="five-why__answer" data-field="answer" :data-id="n5.id" data-help-key=""
                                               :aria-label="answerPlaceholder(n5)"
                                               :placeholder="answerPlaceholder(n5)"
-                                              x-model="n5.answer"
-                                              @input="fit($event.target)" @focus="fit($event.target)"></textarea>
+                                              x-model="n5.answer"></textarea>
                                     <div class="five-why__card-actions">
                                       <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
                                               data-action="delete" :data-id="n5.id" :title="t('common.delete')"

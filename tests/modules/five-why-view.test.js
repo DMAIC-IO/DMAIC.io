@@ -43,6 +43,15 @@ async function prepare() {
     registerCommandDirectives(Alpine);
     if (!Alpine.version) Alpine.start();
     UI = await (await fetch(new URL(`../../js/modules/${ID}/resources/i18n/ui.de.json`, import.meta.url), { cache: 'no-cache' })).json();
+    // Die Höhe der Antwortfelder ist reines CSS (`field-sizing`): ohne die
+    // Modulstile (Testseite ohne Bundle) wüchse nichts.
+    const css = new URL(`../../js/modules/${ID}/resources/style.css`, import.meta.url).href;
+    if (![...document.styleSheets].some((sh) => sh.href === css)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = css;
+      await new Promise((ok, fail) => { link.onload = ok; link.onerror = fail; document.head.append(link); });
+    }
     prepared = true;
   }
   // Eine schon eingebettete Vorlage (wie im Build) bleibt stehen.
@@ -368,10 +377,18 @@ suite('five-why: Viewmodel im Browser', () => {
     unmountAll();
   });
 
-  test('Höhe der Antwortfelder folgt Agent, Rückgängig und Aufklappen', async () => {
+  test('Höhe der Antwortfelder folgt Tippen, Agent, Rückgängig und Aufklappen', async () => {
     const h = await mount('fw-1', SMALL);
     const one = h.answer(3).offsetHeight;
     assertTrue(one > 0, 'Antwortfeld ohne Höhe');
+    // Tippen: das Feld wächst mit dem Text (field-sizing, ohne Messung).
+    const base = h.answer(4).offsetHeight;
+    h.type(4, 'a\nb\nc\nd\ne\nf');
+    await until(() => h.answer(4).offsetHeight > base);
+    assertTrue(h.answer(4).offsetHeight > base, `Höhe nach dem Tippen ${h.answer(4).offsetHeight} ≤ ${base}`);
+    assertTrue(Math.abs(h.answer(4).offsetHeight - h.answer(4).scrollHeight) <= 1, 'Höhe nach dem Tippen ≠ scrollHeight');
+    h.answer(4).blur();
+    await settle();
     h.vm().model.setAnswer({ nodeId: 3, text: 'a\nb\nc\nd\ne\nf' });
     await until(() => h.answer(3).offsetHeight > one);
     const six = h.answer(3).offsetHeight;
@@ -379,7 +396,7 @@ suite('five-why: Viewmodel im Browser', () => {
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig');
     await until(() => h.answer(3).offsetHeight < six);
     assertEqual(h.answer(3).offsetHeight, one);
-    // Eingeklappt gesetzt, beim Aufklappen gemessen.
+    // Eingeklappt gesetzt, beim Aufklappen in der vollen Höhe.
     h.vm().model.toggleCollapse({ nodeId: 2 });
     await until(() => !h.open(2));
     h.vm().model.setAnswer({ nodeId: 3, text: 'a\nb\nc\nd\ne\nf' });
@@ -390,7 +407,7 @@ suite('five-why: Viewmodel im Browser', () => {
     unmountAll();
   });
 
-  test('Höhe der Antwortfelder: verborgen geschrieben, beim Einblenden gemessen', async () => {
+  test('Höhe der Antwortfelder: verborgen geschrieben, beim Einblenden gewachsen', async () => {
     const h = await mount('fw-1', SMALL);
     const one = h.answer(1).offsetHeight;
     h.container.style.display = 'none';
