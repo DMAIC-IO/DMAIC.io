@@ -139,6 +139,17 @@
   gap: var(--spacing-xs);
 }
 
+/* Das Fragezeichen der Filtergruppe sitzt über ihrer rechten oberen Ecke statt
+   rechts daneben: die Gruppe schließt bündig mit dem Modulrand ab, daneben
+   machte der Kreis den Inhalt waagerecht scrollbar. */
+.ll__filters.context-help-anchor > .context-help__btn {
+  left: auto;
+  right: 0;
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--color-bg-primary);
+}
+
 .ll__filter-chip {
   font-family: var(--font-family-mono);
   font-size: var(--ll-font-size-chip);
