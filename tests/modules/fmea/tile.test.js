@@ -124,11 +124,11 @@ suite('fmea Kachel: Anzeige wie die Altkachel', () => {
     ] });
     assertDeepEqual(vm.top.map((r) => r.flag), ['CC', null]);
   });
-  test('Altprojekt: S 15 ist unbewertet (A9) — RPN 216 und 343, ein Risiko mit S ≥ 9', () => {
+  test('Altprojekt: S 15 auf 10 geklemmt (A9) — RPN 216, 60 und 343, zwei Risiken mit S ≥ 9', () => {
     const vm = vmOf(LEGACY_STATE);
-    assertDeepEqual(vm.summary.map((s) => s.value), ['3', '343', '1']);
-    assertDeepEqual(vm.top.map((r) => r.badge), ['RPN 343', 'RPN 216']);
-    assertDeepEqual(vm.legend.map((l) => l.text), ['dashboard.fmeaCritical: 2', 'dashboard.fmeaNotRated: 1']);
+    assertDeepEqual(vm.summary.map((s) => s.value), ['3', '343', '2']);
+    assertDeepEqual(vm.top.map((r) => r.badge), ['RPN 343', 'RPN 216', 'RPN 60']);
+    assertDeepEqual(vm.legend.map((l) => l.text), ['dashboard.fmeaCritical: 2', 'dashboard.fmeaMedium: 1']);
   });
   test('die Ableitungen bleiben auf dem Scope (kein Getter gleichen Namens)', () => {
     const vm = vmOf(LEGACY_STATE);

@@ -39,18 +39,21 @@ function isScaleKey(key) {
 }
 
 /**
- * Eine Stufe als ganze Zahl im Bereich aus einem Text aus Ziffern (Leerraum
- * am Rand erlaubt, Regel des alten `toRating`); mit `numbers` auch aus einer
- * Zahl (die Senkungen las das alte `asDeltaStr` auch als Zahl, S/O/D las
- * `asStr` nur als Text).
+ * Eine Stufe als ganze Zahl im Bereich aus einem Ganzzahltext (Vorzeichen
+ * und Leerraum am Rand erlaubt); mit `numbers` auch aus einer ganzen Zahl
+ * (die Senkungen las das alte `asDeltaStr` auch als Zahl, S/O/D las `asStr`
+ * nur als Text). Werte außerhalb des Bereichs werden auf den Rand geklemmt
+ * (Nutzerentscheidung 2026-11-26, A9): die Altform rechnete mit ihnen
+ * (`parseInt`), und die Skala war in jeder Version dieselbe (S/O/D 1–10,
+ * Senkungen 0–9), es gibt also nichts umzurechnen.
  * @param {unknown} v @param {number} min @param {number} max @param {boolean} [numbers]
  * @returns {number|null} die Zahl, sonst `null`
  */
 function asLevel(v, min, max, numbers = false) {
   let n = NaN;
   if (numbers && typeof v === 'number') n = v;
-  else if (typeof v === 'string' && /^\s*\d+\s*$/.test(v)) n = Number(v);
-  return Number.isInteger(n) && n >= min && n <= max ? n : null;
+  else if (typeof v === 'string' && /^\s*[+-]?\d+\s*$/.test(v)) n = Number(v);
+  return Number.isInteger(n) ? Math.min(max, Math.max(min, n)) : null;
 }
 
 /**
@@ -117,9 +120,10 @@ function action(a, id) {
  * schrieb, von Hand, als Beispieldatei oder in fremder Form). Fehlendes oder
  * fremdes `method` wird `rpn` (Altstände vor der Aufgabenpriorität), fremdes
  * `fmeaType` `process`. Texte nur als echte Texte, sonst leer. S/O/D werden
- * die Zahl 1–10, wenn sie ein Ziffertext dieses Werts waren, sonst `null`
- * (eine Zahl las das alte `fromJSON` als leer); die Senkungen 0–9 aus
- * Ziffertext oder Zahl, sonst 0. Risiken behalten vorhandene ids,
+ * aus einem Ganzzahltext die Zahl, außerhalb 1–10 auf den Rand geklemmt
+ * (`'15'` → 10, `'0'` → 1), sonst `null` (eine Zahl las das alte `fromJSON`
+ * als leer); die Senkungen aus Ganzzahltext oder ganzer Zahl, auf 0–9
+ * geklemmt, sonst 0. Risiken behalten vorhandene ids,
  * fehlende oder doppelte bekommen `x<n>` aus der Position, Maßnahmen `a<n>` je
  * Risiko. `collapsed: true` wird die id in `collapsed`. Eigene Skalentexte
  * bleiben unter bekannten Schlüsseln (eine endliche Zahl wird ihr Text).

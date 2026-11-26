@@ -1,7 +1,8 @@
 /**
  * FMEA: '0→1.0' (domain/migrations.js) übernimmt jeden Stand des alten
- * `State.fromJSON`: fehlendes `method` → rpn, S/O/D aus Ziffertext → Zahl,
- * sonst null (A9), Senkungen aus Ziffertext oder Zahl, ids fest aus der
+ * `State.fromJSON`: fehlendes `method` → rpn, S/O/D aus Ganzzahltext → Zahl,
+ * auf 1–10 geklemmt, sonst null (A9), Senkungen aus Ganzzahltext oder Zahl,
+ * auf 0–9 geklemmt, ids fest aus der
  * Position (`x<n>`, `a<n>`), `collapsed` als id-Liste, Skalentexte nur unter
  * bekannten Schlüsseln. Dazu Altprojekt, goldene Fixtures und Beispiel.
  */
@@ -69,16 +70,18 @@ suite('fmea from0: Kopf', () => {
 });
 
 suite('fmea from0: Risiken', () => {
-  test('S/O/D: Ziffertext 1–10 (auch mit Rand) wird Zahl, sonst null (A9)', () => {
+  test('S/O/D: Ganzzahltext (auch mit Rand) wird Zahl, außerhalb 1–10 geklemmt, sonst null (A9)', () => {
     const [r] = from0({ risks: [risk({ sev: '15', occ: '7abc', det: ' 7 ' })] }).risks;
-    assertEqual(r.sev, null); assertEqual(r.occ, null); assertEqual(r.det, 7);
+    assertEqual(r.sev, 10); assertEqual(r.occ, null); assertEqual(r.det, 7);
     const [z] = from0({ risks: [risk({ sev: 7, occ: '0', det: '10' })] }).risks;
     assertEqual(z.sev, null, 'Zahl las das alte fromJSON als leer');
-    assertEqual(z.occ, null); assertEqual(z.det, 10);
+    assertEqual(z.occ, 1); assertEqual(z.det, 10);
+    const [n] = from0({ risks: [risk({ sev: '-3', occ: '', det: '7.5' })] }).risks;
+    assertEqual(n.sev, 1); assertEqual(n.occ, null); assertEqual(n.det, null);
   });
-  test('Senkungen: Ziffertext oder Zahl 0–9, sonst 0', () => {
-    const [r] = from0({ risks: [risk({ actions: [{ deltaS: '3', deltaO: 2, deltaD: '12' }, { deltaS: 'x', deltaO: 1.5, deltaD: null }] })] }).risks;
-    assertDeepEqual(r.actions.map((a) => [a.deltaS, a.deltaO, a.deltaD]), [[3, 2, 0], [0, 0, 0]]);
+  test('Senkungen: Ganzzahltext oder ganze Zahl, auf 0–9 geklemmt, sonst 0', () => {
+    const [r] = from0({ risks: [risk({ actions: [{ deltaS: '3', deltaO: 2, deltaD: '12' }, { deltaS: 'x', deltaO: 1.5, deltaD: null }, { deltaS: -2, deltaO: 14, deltaD: '-1' }] })] }).risks;
+    assertDeepEqual(r.actions.map((a) => [a.deltaS, a.deltaO, a.deltaD]), [[3, 2, 9], [0, 0, 0], [0, 9, 0]]);
   });
   test('Texte nur als Text, Merkmal nur CC/SC, Nicht-Objekt wird leeres Risiko', () => {
     const { risks } = from0({ risks: [risk({ step: 5, failureMode: 'F', specialChar: 'XX' }), 'kaputt'] });
@@ -112,7 +115,7 @@ suite('fmea from0: Altprojekt, Fixtures, Beispiel', () => {
     assertEqual(j.method, 'rpn');
     assertEqual(j.fmeaType, 'design');
     assertDeepEqual(j.risks.map((r) => r.id), ['r1', 'x2', 'r3']);
-    assertDeepEqual(j.risks.map((r) => [r.sev, r.occ, r.det]), [[9, 4, 6], [null, 3, 2], [7, 7, 7]]);
+    assertDeepEqual(j.risks.map((r) => [r.sev, r.occ, r.det]), [[9, 4, 6], [10, 3, 2], [7, 7, 7]]);
     assertDeepEqual(j.risks[0].actions.map((a) => [a.id, a.deltaO, a.deltaD, a.done, a.date]),
       [['a1', 2, 3, true, '2026-03-02'], ['a2', 1, 0, false, '2026-04-15']]);
     assertDeepEqual(j.risks[1].actions.map((a) => [a.id, a.deltaD]), [['a1', 3]]);
@@ -120,14 +123,15 @@ suite('fmea from0: Altprojekt, Fixtures, Beispiel', () => {
     assertDeepEqual(j.scales, { sevHigh: 'Kunde verärgert (eigener Text)', 'ap.design.sev.10.meaning': 'Gefahr für Leib und Leben (eigener Text)' });
     assertTrue(!('legacyNote' in j.scales));
   });
-  test('Altprojekt lädt ohne Reparatur; Kennzahlen bis auf S 15 wie die Altform', () => {
+  test('Altprojekt lädt ohne Reparatur; Kennzahlen bis auf S 15 → 10 wie die Altform', () => {
     const { m, fields } = repaired(LEGACY_STATE);
     assertDeepEqual(fields, []);
     const d = evaluateDerived(m, /** @type {any} */ (undefined));
-    // Altform: RPN 216/90/343, Ø 216, S ≥ 9 2 — S '15' ist jetzt unbewertet (A9).
-    assertDeepEqual(plain(d.stats), { kind: 'rpn', total: 3, critical: 2, high: 0, medium: 0, low: 0, highSeverity: 1, avg: 280, max: 343 });
+    // Altform: RPN 216/90/343, Ø 216, S ≥ 9 2 — S '15' wird auf 10 geklemmt (A9):
+    // RPN 10·3·2 = 60, Ziel 10·3·1 = 30, Ø 206, S ≥ 9 bleibt 2.
+    assertDeepEqual(plain(d.stats), { kind: 'rpn', total: 3, critical: 2, high: 0, medium: 1, low: 0, highSeverity: 2, avg: 206, max: 343 });
     assertDeepEqual(d.riskRatings.map((r) => [r.riskId, r.rpn, r.projRpn, r.ap, r.projAp]),
-      [['r1', 216, 27, 'H', 'L'], ['x2', 0, 0, null, null], ['r3', 343, 343, 'H', 'H']]);
+      [['r1', 216, 27, 'H', 'L'], ['x2', 60, 30, 'L', 'L'], ['r3', 343, 343, 'H', 'H']]);
   });
   test('goldene Fixtures: fremde Form lädt, Risiken bleiben mit id und leer', async () => {
     const files = ['v0.2.0_all_projects.json', 'v0.2.0_single_project.json', 'v0.3.0_all_projects.json',

@@ -159,7 +159,7 @@ suite('fmea Model — Ableitungen', () => {
     assertEqual(d.riskRatings.length, 3);
     m.method = 'ap';
     d = evaluateDerived(m, /** @type {any} */ (undefined));
-    assertDeepEqual(plain(d.stats), { kind: 'ap', total: 3, rated: 2, high: 2, medium: 0, low: 0, unjustified: 1 });
+    assertDeepEqual(plain(d.stats), { kind: 'ap', total: 3, rated: 3, high: 2, medium: 0, low: 1, unjustified: 1 });
     const t = new Date('2026-03-02').getTime();
     assertDeepEqual(plain(d.burndown), { kind: 'ap', planX: [t - 86400000, t], planH: [2, 1], planHM: [2, 1], actX: [t - 86400000, t], actH: [2, 1], actHM: [2, 1] });
   });
@@ -185,7 +185,7 @@ suite('fmea Model — Lesefläche und Agentenkatalog', () => {
   test('read() ohne Parameter: Felder und die drei Ableitungen, ohne Ansichtsfelder', () => {
     const out = read(legacy(), { fields: ['method', 'fmeaType', 'risks', 'scales', 'stats', 'riskRatings', 'burndown'] });
     assertDeepEqual(Object.keys(out), ['method', 'fmeaType', 'risks', 'scales', 'stats', 'riskRatings', 'burndown']);
-    assertEqual(out.risks[1].sev, null);
+    assertEqual(out.risks[1].sev, 10, 'S 15 auf 10 geklemmt (A9)');
     assertEqual(out.risks[0].actions[0].id, 'a1');
     assertTrue(!('collapsed' in read(legacy())));
   });
