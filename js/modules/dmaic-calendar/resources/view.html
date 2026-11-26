@@ -62,10 +62,21 @@
             <div class="module-calendar__upcoming-empty" x-text="t('noEvents')"></div>
           </template>
           <template x-for="ev in upcoming" :key="ev.id">
-            <div class="module-calendar__upcoming-item" :style="upcomingStyle(ev)" data-help-key=""
-              x-dialog="eventForm" data-dialog-command="updateEvent" :data-arg-id="ev.id" data-dialog-delete="removeEvent" :data-dialog-title="t('editEvent')">
-              <div class="module-calendar__upcoming-date" x-text="upcomingDateLabel(ev)"></div>
-              <div class="module-calendar__upcoming-title" x-text="ev.title"></div>
+            <div class="module-calendar__ev-slot">
+              <template x-if="isOwnEvent(ev)">
+                <div class="module-calendar__upcoming-item" :style="upcomingStyle(ev)" data-help-key=""
+                  x-dialog="eventForm" data-dialog-command="updateEvent" :data-arg-id="ev.id" data-dialog-delete="removeEvent" :data-dialog-title="t('editEvent')">
+                  <div class="module-calendar__upcoming-date" x-text="upcomingDateLabel(ev)"></div>
+                  <div class="module-calendar__upcoming-title" x-text="ev.title"></div>
+                </div>
+              </template>
+              <template x-if="isTodoEvent(ev)">
+                <div class="module-calendar__upcoming-item module-calendar__upcoming-item--todo" :style="upcomingStyle(ev)" data-help-key=""
+                  x-dialog="todoEventForm" data-dialog-command="editTodoEvent" data-dialog-delete="removeTodoEvent" :data-arg-instance-id="ev.todo.instanceId" :data-arg-item-id="ev.todo.itemId" :data-dialog-title="t('editTodoEvent')">
+                  <div class="module-calendar__upcoming-date" x-text="upcomingDateLabel(ev)"></div>
+                  <div class="module-calendar__upcoming-title" x-text="ev.title"></div>
+                </div>
+              </template>
             </div>
           </template>
         </div>
@@ -101,8 +112,16 @@
           <template x-if="cell.events.length">
             <div class="module-calendar__day-events">
               <template x-for="ev in firstEvents(cell)" :key="ev.id">
-                <div class="module-calendar__day-ev" :style="monthEvStyle(ev)" x-text="ev.title" data-help-key=""
-                  x-dialog="eventForm" data-dialog-command="updateEvent" :data-arg-id="ev.id" data-dialog-delete="removeEvent" :data-dialog-title="t('editEvent')"></div>
+                <div class="module-calendar__ev-slot">
+                  <template x-if="isOwnEvent(ev)">
+                    <div class="module-calendar__day-ev" :style="monthEvStyle(ev)" x-text="ev.title" data-help-key=""
+                      x-dialog="eventForm" data-dialog-command="updateEvent" :data-arg-id="ev.id" data-dialog-delete="removeEvent" :data-dialog-title="t('editEvent')"></div>
+                  </template>
+                  <template x-if="isTodoEvent(ev)">
+                    <div class="module-calendar__day-ev module-calendar__day-ev--todo" :style="monthEvStyle(ev)" x-text="ev.title" data-help-key=""
+                      x-dialog="todoEventForm" data-dialog-command="editTodoEvent" data-dialog-delete="removeTodoEvent" :data-arg-instance-id="ev.todo.instanceId" :data-arg-item-id="ev.todo.itemId" :data-dialog-title="t('editTodoEvent')"></div>
+                  </template>
+                </div>
               </template>
               <template x-if="hasMore(cell)">
                 <div class="module-calendar__day-more" x-text="moreText(cell)"></div>
@@ -143,20 +162,42 @@
                   </div>
                 </template>
                 <template x-for="ev in weekEventsForDay(iso)" :key="ev.id">
-                  <div class="module-calendar__week-ev" :data-id="ev.id" :data-ev-id="ev.id" :data-date="ev.date" :data-time="ev.time" :data-duration="ev.duration"
-                    :style="weekEvStyle(ev)" data-help-key=""
-                    x-dialog="eventForm" data-dialog-command="updateEvent" :data-arg-id="ev.id" data-dialog-delete="removeEvent" :data-dialog-title="t('editEvent')">
-                    <div class="module-calendar__week-ev-content" tabindex="0">
-                      <div class="module-calendar__we-time" x-text="weekEvTimeText(ev)"></div>
-                      <div class="module-calendar__we-title" x-text="ev.title"></div>
-                    </div>
-                    <div class="module-calendar__we-dur" x-show="showResizeDur(ev)" x-text="resizeDurText"></div>
-                    <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--top" data-resize-edge="start" :aria-label="t('resizeStart')">
-                      <span class="module-calendar__ev-handle-pip"></span>
-                    </button>
-                    <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--bot" data-resize-edge="end" :aria-label="t('resizeEnd')">
-                      <span class="module-calendar__ev-handle-pip"></span>
-                    </button>
+                  <div class="module-calendar__ev-slot">
+                    <template x-if="isOwnEvent(ev)">
+                      <div class="module-calendar__week-ev" :data-id="ev.id" :data-ev-id="ev.id" :data-date="ev.date" :data-time="ev.time" :data-duration="ev.duration"
+                        :style="weekEvStyle(ev)" data-help-key=""
+                        x-dialog="eventForm" data-dialog-command="updateEvent" :data-arg-id="ev.id" data-dialog-delete="removeEvent" :data-dialog-title="t('editEvent')">
+                        <div class="module-calendar__week-ev-content" tabindex="0">
+                          <div class="module-calendar__we-time" x-text="weekEvTimeText(ev)"></div>
+                          <div class="module-calendar__we-title" x-text="ev.title"></div>
+                        </div>
+                        <div class="module-calendar__we-dur" x-show="showResizeDur(ev)" x-text="resizeDurText"></div>
+                        <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--top" data-resize-edge="start" :aria-label="t('resizeStart')">
+                          <span class="module-calendar__ev-handle-pip"></span>
+                        </button>
+                        <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--bot" data-resize-edge="end" :aria-label="t('resizeEnd')">
+                          <span class="module-calendar__ev-handle-pip"></span>
+                        </button>
+                      </div>
+                    </template>
+                    <template x-if="isTodoEvent(ev)">
+                      <div class="module-calendar__week-ev module-calendar__week-ev--todo" :data-id="ev.id" :data-ev-id="ev.id" :data-date="ev.date" :data-time="ev.time" :data-duration="ev.duration"
+                        :data-todo-instance="ev.todo.instanceId" :data-todo-item="ev.todo.itemId"
+                        :style="weekEvStyle(ev)" data-help-key=""
+                        x-dialog="todoEventForm" data-dialog-command="editTodoEvent" data-dialog-delete="removeTodoEvent" :data-arg-instance-id="ev.todo.instanceId" :data-arg-item-id="ev.todo.itemId" :data-dialog-title="t('editTodoEvent')">
+                        <div class="module-calendar__week-ev-content" tabindex="0">
+                          <div class="module-calendar__we-time" x-text="weekEvTimeText(ev)"></div>
+                          <div class="module-calendar__we-title" x-text="ev.title"></div>
+                        </div>
+                        <div class="module-calendar__we-dur" x-show="showResizeDur(ev)" x-text="resizeDurText"></div>
+                        <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--top" data-resize-edge="start" :aria-label="t('resizeStart')">
+                          <span class="module-calendar__ev-handle-pip"></span>
+                        </button>
+                        <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--bot" data-resize-edge="end" :aria-label="t('resizeEnd')">
+                          <span class="module-calendar__ev-handle-pip"></span>
+                        </button>
+                      </div>
+                    </template>
                   </div>
                 </template>
               </div>
@@ -207,6 +248,30 @@
       <div class="field-group">
         <label data-help-key="modules.dmaic-calendar.fields.events.desc.help" x-text="t('descLabel')"></label>
         <textarea class="field" data-ref="evDesc" x-param="desc" :placeholder="t('descPlaceholder')"></textarea>
+      </div>
+    </form>
+    <form class="module-calendar__event-form module-calendar__todo-event-form" x-ref="todoEventForm" x-command-form="editTodoEvent" data-command-form-schema="TodoEventForm">
+      <div class="field-group">
+        <label data-help-key="modules.dmaic-calendar.forms.TodoEventForm.title.help" x-text="t('title')"></label>
+        <input type="text" class="field" data-ref="todoEvTitle" x-param="title">
+      </div>
+      <div class="field-grid field-grid--3">
+        <div class="field-group">
+          <label data-help-key="modules.dmaic-calendar.forms.TodoEventForm.date.help" x-text="t('date')"></label>
+          <input class="field" data-ref="todoEvDate" x-param="date">
+        </div>
+        <div class="field-group">
+          <label data-help-key="modules.dmaic-calendar.forms.TodoEventForm.time.help" x-text="t('startTime')"></label>
+          <input class="field" data-ref="todoEvTime" x-param="time">
+        </div>
+        <div class="field-group">
+          <label data-help-key="modules.dmaic-calendar.forms.TodoEventForm.end.help" x-text="t('endTime')"></label>
+          <input class="field" data-ref="todoEvEnd" x-param="end">
+        </div>
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.dmaic-calendar.fields.events.duration.help" x-text="t('duration')"></label>
+        <input type="text" class="field field--inline" data-ref="todoEvDurationInfo" :value="durationText(form.time, form.end)" disabled>
       </div>
     </form>
   </div>

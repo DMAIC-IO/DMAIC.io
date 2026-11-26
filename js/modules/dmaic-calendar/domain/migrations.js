@@ -15,22 +15,24 @@ const VIEW_KEYS_0 = ['viewMode', 'axisFrom', 'axisTo', 'dayFrom', 'dayTo'];
 const PHASE_0 = 'define';
 
 /**
- * '0→1.0': Altstände ohne `_schema` — gleiche Feldnamen. Repariert, was der
+ * '0→1.1': Altstände ohne `_schema` — gleiche Feldnamen. Repariert, was der
  * alte Lader still hinnahm: Termine ohne gültiges Datum fallen weg, ein
  * leerer Titel wird `—`, eine Zeit außerhalb des 5-Minuten-Rasters wird
- * abgerundet, eine unbekannte Phase wird `define`, `source` bleibt nur als `todo`.
+ * abgerundet, eine unbekannte Phase wird `define`. Spiegeltermine der
+ * Aufgabenliste (`source: 'todo'`) fallen weg: der Kalender liest die
+ * Aufgaben heute aus der Aufgabenliste.
  * @param {object} json Kopie des gespeicherten Zustands
  * @returns {object}
  */
 export function from0(json) {
   const known = new Set(Object.keys(CYCLES).flatMap((c) => getPhaseIds(c)));
   const events = (Array.isArray(json.events) ? json.events : [])
-    .filter((e) => e !== null && typeof e === 'object' && isIsoDate(e.date))
+    .filter((e) => e !== null && typeof e === 'object' && isIsoDate(e.date) && e.source !== 'todo')
     .map((e) => {
       const m = TIME.exec(typeof e.time === 'string' ? e.time : '');
       const minutes = m ? Number(m[1]) * 60 + Number(m[2]) : 9 * 60;
       const snapped = minutes - (minutes % 5);
-      const out = {
+      return {
         id: typeof e.id === 'string' && e.id !== '' ? e.id : uid(),
         title: typeof e.title === 'string' && e.title.trim() !== '' ? e.title.trim() : '—',
         date: e.date,
@@ -39,10 +41,28 @@ export function from0(json) {
         desc: typeof e.desc === 'string' ? e.desc : '',
         phase: typeof e.phase === 'string' && known.has(e.phase) ? e.phase : PHASE_0,
       };
-      if (e.source === 'todo') out.source = 'todo';
-      return out;
     });
   const out = { events };
   for (const k of VIEW_KEYS_0) if (Object.hasOwn(json, k)) out[k] = json[k];
   return out;
+}
+
+/**
+ * '1.0→1.1': Spiegeltermine der Aufgabenliste (`source: 'todo'`) fallen weg;
+ * bei den übrigen Terminen entfällt der Schlüssel `source`.
+ * @param {Record<string, any>} json
+ * @returns {Record<string, any>}
+ */
+export function from10(json) {
+  if (!Array.isArray(json.events)) return json;
+  return {
+    ...json,
+    events: json.events
+      .filter((e) => !(e && typeof e === 'object' && e.source === 'todo'))
+      .map((e) => {
+        if (!e || typeof e !== 'object' || !Object.hasOwn(e, 'source')) return e;
+        const { source: _source, ...rest } = e;
+        return rest;
+      }),
+  };
 }

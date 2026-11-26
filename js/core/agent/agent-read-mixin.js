@@ -42,7 +42,6 @@ export const MIXIN_READ_MODULES = Object.freeze([
   'lessons-learned',
   'makigami',
   'process-map',
-  'todo',
   'voc-ctx-tree',
 ]);
 

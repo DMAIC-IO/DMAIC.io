@@ -1,13 +1,12 @@
 /**
- * Tests for dmaic-calendar/domain (Model, Migration, Todo-Spiegel) und
- * viewmodel/forms.js (EventForm).
+ * Tests for dmaic-calendar/domain (Model, Migrationen 0→1.1 und 1.0→1.1)
+ * und viewmodel/forms.js (EventForm, TodoEventForm).
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { setModelContext, confirmOf, currentOf } from '../../js/core/model.js';
 import { State } from '../../js/modules/dmaic-calendar/domain/model.js';
-import { from0 } from '../../js/modules/dmaic-calendar/domain/migrations.js';
-import { applyTodoSync } from '../../js/modules/dmaic-calendar/domain/todo-sync.js';
-import { EventForm } from '../../js/modules/dmaic-calendar/viewmodel/forms.js';
+import { from0, from10 } from '../../js/modules/dmaic-calendar/domain/migrations.js';
+import { EventForm, TodoEventForm } from '../../js/modules/dmaic-calendar/viewmodel/forms.js';
 
 const errOf = (fn) => { try { fn(); } catch (e) { return e; } return null; };
 
@@ -75,7 +74,7 @@ suite('dmaic-calendar Model: Ansicht und Invarianten', () => {
     assertEqual(bad.axisFrom, 6);
     assertEqual(bad.axisTo, 22);
     const json = m.toJSON();
-    assertEqual(json._schema.version, '1.0');
+    assertEqual(json._schema.version, '1.1');
     assertEqual(json.viewMode, 'week');
   });
   test('hasContent nur durch Termine', () => {
@@ -84,7 +83,7 @@ suite('dmaic-calendar Model: Ansicht und Invarianten', () => {
   });
 });
 
-suite('dmaic-calendar Migration 0→1.0', () => {
+suite('dmaic-calendar Migration 0→1.1', () => {
   test('Altstand ohne _schema lädt gleichnamig', () => {
     const m = State.fromJSON({
       events: [{ id: 'a', title: 'A', date: '2026-11-09', time: '09:00', duration: 60, desc: '', phase: 'define' }],
@@ -100,25 +99,39 @@ suite('dmaic-calendar Migration 0→1.0', () => {
       { title: 'ohne Datum', date: '' },
       { id: 't', title: 'T', date: '2026-11-10', source: 'todo' },
     ] });
-    assertEqual(out.events.length, 2);
-    const [a, t] = out.events;
+    assertEqual(out.events.length, 1, 'ohne Datum und der Spiegeltermin fallen weg');
+    const [a] = out.events;
     assertTrue(typeof a.id === 'string' && a.id !== '');
     assertDeepEqual({ ...a, id: 'x' }, { id: 'x', title: '—', date: '2026-11-09', time: '09:00', duration: 60, desc: '', phase: 'define' });
-    assertEqual(t.source, 'todo');
-    assertEqual(t.time, '09:00');
   });
 });
 
-suite('dmaic-calendar Todo-Spiegel', () => {
-  test('ersetzt gespiegelte Termine, Phase aus dem Kontext, eigene bleiben', () => {
-    const m = new State();
-    setModelContext(m, { cycle: 'eightd' });
-    m.addEvent({ title: 'Eigen', date: '2026-11-09' });
-    applyTodoSync(m, [{ id: '1', title: 'Bericht', date: '2026-11-12', status: 'open' }]);
-    applyTodoSync(m, [{ id: '2', title: 'Review', date: '2026-11-13', status: 'open' }, { id: '3', title: '  ', date: '2026-11-13' }, { id: '4', title: 'X', date: 'bald' }]);
-    assertDeepEqual(m.events.map((e) => e.title), ['Eigen', 'Review']);
-    const mirrored = m.events[1];
-    assertDeepEqual({ ...mirrored }, { id: 'todo-2', title: 'Review', date: '2026-11-13', time: '09:00', duration: 30, desc: '', phase: 'prepare', source: 'todo' });
+suite('dmaic-calendar Migration 1.0→1.1', () => {
+  const OWN = { id: 'e', title: 'Eigen', date: '2026-11-09', time: '09:00', duration: 60, desc: '', phase: 'define' };
+  const MIRROR = { id: 'todo-1', title: 'Bericht', date: '2026-11-12', time: '09:00', duration: 30, desc: '', phase: 'define', source: 'todo' };
+
+  test('from10 verwirft Spiegeltermine, eigene bleiben unverändert', () => {
+    const out = from10({ events: [OWN, MIRROR], viewMode: 'week' });
+    assertDeepEqual(out, { events: [OWN], viewMode: 'week' });
+  });
+
+  test('ein gespeicherter Stand 1.0 lädt streng ohne Spiegel und als 1.1', () => {
+    const m = State.fromJSON({ _schema: { name: 'dmaic-calendar', version: '1.0' }, events: [OWN, MIRROR], viewMode: 'month' });
+    assertDeepEqual(m.events.map((e) => e.id), ['e']);
+    assertEqual(m.toJSON()._schema.version, '1.1');
+    assertEqual(Object.hasOwn(m.toJSON().events[0], 'source'), false);
+  });
+});
+
+suite('dmaic-calendar TodoEventForm', () => {
+  test('fromParams: Ende aus Beginn und Dauer, ohne Beschreibung und Phase', () => {
+    assertDeepEqual(TodoEventForm.fromParams({ title: 'A', date: '2026-11-09', time: '08:00', duration: 45 }),
+      { title: 'A', date: '2026-11-09', time: '08:00', end: '08:45' });
+  });
+  test('toParams: Dauer aus Ende minus Beginn; Ende vor Beginn wirft mit param end', () => {
+    assertDeepEqual(TodoEventForm.toParams({ title: 'A', date: '2026-11-09', time: '08:00', end: '09:15' }),
+      { title: 'A', date: '2026-11-09', time: '08:00', duration: 75 });
+    assertEqual(errOf(() => TodoEventForm.toParams({ title: 'A', date: '2026-11-09', time: '09:00', end: '08:00' })).param, 'end');
   });
 });
 

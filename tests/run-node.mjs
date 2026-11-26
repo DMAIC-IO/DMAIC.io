@@ -197,6 +197,7 @@ const SKIP = new Set([
   'modules/contour-plot/viewmodel.test.js',
   'modules/dashboard-tiles.test.js',
   'modules/dmaic-calendar-example.test.js',
+  'modules/dmaic-calendar-todos-view.test.js',
   'modules/chart-example-worksheet-wait.test.js',
   'modules/histogram-view.test.js',
   'modules/hypothesis-test-view.test.js',

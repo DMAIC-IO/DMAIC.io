@@ -2,10 +2,19 @@
  * D.Mike — Projektkalender: Beginn oder Ende eines Termins ziehen.
  *
  * Griffe: obere Kante (`data-resize-edge="start"`), untere Kante (`data-resize-edge="end"`).
- * Raster 5 Minuten, kürzeste Dauer 5 Minuten, innerhalb der Achse.
+ * Raster 5 Minuten, kürzeste Dauer 5 Minuten, innerhalb der Achse. Ein
+ * Aufgabentermin ändert Beginn und Dauer der Aufgabe.
  */
 import { defineGesture } from '../../../core/interaction/define.js';
 import { MIN_DUR, SNAP, mtt, ttm } from '../domain/layout.js';
+
+/**
+ * Aufgabenliste und Aufgabe eines Aufgabentermins (`data-todo-instance`,
+ * `data-todo-item` am Block), sonst nichts.
+ * @param {HTMLElement} b @returns {{ todoInstance?: string, todoItem?: string }}
+ */
+const todoOf = (b) => (b.dataset.todoInstance && b.dataset.todoItem
+  ? { todoInstance: b.dataset.todoInstance, todoItem: b.dataset.todoItem } : {});
 
 export const resize = defineGesture({
   kind: 'resize',
@@ -14,7 +23,7 @@ export const resize = defineGesture({
   start(el) {
     const b = /** @type {HTMLElement} */ (el.closest('[data-id]'));
     const s = ttm(b.dataset.time);
-    return { id: b.dataset.id, start: s, end: s + Number(b.dataset.duration) };
+    return { id: b.dataset.id, start: s, end: s + Number(b.dataset.duration), ...todoOf(b) };
   },
   locate(point, ctx, from) {
     const d = ctx.snap(point.y - ctx.origin.y, SNAP);
@@ -36,6 +45,7 @@ export const resize = defineGesture({
     this.state.resizePreview = pos ? { id: pos.id, start: pos.start, end: pos.end } : null;
   },
   toCommand(from, to) {
+    if (from.todoInstance) return ['editTodoEvent', { instanceId: from.todoInstance, itemId: from.todoItem, time: mtt(to.start), duration: to.end - to.start }];
     return ['updateEvent', { id: from.id, time: mtt(to.start), duration: to.end - to.start }];
   },
 });

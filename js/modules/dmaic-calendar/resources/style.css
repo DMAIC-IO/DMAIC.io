@@ -716,3 +716,8 @@
   height: 100%;
   outline-offset: -2px;
 }
+
+/* Hülle je Termin in den Listen: trägt nur die Wahl zwischen eigenem Termin und Aufgabentermin. */
+.module-calendar__ev-slot {
+  display: contents;
+}

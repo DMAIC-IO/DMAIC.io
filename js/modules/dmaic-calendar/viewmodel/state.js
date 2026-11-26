@@ -1,11 +1,12 @@
 /**
  * D.Mike — Projektkalender: UI-State.
  *
- * Angezeigter Zeitraum, Phasenfilter und Vorschau der Gesten — je
- * Komponente, nie gespeichert. Ansicht, Achse und Wochentage sind
+ * Angezeigter Zeitraum, Phasenfilter, Vorschau der Gesten und die gelesenen
+ * Aufgaben der Aufgabenlisten (viewmodel/todos.js) — je Komponente, nie
+ * gespeichert. Ansicht, Achse und Wochentage sind
  * Ansichtsfelder des Models (domain/model.js).
  */
-import { defineState, number, date, phase, object, text } from '../../../core/model.js';
+import { defineState, number, date, phase, object, text, list, boolean } from '../../../core/model.js';
 
 export const UiState = defineState({
   viewYear: number({ integer: true }),
@@ -15,4 +16,12 @@ export const UiState = defineState({
   drawPreview: object({ date: date(), from: number({ integer: true }), to: number({ integer: true }) }, { nullable: true }),
   movePreview: object({ id: text(), date: date(), min: number({ integer: true }) }, { nullable: true }),
   resizePreview: object({ id: text(), start: number({ integer: true }), end: number({ integer: true }) }, { nullable: true }),
+  todoReads: list(object({
+    instanceId: text(),
+    phase: text(),
+    items: list(object({
+      id: text(), text: text(), due: text(), cal: boolean(),
+      time: text({ optional: true }), duration: number({ integer: true, optional: true }),
+    })),
+  })),
 });

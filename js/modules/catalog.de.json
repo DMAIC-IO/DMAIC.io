@@ -210,6 +210,11 @@
     "description": "EWMA und CUSUM für kleine, schleichende Verschiebungen",
     "whenToUse": "Kleine, anhaltende Verschiebungen früher erkennen als mit einer Shewhart-Karte: EWMA gewichtet die jüngsten Werte, CUSUM summiert die Abweichungen vom Ziel auf."
   },
+  "todo": {
+    "name": "Todo",
+    "description": "Aufgabenliste mit Status, Zieldatum und Verantwortlichem",
+    "whenToUse": "Wenn offene Aufgaben eines Projekts mit Verantwortlichem, Zieldatum und Status verfolgt werden sollen — nicht für die Terminplanung in einer Kalenderansicht und nicht für die Bewertung oder Auswahl von Maßnahmen, dafür sind das Kalendermodul und die Bewertungsmatrizen da."
+  },
   "transformed-imr-chart": {
     "name": "Regelkarte (Box-Cox-transformiert)",
     "description": "I-MR mit Box-Cox-Transformation für nicht-normale Daten",

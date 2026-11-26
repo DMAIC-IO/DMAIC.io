@@ -4360,7 +4360,7 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "events": {
-        "type": "{ id: string, title: string, date: string, time: string, duration: number, desc: string, phase: string, source?: 'todo' }[]",
+        "type": "{ id: string, title: string, date: string, time: string, duration: number, desc: string, phase: string }[]",
         "help": "",
         "bulk": false
       }
@@ -19886,6 +19886,7 @@ export const AGENT_REGISTRY = {
   "todo": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -19895,168 +19896,279 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addTodo": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Legt eine leere Aufgabe am Ende der Liste an."
+        "help": "",
+        "keysOf": "addTodo",
+        "keysHelp": "actions.addTodo.params",
+        "keys": {}
       },
       "setTodoText": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Text; die leere Zeichenkette löscht ihn"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt den Text einer Aufgabe."
+        "help": "",
+        "keysOf": "setTodoText",
+        "keysHelp": "actions.setTodoText.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setTodoOwner": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe"
-          },
-          {
-            "name": "owner",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Verantwortliche; die leere Zeichenkette lässt die Aufgabe ohne Verantwortlichen"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt den Verantwortlichen einer Aufgabe."
+        "help": "",
+        "keysOf": "setTodoOwner",
+        "keysHelp": "actions.setTodoOwner.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "owner": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setTodoDue": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe"
-          },
-          {
-            "name": "isoDate",
-            "type": "string",
-            "optional": false,
-            "help": "das Zieldatum als `JJJJ-MM-TT`; die leere Zeichenkette löscht es"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt das Zieldatum einer Aufgabe."
+        "help": "",
+        "keysOf": "setTodoDue",
+        "keysHelp": "actions.setTodoDue.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "isoDate": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "date"
+            ]
+          }
+        }
       },
       "setTodoStatus": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe"
-          },
-          {
-            "name": "status",
-            "type": "'open'|'in-progress'|'done'|'blocked'",
-            "optional": false,
-            "help": "der neue Status"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt den Status einer Aufgabe."
+        "help": "",
+        "keysOf": "setTodoStatus",
+        "keysHelp": "actions.setTodoStatus.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "status": {
+            "type": "'open'|'in-progress'|'done'|'blocked'",
+            "help": ""
+          }
+        }
       },
       "setTodoCalendar": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe"
-          },
-          {
-            "name": "inCalendar",
-            "type": "boolean",
-            "optional": false,
-            "help": "true meldet sie, false nicht"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Bestimmt, ob eine Aufgabe an ein Kalendermodul gemeldet wird."
+        "help": "",
+        "keysOf": "setTodoCalendar",
+        "keysHelp": "actions.setTodoCalendar.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "inCalendar": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
       },
       "removeTodo": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt eine Aufgabe."
+        "help": "",
+        "keysOf": "removeTodo",
+        "keysHelp": "actions.removeTodo.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "moveTodo": {
+        "target": "model",
         "params": [
           {
-            "name": "itemId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Aufgabe, die verschoben wird"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveTodo",
+        "keysHelp": "actions.moveTodo.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
           },
-          {
-            "name": "beforeId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Aufgabe, vor die sie kommt"
+          "to": {
+            "type": "number",
+            "help": "",
+            "rules": [
+              "afterRemovalFrom:items"
+            ]
+          },
+          "shownIds": {
+            "type": "string[]",
+            "help": "",
+            "optional": true
           }
-        ],
-        "returns": "void",
-        "help": "Verschiebt eine Aufgabe vor eine andere in der gespeicherten Reihenfolge, unabhängig von Filter und Sortierung der Anzeige."
+        }
       },
-      "setSearch": {
+      "updateTodo": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Suchtext; die leere Zeichenkette hebt die Suche auf"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt den Suchtext, der Text und Verantwortlichen durchsucht."
+        "help": "",
+        "keysOf": "updateTodo",
+        "keysHelp": "actions.updateTodo.params",
+        "keys": {
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "due": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "date"
+            ]
+          },
+          "time": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "time",
+              "step:5"
+            ]
+          },
+          "duration": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
       }
     },
     "fields": {
       "items": {
-        "type": "Item[]",
-        "help": "die Aufgaben in Eingabereihenfolge; je Aufgabe `id` (zum Ansprechen), `text`, `owner` (Verantwortlicher), `due` (Zieldatum als `JJJJ-MM-TT` oder leer), `status` (`open`, `in-progress`, `done` oder `blocked`) und `cal` (ob sie an ein Kalendermodul gemeldet wird)",
-        "bulk": true,
-        "bulkKind": "table"
-      },
-      "search": {
-        "type": "string",
-        "help": "der Suchtext über Aufgabentext und Verantwortlichen; leer heißt keine Suche",
-        "bulk": false
+        "type": "Array<{ id: string, text: string, owner: string, due: string, status: 'open'|'in-progress'|'done'|'blocked', cal: boolean, time?: string, duration?: number }>",
+        "help": "",
+        "bulk": true
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "filterStatus",
       "filterOwner",
+      "search",
       "sortCol",
       "sortAsc"
+    ],
+    "settable": [
+      "items"
+    ],
+    "invariants": [
+      "itemIds"
     ]
   },
   "transformed-imr-chart": {

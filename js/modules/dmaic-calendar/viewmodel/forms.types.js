@@ -11,4 +11,12 @@
  * @property {string} phase
  */
 
+/**
+ * @typedef {object} TodoEventFormValues
+ * @property {string} title
+ * @property {string} date
+ * @property {string} time
+ * @property {string} end
+ */
+
 export {};

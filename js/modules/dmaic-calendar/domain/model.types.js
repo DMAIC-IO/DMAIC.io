@@ -3,7 +3,7 @@
 
 /**
  * @typedef {object} StateFields
- * @property {{ id: string, title: string, date: string, time: string, duration: number, desc: string, phase: string, source?: 'todo' }[]} events
+ * @property {{ id: string, title: string, date: string, time: string, duration: number, desc: string, phase: string }[]} events
  */
 
 /**

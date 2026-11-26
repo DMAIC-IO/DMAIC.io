@@ -23,9 +23,6 @@
       },
       "phase": {
         "help": "The phase the appointment is coloured by. Any phase of a known cycle is valid; the rules list the phases of the active cycle; when not given, the first phase of the active cycle. An appointment from another cycle keeps its phase — the dialog offers it as an extra choice “Phase (cycle)”."
-      },
-      "source": {
-        "help": "Where the appointment comes from. Only appointments from the task list carry the value todo; change them there, because the next report from the task list replaces them."
       }
     },
     "viewMode": {
@@ -76,12 +73,44 @@
         "id": "The id of the appointment as read() lists it under events. An unknown id is an error.",
         "command": "The command as one object with id."
       }
+    },
+    "editTodoEvent": {
+      "help": "Changes a task appointment. The change applies to the task in the to-do list; an agent changes tasks there directly.",
+      "params": {
+        "instanceId": "The to-do list the task belongs to.",
+        "itemId": "The task in that to-do list.",
+        "title": "The new text of the task; leading and trailing spaces are removed. An empty text is an error.",
+        "date": "The new target date of the task as YYYY-MM-DD.",
+        "time": "The new start of the task appointment as HH:MM on the 5-minute grid.",
+        "duration": "The new duration of the task appointment in whole minutes, at least 5."
+      }
+    },
+    "removeTodoEvent": {
+      "help": "Deletes the task of a task appointment from the to-do list. The interface asks first.",
+      "params": {
+        "instanceId": "The to-do list the task belongs to.",
+        "itemId": "The task in that to-do list."
+      }
     }
   },
   "forms": {
     "EventForm": {
       "end": {
         "help": "The end of the appointment as HH:MM. It must come after the start; the duration is end minus start."
+      }
+    },
+    "TodoEventForm": {
+      "title": {
+        "help": "The text of the task as it stands in the to-do list. It must not be empty."
+      },
+      "date": {
+        "help": "The target date of the task as YYYY-MM-DD; the task appointment is shown on that day."
+      },
+      "time": {
+        "help": "The start of the task appointment as HH:MM on the 5-minute grid; 09:00 if not given."
+      },
+      "end": {
+        "help": "The end of the task appointment as HH:MM. It must be after the start; the duration is the end minus the start. The change applies to the task in the to-do list."
       }
     }
   },

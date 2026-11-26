@@ -1190,31 +1190,6 @@
       ]
     },
     {
-      "id": "todo-pizza-lieferzeit",
-      "type": "project",
-      "title": {
-        "de": "Pizza-Lieferzeit Projektplan (Todo-Liste)",
-        "en": "Pizza Delivery Project Plan (todo list)"
-      },
-      "description": {
-        "de": "15 Aufgaben für das Pizza-Lieferzeit-Projekt über den DMAIC-Zyklus hinweg — von Kickoff und SIPOC über Ishikawa und Hypothesentest bis zum Reaktionsplan und Lessons Learned. Status, Owner und Zieldaten realistisch verteilt: drei erledigt, drei in Bearbeitung, acht offen, eine blockiert (wartet auf Sponsor-Entscheidung). Einträge mit aktivem Kalender-Flag wandern automatisch in den DMAIC-Kalender, sobald dieser im Define-Tile vorhanden ist.",
-        "en": "15 tasks for the pizza delivery project across the DMAIC cycle — from kickoff and SIPOC through Ishikawa and hypothesis test to the reaction plan and lessons learned. Status, owner and target dates spread realistically: three done, three in progress, eight open, one blocked (waiting on a sponsor decision). Items with the calendar flag enabled appear in the DMAIC calendar as soon as that module is added to the Define tile."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/todo-pizza-lieferzeit.json",
-      "format": "json",
-      "modules": [
-        "todo"
-      ],
-      "tags": [
-        "todo",
-        "define",
-        "project-plan",
-        "pizza"
-      ]
-    },
-    {
       "id": "msa-typ4-linear",
       "type": "project",
       "title": {
@@ -1531,30 +1506,6 @@
       "format": "json",
       "modules": [
         "lessons-learned"
-      ],
-      "tags": [
-        "helicopter",
-        "doe-training",
-        "sequential-blocks"
-      ]
-    },
-    {
-      "id": "todo-hubschrauber-flyer",
-      "type": "project",
-      "title": {
-        "de": "Papier-Hubschrauber — Follow-ups (Todo-Liste)",
-        "en": "Paper Helicopter — Follow-ups (todo list)"
-      },
-      "description": {
-        "de": "5 Aufgaben nach Projektabschluss: Workflow-Hinweis zur Aktivierung des Optimum-Panels in response-optimization, zweiter Flyer für die Rotorbreiten-Augmentierung, Fallhöhen-Variation für Robustheit, Wurf-SOP dokumentieren und Wurfvorrichtung bauen.",
-        "en": "5 follow-up tasks after project close: a workflow note on activating the optimum panel in response-optimization, a second flyer for the wing-width augmentation, drop-height variation for robustness, documenting a throw SOP, and building a throwing fixture."
-      },
-      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
-      "license": "public-domain",
-      "file": "projects/todo-hubschrauber-flyer.json",
-      "format": "json",
-      "modules": [
-        "todo"
       ],
       "tags": [
         "helicopter",

@@ -15,7 +15,7 @@ import { fromExample } from '../../../js/modules/todo/io/example.js';
 
 setModelName(State, 'todo');
 
-const BASE = '../../../examples/projects/';
+const BASE = '../../../js/modules/todo/resources/examples/projects/';
 const IDS = ['todo-pizza-lieferzeit', 'todo-hubschrauber-flyer'];
 const plain = (v) => JSON.parse(JSON.stringify(v));
 

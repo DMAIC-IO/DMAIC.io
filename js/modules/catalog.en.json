@@ -210,6 +210,11 @@
     "description": "EWMA and CUSUM for small persistent shifts",
     "whenToUse": "Detect small, persistent shifts earlier than a Shewhart chart: EWMA weights recent values, CUSUM accumulates deviations from the target."
   },
+  "todo": {
+    "name": "Todo",
+    "description": "Task list with status, due date, and owner",
+    "whenToUse": "When the open tasks of a project need tracking with an owner, a due date and a status — not for scheduling in a calendar view and not for rating or selecting measures, which is what the calendar module and the rating matrices are for."
+  },
   "transformed-imr-chart": {
     "name": "Control Chart (Box-Cox transformed)",
     "description": "I-MR with Box-Cox transform for non-normal data",

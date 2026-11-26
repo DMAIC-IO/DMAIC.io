@@ -25,7 +25,6 @@ const FILES = [
   'js/modules/process-map/process-map-model.js',
   'js/modules/random-generator/random-generator.js',
   'js/modules/rest-api/rest-api-model.js',
-  'js/modules/todo/todo-model.js',
   'js/modules/worksheet/domain/sheet.js',
 ];
 

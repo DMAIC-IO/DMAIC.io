@@ -20,9 +20,8 @@ import h17 from '../modules/regression/regression-help.js';
 import h18 from '../modules/response-optimization/response-optimization-help.js';
 import h19 from '../modules/rest-api/rest-api-help.js';
 import h20 from '../modules/sample-size/sample-size-help.js';
-import h21 from '../modules/todo/todo-help.js';
-import h22 from '../modules/unit-converter/unit-converter-help.js';
-import h23 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h21 from '../modules/unit-converter/unit-converter-help.js';
+import h22 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -46,7 +45,6 @@ export const HELP = {
   "response-optimization": h18,
   "rest-api": h19,
   "sample-size": h20,
-  "todo": h21,
-  "unit-converter": h22,
-  "voc-ctx-tree": h23,
+  "unit-converter": h21,
+  "voc-ctx-tree": h22,
 };

@@ -15,6 +15,7 @@
   "noEvents": "Keine Termine",
   "newEvent": "Neuer Termin",
   "editEvent": "Termin bearbeiten",
+  "editTodoEvent": "Aufgabentermin bearbeiten",
   "title": "Titel",
   "titlePlaceholder": "z.B. Tollgate Review Define",
   "date": "Datum",
@@ -64,7 +65,8 @@
     "6": "So"
   },
   "confirm": {
-    "removeEvent": "Den Termin „{title}“ löschen?"
+    "removeEvent": "Den Termin „{title}“ löschen?",
+    "removeTodoEvent": "Aufgabe „{title}“ löschen? Sie verschwindet auch aus der Aufgabenliste."
   },
   "invariants": {
     "axisOrder": "Die erste Stunde der Tagesachse muss vor der letzten liegen.",
@@ -84,5 +86,6 @@
         }
       }
     }
-  }
+  },
+  "todoWriteFailed": "Die Aufgabe ließ sich nicht ändern."
 }

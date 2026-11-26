@@ -11,7 +11,7 @@ import { defineModel, list, object, text, number, oneOf, date, time, phase, idOf
 import { requireKnownId } from '../../../core/validate.js';
 import { getPhaseIds } from '../../../core/cycles/cycles.js';
 import { uid } from '../../../core/uid.js';
-import { from0 } from './migrations.js';
+import { from0, from10 } from './migrations.js';
 
 /** @param {any} m @param {string} id @returns {any} der Termin; wirft bei unbekannter id */
 function eventOf(m, id) {
@@ -20,8 +20,8 @@ function eventOf(m, id) {
 }
 
 export const State = defineModel({
-  version: '1.0',
-  migrations: { '0→1.0': from0 },
+  version: '1.1',
+  migrations: { '0→1.1': from0, '1.0→1.1': from10 },
   fields: {
     events: list(object({
       id: text(),
@@ -31,7 +31,6 @@ export const State = defineModel({
       duration: number({ integer: true, min: 5, default: 60 }),
       desc: text(),
       phase: phase(),
-      source: oneOf(['todo'], { optional: true }),
     })),
   },
   view: {

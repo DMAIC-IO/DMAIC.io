@@ -128,6 +128,18 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.activities', reason: 'Namen aus den Daten in Zeilen- und Spaltenköpfen; Eingaben ohne sichtbare Beschriftung' },
     { name: 'fields.stakeholders', reason: 'Namen aus den Daten in Zeilen- und Spaltenköpfen; Eingaben ohne sichtbare Beschriftung' },
   ],
+  'todo': [
+    { name: 'actions.addTodo', reason: 'Knopf der Werkzeugleiste; die Hilfe kommt dort als title und aria-describedby, ein Fragezeichen im Knopf schriebe der Rahmen weg' },
+    { name: 'actions.removeTodo', reason: 'Mülleimer der Zeile; ein Fragezeichen je Zeile wäre Rauschen' },
+    { name: 'actions.moveTodo', reason: 'die Oberfläche verschiebt über den Griff der Zeile' },
+    { name: 'actions.setTodoText', reason: 'die Oberfläche tippt direkt ins Feld (x-model), verankert am Spaltenkopf an fields.items.text' },
+    { name: 'actions.setTodoOwner', reason: 'die Oberfläche tippt direkt ins Feld (x-model), verankert am Spaltenkopf an fields.items.owner' },
+    { name: 'actions.setTodoDue', reason: 'die Oberfläche wählt das Datum direkt im Feld (x-model), verankert am Spaltenkopf an fields.items.due' },
+    { name: 'actions.setTodoStatus', reason: 'Statusauswahl und Kästchen je Zeile, verankert am Spaltenkopf an fields.items.status' },
+    { name: 'actions.setTodoCalendar', reason: 'Kalenderknopf je Zeile, verankert am Spaltenkopf an fields.items.cal' },
+    { name: 'actions.updateTodo', reason: 'kein Bedienelement in der Aufgabenliste; der Kalender ändert so Titel, Datum, Beginn und Dauer eines Aufgabentermins' },
+    { name: 'fields.items', reason: 'die Aufgaben stehen als Tabellenzeilen; verankert sind die Spaltenköpfe an den Typedef-Sätzen fields.items.*' },
+  ],
   'ce-matrix': [
     { name: 'actions.addInput', reason: 'Knopf der Werkzeugleiste; die Hilfe kommt dort als title und aria-describedby, ein Fragezeichen im Knopf schriebe der Rahmen weg' },
     { name: 'actions.addOutput', reason: 'Knopf der Werkzeugleiste; die Hilfe kommt dort als title und aria-describedby, ein Fragezeichen im Knopf schriebe der Rahmen weg' },

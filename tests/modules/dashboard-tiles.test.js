@@ -7,7 +7,7 @@ import charterTiles from '../../js/modules/project-charter/tile/tile.js';
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/tile/tile.js';
 import spcTile from '../../js/modules/control-chart/tile/tile.js';
-import todoTile from '../../js/modules/todo/todo.tile.js';
+import todoTile from '../../js/modules/todo/tile/tile.js';
 import calendarTile from '../../js/modules/dmaic-calendar/tile/tile.js';
 import stakeholderTile from '../../js/modules/stakeholder-analysis/tile/tile.js';
 import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.js';
@@ -976,7 +976,7 @@ suite('dashboard tiles: todo', () => {
 
   test('viewModel: summary, segments and next items as display data', () => {
     const vm = vmOf(todoTile, TODO_STATE);
-    assertPlain(vm);
+    assertEqual(vm._templateTile, true);
     assertDeepEqual(vm.summary.map(s => [s.status, s.label, s.count]), [
       ['open', 'modules.todo.status_open: ', '1'],
       ['in-progress', 'modules.todo.status_in-progress: ', '1'],
@@ -985,7 +985,7 @@ suite('dashboard tiles: todo', () => {
     assertEqual(vm.segments[0].style, 'width:33.33333333333333%;background:var(--color-text-tertiary)');
     assertEqual(vm.nextLabel, 'dashboard.todoNextDue');
     assertDeepEqual(vm.next[0], { modifier: 'dashboard-todo__overdue', title: 'dashboard.todoOverdue',
-      text: 'Past', owner: 'Ann', due: '2000-01-01' });
+      text: 'Past', owner: 'Ann', due: '01/01/2000' });
     assertDeepEqual(vm.next[2], { modifier: '', title: null, text: 'Undated', owner: null, due: '—' });
   });
 });
@@ -1069,7 +1069,7 @@ suite('dashboard tiles: dmaic-calendar', () => {
     return { source, calls };
   };
 
-  test('Aufgabentermine aus ctx.source; gespeicherte Spiegel der Altform zählen nicht', () => {
+  test('Aufgabentermine aus ctx.source; gespeicherte Spiegel der Altform fallen bei der Migration weg', () => {
     const { source, calls } = todoSource({ loaded: true });
     const mirror = { id: 'm', title: 'Messplan', date: addDaysISO(t0, 2), time: '09:00', duration: 30, desc: '', phase: 'define', source: 'todo' };
     const vm = vmOf(calendarTile, { events: [CAL_STATE.events[0], mirror] }, {}, { source });

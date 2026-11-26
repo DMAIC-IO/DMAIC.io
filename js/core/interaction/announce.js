@@ -1,6 +1,6 @@
 /**
  * Geteilte aria-live-Region und Bedienhinweis für Gesten (Spec C §4.4).
- * Eine Region je Dokument; `ui/draggable-list.js` sagt in derselben an.
+ * Eine Region je Dokument.
  */
 
 const REGION_ID = 'dmike-live-region';

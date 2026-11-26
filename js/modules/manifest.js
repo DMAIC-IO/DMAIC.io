@@ -61,19 +61,6 @@ export default [
 
   // ─── Define ───────────────────────────────────────────────────
   {
-    id: 'todo',
-    phase: 'define',
-    group: 'team',
-    allowedPhases: ['define'],
-    load: () => import('./todo/todo.js'),
-    loadTile: () => import('./todo/todo.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define', allowedPhases: ['define'] },
-      dmadv:  { phase: 'define', allowedPhases: ['define'] },
-      eightd: { phase: 'team',   allowedPhases: ['team', 'containment'] },
-    },
-  },
-  {
     id: 'voc-ctx-tree',
     phase: 'define',
     group: 'customer',

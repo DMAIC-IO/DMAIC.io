@@ -54,7 +54,7 @@ export function fmtDur(m) {
 }
 
 /**
- * @typedef {{ id: string, title: string, date: string, time: string, duration: number, desc: string, phase: string, source?: 'todo' }} CalendarEvent
+ * @typedef {{ id: string, title: string, date: string, time: string, duration: number, desc?: string, phase: string, todo?: { instanceId: string, itemId: string } }} CalendarEvent
  */
 
 /** Termine einer Phase; `null` → alle. @param {CalendarEvent[]} events @param {string|null} filter @returns {CalendarEvent[]} */

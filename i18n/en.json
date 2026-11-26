@@ -876,7 +876,6 @@
     "rangeAnd": "and",
     "rangeInteger": "whole number",
     "reorder": "Reorder row",
-    "rowMoved": "Row moved, position {pos} of {total}",
     "gesture": {
       "instructions": "Space or Enter picks up, arrow keys move, Space or Enter drops, Escape cancels. Alt+Arrow moves one step.",
       "picked": "Picked up. {position}",
@@ -2039,93 +2038,6 @@
       "fields": {
         "steps": {
           "help": "The chain in order, each item described under keys."
-        }
-      }
-    },
-    "todo": {
-      "name": "Todo",
-      "description": "Task list with status, due date, and owner",
-      "filterHelp": "Narrows the list: by status, by responsible person and by search text in the task text and the owner. The filter does not change any task.",
-      "addTodo": "Add Task",
-      "filter": "Filter",
-      "searchPlaceholder": "Search …",
-      "colText": "Task",
-      "colOwner": "Owner",
-      "colDue": "Due Date",
-      "colStatus": "Status",
-      "status_open": "Open",
-      "status_in-progress": "In Progress",
-      "status_done": "Done",
-      "status_blocked": "Blocked",
-      "allStatuses": "All Statuses",
-      "allOwners": "All Owners",
-      "textPlaceholder": "Enter task …",
-      "ownerPlaceholder": "Owner …",
-      "showInCalendar": "Show in calendar",
-      "delete": "Delete",
-      "emptyState": "No tasks yet. Click \"+ Add Task\" to get started.",
-      "noMatch": "No tasks match the current filter.",
-      "whenToUse": "When the open tasks of a project need tracking with an owner, a due date and a status — not for scheduling in a calendar view and not for rating or selecting measures, which is what the calendar module and the rating matrices are for.",
-      "actions": {
-        "moveTodo": {"help": "Moves a task in front of another in the stored order; the display's filter and sorting play no part. The list is on manual order afterwards.", "params": {"itemId": "The id of the task to move. An unknown id is an error.", "beforeId": "The id of the task it goes before. An unknown id is an error; equal to itemId changes nothing."}},
-        "addTodo": {
-          "help": "Appends an empty task to the list and returns its id.",
-          "params": {}
-        },
-        "setTodoText": {
-          "help": "Sets the text of a task, i.e. what has to be done. Each row has a text field for it. Clicking the column header sorts the list by it; a second click reverses the direction.",
-          "params": {
-            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
-            "text": "The new text. An empty string clears it; a missing argument is an error."
-          }
-        },
-        "setTodoOwner": {
-          "help": "Sets the owner of a task as a freely typed name; empty means no owner. Clicking the column header sorts the list by it; a second click reverses the direction.",
-          "params": {
-            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
-            "owner": "The name of the owner. An empty string leaves the task without an owner; a missing argument is an error."
-          }
-        },
-        "setTodoDue": {
-          "help": "Sets the due date of a task in the notation YYYY-MM-DD, e.g. 2026-11-30; empty clears it. Clicking the column header sorts the list by it; a second click reverses the direction.",
-          "params": {
-            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
-            "isoDate": "The due date written as YYYY-MM-DD. An empty string clears it; any other value is an error."
-          }
-        },
-        "setTodoStatus": {
-          "help": "Sets the status of a task: open, in progress, done or blocked. The checkbox at the start of the row sets it to done and back to open. Clicking the column header sorts the list by it; a second click reverses the direction.",
-          "params": {
-            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
-            "status": "One of the four values open, in-progress, done or blocked. Any other value is an error."
-          }
-        },
-        "setTodoCalendar": {
-          "help": "Decides whether a task is reported to a calendar module of the project. Without a calendar module the mark is still stored and takes effect once one is added.",
-          "params": {
-            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
-            "inCalendar": "true reports the task, false does not. Any other value — a missing argument included — is an error."
-          }
-        },
-        "removeTodo": {
-          "help": "Removes a task from the list.",
-          "params": {
-            "itemId": "The id of the task as read() lists it under items. An unknown id is an error."
-          }
-        },
-        "setSearch": {
-          "help": "Sets the search text; it searches task text and owner, case-insensitively.",
-          "params": {
-            "text": "The search text. An empty string lifts the search; a missing argument is an error."
-          }
-        }
-      },
-      "fields": {
-        "items": {
-          "help": "The tasks in entry order. Per task: id (this is how the actions address it), text, owner, due (due date as YYYY-MM-DD or empty), status (open, in-progress, done or blocked) and cal (whether it is reported to a calendar module)."
-        },
-        "search": {
-          "help": "The stored search text over task text and owner; empty means no search."
         }
       }
     },

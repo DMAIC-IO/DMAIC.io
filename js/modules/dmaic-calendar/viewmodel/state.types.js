@@ -10,6 +10,7 @@
  * @property {{ date: string, from: number, to: number }|null} drawPreview
  * @property {{ id: string, date: string, min: number }|null} movePreview
  * @property {{ id: string, start: number, end: number }|null} resizePreview
+ * @property {{ instanceId: string, phase: string, items: { id: string, text: string, due: string, cal: boolean, time?: string, duration?: number }[] }[]} todoReads
  */
 
 /**

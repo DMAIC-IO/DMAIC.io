@@ -50,9 +50,9 @@ export default createTile({
     return {
       /** @returns {number} */
       get days() { return Number(this.settings.horizon); },
-      /** Eigene Termine (ohne gespeicherte Spiegel der Altform) und Aufgabentermine. */
+      /** Eigene Termine und Aufgabentermine. */
       get allEvents() {
-        all ??= [...this.model.events.filter((e) => e.source !== 'todo'), ...todoAppointments(todoReads())];
+        all ??= [...this.model.events, ...todoAppointments(todoReads())];
         return all;
       },
       get upcoming() { return upcomingEvents(this.allEvents, todayISO(), this.days); },
