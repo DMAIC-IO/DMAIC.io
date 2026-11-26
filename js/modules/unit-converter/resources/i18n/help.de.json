@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der Einheitenrechner wandelt Zahlenwerte zwischen physikalischen Einheiten um — Länge, Masse, Volumen, Temperatur, Druck, Zeit und mehr. Er ist als kleiner Helfer gedacht, um Messwerte vor einer Analyse auf eine einheitliche Größe zu bringen."
+        },
+        {
+          "type": "definition",
+          "term": "Quell- und Zieleinheit",
+          "content": "Der eingegebene Wert in der Quelleinheit wird in den entsprechenden Wert in der Zieleinheit umgerechnet. Die Konvertierung erfolgt sofort, ohne Bestätigung."
+        },
+        {
+          "type": "definition",
+          "term": "Kategorien",
+          "content": "Einheiten sind nach physikalischer Größe (Länge, Druck, Temperatur, …) gruppiert. Innerhalb einer Kategorie sind alle Umrechnungen exakt definiert; Umrechnungen zwischen Kategorien sind nicht möglich."
+        },
+        {
+          "type": "paragraph",
+          "content": "Für die regelmäßige Konvertierung ganzer Worksheet-Spalten empfiehlt sich stattdessen eine Formelspalte direkt im Arbeitsblatt — der Einheitenrechner ist auf Einzelumrechnungen ausgelegt."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Temperatur ist nicht proportional",
+          "content": "Celsius, Fahrenheit und Kelvin haben unterschiedliche Nullpunkte. Eine Differenz von 10 °C ist nicht gleich 10 °F. Bei Temperaturdifferenzen die jeweilige Differenz-Einheit beachten."
+        },
+        {
+          "type": "definition",
+          "term": "Überdruck vs. Absolutdruck",
+          "content": "Druckangaben können absolut oder relativ zum Atmosphärendruck (Überdruck) gemeint sein. Vor der Umrechnung klären, welche Konvention die Datenquelle nutzt — ein Versatz von 1 bar ist sonst leicht möglich."
+        },
+        {
+          "type": "definition",
+          "term": "US- und britische Einheiten unterscheiden sich",
+          "content": "Eine US-Gallone ist nicht gleich einer britischen Gallone (ca. 3,79 l vs. 4,55 l). Auch fluid ounce, ton (short/long) und ähnliche Einheiten existieren in mehreren Varianten."
+        },
+        {
+          "type": "definition",
+          "term": "Stille Rundungsfehler",
+          "content": "Bei sehr kleinen oder sehr großen Werten können Anzeigerundungen {{term:genauigkeit|Genauigkeit}} verbergen. Für hochpräzise Berechnungen lieber Roh-Faktoren verwenden oder die volle Stellenzahl prüfen."
+        }
+      ]
+    }
+  }
+}

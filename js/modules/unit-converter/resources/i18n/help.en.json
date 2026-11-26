@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The unit converter transforms numeric values between physical units — length, mass, volume, temperature, pressure, time, and more. It is meant as a small helper to bring measurements to a common unit before analysis."
+        },
+        {
+          "type": "definition",
+          "term": "Source and target unit",
+          "content": "The value entered in the source unit is converted to the equivalent value in the target unit. Conversion is instant, with no confirmation step."
+        },
+        {
+          "type": "definition",
+          "term": "Categories",
+          "content": "Units are grouped by physical quantity (length, pressure, temperature, …). All conversions within a category are exact; conversions between categories are not possible."
+        },
+        {
+          "type": "paragraph",
+          "content": "For regular conversion of entire worksheet columns, a formula column directly in the worksheet is the better choice — the unit converter is designed for individual conversions."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Temperature is not proportional",
+          "content": "Celsius, Fahrenheit, and Kelvin have different zero points. A difference of 10 °C is not equal to 10 °F. For temperature differences, use the appropriate difference unit."
+        },
+        {
+          "type": "definition",
+          "term": "Gauge vs. absolute pressure",
+          "content": "Pressure values can be absolute or relative to atmospheric pressure (gauge). Clarify which convention the data source uses before converting — otherwise a 1 bar offset is easy to introduce."
+        },
+        {
+          "type": "definition",
+          "term": "US and Imperial units differ",
+          "content": "A US gallon is not equal to an Imperial gallon (≈ 3.79 l vs. 4.55 l). Fluid ounce, ton (short/long), and similar units also exist in several variants."
+        },
+        {
+          "type": "definition",
+          "term": "Silent rounding errors",
+          "content": "For very small or very large values, display rounding can hide precision. For high-precision calculations, use raw factors or check the full digit count."
+        }
+      ]
+    }
+  }
+}

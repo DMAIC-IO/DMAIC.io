@@ -1,0 +1,86 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "activeCat": {
+      "help": "The key of the active quantity category, such as laenge for length or masse for mass. It is switched by the command, which also resets both units to the defaults of the category."
+    },
+    "fromUnit": {
+      "help": "From: the unit converted from; the value to convert is entered below it. The units of the active category are selectable; if the target unit no longer fits afterwards, it is pulled along."
+    },
+    "toUnit": {
+      "help": "To: the unit converted to; the result is shown below it. Only units that fit the From unit are selectable; for lab values, the units of the same group."
+    },
+    "inputVal": {
+      "help": "The value to convert, as free text; a comma counts as the decimal separator, a dot before three digits as a thousands separator. Empty means nothing entered; text that is not a number gives no result."
+    },
+    "tzFrom": {
+      "help": "From Timezone: the source time zone, whose time and date are entered below it. Stored is the position in the time-zone list, from 0; 0 is UTC, 1 Berlin."
+    },
+    "tzTo": {
+      "help": "To Timezone: the target time zone, in which the converted result appears below it. Stored is the position in the time-zone list, from 0; 0 is UTC, 1 Berlin."
+    },
+    "tzTime": {
+      "help": "The time to convert, as HH:MM from 00:00 to 23:59 in the source time zone; empty means not set, and then there is no result."
+    },
+    "tzDate": {
+      "help": "The date of the time to convert, as YYYY-MM-DD; it decides between daylight saving and standard time. A new conversion starts with today's date; empty means not set, and then there is no result."
+    },
+    "unitKeys": {
+      "help": "The unit keys of the active category, exactly the values the From unit accepts."
+    },
+    "toUnitKeys": {
+      "help": "The unit keys that fit the current From unit, exactly the values the To unit accepts."
+    },
+    "result": {
+      "help": "The result of the unit conversion, each entry described individually. It changes with the input and the units."
+    },
+    "timezone": {
+      "help": "The result of the time-zone conversion, each entry described individually. While the time or the date is missing, all entries are empty."
+    }
+  },
+  "actions": {
+    "selectCategory": {
+      "help": "Switches the quantity category with the buttons at the top and resets both units to its defaults.",
+      "params": {
+        "catKey": "The key of the category: laenge for length, flaeche for area, volumen, masse for mass, druck for pressure, temperatur, kraft for force, drehmoment for torque, energie, leistung for power, durchfluss for flow rate, geschwindigkeit for speed, zeit for time, winkel for angle, drehzahl for rotational speed, ph, konzentration, schall for sound or laborwerte for lab values. Any other value is rejected.",
+        "command": "The command as an object with catKey."
+      }
+    },
+    "setFromUnit": {
+      "help": "Sets the unit converted from, and pulls the target unit along in the same step when it no longer fits.",
+      "params": {
+        "unitKey": "The key of a unit of the active category. A unit of another category is rejected; the message names the allowed keys.",
+        "command": "The command as an object with unitKey."
+      }
+    },
+    "swapUnits": {
+      "help": "Swaps the From and the To unit; the entered value stays.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    },
+    "swapTimezones": {
+      "help": "Swaps the source and the target time zone; time and date stay.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    },
+    "tzSetNow": {
+      "help": "Sets time and date to the current moment in the source time zone.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    }
+  },
+  "types": {
+    "ConversionResult": {
+      "value": "The converted result, unrounded, as the calculation returns it. Empty when no number is entered or the conversion is not defined for this value; then a dash or “undefined” is shown below the To unit.",
+      "factor": "The conversion factor as shown under “Formula”: the value of one From unit in the To unit. Empty for logarithmic quantities such as levels or the pH value, which have no fixed factor."
+    },
+    "TimezoneResult": {
+      "time": "The converted time in the target time zone, as shown under “To Timezone”, as HH:MM. Empty while the time or the date is missing.",
+      "date": "The date of the converted time in the target time zone, as YYYY-MM-DD; it differs from the entered date when the conversion crosses midnight. Empty while the time or the date is missing.",
+      "diffHours": "The time difference of the target zone from the source zone in hours, as shown under “Difference”: positive when the target zone is later, with fractions for half hours. It accounts for daylight saving at the entered date. Empty while the time or the date is missing."
+    }
+  }
+}

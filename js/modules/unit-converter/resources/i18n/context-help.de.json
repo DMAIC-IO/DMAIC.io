@@ -1,0 +1,86 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "activeCat": {
+      "help": "Der Schlüssel der aktiven Größenart, etwa laenge oder masse. Gewechselt wird über das Kommando, das auch beide Einheiten auf die Vorgaben der Größenart stellt."
+    },
+    "fromUnit": {
+      "help": "Eingang: die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Wählbar sind die Einheiten der aktiven Größenart; passt die Zieleinheit danach nicht mehr, wird sie mitgezogen."
+    },
+    "toUnit": {
+      "help": "Ausgang: die Einheit, in die umgerechnet wird; darunter steht das Ergebnis. Wählbar sind nur Einheiten, die zur Eingangseinheit passen; bei den Laborwerten die Einheiten derselben Gruppe."
+    },
+    "inputVal": {
+      "help": "Der Wert, der umgerechnet wird, als freier Text; ein Komma gilt als Dezimaltrennzeichen, ein Punkt vor drei Ziffern als Tausendertrenner. Leer heißt nichts eingegeben; ein Text, der keine Zahl ergibt, ergibt kein Ergebnis."
+    },
+    "tzFrom": {
+      "help": "Von Zeitzone: die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden. Gespeichert wird die Position in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin."
+    },
+    "tzTo": {
+      "help": "Nach Zeitzone: die Zielzeitzone, in der darunter das umgerechnete Ergebnis erscheint. Gespeichert wird die Position in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin."
+    },
+    "tzTime": {
+      "help": "Die Uhrzeit, die umgerechnet wird, als HH:MM von 00:00 bis 23:59 in der Ausgangszeitzone; leer heißt nicht gesetzt, dann gibt es kein Ergebnis."
+    },
+    "tzDate": {
+      "help": "Das Datum der Uhrzeit, die umgerechnet wird, als JJJJ-MM-TT; es entscheidet über Sommer- und Winterzeit. Eine neue Umrechnung beginnt mit dem heutigen Datum; leer heißt nicht gesetzt, dann gibt es kein Ergebnis."
+    },
+    "unitKeys": {
+      "help": "Die Einheitenschlüssel der aktiven Größenart, genau die Werte, die die Eingangseinheit annimmt."
+    },
+    "toUnitKeys": {
+      "help": "Die Einheitenschlüssel, die zur aktuellen Eingangseinheit passen, genau die Werte, die die Ausgangseinheit annimmt."
+    },
+    "result": {
+      "help": "Das Ergebnis der Einheitenumrechnung, jede Angabe einzeln beschrieben. Es ändert sich mit Eingabe und Einheiten."
+    },
+    "timezone": {
+      "help": "Das Ergebnis der Zeitzonenumrechnung, jede Angabe einzeln beschrieben. Solange Uhrzeit oder Datum fehlen, sind alle Angaben leer."
+    }
+  },
+  "actions": {
+    "selectCategory": {
+      "help": "Wechselt die Größenart über die Knöpfe oben und stellt beide Einheiten auf deren Vorgaben.",
+      "params": {
+        "catKey": "Der Schlüssel der Größenart: laenge, flaeche, volumen, masse, druck, temperatur, kraft, drehmoment, energie, leistung, durchfluss, geschwindigkeit, zeit, winkel, drehzahl, ph, konzentration, schall oder laborwerte. Jeder andere Wert wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit catKey."
+      }
+    },
+    "setFromUnit": {
+      "help": "Setzt die Einheit, aus der umgerechnet wird, und zieht die Zieleinheit in einem Schritt nach, wenn sie dazu nicht mehr passt.",
+      "params": {
+        "unitKey": "Der Schlüssel einer Einheit der aktiven Größenart. Eine Einheit einer anderen Größenart wird abgelehnt; die Meldung nennt die zulässigen Schlüssel.",
+        "command": "Das Kommando als ein Objekt mit unitKey."
+      }
+    },
+    "swapUnits": {
+      "help": "Tauscht Eingangs- und Ausgangseinheit; der eingegebene Wert bleibt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "swapTimezones": {
+      "help": "Tauscht Ausgangs- und Zielzeitzone; Uhrzeit und Datum bleiben.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "tzSetNow": {
+      "help": "Setzt Uhrzeit und Datum auf den jetzigen Augenblick in der Ausgangszeitzone.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    }
+  },
+  "types": {
+    "ConversionResult": {
+      "value": "Das umgerechnete Ergebnis, ungerundet, so wie die Rechnung es liefert. Leer, wenn keine Zahl eingegeben ist oder die Umrechnung für diesen Wert nicht definiert ist; dann steht ein Strich oder „undefiniert“ unter dem Ausgang.",
+      "factor": "Der Umrechnungsfaktor, wie er unter „Formel“ steht: der Wert einer Eingangseinheit in der Ausgangseinheit. Leer bei logarithmischen Größen wie Pegeln oder dem pH-Wert, dort gibt es keinen festen Faktor."
+    },
+    "TimezoneResult": {
+      "time": "Die umgerechnete Uhrzeit in der Zielzeitzone, wie sie unter „Nach Zeitzone“ steht, als HH:MM. Leer, solange Uhrzeit oder Datum fehlen.",
+      "date": "Das Datum der umgerechneten Uhrzeit in der Zielzeitzone, als JJJJ-MM-TT; es weicht vom eingegebenen Datum ab, wenn die Umrechnung über Mitternacht geht. Leer, solange Uhrzeit oder Datum fehlen.",
+      "diffHours": "Der Zeitunterschied der Zielzeitzone zur Ausgangszeitzone in Stunden, wie bei „Differenz“: positiv, wenn die Zielzeitzone später liegt, mit Bruchteilen bei halben Stunden. Er berücksichtigt Sommer- und Winterzeit am eingegebenen Datum. Leer, solange Uhrzeit oder Datum fehlen."
+    }
+  }
+}
