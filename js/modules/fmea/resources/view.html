@@ -1,0 +1,345 @@
+<section class="module-container fmea" x-data="fmea">
+  <div class="module-container__body">
+
+    <!-- Skalen (im DOM; sichtbar über die Klasse --visible) -->
+    <div class="fmea__scale-ref" :class="scaleRefClass" data-ref="scale-ref">
+      <div class="fmea__scale-toolbar">
+        <button class="btn btn--sm btn--ghost" data-help-key="modules.fmea.actions.resetScales.help" data-action="reset-scales" type="button" x-command="resetScales" x-text="t('resetScales')"></button>
+      </div>
+
+      <div data-ref="rpn-scales" x-show="!isAp">
+        <template x-for="sc in rpnScales" :key="sc.dim">
+          <div>
+            <h3 data-help-key="modules.fmea.fields.scales.help" x-text="t(sc.title)"></h3>
+            <table class="dmike-table dmike-table--head-mono" :data-rpn-scale="sc.dim">
+              <thead><tr>
+                <template x-for="h in sc.heads" :key="h"><th><span data-help-key="modules.fmea.fields.scales.help" x-text="t(h)"></span></th></template>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in sc.rows" :key="row.key">
+                  <tr>
+                    <td x-text="row.label"></td>
+                    <td contenteditable="true" class="fmea__scale-editable" :data-scale="row.key" @blur="scaleEdited($event)" x-text="scaleText(row.key)"></td>
+                    <td contenteditable="true" class="fmea__scale-editable" :data-scale="row.second" @blur="scaleEdited($event)" x-text="scaleText(row.second)"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <h3 x-text="t('rpnCategories')"></h3>
+        <div class="fmea__legend-grid">
+          <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--low"></div> &lt; 50 <span x-text="t('catLow')"></span></div>
+          <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--medium"></div> 50–124 <span x-text="t('catMedium')"></span></div>
+          <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--high"></div> 125–200 <span x-text="t('catHigh')"></span></div>
+          <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--critical"></div> &gt; 200 <span x-text="t('catCritical')"></span></div>
+        </div>
+      </div>
+
+      <div class="fmea__ap-scales" data-ref="ap-scales" x-show="isAp">
+        <template x-for="dim in apDims" :key="dim">
+          <div>
+            <h3 data-help-key="modules.fmea.fields.scales.help" x-text="t(apDimTitle(dim))"></h3>
+            <table class="dmike-table dmike-table--head-mono" :data-ap-scale="dim">
+              <thead><tr>
+                <th><span data-help-key="modules.fmea.fields.scales.help" x-text="t('scaleValue')"></span></th>
+                <th><span data-help-key="modules.fmea.fields.scales.help" x-text="t('scaleMeaning')"></span></th>
+                <th><span data-help-key="modules.fmea.fields.scales.help" x-text="t('apScaleCriterion')"></span></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in apScaleRows(dim)" :key="row.key">
+                  <tr>
+                    <td x-text="row.value"></td>
+                    <td contenteditable="true" class="fmea__scale-editable" :data-scale="row.meaningKey" @blur="scaleEdited($event)" x-text="scaleText(row.meaningKey)"></td>
+                    <td contenteditable="true" class="fmea__scale-editable" :data-scale="row.criterionKey" @blur="scaleEdited($event)" x-text="scaleText(row.criterionKey)"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <h3 x-text="t('apMatrixTitle')"></h3>
+        <table class="dmike-table dmike-table--head-mono fmea__ap-matrix" data-ref="ap-matrix">
+          <thead><tr>
+            <th><span data-help-key="modules.fmea.fields.risks.sev.help" x-text="t('abbrS')"></span></th><th><span data-help-key="modules.fmea.fields.risks.occ.help" x-text="t('abbrO')"></span></th>
+            <template x-for="d in apDHeads" :key="d.key"><th><span data-help-key="modules.fmea.fields.risks.det.help" x-text="d.text"></span></th></template>
+          </tr></thead>
+          <tbody>
+            <template x-for="row in apMatrixRows" :key="row.key">
+              <tr>
+                <td x-text="row.s"></td>
+                <td x-text="row.o"></td>
+                <template x-for="cell in row.cells" :key="cell.key">
+                  <td class="fmea__ap-cell" :class="cell.cls" x-text="cell.ap"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <p class="fmea__ap-source" data-ref="ap-source" x-text="t('apSourceNote')"></p>
+      </div>
+    </div>
+
+    <!-- Methode und Art -->
+    <div class="fmea__settings" data-ref="settings">
+      <div class="fmea__settings-group">
+        <span class="fmea__settings-label" x-text="t('methodLabel')"></span>
+        <div class="btn-group" role="radiogroup" :aria-label="t('methodLabel')" data-help-key="modules.fmea.fields.method.help" x-set="model.method">
+          <button type="button" role="radio" class="btn--segment" data-help-key="" data-method="ap" value="ap" :class="methodClass('ap')" x-text="t('methodAp')"></button>
+          <button type="button" role="radio" class="btn--segment" data-help-key="" data-method="rpn" value="rpn" :class="methodClass('rpn')" x-text="t('methodRpn')"></button>
+        </div>
+      </div>
+      <div class="fmea__settings-group" data-ref="fmea-type-switch" x-show="isAp">
+        <span class="fmea__settings-label" x-text="t('fmeaTypeLabel')"></span>
+        <div class="btn-group" role="radiogroup" :aria-label="t('fmeaTypeLabel')" data-help-key="modules.fmea.fields.fmeaType.help" x-set="model.fmeaType">
+          <button type="button" role="radio" class="btn--segment" data-help-key="" data-fmea-type="process" value="process" :class="typeClass('process')" x-text="t('fmeaTypeProcess')"></button>
+          <button type="button" role="radio" class="btn--segment" data-help-key="" data-fmea-type="design" value="design" :class="typeClass('design')" x-text="t('fmeaTypeDesign')"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kennzahlen -->
+    <div class="fmea__stats" data-help-key="modules.fmea.fields.stats.help">
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon fmea__stat-icon--total">Σ</div>
+        <div><div class="fmea__stat-value" data-stat="total" x-text="stats.total"></div><div class="fmea__stat-label" x-text="t('statTotal')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="!isAp">
+        <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="severity.critical" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="critical" x-text="stats.critical"></div><div class="fmea__stat-label" x-text="t('statCritical')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon fmea__stat-icon--high"><span class="icon icon--sm" data-icon="severity.high" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="high" x-text="stats.high"></div><div class="fmea__stat-label" x-text="statHighLabel"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon fmea__stat-icon--medium"><span class="icon icon--sm" data-icon="severity.medium" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="medium" x-text="stats.medium"></div><div class="fmea__stat-label" x-text="statMediumLabel"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon fmea__stat-icon--low"><span class="icon icon--sm" data-icon="severity.low" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="low" x-text="stats.low"></div><div class="fmea__stat-label" x-text="statLowLabel"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="isAp">
+        <div class="fmea__stat-icon fmea__stat-icon--neutral"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="rated" x-text="statRated"></div><div class="fmea__stat-label" x-text="t('statRated')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="isAp">
+        <div class="fmea__stat-icon fmea__stat-icon--high"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="unjustified" x-text="stats.unjustified"></div><div class="fmea__stat-label" x-text="t('statUnjustified')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="!isAp">
+        <div class="fmea__stat-icon fmea__stat-icon--neutral">Ø</div>
+        <div><div class="fmea__stat-value" data-stat="avg" x-text="statAvg"></div><div class="fmea__stat-label" x-text="t('statAvg')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="!isAp">
+        <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="nav.arrow-up" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="max" x-text="statMax"></div><div class="fmea__stat-label" x-text="t('statMax')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="!isAp">
+        <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="severity.critical" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="highSeverity" x-text="stats.highSeverity"></div><div class="fmea__stat-label" x-text="t('statHighSeverity')"></div></div>
+      </div>
+    </div>
+
+    <!-- Risiken -->
+    <div class="fmea__risk-list" data-ref="risk-list">
+      <template x-for="(risk, ri) in model.risks" :key="risk.id">
+        <div class="fmea__risk-card" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="rpnOf(risk)" :data-ap="apOf(risk)" :data-proj-rpn="projRpnOf(risk)">
+          <div class="fmea__risk-header">
+            <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" x-command="toggleRiskCollapsed" :data-arg-risk-id="risk.id">
+              <span class="fmea__collapse-arrow icon icon--sm" :data-icon="collapseIcon(risk)" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
+            </span>
+            <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" :aria-label="t('step')" data-help-key="modules.fmea.fields.risks.step.help" x-model="risk.step">
+            <div class="fmea__flags">
+              <select class="field fmea__special-char" name="specialChar" :title="t('specialChar')" :aria-label="t('specialChar')" data-help-key="" x-field="risk.specialChar">
+                <option value="">—</option>
+                <option value="CC">CC</option>
+                <option value="SC">SC</option>
+              </select>
+              <span class="fmea__badge" :class="specialCharClass(risk)" data-special-char-badge x-show="risk.specialChar" x-text="risk.specialChar"></span>
+              <span class="fmea__hint" data-special-char-hint x-show="showSpecialHint(risk)" x-text="t('specialCharHint')"></span>
+              <span class="fmea__badge fmea__badge--warning" data-unjustified-badge x-show="showUnjustified(risk)"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span> <span x-text="t('unjustifiedBadge')"></span></span>
+              <span class="fmea__badge fmea__badge--severe" data-severe-badge x-show="showSevere(risk)" x-text="t('severeBadge')"></span>
+            </div>
+            <div class="fmea__rpn-header-group">
+              <span class="fmea__rpn-badge" :class="badgeClass(risk)" data-rpn-badge x-text="badgeText(risk)"></span>
+              <span class="fmea__secondary-rpn" data-secondary-rpn x-show="isAp" x-text="riskRpnText(risk)"></span>
+              <span class="fmea__rpn-arrow-sep icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
+              <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="projBadgeClass(risk)" data-proj-rpn-badge x-text="projBadgeText(risk)"></span>
+            </div>
+            <button type="button" class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" data-help-key="" x-command="removeRisk" :data-arg-id="risk.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+          </div>
+          <div class="fmea__risk-body">
+            <div class="field-grid field-grid--3">
+              <div class="field-group">
+                <label data-help-key="modules.fmea.fields.risks.failureMode.help" x-text="t('failureMode')"></label>
+                <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" x-model="risk.failureMode"></textarea>
+              </div>
+              <div class="field-group">
+                <label data-help-key="modules.fmea.fields.risks.effect.help" x-text="t('effect')"></label>
+                <textarea class="field" name="effect" :placeholder="t('effectPlaceholder')" x-model="risk.effect"></textarea>
+              </div>
+              <div class="field-group">
+                <label data-help-key="modules.fmea.fields.risks.cause.help" x-text="t('cause')"></label>
+                <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
+              </div>
+            </div>
+            <div class="field-grid field-grid--3">
+              <div class="field-group">
+                <label data-help-key="modules.fmea.fields.risks.prevention.help" x-text="t('preventionControl')"></label>
+                <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" x-model="risk.prevention"></textarea>
+              </div>
+              <div class="field-group">
+                <label data-help-key="modules.fmea.fields.risks.control.help" x-text="t('currentControls')"></label>
+                <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" x-model="risk.control"></textarea>
+              </div>
+              <div class="field-group">
+                <label data-help-key="modules.fmea.fields.riskRatings.help" x-text="t('rating')"></label>
+                <div class="fmea__sod-row">
+                  <div class="fmea__sod-group"><label :title="t('tipS')" :for="sodId(risk, 'sev')" data-help-key="modules.fmea.fields.risks.sev.help" x-text="t('abbrS')"></label>
+                    <select class="field" name="sev" :id="sodId(risk, 'sev')" data-help-key="" x-field="risk.sev">
+                      <option value="">—</option>
+                      <option value="1" :title="sevTitle(1)">1</option>
+                      <option value="2" :title="sevTitle(2)">2</option>
+                      <option value="3" :title="sevTitle(3)">3</option>
+                      <option value="4" :title="sevTitle(4)">4</option>
+                      <option value="5" :title="sevTitle(5)">5</option>
+                      <option value="6" :title="sevTitle(6)">6</option>
+                      <option value="7" :title="sevTitle(7)">7</option>
+                      <option value="8" :title="sevTitle(8)">8</option>
+                      <option value="9" :title="sevTitle(9)">9</option>
+                      <option value="10" :title="sevTitle(10)">10</option>
+                    </select>
+                  </div>
+                  <div class="fmea__sod-group"><label :title="t('tipO')" :for="sodId(risk, 'occ')" data-help-key="modules.fmea.fields.risks.occ.help" x-text="t('abbrO')"></label>
+                    <select class="field" name="occ" :id="sodId(risk, 'occ')" data-help-key="" x-field="risk.occ">
+                      <option value="">—</option>
+                      <option value="1" :title="occTitle(1)">1</option>
+                      <option value="2" :title="occTitle(2)">2</option>
+                      <option value="3" :title="occTitle(3)">3</option>
+                      <option value="4" :title="occTitle(4)">4</option>
+                      <option value="5" :title="occTitle(5)">5</option>
+                      <option value="6" :title="occTitle(6)">6</option>
+                      <option value="7" :title="occTitle(7)">7</option>
+                      <option value="8" :title="occTitle(8)">8</option>
+                      <option value="9" :title="occTitle(9)">9</option>
+                      <option value="10" :title="occTitle(10)">10</option>
+                    </select>
+                  </div>
+                  <div class="fmea__sod-group"><label :title="t('tipD')" :for="sodId(risk, 'det')" data-help-key="modules.fmea.fields.risks.det.help" x-text="t('abbrD')"></label>
+                    <select class="field" name="det" :id="sodId(risk, 'det')" data-help-key="" x-field="risk.det">
+                      <option value="">—</option>
+                      <option value="1" :title="detTitle(1)">1</option>
+                      <option value="2" :title="detTitle(2)">2</option>
+                      <option value="3" :title="detTitle(3)">3</option>
+                      <option value="4" :title="detTitle(4)">4</option>
+                      <option value="5" :title="detTitle(5)">5</option>
+                      <option value="6" :title="detTitle(6)">6</option>
+                      <option value="7" :title="detTitle(7)">7</option>
+                      <option value="8" :title="detTitle(8)">8</option>
+                      <option value="9" :title="detTitle(9)">9</option>
+                      <option value="10" :title="detTitle(10)">10</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="field-group fmea__justification" x-show="showJustification(risk)">
+              <label data-help-key="modules.fmea.fields.risks.justification.help" x-text="t('justification')"></label>
+              <textarea class="field" name="justification" :placeholder="t('justificationPlaceholder')" :aria-required="justificationRequired(risk)" :class="justificationClass(risk)" x-model="risk.justification"></textarea>
+            </div>
+
+            <hr class="fmea__section-sep">
+            <div class="fmea__section-title" data-help-key="modules.fmea.fields.risks.actions.help" x-text="t('actionsSection')"></div>
+            <div class="fmea__actions-section">
+              <table class="dmike-table fmea__action-table">
+                <thead><tr>
+                  <th class="fmea__col--check"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span><span class="dmike-sr-only" data-help-key="modules.fmea.fields.risks.actions.done.help" x-text="t('done')"></span></th>
+                  <th><span data-help-key="modules.fmea.fields.risks.actions.text.help" x-text="t('action')"></span></th>
+                  <th class="fmea__col--resp"><span data-help-key="modules.fmea.fields.risks.actions.resp.help" x-text="t('responsible')"></span></th>
+                  <th class="fmea__col--date"><span data-help-key="modules.fmea.fields.risks.actions.date.help" x-text="t('dueDate')"></span></th>
+                  <th class="fmea__delta-cell fmea__col--delta"><span data-help-key="modules.fmea.fields.risks.actions.deltaS.help" x-text="t('abbrDeltaS')"></span></th>
+                  <th class="fmea__delta-cell fmea__col--delta"><span data-help-key="modules.fmea.fields.risks.actions.deltaO.help" x-text="t('abbrDeltaO')"></span></th>
+                  <th class="fmea__delta-cell fmea__col--delta"><span data-help-key="modules.fmea.fields.risks.actions.deltaD.help" x-text="t('abbrDeltaD')"></span></th>
+                  <th class="fmea__col--del" data-help-key=""></th>
+                </tr></thead>
+                <tbody data-action-body>
+                  <template x-for="(act, ai) in risk.actions" :key="act.id">
+                    <tr :data-action-idx="ai" :data-action-id="act.id">
+                      <td class="fmea__col--check"><input type="checkbox" class="fmea__done-check" :aria-label="t('done')" x-model="act.done"></td>
+                      <td><textarea class="field field--sm" name="actionText" :placeholder="t('actionPlaceholder')" :aria-label="t('action')" x-model="act.text"></textarea></td>
+                      <td><input class="field field--sm" type="text" name="actionResp" :placeholder="t('actionResp')" :aria-label="t('responsible')" x-model="act.resp"></td>
+                      <td><input class="field field--sm" type="date" name="actionDate" :aria-label="t('dueDate')" x-model="act.date"></td>
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaS" :title="t('abbrDeltaS')" data-help-key="" x-field="act.deltaS">
+                        <option value="0">0</option>
+                        <option value="1">−1</option>
+                        <option value="2">−2</option>
+                        <option value="3">−3</option>
+                        <option value="4">−4</option>
+                        <option value="5">−5</option>
+                        <option value="6">−6</option>
+                        <option value="7">−7</option>
+                        <option value="8">−8</option>
+                        <option value="9">−9</option>
+                      </select></td>
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaO" :title="t('abbrDeltaO')" data-help-key="" x-field="act.deltaO">
+                        <option value="0">0</option>
+                        <option value="1">−1</option>
+                        <option value="2">−2</option>
+                        <option value="3">−3</option>
+                        <option value="4">−4</option>
+                        <option value="5">−5</option>
+                        <option value="6">−6</option>
+                        <option value="7">−7</option>
+                        <option value="8">−8</option>
+                        <option value="9">−9</option>
+                      </select></td>
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaD" :title="t('abbrDeltaD')" data-help-key="" x-field="act.deltaD">
+                        <option value="0">0</option>
+                        <option value="1">−1</option>
+                        <option value="2">−2</option>
+                        <option value="3">−3</option>
+                        <option value="4">−4</option>
+                        <option value="5">−5</option>
+                        <option value="6">−6</option>
+                        <option value="7">−7</option>
+                        <option value="8">−8</option>
+                        <option value="9">−9</option>
+                      </select></td>
+                      <td class="fmea__col--del"><button type="button" class="fmea__action-del-btn" data-action="del-action" :data-risk-id="risk.id" :data-action-idx="ai" :title="t('common.delete')" :aria-label="t('common.delete')" data-help-key="" x-command="removeRiskAction" :data-arg-risk-id="risk.id" :data-arg-action-id="act.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+              <button type="button" class="fmea__add-action-btn" data-help-key="modules.fmea.actions.addRiskAction.help" data-action="add-action" :data-risk-id="risk.id" x-command="addRiskAction" :data-arg-risk-id="risk.id">
+                <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
+                <span x-text="t('addAction')"></span>
+              </button>
+            </div>
+            <div class="fmea__projected-bar">
+              <span class="fmea__proj-label" x-text="t('projectedLabel')"></span>
+              <span class="fmea__proj-item">S: <strong data-proj-s x-text="projSDisp(risk)"></strong></span>
+              <span class="fmea__proj-item">O: <strong data-proj-o x-text="projODisp(risk)"></strong></span>
+              <span class="fmea__proj-item">D: <strong data-proj-d x-text="projDDisp(risk)"></strong></span>
+              <span class="fmea__proj-arrow icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
+              <span class="fmea__rpn-badge" :class="projBadgeClass(risk)" data-proj-rpn x-text="projValueText(risk)"></span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+  </div>
+
+  <!-- Burndown: Halter versteckt; das Widget entsteht vor dem Ausleihen an den Dialog -->
+  <div class="fmea__modal-forms" hidden>
+    <div class="fmea__burndown" x-ref="burndown">
+      <template x-if="state.burndownOpen">
+        <div class="fmea__burndown-chart" data-ref="burndown-chart" x-widget="scatter-chart" x-widget-config="burndownChart" x-widget-value="model.burndownEdits" x-widget-legacy-edit-key="legacyEditKey"></div>
+      </template>
+    </div>
+  </div>
+</section>

@@ -212,6 +212,7 @@ const SKIP = new Set([
   'modules/outlier-test-view.test.js',
   'modules/distribution-fit-view.test.js',
   'modules/run-chart-view.test.js',
+  'modules/fmea/view.test.js',
   'modules/gage-run-chart-view.test.js',
   'modules/transformed-imr-chart-view.test.js',
   'modules/multivariate-control-chart-view.test.js',

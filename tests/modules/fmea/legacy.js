@@ -1,6 +1,6 @@
 /**
- * FMEA: das Altprojekt der E2E-Fixture (test/playwright/fixtures/fmea/
- * legacy-project.json, Instanz ohne `_schema`) und die Zeilen seines
+ * FMEA: das Altprojekt der E2E-Fixture `legacy-project.json` (Instanz
+ * ohne `_schema`) und die Zeilen seines
  * CSV-Downloads aus der Altform (legacy-export.csv ohne BOM).
  */
 export const LEGACY_STATE = Object.freeze({

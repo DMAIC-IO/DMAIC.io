@@ -26,6 +26,556 @@
   --fmea-severe: var(--fmea-cat-critical);
 }
 
+/* ── Modul ──────────────────────────────────────────────────── */
+
+.fmea__settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.fmea__settings-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.fmea__settings .btn--segment {
+  white-space: nowrap;
+}
+
+.fmea__settings-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.fmea__secondary-rpn {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.fmea__stat-icon--total  { background: color-mix(in srgb, var(--color-accent) 12%, transparent); color: var(--color-accent); }
+.fmea__stat-icon--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 12%, transparent); color: var(--fmea-cat-critical-text); }
+.fmea__stat-icon--high   { background: color-mix(in srgb, var(--fmea-cat-high) 12%, transparent); color: var(--fmea-cat-high-text); }
+.fmea__stat-icon--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 12%, transparent); color: var(--fmea-cat-medium-text); }
+.fmea__stat-icon--low    { background: color-mix(in srgb, var(--fmea-cat-low) 12%, transparent); color: var(--fmea-cat-low-text); }
+.fmea__stat-icon--neutral { background: color-mix(in srgb, var(--color-text-secondary) 8%, transparent); color: var(--color-text-secondary); }
+
+/* ===== Stats Strip ===== */
+.fmea__stats {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.fmea__stat-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 120px;
+}
+
+.fmea__stat-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.fmea__stat-value {
+  font-family: var(--font-family-mono);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.1;
+}
+
+.fmea__stat-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ===== Risk Card ===== */
+.fmea__risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.fmea__risk-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.fmea__risk-card:hover {
+  border-color: var(--color-border-primary);
+}
+
+.fmea__risk-card--critical { border-left: 3px solid var(--fmea-cat-critical); }
+.fmea__risk-card--high     { border-left: 3px solid var(--fmea-cat-high); }
+.fmea__risk-card--medium   { border-left: 3px solid var(--fmea-cat-medium); }
+.fmea__risk-card--low      { border-left: 3px solid var(--fmea-cat-low); }
+
+/* S ≥ 9 in RPN mode: outline so it does not collide with the category border-left */
+.fmea__risk-card--severe {
+  box-shadow: inset 0 0 0 2px var(--fmea-severe);
+}
+
+/* ── Compliance flags (special characteristic, AP H justification, S ≥ 9) ── */
+.fmea__flags {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.fmea__special-char {
+  width: auto;
+}
+
+.fmea__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border: 1px solid currentcolor;
+}
+
+.fmea__badge--cc { color: var(--fmea-cat-critical-text); }
+.fmea__badge--sc { color: var(--fmea-cat-high-text); }
+.fmea__badge--warning { color: var(--fmea-cat-high-text); }
+.fmea__badge--severe { color: var(--fmea-cat-critical-text); }
+
+.fmea__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.fmea__justification {
+  margin-top: var(--spacing-sm);
+}
+
+.fmea__justification-input--required {
+  border-color: var(--fmea-cat-high);
+}
+
+/* ── Risk Header ── */
+.fmea__risk-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.fmea__risk-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.fmea__risk-number:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.fmea__collapse-arrow {
+  font-size: 9px;
+  transition: transform 0.25s;
+  display: inline-block;
+}
+
+.fmea__risk-card--collapsed .fmea__risk-body {
+  display: none;
+}
+
+.fmea__risk-title {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  padding: var(--spacing-xs) 0;
+  outline: none;
+  min-width: 0;
+}
+
+.fmea__risk-title::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* ── RPN Badges ── */
+.fmea__rpn-header-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  flex-shrink: 0;
+}
+
+.fmea__rpn-arrow-sep {
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.fmea__rpn-badge {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  padding: var(--spacing-xs) var(--spacing-m);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.fmea__rpn-badge--sm {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-2xs) var(--spacing-m);
+}
+
+.fmea__rpn-badge--low      { background: color-mix(in srgb, var(--fmea-cat-low) 10%, transparent); color: var(--fmea-cat-low-text); }
+.fmea__rpn-badge--medium   { background: color-mix(in srgb, var(--fmea-cat-medium) 10%, transparent); color: var(--fmea-cat-medium-text); }
+.fmea__rpn-badge--high     { background: color-mix(in srgb, var(--fmea-cat-high) 10%, transparent); color: var(--fmea-cat-high-text); }
+.fmea__rpn-badge--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 15%, transparent); color: var(--fmea-cat-critical-text); }
+.fmea__rpn-badge--none     { background: color-mix(in srgb, var(--color-text-primary) 3%, transparent); color: var(--fmea-cat-none); }
+
+.fmea__risk-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  padding: var(--spacing-xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.15s;
+}
+
+.fmea__risk-delete:hover {
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+/* ── Risk Body ── */
+.fmea__risk-body {
+  padding: var(--spacing-md) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* ── SOD Row ── */
+.fmea__sod-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.fmea__sod-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.fmea__sod-group label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-tertiary);
+}
+
+/* .field base; mono digits and a floor width keep the rating selects even. */
+.fmea__sod-group select,
+.fmea__action-table select {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-medium);
+  min-width: 60px;
+}
+
+
+/* ── Section Separator ── */
+.fmea__section-sep {
+  border: none;
+  border-top: 1px dashed var(--color-border-secondary);
+  margin: var(--spacing-xs) 0;
+}
+
+.fmea__section-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.fmea__section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-secondary);
+}
+
+/* ── Actions Table ──
+   Base table and cell editors come from .dmike-table and .field --sm.
+   Only the compact textarea height is specific to an action row. */
+.fmea__action-table th {
+  white-space: nowrap;
+}
+
+.fmea__action-table textarea.field {
+  min-height: 32px;
+}
+
+.fmea__delta-cell {
+  text-align: center;
+  min-width: 56px;
+}
+
+.fmea__action-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: color 0.15s;
+}
+
+.fmea__action-del-btn:hover {
+  color: var(--color-error);
+}
+
+.fmea__add-action-btn {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: none;
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius);
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-s) var(--spacing-m);
+  cursor: pointer;
+  margin-top: var(--spacing-s);
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.fmea__add-action-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.fmea__done-check {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-success);
+}
+
+/* ── Projected RPN Bar ── */
+.fmea__projected-bar {
+  background: var(--color-bg-tertiary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-sm);
+}
+
+.fmea__proj-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-secondary);
+}
+
+.fmea__proj-item {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.fmea__proj-item strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.fmea__proj-arrow {
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+}
+
+/* ── Scale Reference (inline) ── */
+.fmea__scale-ref {
+  display: none;
+  background: var(--color-bg-tertiary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.fmea__scale-ref--visible {
+  display: block;
+}
+
+.fmea__scale-ref h3 {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.fmea__scale-ref h3:first-child {
+  margin-top: 0;
+}
+
+/* Scale tables are plain .dmike-table --head-mono; only the spacing between
+   the three stacked tables is local. */
+.fmea__scale-ref table {
+  margin-bottom: var(--spacing-sm);
+}
+
+.fmea__scale-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-sm);
+}
+
+.fmea__scale-editable {
+  cursor: text;
+  border-radius: 3px;
+  transition: background 0.15s, outline 0.15s;
+  outline: 1px solid transparent;
+  min-width: 60px;
+}
+
+.fmea__scale-editable:hover {
+  background: var(--color-surface-hover);
+  outline: 1px dashed var(--color-border);
+}
+
+.fmea__scale-editable:focus {
+  background: var(--color-surface-hover);
+  outline: 1px solid var(--color-accent);
+}
+
+.fmea__legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.fmea__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.fmea__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fmea__legend-dot--critical { background: var(--fmea-cat-critical); }
+.fmea__legend-dot--high     { background: var(--fmea-cat-high); }
+.fmea__legend-dot--medium   { background: var(--fmea-cat-medium); }
+.fmea__legend-dot--low      { background: var(--fmea-cat-low); }
+
+.fmea__ap-matrix td,
+.fmea__ap-matrix th {
+  text-align: center;
+}
+
+.fmea__ap-source {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.fmea__ap-cell { font-weight: var(--font-weight-semibold); }
+.fmea__ap-cell--high   { background: color-mix(in srgb, var(--fmea-cat-high) 18%, transparent); color: var(--fmea-cat-high-text); }
+.fmea__ap-cell--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 18%, transparent); color: var(--fmea-cat-medium-text); }
+.fmea__ap-cell--low    { background: color-mix(in srgb, var(--fmea-cat-low) 18%, transparent); color: var(--fmea-cat-low-text); }
+
+/* Spaltenbreiten der Maßnahmentabelle */
+.fmea__col--check,
+.fmea__col--del {
+  width: 28px;
+  text-align: center;
+}
+
+.fmea__col--resp {
+  width: 110px;
+}
+
+.fmea__col--date {
+  width: 105px;
+}
+
+.fmea__col--delta {
+  width: 62px;
+}
+
+/* Burndown im Dialog: feste Höhe, vom Nutzer veränderbar */
+.fmea__burndown-chart {
+  width: 100%;
+  height: 500px;
+  resize: both;
+  overflow: auto;
+}
+
 /* ── Kachel ─────────────────────────────────────────────────── */
 
 /* Der Wurzelknoten trägt nur die Variablen und nimmt am Layout der Kachel nicht teil. */
