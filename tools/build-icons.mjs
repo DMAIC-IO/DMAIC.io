@@ -14,7 +14,7 @@ import { loadIconMap } from './build/icon-map.mjs';
 import { buildIconsCss } from './build/icons.mjs';
 import { readdirSync, statSync } from 'node:fs';
 import { collectIconRefs, findUnmappedRefs } from './build/icon-refs.mjs';
-import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs, splitByBaseline } from './build/no-glyphs.mjs';
+import { scanHtml, findGlyphs, findGlyphsInJs, findPseudoGlyphs, splitByBaseline } from './build/no-glyphs.mjs';
 
 const APP = join(import.meta.dirname, '..');
 const MAP = join(APP, 'assets/icons/icon-map.json');
@@ -89,6 +89,12 @@ if (unmapped.length) {
  * SVG-Export-Generatoren erzeugen Dateien, in denen es keine CSS-Maske gibt,
  * und das Diagramm von triz-sufield zeichnet sein
  * Dreieck samt Pfeilspitze.
+ *
+ * Für eine HTML-Vorlage deckt die Ausnahme nur den `<svg>`-Scan; der
+ * Glyphen-Scan läuft weiter (`scanHtml`). Für die JS-Dateien entfällt der
+ * Glyphen-Scan weiterhin ganz: zwei von ihnen (process-map-export.js,
+ * makigami.js) tragen Glyphen in Export-Texten und Meldungen, die weder in
+ * der Baseline stehen noch zu dieser Ausnahme gehören — offener Rückstand.
  */
 const GLYPH_EXEMPT = [
   'js/core/export-utils.js',
@@ -154,11 +160,11 @@ function collectFindings() {
   const keyOf = (rel, glyph, hit) => `${rel}:${glyph}:${hit.text.trim()}`;
   for (const path of walk(JS_DIR, /\.html$/)) {
     const rel = relative(APP, path);
-    if (GLYPH_EXEMPT.includes(rel)) continue;
-    for (const hit of findInlineSvg(read(path))) {
+    const { svg, glyphs } = scanHtml(read(path), { svgExempt: GLYPH_EXEMPT.includes(rel) });
+    for (const hit of svg) {
       findings.push({ key: keyOf(rel, '<svg>', hit), message: `${rel}:${hit.line}: inline <svg> — ${hit.text}` });
     }
-    for (const hit of findGlyphsInHtml(read(path))) {
+    for (const hit of glyphs) {
       findings.push({ key: keyOf(rel, hit.glyph, hit), message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
     }
   }

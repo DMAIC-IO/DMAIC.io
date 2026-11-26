@@ -155,7 +155,8 @@ export default createModule({
        * empfohlenen Klassen offen. Nur UI-State: gespeichert wird erst durch
        * das Auf- oder Zuklappen. Ändert sich der gespeicherte Stand auf
        * anderem Weg (Agent, Rückgängig, Stand von außen), entfällt die
-       * Vorbelegung für den Rest der Instanz: die Anzeige zeigt dann genau
+       * Vorbelegung bis zum nächsten Einhängen (Neuladen, Sprachwechsel,
+       * Laden): die Anzeige zeigt dann genau
        * den gespeicherten Stand, auch wenn er leer wird. Ein Aufruf von
        * `setExpandedClasses` zählt auch, wenn er den Stand nicht ändert.
        */

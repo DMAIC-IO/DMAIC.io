@@ -194,6 +194,23 @@ export function findInlineSvg(text) {
 }
 
 /**
+ * Scannt eine HTML-Vorlage auf beide Fundarten.
+ *
+ * @param {string} text  Inhalt einer HTML-Datei
+ * @param {{svgExempt?: boolean}} [opts]  `svgExempt`: die Datei steht in
+ *   `GLYPH_EXEMPT` (tools/build-icons.mjs) und darf ihr Diagramm selbst als
+ *   `<svg>` zeichnen. Die Ausnahme deckt nur das: der Glyphen-Scan läuft
+ *   weiter, sonst bliebe ein neuer `★` in der Vorlage unentdeckt.
+ * @returns {{svg: {line: number, text: string}[], glyphs: {line: number, text: string, glyph: string}[]}}
+ */
+export function scanHtml(text, { svgExempt = false } = {}) {
+  return {
+    svg: svgExempt ? [] : findInlineSvg(text),
+    glyphs: findGlyphsInHtml(text),
+  };
+}
+
+/**
  * @param {string} text  Inhalt einer JSON- oder JS-Datei
  * @returns {{line: number, text: string}[]}
  */

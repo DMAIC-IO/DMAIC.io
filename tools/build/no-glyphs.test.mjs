@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs, splitByBaseline } from './no-glyphs.mjs';
+import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs, scanHtml, splitByBaseline } from './no-glyphs.mjs';
 
 test('findInlineSvg meldet ein gezeichnetes Icon', () => {
   const hits = findInlineSvg('<button><svg viewBox="0 0 24 24"><path d="M1 1"/></svg></button>');
@@ -134,4 +134,16 @@ test('splitByBaseline: zwei Baseline-Zeilen decken zwei Funde, unbekannte Schlü
   const { known, unknown } = splitByBaseline([a, a, b], new Map([['a.js:●:x', 2]]));
   assert.equal(known.length, 2);
   assert.deepEqual(unknown, [b]);
+});
+
+test('scanHtml: eine ausgenommene Vorlage darf <svg> zeichnen, eine Glyphe außerhalb wird trotzdem gemeldet', () => {
+  const html = '<svg viewBox="0 0 10 10"><path d="M0 0L10 10"/></svg>\n<span>★ Favorit</span>';
+  const exempt = scanHtml(html, { svgExempt: true });
+  assert.deepEqual(exempt.svg, []);
+  assert.equal(exempt.glyphs.length, 1);
+  assert.equal(exempt.glyphs[0].glyph, '★');
+  assert.equal(exempt.glyphs[0].line, 2);
+  const normal = scanHtml(html);
+  assert.equal(normal.svg.length, 1);
+  assert.equal(normal.glyphs.length, 1);
 });

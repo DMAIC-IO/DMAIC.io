@@ -80,24 +80,31 @@ const LEGACY = {
 };
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
+/** Ereignisbus mit einsehbarer Handlerliste (`handlers`: `[name, fn]`-Paare). */
+function makeBus() {
+  /** @type {[string, Function][]} */
+  const handlers = [];
+  return {
+    handlers,
+    on: (n, fn) => handlers.push([n, fn]),
+    off: (n, fn) => { const i = handlers.findIndex(([a, f]) => a === n && f === fn); if (i >= 0) handlers.splice(i, 1); },
+    emit: (n, p) => { for (const [a, f] of [...handlers]) if (a === n) f(p); },
+  };
+}
+
 /**
  * Eine Instanz einhängen (eigene Kopie des Moduls wie in der Registry).
  * @param {string} instanceId
  * @param {object|null} model gespeicherter Zustand
- * @param {{ keep?: boolean }} [opts] `keep`: vorher eingehängte Instanzen bleiben
+ * @param {{ keep?: boolean, bus?: ReturnType<typeof makeBus> }} [opts] `keep`: vorher eingehängte
+ *   Instanzen bleiben; `bus`: gemeinsamer Ereignisbus mehrerer Instanzen (sonst ein eigener)
  */
-async function mount(instanceId, model, { keep = false } = {}) {
+async function mount(instanceId, model, { keep = false, bus = makeBus() } = {}) {
   await prepare();
   if (!keep) unmountAll();
   const states = { [instanceId]: model };
   /** @type {any[][]} */
   const notes = [];
-  const handlers = [];
-  const bus = {
-    on: (n, fn) => handlers.push([n, fn]),
-    off: (n, fn) => { const i = handlers.findIndex(([a, f]) => a === n && f === fn); if (i >= 0) handlers.splice(i, 1); },
-    emit: (n, p) => { for (const [a, f] of [...handlers]) if (a === n) f(p); },
-  };
   const context = {
     instanceId,
     instances: { list: () => [], read: async () => ({}), interact: async () => ({ ok: false, results: [] }) },
@@ -584,9 +591,10 @@ suite('triz-sufield: Viewmodel im Browser', () => {
     unmountAll();
   });
 
-  test('zwei Instanzen: eindeutige ids, label[for], aria-labelledby und Pfeilspitze im eigenen Modul, Radio-Namen verschieden', async () => {
-    const a = await mount('sf-a', null);
-    const b = await mount('sf-b', null, { keep: true });
+  test('zwei Instanzen: eindeutige ids, label[for], aria-labelledby und Pfeilspitze im eigenen Modul, Radio-Namen verschieden, Kommandos getrennt', async () => {
+    const bus = makeBus();
+    const a = await mount('sf-a', null, { bus });
+    const b = await mount('sf-b', null, { keep: true, bus });
     const ids = [...document.querySelectorAll('.triz-sf [id]')].map((el) => el.id);
     assertEqual(ids.length, 2 * (4 + 1 + 78));
     assertEqual(new Set(ids).size, ids.length, 'doppelte ids');
@@ -621,7 +629,16 @@ suite('triz-sufield: Viewmodel im Browser', () => {
     assertDeepEqual(plain(a.vm().model.notes), {});
     assertEqual(b.vm().model.filterMode, 'all');
     assertDeepEqual(plain(b.vm().model.notes), { '1.1.1': 'nur B' });
+    // Gemeinsamer Bus: ein Agentenaufruf an B lässt die Vorbelegung von A stehen.
+    assertDeepEqual(a.open(), [1]);
+    b.vm().model.setExpandedClasses({ classes: [3] });
+    await settle();
+    assertDeepEqual(b.open(), [3]);
+    assertDeepEqual(a.open(), [1]);
+    assertDeepEqual(plain(a.vm().state.autoOpen), [1]);
     unmountAll();
+    const left = bus.handlers.filter(([n]) => n === 'command:executed').length;
+    assertEqual(left, 0, `nach dem Abbau noch ${left} command:executed-Handler`);
   });
 
   test('Altprojekt: alle Werte sichtbar, Laden ist kein Verlaufsschritt, read() mit Diagnose und Massenfeld', async () => {
