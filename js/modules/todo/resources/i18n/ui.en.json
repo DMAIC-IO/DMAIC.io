@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Todo",
+  "description": "Task list with status, due date, and owner",
+  "whenToUse": "When the open tasks of a project need tracking with an owner, a due date and a status — not for scheduling in a calendar view and not for rating or selecting measures, which is what the calendar module and the rating matrices are for.",
+  "addTodo": "Add Task",
+  "filter": "Filter",
+  "searchPlaceholder": "Search …",
+  "colText": "Task",
+  "colOwner": "Owner",
+  "colDue": "Due Date",
+  "colStatus": "Status",
+  "status_open": "Open",
+  "status_in-progress": "In Progress",
+  "status_done": "Done",
+  "status_blocked": "Blocked",
+  "allStatuses": "All Statuses",
+  "allOwners": "All Owners",
+  "textPlaceholder": "Enter task …",
+  "ownerPlaceholder": "Owner …",
+  "showInCalendar": "Show in calendar",
+  "delete": "Delete",
+  "emptyState": "No tasks yet. Click \"+ Add Task\" to get started.",
+  "noMatch": "No tasks match the current filter.",
+  "counterText": "{shown} / {total}",
+  "invariants": {
+    "itemIds": "Every task has its own non-empty identifier."
+  }
+}

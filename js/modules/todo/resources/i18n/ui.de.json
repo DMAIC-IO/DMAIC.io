@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Todo",
+  "description": "Aufgabenliste mit Status, Zieldatum und Verantwortlichem",
+  "whenToUse": "Wenn offene Aufgaben eines Projekts mit Verantwortlichem, Zieldatum und Status verfolgt werden sollen — nicht für die Terminplanung in einer Kalenderansicht und nicht für die Bewertung oder Auswahl von Maßnahmen, dafür sind das Kalendermodul und die Bewertungsmatrizen da.",
+  "addTodo": "Aufgabe hinzufügen",
+  "filter": "Filter",
+  "searchPlaceholder": "Suchen …",
+  "colText": "Aufgabe",
+  "colOwner": "Owner",
+  "colDue": "Zieldatum",
+  "colStatus": "Status",
+  "status_open": "Offen",
+  "status_in-progress": "In Bearbeitung",
+  "status_done": "Erledigt",
+  "status_blocked": "Blockiert",
+  "allStatuses": "Alle Status",
+  "allOwners": "Alle Owner",
+  "textPlaceholder": "Aufgabe eingeben …",
+  "ownerPlaceholder": "Owner …",
+  "showInCalendar": "Im Kalender anzeigen",
+  "delete": "Löschen",
+  "emptyState": "Noch keine Aufgaben. Klicken Sie auf „+ Aufgabe hinzufügen“.",
+  "noMatch": "Keine Aufgaben gefunden.",
+  "counterText": "{shown} / {total}",
+  "invariants": {
+    "itemIds": "Jede Aufgabe hat eine eigene, nichtleere Kennung."
+  }
+}

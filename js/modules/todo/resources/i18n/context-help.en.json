@@ -1,0 +1,132 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "items": {
+      "help": "The tasks in stored order, each with an identifier, text, owner, due date, status and the calendar mark. The identifier stays the same when a task is edited or moved; the commands address a task by it.",
+      "id": {
+        "help": "The identifier of the task; value for itemId."
+      },
+      "text": {
+        "help": "What has to be done. Each row has a text field for it. Clicking the column header sorts the list by it; a second click reverses the direction."
+      },
+      "owner": {
+        "help": "Who owns the task, as a freely typed name; empty means no owner. Clicking the column header sorts the list by it; a second click reverses the direction."
+      },
+      "due": {
+        "help": "When the task should be done. If the date lies before today and the task is not done, the row is marked red. Clicking the column header sorts the list by it; a second click reverses the direction; tasks without a date come last."
+      },
+      "status": {
+        "help": "The state of the task: open, in progress, done or blocked. The checkbox at the start of the row sets it to done and back to open. Clicking the column header sorts the list by it; a second click reverses the direction."
+      },
+      "cal": {
+        "help": "Whether the task appears in the project calendar. It shows there on its due date once it has a text and a date; the column only exists when the project has a calendar."
+      },
+      "time": {
+        "help": "Start of the task's appointment in the calendar as a time on a five-minute grid; without it the appointment starts at 09:00. It is set in the calendar."
+      },
+      "duration": {
+        "help": "Length of the task's appointment in the calendar in minutes, at least five; without it 30 minutes. It is set in the calendar."
+      }
+    },
+    "filterStatus": {
+      "help": "Narrows the list: by status, by responsible person and by search text in the task text and the owner. The filter does not change any task."
+    },
+    "filterOwner": {
+      "help": "Shows only the tasks of one owner; “all” shows every task."
+    },
+    "search": {
+      "help": "The search text over task text and owner, case-insensitive; empty means no search."
+    },
+    "sortCol": {
+      "help": "The column the list is sorted by; after a row has been moved the stored order applies."
+    },
+    "sortAsc": {
+      "help": "Whether the list is sorted ascending or descending."
+    }
+  },
+  "actions": {
+    "addTodo": {
+      "help": "Appends an empty task to the list and returns its identifier.",
+      "params": {
+        "command": "The command as an empty object; it takes no values."
+      }
+    },
+    "setTodoText": {
+      "help": "Sets the text of a task, i.e. what has to be done.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "text": "The new text. An empty string clears it.",
+        "command": "The command as an object with itemId and text."
+      }
+    },
+    "setTodoOwner": {
+      "help": "Sets the owner of a task as a freely typed name; empty means no owner.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "owner": "The name of the owner. An empty string leaves the task without an owner.",
+        "command": "The command as an object with itemId and owner."
+      }
+    },
+    "setTodoDue": {
+      "help": "Sets the due date of a task in the notation YYYY-MM-DD, e.g. 2026-11-30; empty clears it.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "isoDate": "The due date written as YYYY-MM-DD. An empty string clears it; any other value is an error.",
+        "command": "The command as an object with itemId and isoDate."
+      }
+    },
+    "setTodoStatus": {
+      "help": "Sets the status of a task: open, in progress, done or blocked.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "status": "One of the four values open, in-progress, done or blocked. Any other value is an error.",
+        "command": "The command as an object with itemId and status."
+      }
+    },
+    "setTodoCalendar": {
+      "help": "Decides whether a task appears in the project calendar. Without a calendar in the project the mark is still stored and takes effect once one is added.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "inCalendar": "true shows the task in the calendar, false does not. Any other value is an error.",
+        "command": "The command as an object with itemId and inCalendar."
+      }
+    },
+    "removeTodo": {
+      "help": "Removes a task from the list; its appointment disappears from the calendar as well.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "command": "The command as an object with itemId."
+      }
+    },
+    "moveTodo": {
+      "help": "Moves a task to another place in the stored order. The list is on manual order afterwards.",
+      "params": {
+        "itemId": "The identifier of the task to move. An unknown identifier is an error.",
+        "to": "The place the task takes after the move, counted from 0. Its current place leaves everything as it is; a place outside is an error.",
+        "shownIds": "Optionally the displayed order as a list of identifiers, as the interface shows it after filter and sorting. It first becomes the stored order, hidden tasks follow; the place then counts in this order. Without the list the stored order applies.",
+        "command": "The command as an object with itemId, to and optionally shownIds."
+      }
+    },
+    "updateTodo": {
+      "help": "Changes several values of a task in one step, the way the calendar edits a task's appointment: text, due date, start and length. Values not given stay.",
+      "params": {
+        "itemId": "The identifier of the task. An unknown identifier is an error.",
+        "text": "Optionally the new text.",
+        "due": "Optionally the new due date written as YYYY-MM-DD; empty clears it, any other value is an error.",
+        "time": "Optionally the start of the task's appointment as HH:MM on a five-minute grid.",
+        "duration": "Optionally the length of the task's appointment in whole minutes, at least five.",
+        "command": "The command as an object with itemId and the values that change."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many of the next due tasks the tile shows at most, from 1 to 10."
+      },
+      "showDone": {
+        "help": "Includes the done tasks in the bar and in the counts per status."
+      }
+    }
+  }
+}

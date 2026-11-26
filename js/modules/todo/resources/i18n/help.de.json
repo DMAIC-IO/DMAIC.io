@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Todo-Modul ist eine einfache Aufgabenliste für das DMAIC-Projekt. Jede Aufgabe hat einen Text, ein Zieldatum, einen Verantwortlichen (Owner) und einen Status."
+        },
+        {
+          "type": "definition",
+          "term": "Status",
+          "content": "Offen, In Bearbeitung, Erledigt oder Blockiert. Status wird direkt in der Tabelle geändert."
+        },
+        {
+          "type": "definition",
+          "term": "Zieldatum",
+          "content": "Überfällige Aufgaben werden automatisch rot markiert."
+        },
+        {
+          "type": "definition",
+          "term": "Kalender",
+          "content": "Über das Kalender-Symbol kann eine Aufgabe im Projektkalender angezeigt werden. Voraussetzung: Text und Zieldatum sind ausgefüllt."
+        },
+        {
+          "type": "definition",
+          "term": "Filter",
+          "content": "Die Tabelle kann nach Status, Owner und Freitext gefiltert werden. Spaltenköpfe sind sortierbar."
+        }
+      ]
+    },
+    "example": {
+      "title": "Beispiel",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Klicken Sie auf „+ Aufgabe hinzufügen“, um eine neue Aufgabe zu erstellen.",
+            "Füllen Sie Text, Zieldatum und Owner direkt in der Tabelle aus.",
+            "Ändern Sie den Status über das Dropdown in der Status-Spalte.",
+            "Nutzen Sie die Filter oben, um nach Status, Owner oder Stichwort zu filtern.",
+            "Klicken Sie auf einen Spaltenkopf, um die Liste zu sortieren."
+          ]
+        }
+      ]
+    }
+  }
+}

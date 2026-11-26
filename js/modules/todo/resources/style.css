@@ -1,0 +1,16 @@
+/* ═══════════════════════════════════════════════════════════
+   Todo — Module Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* Todo-Kachel im Dashboard */
+.dashboard-todo__owner,
+.dashboard-todo__due {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-todo__overdue .dashboard-todo__due {
+  color: var(--color-error);
+  font-weight: 600;
+}

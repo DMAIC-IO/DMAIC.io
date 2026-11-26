@@ -1,0 +1,132 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "items": {
+      "help": "Die Aufgaben in gespeicherter Reihenfolge, jede mit Kennung, Text, Verantwortlichem, Zieldatum, Status und der Marke für den Kalender. Die Kennung bleibt beim Bearbeiten und Verschieben gleich; über sie sprechen die Kommandos eine Aufgabe an.",
+      "id": {
+        "help": "Die Kennung der Aufgabe; Wert für itemId."
+      },
+      "text": {
+        "help": "Was zu tun ist. Jede Zeile hat dafür ein Textfeld. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung."
+      },
+      "owner": {
+        "help": "Wer die Aufgabe verantwortet, als frei eingegebener Name; leer heißt ohne Verantwortlichen. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung."
+      },
+      "due": {
+        "help": "Bis wann die Aufgabe erledigt sein soll. Liegt das Datum vor heute und ist die Aufgabe nicht erledigt, ist die Zeile rot markiert. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung; Aufgaben ohne Datum stehen am Ende."
+      },
+      "status": {
+        "help": "Der Stand der Aufgabe: offen, in Bearbeitung, erledigt oder blockiert. Das Kästchen am Zeilenanfang setzt sie auf erledigt und wieder auf offen. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung."
+      },
+      "cal": {
+        "help": "Ob die Aufgabe im Projektkalender erscheint. Sie steht dort am Zieldatum, sobald sie einen Text und ein Datum hat; die Spalte gibt es nur, wenn das Projekt einen Kalender hat."
+      },
+      "time": {
+        "help": "Beginn des Aufgabentermins im Kalender als Uhrzeit im Fünf-Minuten-Raster; ohne Angabe steht er um 09:00. Gesetzt wird er im Kalender."
+      },
+      "duration": {
+        "help": "Dauer des Aufgabentermins im Kalender in Minuten, mindestens fünf; ohne Angabe 30 Minuten. Gesetzt wird sie im Kalender."
+      }
+    },
+    "filterStatus": {
+      "help": "Grenzt die Liste ein: nach Status, nach verantwortlicher Person und per Suchtext in Aufgabentext und Verantwortlichem. Der Filter ändert keine Aufgabe."
+    },
+    "filterOwner": {
+      "help": "Zeigt nur die Aufgaben eines Verantwortlichen; „alle“ zeigt jede Aufgabe."
+    },
+    "search": {
+      "help": "Der Suchtext über Aufgabentext und Verantwortlichen, ohne Rücksicht auf Groß- und Kleinschreibung; leer heißt keine Suche."
+    },
+    "sortCol": {
+      "help": "Die Spalte, nach der die Liste sortiert ist; nach dem Verschieben einer Zeile gilt die gespeicherte Reihenfolge."
+    },
+    "sortAsc": {
+      "help": "Ob die Liste aufsteigend oder absteigend sortiert ist."
+    }
+  },
+  "actions": {
+    "addTodo": {
+      "help": "Legt eine leere Aufgabe am Ende der Liste an und liefert ihre Kennung zurück.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "setTodoText": {
+      "help": "Setzt den Text einer Aufgabe, also was zu tun ist.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Der neue Text. Eine leere Zeichenkette löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit itemId und text."
+      }
+    },
+    "setTodoOwner": {
+      "help": "Setzt den Verantwortlichen einer Aufgabe als frei eingegebenen Namen; leer heißt ohne Verantwortlichen.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "owner": "Der Name des Verantwortlichen. Eine leere Zeichenkette lässt die Aufgabe ohne Verantwortlichen.",
+        "command": "Das Kommando als ein Objekt mit itemId und owner."
+      }
+    },
+    "setTodoDue": {
+      "help": "Setzt das Zieldatum einer Aufgabe in der Schreibweise JJJJ-MM-TT, etwa 2026-11-30; leer löscht es.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "isoDate": "Das Zieldatum in der Schreibweise JJJJ-MM-TT. Eine leere Zeichenkette löscht es; jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit itemId und isoDate."
+      }
+    },
+    "setTodoStatus": {
+      "help": "Setzt den Status einer Aufgabe: offen, in Bearbeitung, erledigt oder blockiert.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "status": "Einer der vier Werte open (offen), in-progress (in Bearbeitung), done (erledigt) oder blocked (blockiert). Ein Wert daneben ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit itemId und status."
+      }
+    },
+    "setTodoCalendar": {
+      "help": "Bestimmt, ob eine Aufgabe im Projektkalender erscheint. Ohne Kalender im Projekt bleibt die Marke gespeichert und wirkt, sobald einer dazukommt.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "inCalendar": "true zeigt die Aufgabe im Kalender, false nicht. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit itemId und inCalendar."
+      }
+    },
+    "removeTodo": {
+      "help": "Entfernt eine Aufgabe aus der Liste; im Kalender verschwindet ihr Termin mit.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit itemId."
+      }
+    },
+    "moveTodo": {
+      "help": "Verschiebt eine Aufgabe an eine andere Stelle der gespeicherten Reihenfolge. Die Liste steht danach auf manueller Reihenfolge.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe, die verschoben wird. Eine unbekannte Kennung ist ein Fehler.",
+        "to": "Die Stelle, an der die Aufgabe nach dem Verschieben steht, von 0 an gezählt. Ihre bisherige Stelle lässt alles stehen; eine Stelle außerhalb ist ein Fehler.",
+        "shownIds": "Optional die angezeigte Folge als Liste von Kennungen, wie die Oberfläche sie nach Filter und Sortierung zeigt. Sie wird zuerst die gespeicherte Folge, ausgeblendete Aufgaben folgen; die Stelle zählt dann in dieser Folge. Ohne die Liste gilt die gespeicherte Reihenfolge.",
+        "command": "Das Kommando als ein Objekt mit itemId, to und optional shownIds."
+      }
+    },
+    "updateTodo": {
+      "help": "Ändert mehrere Angaben einer Aufgabe in einem Schritt, so wie der Kalender einen Aufgabentermin bearbeitet: Text, Zieldatum, Beginn und Dauer. Nicht genannte Angaben bleiben.",
+      "params": {
+        "itemId": "Die Kennung der Aufgabe. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Optional der neue Text.",
+        "due": "Optional das neue Zieldatum in der Schreibweise JJJJ-MM-TT; leer löscht es, jeder andere Wert ist ein Fehler.",
+        "time": "Optional der Beginn des Aufgabentermins als HH:MM im Fünf-Minuten-Raster.",
+        "duration": "Optional die Dauer des Aufgabentermins in ganzen Minuten, mindestens fünf.",
+        "command": "Das Kommando als ein Objekt mit itemId und den Angaben, die sich ändern."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele der nächsten fälligen Aufgaben die Kachel höchstens zeigt, von 1 bis 10."
+      },
+      "showDone": {
+        "help": "Zählt die erledigten Aufgaben im Balken und in den Zahlen je Status mit."
+      }
+    }
+  }
+}
