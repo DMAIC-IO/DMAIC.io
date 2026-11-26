@@ -210,6 +210,37 @@
   --color-pmap-loop-bg: rgb(230 126 34 / 8%);
   --color-pmap-loop-border: rgb(230 126 34 / 30%);
 
+  /* VoC → CTx Tree colors */
+  --color-vct-voc: #e67e22;
+  --color-vct-voc-bg: rgb(230 126 34 / 6%);
+  --color-vct-voc-border: rgb(230 126 34 / 20%);
+  --color-vct-voc-badge-bg: rgb(230 126 34 / 12%);
+  --color-vct-voc-line: rgb(230 126 34 / 25%);
+  --color-vct-need: #9b59b6;
+  --color-vct-need-bg: rgb(155 89 182 / 6%);
+  --color-vct-need-border: rgb(155 89 182 / 20%);
+  --color-vct-need-badge-bg: rgb(155 89 182 / 12%);
+  --color-vct-need-line: rgb(155 89 182 / 25%);
+  --color-vct-ctq: #27ae60;
+  --color-vct-ctq-bg: rgb(39 174 96 / 6%);
+  --color-vct-ctq-border: rgb(39 174 96 / 20%);
+  --color-vct-ctq-badge-bg: rgb(39 174 96 / 12%);
+  --color-vct-ctq-line: rgb(39 174 96 / 25%);
+  --color-vct-ctd: #2980b9;
+  --color-vct-ctd-bg: rgb(41 128 185 / 6%);
+  --color-vct-ctd-border: rgb(41 128 185 / 20%);
+  --color-vct-ctd-badge-bg: rgb(41 128 185 / 12%);
+  --color-vct-ctd-line: rgb(41 128 185 / 25%);
+  --color-vct-ctc: #e74c8b;
+  --color-vct-ctc-bg: rgb(231 76 139 / 6%);
+  --color-vct-ctc-border: rgb(231 76 139 / 20%);
+  --color-vct-ctc-badge-bg: rgb(231 76 139 / 12%);
+  --color-vct-ctc-line: rgb(231 76 139 / 25%);
+  --color-vct-req: #3498db;
+  --color-vct-req-bg: rgb(52 152 219 / 6%);
+  --color-vct-req-border: rgb(52 152 219 / 20%);
+  --color-vct-req-badge-bg: rgb(52 152 219 / 12%);
+
   /* DataGrid tokens */
   --datagrid-cell-height: 30px;
   --datagrid-row-height: var(--datagrid-cell-height);
@@ -360,6 +391,37 @@
   --datagrid-cell-bg-alt: #242426;
   --datagrid-row-hover-bg: rgb(59 130 246 / 10%);
   --datagrid-shadow-popup: 0 8px 30px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-primary);
+
+  /* VoC → CTx Tree (brighter for dark bg) */
+  --color-vct-voc: #f0983e;
+  --color-vct-voc-bg: rgb(240 152 62 / 8%);
+  --color-vct-voc-border: rgb(240 152 62 / 25%);
+  --color-vct-voc-badge-bg: rgb(240 152 62 / 15%);
+  --color-vct-voc-line: rgb(240 152 62 / 30%);
+  --color-vct-need: #c59eff;
+  --color-vct-need-bg: rgb(197 158 255 / 8%);
+  --color-vct-need-border: rgb(197 158 255 / 25%);
+  --color-vct-need-badge-bg: rgb(197 158 255 / 15%);
+  --color-vct-need-line: rgb(197 158 255 / 30%);
+  --color-vct-ctq: #3fb950;
+  --color-vct-ctq-bg: rgb(63 185 80 / 8%);
+  --color-vct-ctq-border: rgb(63 185 80 / 25%);
+  --color-vct-ctq-badge-bg: rgb(63 185 80 / 15%);
+  --color-vct-ctq-line: rgb(63 185 80 / 30%);
+  --color-vct-ctd: #58a6ff;
+  --color-vct-ctd-bg: rgb(88 166 255 / 8%);
+  --color-vct-ctd-border: rgb(88 166 255 / 25%);
+  --color-vct-ctd-badge-bg: rgb(88 166 255 / 15%);
+  --color-vct-ctd-line: rgb(88 166 255 / 30%);
+  --color-vct-ctc: #f778ba;
+  --color-vct-ctc-bg: rgb(247 120 186 / 8%);
+  --color-vct-ctc-border: rgb(247 120 186 / 25%);
+  --color-vct-ctc-badge-bg: rgb(247 120 186 / 15%);
+  --color-vct-ctc-line: rgb(247 120 186 / 30%);
+  --color-vct-req: #79c0ff;
+  --color-vct-req-bg: rgb(121 192 255 / 8%);
+  --color-vct-req-border: rgb(121 192 255 / 25%);
+  --color-vct-req-badge-bg: rgb(121 192 255 / 15%);
 
   /* Glossary inline-link tokens — dark variants */
   --glossary-term-bg-hover: rgb(255 255 255 / 5%);
