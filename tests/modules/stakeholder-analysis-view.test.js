@@ -6,8 +6,8 @@
  * normalisierte Fremdwerte, unberührtes Formular), Ablehnung des leeren
  * Namens, Löschen mit der Rückfrage des Kommandos, Abbau bei offenem Dialog,
  * Ableitungen nach Änderungen des Agenten, je ein Verlaufsschritt mit
- * Rückgängig/Wiederholen, zwei Instanzen und das Altprojekt ohne
- * Verlaufsschritt.
+ * Rückgängig/Wiederholen, zwei Instanzen (auch ids je Instanz) und das
+ * Altprojekt ohne Verlaufsschritt.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
@@ -443,6 +443,36 @@ suite('stakeholder-analysis: Viewmodel im Browser', () => {
     assertTrue(b.inst.historyStep('undo'), 'Rückgängig B');
     await until(() => b.cards()[0] === 'Anna Alt');
     assertEqual(a.cards().length, 4);
+    unmountAll();
+  });
+
+  test('zwei Instanzen: Beschriftungen und Wertanzeigen zeigen aufs eigene Feld, keine doppelten ids; Name ist Pflicht', async () => {
+    const a = await mount('sa-1', plain(SMALL));
+    const b = await mount('sa-2', plain(SMALL), { keep: true });
+    assertTrue(a.vm().fieldId('name') !== b.vm().fieldId('name'), 'fieldId gleich');
+    for (const h of [a, b]) {
+      const form = h.q('.sha__form');
+      const labels = [...form.querySelectorAll('label')];
+      assertEqual(labels.length, 7);
+      for (const label of labels) {
+        const target = document.getElementById(label.htmlFor);
+        assertTrue(!!target && form.contains(target), `${label.htmlFor} zeigt nicht ins eigene Formular`);
+      }
+      for (const [ref, field] of [['vPower', 'power'], ['vInterest', 'interest']]) {
+        const out = /** @type {HTMLOutputElement} */ (form.querySelector(`[data-ref="${ref}"]`));
+        assertEqual(out.htmlFor.value, form.querySelector(`[data-field="${field}"]`).id, ref);
+      }
+      const name = form.querySelector('[data-field="name"]');
+      assertTrue(name.hasAttribute('required'), 'required');
+      assertEqual(name.getAttribute('aria-required'), 'true');
+    }
+    const ids = [...document.querySelectorAll('.sha__form [id]')].map((el) => el.id);
+    assertEqual(ids.length, 14);
+    assertEqual(new Set(ids).size, ids.length, 'doppelte ids');
+    await b.open(b.editBtn(0));
+    const label = b.form().querySelector('label[for]');
+    assertTrue(b.form().contains(document.getElementById(label.htmlFor)), 'im Dialog verknüpft');
+    await b.cancel();
     unmountAll();
   });
 

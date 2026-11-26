@@ -75,8 +75,17 @@ export default createModule({
   Model: State,
   history: true,
   /** @type {import('../../../core/template-module.js').ViewFn<StakeholderModel, {}>} */
-  view() {
+  view(ctx) {
     return {
+      /**
+       * id eines Formularfelds, eindeutig je Instanz: `<label for>` und
+       * `<output for>` zeigen so auch bei mehreren offenen Instanzen auf das
+       * eigene Feld.
+       * @param {string} name Feldname (`name`, `role`, `power`, …)
+       * @returns {string}
+       */
+      fieldId(name) { return `sha-${name}-${ctx.instanceId}`; },
+
       // ─── Listen ───────────────────────────────────────────
       /** Ohne Beteiligte. */
       get isEmpty() { return this.model.stakeholders.length === 0; },

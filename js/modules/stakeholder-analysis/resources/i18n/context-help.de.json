@@ -19,10 +19,10 @@
         "help": "Das Interesse des Beteiligten am Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Einfluss bestimmt es den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt das Interesse als hoch, hoch und hoch ergibt Eng managen, nur Einfluss hoch Zufriedenstellen, nur Interesse hoch Informieren, sonst Beobachten."
       },
       "support": {
-        "help": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind, und zeigt sie so an; wer den Eintrag im Formular öffnet und speichert, setzt sie auf Neutral. In der Matrix werden sie wie ein Kritiker gefärbt; für die Warnung zählen sie nicht."
+        "help": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind, und zeigt sie so an; wer den Eintrag im Formular ändert und speichert, setzt sie auf Neutral. In der Matrix werden sie wie ein Kritiker gefärbt; für die Warnung zählen sie nicht."
       },
       "category": {
-        "help": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind, und zeigt sie so an; wer den Eintrag im Formular öffnet und speichert, setzt sie auf Intern."
+        "help": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind, und zeigt sie so an; wer den Eintrag im Formular ändert und speichert, setzt sie auf Intern."
       },
       "notes": {
         "help": "Erwartungen und Bedenken des Beteiligten in freiem Text, bis zu 500 Zeichen."

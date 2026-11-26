@@ -243,46 +243,46 @@
 
  <!-- Formular zum Anlegen und Bearbeiten: verborgen hier, beim Öffnen in den Dialog ausgeliehen. -->
  <div class="sha__modal-forms" hidden>
-   <form class="sha__form" x-ref="stakeholderForm" x-command-form="addStakeholder" data-help-key="">
+   <form class="sha__form" x-ref="stakeholderForm" x-command-form="addStakeholder" novalidate data-help-key="">
      <div class="field-grid field-grid--2">
        <div class="sha__form-group">
-         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.name.help"><span x-text="t('fieldName')"></span> *</label>
-         <input type="text" class="field" data-field="name" x-param="name" maxlength="100" :placeholder="t('fieldName')" data-help-key="">
+         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.name.help" :for="fieldId('name')"><span x-text="t('fieldName')"></span> *</label>
+         <input :id="fieldId('name')" type="text" class="field" data-field="name" required aria-required="true" x-param="name" maxlength="100" :placeholder="t('fieldName')" data-help-key="">
        </div>
        <div class="sha__form-group">
-         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.role.help" x-text="t('fieldRole')"></label>
-         <input type="text" class="field" data-field="role" x-param="role" maxlength="200" :placeholder="t('fieldRole')" data-help-key="">
+         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.role.help" :for="fieldId('role')" x-text="t('fieldRole')"></label>
+         <input :id="fieldId('role')" type="text" class="field" data-field="role" x-param="role" maxlength="200" :placeholder="t('fieldRole')" data-help-key="">
        </div>
      </div>
 
      <div class="sha__slider-group">
        <div class="sha__slider-header">
-         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.power.help" x-text="t('fieldPower')"></label>
-         <output class="sha__slider-value" data-ref="vPower" x-text="form.power"></output>
+         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.power.help" :for="fieldId('power')" x-text="t('fieldPower')"></label>
+         <output class="sha__slider-value" data-ref="vPower" :for="fieldId('power')" x-text="form.power"></output>
        </div>
-       <input type="range" class="dmike-slider" min="1" max="5" data-field="power" x-param="power" data-help-key="">
+       <input :id="fieldId('power')" type="range" class="dmike-slider" min="1" max="5" data-field="power" x-param="power" data-help-key="">
      </div>
 
      <div class="sha__slider-group">
        <div class="sha__slider-header">
-         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.interest.help" x-text="t('fieldInterest')"></label>
-         <output class="sha__slider-value" data-ref="vInterest" x-text="form.interest"></output>
+         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.interest.help" :for="fieldId('interest')" x-text="t('fieldInterest')"></label>
+         <output class="sha__slider-value" data-ref="vInterest" :for="fieldId('interest')" x-text="form.interest"></output>
        </div>
-       <input type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-param="interest" data-help-key="">
+       <input :id="fieldId('interest')" type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-param="interest" data-help-key="">
      </div>
 
      <div class="field-grid field-grid--2">
        <div class="sha__form-group">
-         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.support.help" x-text="t('fieldSupport')"></label>
-         <select class="field" data-field="support" x-param="support" data-help-key="">
+         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.support.help" :for="fieldId('support')" x-text="t('fieldSupport')"></label>
+         <select :id="fieldId('support')" class="field" data-field="support" x-param="support" data-help-key="">
            <option value="supporter" x-text="t('supportSupporter')"></option>
            <option value="neutral" x-text="t('supportNeutral')"></option>
            <option value="critic" x-text="t('supportCritic')"></option>
          </select>
        </div>
        <div class="sha__form-group">
-         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.category.help" x-text="t('fieldCategory')"></label>
-         <select class="field" data-field="category" x-param="category" data-help-key="">
+         <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.category.help" :for="fieldId('category')" x-text="t('fieldCategory')"></label>
+         <select :id="fieldId('category')" class="field" data-field="category" x-param="category" data-help-key="">
            <option value="intern" x-text="t('categoryIntern')"></option>
            <option value="extern" x-text="t('categoryExtern')"></option>
            <option value="kunde" x-text="t('categoryCustomer')"></option>
@@ -293,8 +293,8 @@
      </div>
 
      <div class="sha__form-group">
-       <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.notes.help" x-text="t('notesLabel')"></label>
-       <textarea class="field" data-field="notes" x-param="notes" maxlength="500" :placeholder="t('notesPlaceholder')" data-help-key=""></textarea>
+       <label data-help-key="modules.stakeholder-analysis.fields.stakeholders.notes.help" :for="fieldId('notes')" x-text="t('notesLabel')"></label>
+       <textarea :id="fieldId('notes')" class="field" data-field="notes" x-param="notes" maxlength="500" :placeholder="t('notesPlaceholder')" data-help-key=""></textarea>
      </div>
    </form>
  </div>

@@ -19,10 +19,10 @@
         "help": "The stakeholder's interest in the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with power it decides the quadrant of the power-interest matrix: 4 and above counts as high; high on both gives Manage Closely, only power high Keep Satisfied, only interest high Keep Informed, otherwise Monitor."
       },
       "support": {
-        "help": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; the module takes it over as it is and shows it that way; whoever opens the entry in the form and saves it resets it to Neutral. In the matrix it is coloured like a critic; it does not count toward the warning."
+        "help": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; the module takes it over as it is and shows it that way; whoever changes the entry in the form and saves it resets it to Neutral. In the matrix it is coloured like a critic; it does not count toward the warning."
       },
       "category": {
-        "help": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; the module takes it over as it is and shows it that way; whoever opens the entry in the form and saves it resets it to Internal."
+        "help": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; the module takes it over as it is and shows it that way; whoever changes the entry in the form and saves it resets it to Internal."
       },
       "notes": {
         "help": "The stakeholder's expectations and concerns as free text, up to 500 characters."
