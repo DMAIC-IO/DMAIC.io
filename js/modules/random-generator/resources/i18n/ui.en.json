@@ -253,7 +253,6 @@
   "statKurtosis": "Kurtosis",
   "sentToWorksheet": "Data sent to worksheet",
   "selectTarget": "Select target",
-  "newColumn": "New column",
   "catAttributive": "Attributive",
   "distAttributive": "Attributive Categories",
   "attrName": "Attribute",
@@ -264,6 +263,7 @@
   "frequency": "Frequency distribution",
   "catCount": "Categories",
   "mostFrequent": "Most frequent",
+  "targetUnavailable": "The selected target is no longer free. Please choose another target.",
   "invariants": {
     "uniformOrder": "For the uniform distribution the upper bound (b) must not be less than the lower bound (a).",
     "triangularOrder": "For the triangular distribution the mode (c) must lie between the minimum (a) and the maximum (b).",

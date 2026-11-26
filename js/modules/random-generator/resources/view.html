@@ -1,0 +1,604 @@
+<div class="module-random-generator dmike-split dmike-split--input-sm" x-data="randomGenerator">
+  <aside class="rg-sidebar dmike-split__input" data-ref="sidebar" role="radiogroup" x-set="model.currentDist"
+         data-help-key="modules.random-generator.fields.currentDist.help">
+    <template x-for="cat in categories" :key="cat.key">
+      <div class="rg-sidebar__section">
+        <div class="rg-sidebar__title" x-text="t(cat.key)"></div>
+        <template x-for="distKey in cat.dists" :key="distKey">
+          <button type="button" role="radio" :class="distBtnClass(distKey)" :value="distKey" :data-dist="distKey"
+                  data-help-key="" x-text="distName(distKey)"></button>
+        </template>
+      </div>
+    </template>
+    <div class="rg-sidebar__section">
+      <div class="rg-sidebar__title" x-text="t('catAttributive')"></div>
+      <button type="button" role="radio" :class="distBtnClass(attrKey)" value="attributive" data-dist="attributive"
+              data-help-key="" x-text="t('distAttributive')"></button>
+    </div>
+  </aside>
+
+  <main class="rg-main dmike-split__output" data-ref="main">
+
+    <!-- Leer (keine Verteilung gewählt) -->
+    <template x-if="!model.currentDist">
+      <div class="rg-main__empty"></div>
+    </template>
+
+    <!-- ── Stetig oder diskret ─────────────────────────────── -->
+    <template x-if="isNumeric">
+      <div>
+        <div class="rg-dist-title" x-text="title"></div>
+        <div class="rg-dist-formula" x-text="formula"></div>
+        <div class="rg-controls">
+          <template x-if="isDist('normal')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.normal.mu.help" x-text="t('dist.normal.mu.label')"></label>
+                <input class="field field--num" data-ref="param-mu" x-field="model.params.normal.mu">
+                <span class="rg-field-error" x-text="fieldError('model.params.normal.mu')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.normal.sigma.help" x-text="t('dist.normal.sigma.label')"></label>
+                <input class="field field--num" data-ref="param-sigma" x-field="model.params.normal.sigma">
+                <span class="rg-field-error" x-text="fieldError('model.params.normal.sigma')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.normal.epsilon.help" x-text="t('dist.normal.epsilon.label')"></label>
+                <input class="field field--num" data-ref="param-epsilon" x-field="model.params.normal.epsilon">
+                <div class="rg-param-hint" x-text="t('dist.normal.epsilon.hint')"></div>
+                <span class="rg-field-error" x-text="fieldError('model.params.normal.epsilon')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.normal.delta.help" x-text="t('dist.normal.delta.label')"></label>
+                <input class="field field--num" data-ref="param-delta" x-field="model.params.normal.delta">
+                <div class="rg-param-hint" x-text="t('dist.normal.delta.hint')"></div>
+                <span class="rg-field-error" x-text="fieldError('model.params.normal.delta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('chisquare')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.chisquare.k.help" x-text="t('dist.chisquare.k.label')"></label>
+                <input class="field field--num" data-ref="param-k" x-field="model.params.chisquare.k">
+                <span class="rg-field-error" x-text="fieldError('model.params.chisquare.k')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('f_dist')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.f_dist.d1.help" x-text="t('dist.f_dist.d1.label')"></label>
+                <input class="field field--num" data-ref="param-d1" x-field="model.params.f_dist.d1">
+                <span class="rg-field-error" x-text="fieldError('model.params.f_dist.d1')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.f_dist.d2.help" x-text="t('dist.f_dist.d2.label')"></label>
+                <input class="field field--num" data-ref="param-d2" x-field="model.params.f_dist.d2">
+                <span class="rg-field-error" x-text="fieldError('model.params.f_dist.d2')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('t_dist')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.t_dist.nu.help" x-text="t('dist.t_dist.nu.label')"></label>
+                <input class="field field--num" data-ref="param-nu" x-field="model.params.t_dist.nu">
+                <span class="rg-field-error" x-text="fieldError('model.params.t_dist.nu')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('uniform')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.uniform.a.help" x-text="t('dist.uniform.a.label')"></label>
+                <input class="field field--num" data-ref="param-a" x-field="model.params.uniform.a">
+                <span class="rg-field-error" x-text="fieldError('model.params.uniform.a')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.uniform.b.help" x-text="t('dist.uniform.b.label')"></label>
+                <input class="field field--num" data-ref="param-b" x-field="model.params.uniform.b">
+                <span class="rg-field-error" x-text="fieldError('model.params.uniform.b')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('beta')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.beta.alpha.help" x-text="t('dist.beta.alpha.label')"></label>
+                <input class="field field--num" data-ref="param-alpha" x-field="model.params.beta.alpha">
+                <span class="rg-field-error" x-text="fieldError('model.params.beta.alpha')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.beta.beta.help" x-text="t('dist.beta.beta.label')"></label>
+                <input class="field field--num" data-ref="param-beta" x-field="model.params.beta.beta">
+                <span class="rg-field-error" x-text="fieldError('model.params.beta.beta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('cauchy')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.cauchy.x0.help" x-text="t('dist.cauchy.x0.label')"></label>
+                <input class="field field--num" data-ref="param-x0" x-field="model.params.cauchy.x0">
+                <span class="rg-field-error" x-text="fieldError('model.params.cauchy.x0')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.cauchy.gamma.help" x-text="t('dist.cauchy.gamma.label')"></label>
+                <input class="field field--num" data-ref="param-gamma" x-field="model.params.cauchy.gamma">
+                <span class="rg-field-error" x-text="fieldError('model.params.cauchy.gamma')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('exponential')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.exponential.lambda.help" x-text="t('dist.exponential.lambda.label')"></label>
+                <input class="field field--num" data-ref="param-lambda" x-field="model.params.exponential.lambda">
+                <span class="rg-field-error" x-text="fieldError('model.params.exponential.lambda')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('gamma_dist')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.gamma_dist.alpha.help" x-text="t('dist.gamma_dist.alpha.label')"></label>
+                <input class="field field--num" data-ref="param-alpha" x-field="model.params.gamma_dist.alpha">
+                <span class="rg-field-error" x-text="fieldError('model.params.gamma_dist.alpha')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.gamma_dist.beta.help" x-text="t('dist.gamma_dist.beta.label')"></label>
+                <input class="field field--num" data-ref="param-beta" x-field="model.params.gamma_dist.beta">
+                <span class="rg-field-error" x-text="fieldError('model.params.gamma_dist.beta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('laplace')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.laplace.mu.help" x-text="t('dist.laplace.mu.label')"></label>
+                <input class="field field--num" data-ref="param-mu" x-field="model.params.laplace.mu">
+                <span class="rg-field-error" x-text="fieldError('model.params.laplace.mu')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.laplace.b.help" x-text="t('dist.laplace.b.label')"></label>
+                <input class="field field--num" data-ref="param-b" x-field="model.params.laplace.b">
+                <span class="rg-field-error" x-text="fieldError('model.params.laplace.b')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('gumbel_max')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.gumbel_max.mu.help" x-text="t('dist.gumbel_max.mu.label')"></label>
+                <input class="field field--num" data-ref="param-mu" x-field="model.params.gumbel_max.mu">
+                <span class="rg-field-error" x-text="fieldError('model.params.gumbel_max.mu')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.gumbel_max.beta.help" x-text="t('dist.gumbel_max.beta.label')"></label>
+                <input class="field field--num" data-ref="param-beta" x-field="model.params.gumbel_max.beta">
+                <span class="rg-field-error" x-text="fieldError('model.params.gumbel_max.beta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('logistic')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.logistic.mu.help" x-text="t('dist.logistic.mu.label')"></label>
+                <input class="field field--num" data-ref="param-mu" x-field="model.params.logistic.mu">
+                <span class="rg-field-error" x-text="fieldError('model.params.logistic.mu')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.logistic.s.help" x-text="t('dist.logistic.s.label')"></label>
+                <input class="field field--num" data-ref="param-s" x-field="model.params.logistic.s">
+                <span class="rg-field-error" x-text="fieldError('model.params.logistic.s')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('loglogistic')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.loglogistic.alpha.help" x-text="t('dist.loglogistic.alpha.label')"></label>
+                <input class="field field--num" data-ref="param-alpha" x-field="model.params.loglogistic.alpha">
+                <span class="rg-field-error" x-text="fieldError('model.params.loglogistic.alpha')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.loglogistic.beta.help" x-text="t('dist.loglogistic.beta.label')"></label>
+                <input class="field field--num" data-ref="param-beta" x-field="model.params.loglogistic.beta">
+                <span class="rg-field-error" x-text="fieldError('model.params.loglogistic.beta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('lognormal')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.lognormal.mu.help" x-text="t('dist.lognormal.mu.label')"></label>
+                <input class="field field--num" data-ref="param-mu" x-field="model.params.lognormal.mu">
+                <span class="rg-field-error" x-text="fieldError('model.params.lognormal.mu')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.lognormal.sigma.help" x-text="t('dist.lognormal.sigma.label')"></label>
+                <input class="field field--num" data-ref="param-sigma" x-field="model.params.lognormal.sigma">
+                <span class="rg-field-error" x-text="fieldError('model.params.lognormal.sigma')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('gumbel_min')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.gumbel_min.mu.help" x-text="t('dist.gumbel_min.mu.label')"></label>
+                <input class="field field--num" data-ref="param-mu" x-field="model.params.gumbel_min.mu">
+                <span class="rg-field-error" x-text="fieldError('model.params.gumbel_min.mu')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.gumbel_min.beta.help" x-text="t('dist.gumbel_min.beta.label')"></label>
+                <input class="field field--num" data-ref="param-beta" x-field="model.params.gumbel_min.beta">
+                <span class="rg-field-error" x-text="fieldError('model.params.gumbel_min.beta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('triangular')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.triangular.a.help" x-text="t('dist.triangular.a.label')"></label>
+                <input class="field field--num" data-ref="param-a" x-field="model.params.triangular.a">
+                <span class="rg-field-error" x-text="fieldError('model.params.triangular.a')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.triangular.c.help" x-text="t('dist.triangular.c.label')"></label>
+                <input class="field field--num" data-ref="param-c" x-field="model.params.triangular.c">
+                <span class="rg-field-error" x-text="fieldError('model.params.triangular.c')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.triangular.b.help" x-text="t('dist.triangular.b.label')"></label>
+                <input class="field field--num" data-ref="param-b" x-field="model.params.triangular.b">
+                <span class="rg-field-error" x-text="fieldError('model.params.triangular.b')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('weibull')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.weibull.alpha.help" x-text="t('dist.weibull.alpha.label')"></label>
+                <input class="field field--num" data-ref="param-alpha" x-field="model.params.weibull.alpha">
+                <span class="rg-field-error" x-text="fieldError('model.params.weibull.alpha')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.weibull.beta.help" x-text="t('dist.weibull.beta.label')"></label>
+                <input class="field field--num" data-ref="param-beta" x-field="model.params.weibull.beta">
+                <span class="rg-field-error" x-text="fieldError('model.params.weibull.beta')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('bernoulli')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.bernoulli.p.help" x-text="t('dist.bernoulli.p.label')"></label>
+                <input class="field field--num" data-ref="param-p" x-field="model.params.bernoulli.p">
+                <span class="rg-field-error" x-text="fieldError('model.params.bernoulli.p')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('binomial')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.binomial.n.help" x-text="t('dist.binomial.n.label')"></label>
+                <input class="field field--num" data-ref="param-n" x-field="model.params.binomial.n">
+                <span class="rg-field-error" x-text="fieldError('model.params.binomial.n')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.binomial.p.help" x-text="t('dist.binomial.p.label')"></label>
+                <input class="field field--num" data-ref="param-p" x-field="model.params.binomial.p">
+                <span class="rg-field-error" x-text="fieldError('model.params.binomial.p')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('geometric')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.geometric.p.help" x-text="t('dist.geometric.p.label')"></label>
+                <input class="field field--num" data-ref="param-p" x-field="model.params.geometric.p">
+                <span class="rg-field-error" x-text="fieldError('model.params.geometric.p')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('negbinomial')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.negbinomial.r.help" x-text="t('dist.negbinomial.r.label')"></label>
+                <input class="field field--num" data-ref="param-r" x-field="model.params.negbinomial.r">
+                <span class="rg-field-error" x-text="fieldError('model.params.negbinomial.r')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.negbinomial.p.help" x-text="t('dist.negbinomial.p.label')"></label>
+                <input class="field field--num" data-ref="param-p" x-field="model.params.negbinomial.p">
+                <span class="rg-field-error" x-text="fieldError('model.params.negbinomial.p')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('hypergeometric')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.hypergeometric.N.help" x-text="t('dist.hypergeometric.N.label')"></label>
+                <input class="field field--num" data-ref="param-N" x-field="model.params.hypergeometric.N">
+                <span class="rg-field-error" x-text="fieldError('model.params.hypergeometric.N')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.hypergeometric.K.help" x-text="t('dist.hypergeometric.K.label')"></label>
+                <input class="field field--num" data-ref="param-K" x-field="model.params.hypergeometric.K">
+                <span class="rg-field-error" x-text="fieldError('model.params.hypergeometric.K')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.hypergeometric.n.help" x-text="t('dist.hypergeometric.n.label')"></label>
+                <input class="field field--num" data-ref="param-n" x-field="model.params.hypergeometric.n">
+                <span class="rg-field-error" x-text="fieldError('model.params.hypergeometric.n')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('integer')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.integer.a.help" x-text="t('dist.integer.a.label')"></label>
+                <input class="field field--num" data-ref="param-a" x-field="model.params.integer.a">
+                <span class="rg-field-error" x-text="fieldError('model.params.integer.a')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.integer.b.help" x-text="t('dist.integer.b.label')"></label>
+                <input class="field field--num" data-ref="param-b" x-field="model.params.integer.b">
+                <span class="rg-field-error" x-text="fieldError('model.params.integer.b')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('poisson')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.poisson.lambda.help" x-text="t('dist.poisson.lambda.label')"></label>
+                <input class="field field--num" data-ref="param-lambda" x-field="model.params.poisson.lambda">
+                <span class="rg-field-error" x-text="fieldError('model.params.poisson.lambda')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="isDist('mvnormal')">
+            <div class="rg-params">
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.mvnormal.mu1.help" x-text="t('dist.mvnormal.mu1.label')"></label>
+                <input class="field field--num" data-ref="param-mu1" x-field="model.params.mvnormal.mu1">
+                <span class="rg-field-error" x-text="fieldError('model.params.mvnormal.mu1')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.mvnormal.mu2.help" x-text="t('dist.mvnormal.mu2.label')"></label>
+                <input class="field field--num" data-ref="param-mu2" x-field="model.params.mvnormal.mu2">
+                <span class="rg-field-error" x-text="fieldError('model.params.mvnormal.mu2')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.mvnormal.sigma1.help" x-text="t('dist.mvnormal.sigma1.label')"></label>
+                <input class="field field--num" data-ref="param-sigma1" x-field="model.params.mvnormal.sigma1">
+                <span class="rg-field-error" x-text="fieldError('model.params.mvnormal.sigma1')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.mvnormal.sigma2.help" x-text="t('dist.mvnormal.sigma2.label')"></label>
+                <input class="field field--num" data-ref="param-sigma2" x-field="model.params.mvnormal.sigma2">
+                <span class="rg-field-error" x-text="fieldError('model.params.mvnormal.sigma2')"></span>
+              </div>
+              <div class="field-group rg-control-group">
+                <label data-help-key="modules.random-generator.fields.params.mvnormal.rho.help" x-text="t('dist.mvnormal.rho.label')"></label>
+                <input class="field field--num" data-ref="param-rho" x-field="model.params.mvnormal.rho">
+                <span class="rg-field-error" x-text="fieldError('model.params.mvnormal.rho')"></span>
+              </div>
+            </div>
+          </template>
+          <div class="field-group rg-control-group">
+            <label data-help-key="modules.random-generator.fields.count.help" x-text="t('count')"></label>
+            <input class="field field--num" data-ref="count" x-field="model.count">
+            <span class="rg-field-error" x-text="fieldError('model.count')"></span>
+          </div>
+          <div class="field-group rg-control-group">
+            <label data-help-key="modules.random-generator.fields.seed.help" x-text="t('seed')"></label>
+            <input class="field field--num" data-ref="seed" placeholder="42" x-field="model.seed">
+            <span class="rg-field-error" x-text="fieldError('model.seed')"></span>
+          </div>
+        </div>
+
+        <p class="rg-error" data-ref="error" x-show="errorText" x-text="errorText"></p>
+
+        <div class="rg-action-bar" x-show="hasResults">
+          <span class="rg-export-group" x-async-task="toWorksheet">
+            <span class="rg-target-wrap" data-help-key="modules.random-generator.asyncTasks.toWorksheet.params.target">
+              <span class="col-picker col-picker--single">
+                <select class="field col-picker__select rg-target__select" data-ref="target" x-model="state.target">
+                  <option value="" x-text="targetPlaceholder"></option>
+                  <option value="__create_worksheet__" x-text="newWorksheetLabel"></option>
+                  <template x-for="g in targetGroups" :key="g.key">
+                    <optgroup :label="g.label">
+                      <template x-for="o in g.options" :key="o.value">
+                        <option :value="o.value" x-text="o.label"></option>
+                      </template>
+                    </optgroup>
+                  </template>
+                </select>
+              </span>
+            </span>
+            <button class="btn btn--secondary" type="button" data-ref="send" data-help-key="modules.random-generator.asyncTasks.toWorksheet.help"
+                    :disabled="asyncTasks.toWorksheet.running" @click="sendToWorksheet()">
+              <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+              <span x-text="t('toWorksheet')"></span>
+            </button>
+          </span>
+        </div>
+
+        <div data-ref="stats">
+          <template x-if="hasResults">
+            <div class="dmike-kpi-strip">
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.n"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.n" x-text="t('statN')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.mean"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.mean" x-text="t('statMean')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.sd"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.sd" x-text="t('statStd')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.median"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.median" x-text="t('statMedian')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.min"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.min" x-text="t('statMin')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.max"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.max" x-text="t('statMax')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.skewness"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.skewness" x-text="t('statSkewness')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.kurtosis"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.kurtosis" x-text="t('statKurtosis')"></div></div>
+            </div>
+          </template>
+        </div>
+
+        <div class="rg-histogram" data-ref="chart" x-show="hasResults" x-widget="histogram-chart" x-widget-config="histogramChart"
+             x-widget-value="model.histogramEdits" x-widget-legacy-edit-key="legacyHistogramKey"></div>
+
+        <div data-ref="data">
+          <template x-if="hasResults">
+            <div class="rg-data">
+              <div class="rg-data__header">
+                <div class="rg-data__title" x-text="t('generatedData')"></div>
+                <div class="rg-data__count" x-text="dataCount"></div>
+              </div>
+              <div class="rg-data__grid">
+                <div class="rg-data__values">
+                  <template x-for="(v, i) in shownValues" :key="i">
+                    <span x-text="v"></span>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- ── Attributiv ─────────────────────────────────────── -->
+    <template x-if="isAttributive">
+      <div>
+        <div class="rg-dist-title" x-text="title"></div>
+        <div class="rg-dist-formula" x-text="formula"></div>
+
+        <div class="rg-attr-wrap">
+          <div class="rg-attr-section">
+            <div class="rg-attr-head">
+              <div class="rg-attr-head__label" data-help-key="modules.random-generator.fields.attributes.name.help" x-text="t('attrName')"></div>
+              <div class="rg-attr-head__label" data-help-key="modules.random-generator.fields.attributes.weight.help" x-text="t('attrWeight')"></div>
+              <div></div>
+            </div>
+            <div class="rg-attr-list" data-ref="attr-list">
+              <template x-for="(a, i) in model.attributes" :key="a.id">
+                <div class="rg-attr-row" :style="attrRowStyle(i)">
+                  <input type="text" class="field rg-attr-row__name" :data-i="i" data-f="name" :placeholder="t('attrName')" x-model="a.name">
+                  <input class="field field--num rg-attr-row__weight" :data-i="i" data-f="weight" x-field="a.weight">
+                  <button class="rg-attr-row__remove" type="button" :data-i="i" :title="t('removeAttribute')" :aria-label="t('removeAttribute')"
+                          x-command="removeAttribute" :data-arg-attr-id="a.id" data-confirm-delete data-help-key="" x-text="removeGlyph"></button>
+                </div>
+              </template>
+            </div>
+            <button class="rg-attr-add" type="button" data-ref="attr-add" data-help-key="modules.random-generator.actions.addAttribute.help" x-command="addAttribute">
+              <span x-text="addLabel"></span>
+            </button>
+          </div>
+          <div class="rg-attr-section rg-attr-section--prob">
+            <div class="rg-attr-head">
+              <div class="rg-attr-head__label" x-text="t('probability')"></div>
+            </div>
+            <div class="rg-attr-prob__bars" data-ref="attr-prob">
+              <template x-for="(bar, i) in probBars" :key="i">
+                <div class="rg-attr-prob__bar" :title="bar.title">
+                  <div class="rg-attr-prob__bar-fill" :style="bar.style"></div>
+                  <div class="rg-attr-prob__bar-label" x-text="bar.label"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <div class="rg-controls rg-controls--attr">
+          <div class="field-group rg-control-group">
+            <label data-help-key="modules.random-generator.fields.attrCount.help" x-text="t('count')"></label>
+            <input class="field field--num" data-ref="count" x-field="model.attrCount">
+            <span class="rg-field-error" x-text="fieldError('model.attrCount')"></span>
+          </div>
+          <div class="field-group rg-control-group">
+            <label data-help-key="modules.random-generator.fields.attrSeed.help" x-text="t('seed')"></label>
+            <input class="field field--num" data-ref="seed" placeholder="42" x-field="model.attrSeed">
+            <span class="rg-field-error" x-text="fieldError('model.attrSeed')"></span>
+          </div>
+        </div>
+
+        <p class="rg-error" data-ref="error" x-show="errorText" x-text="errorText"></p>
+
+        <div class="rg-action-bar" x-show="hasResults">
+          <span class="rg-export-group" x-async-task="toWorksheet">
+            <span class="rg-target-wrap" data-help-key="modules.random-generator.asyncTasks.toWorksheet.params.target">
+              <span class="col-picker col-picker--single">
+                <select class="field col-picker__select rg-target__select" data-ref="target" x-model="state.target">
+                  <option value="" x-text="targetPlaceholder"></option>
+                  <option value="__create_worksheet__" x-text="newWorksheetLabel"></option>
+                  <template x-for="g in targetGroups" :key="g.key">
+                    <optgroup :label="g.label">
+                      <template x-for="o in g.options" :key="o.value">
+                        <option :value="o.value" x-text="o.label"></option>
+                      </template>
+                    </optgroup>
+                  </template>
+                </select>
+              </span>
+            </span>
+            <button class="btn btn--secondary" type="button" data-ref="send" data-help-key="modules.random-generator.asyncTasks.toWorksheet.help"
+                    :disabled="asyncTasks.toWorksheet.running" @click="sendToWorksheet()">
+              <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+              <span x-text="t('toWorksheet')"></span>
+            </button>
+          </span>
+        </div>
+
+        <div data-ref="stats">
+          <template x-if="hasResults">
+            <div class="dmike-kpi-strip">
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.n"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.n" x-text="t('statN')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.categories"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.frequency" x-text="t('catCount')"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="stats.mostFrequent"></div><div class="dmike-kpi-label" data-help-key="modules.random-generator.types.Generated.frequency" x-text="t('mostFrequent')"></div></div>
+            </div>
+          </template>
+        </div>
+
+        <div class="rg-histogram" data-ref="chart" x-show="hasResults" x-widget="pareto-chart" x-widget-config="paretoChart"
+             x-widget-value="model.paretoEdits" x-widget-legacy-edit-key="legacyParetoKey"></div>
+
+        <div class="rg-attr-freq" data-ref="attr-freq">
+          <template x-if="freqRows.length">
+            <div>
+              <div class="rg-freq-header"><span data-help-key="modules.random-generator.types.FrequencyRow.share" x-text="t('frequency')"></span></div>
+              <div class="rg-freq-list">
+                <template x-for="row in freqRows" :key="row.name">
+                  <div class="rg-freq-row">
+                    <div class="rg-freq-row__swatch" :style="row.swatchStyle"></div>
+                    <div class="rg-freq-row__name" x-text="row.name"></div>
+                    <div class="rg-freq-row__count" x-text="row.count"></div>
+                    <div class="rg-freq-row__pct" x-text="row.pct"></div>
+                    <div class="rg-freq-row__bar">
+                      <div class="rg-freq-row__bar-fill" :style="row.barStyle"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div data-ref="data">
+          <template x-if="hasResults">
+            <div class="rg-data">
+              <div class="rg-data__header">
+                <div class="rg-data__title" x-text="t('generatedData')"></div>
+                <div class="rg-data__count" x-text="dataCount"></div>
+              </div>
+              <div class="rg-data__grid">
+                <div class="rg-attr-chips">
+                  <template x-for="(chip, i) in chips" :key="i">
+                    <span class="rg-attr-chip" :style="chip.style" x-text="chip.value"></span>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+  </main>
+</div>

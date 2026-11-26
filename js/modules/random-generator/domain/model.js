@@ -16,6 +16,8 @@ import { from0 } from './migrations.js';
 import { PARAMS_SHAPE, ATTRIBUTIVE_KEY, isNumericDist } from './distributions.js';
 import { samplesOf, summaryOf } from './sample.js';
 import { targetList } from './targets.js';
+import histogramChart from '../../../widgets/histogram-chart/schema.js';
+import paretoChart from '../../../widgets/pareto-chart/schema.js';
 
 /** Größter Umfang einer Stichprobe. */
 export const MAX_COUNT = 100000;
@@ -93,6 +95,12 @@ export class State extends defineModel({
     attrCount: number({ integer: true, min: 1, max: 100000, default: 50 }),
     /** Startwert bei der attributiven Verteilung; leer heißt 42 */
     attrSeed: number({ integer: true, nullable: true, default: 42 }),
+  },
+  view: {
+    /** Editor-Einstellungen des Histogramms (stetig/diskret) */
+    histogramEdits: histogramChart.edits(),
+    /** Editor-Einstellungen des Pareto-Diagramms (attributiv) */
+    paretoEdits: paretoChart.edits(),
   },
   invariants: {
     uniformOrder: {

@@ -267,6 +267,39 @@
     },
     "targetColumns": {
       "help": "The targets toWorksheet accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Per sheet with an empty column its empty columns are listed, followed by an entry with columnId '__new__' (name is the sheet name) that appends a new column. A target null creates a new worksheet."
+    },
+    "samples": {
+      "help": "The values generated for the current state; they follow every change at once and are not stored."
+    },
+    "stats": {
+      "help": "The statistics of the generated values, as the cards show them."
+    },
+    "probBars": {
+      "help": "The share of each category by its weight, in percent."
+    },
+    "freqRows": {
+      "help": "The frequency of each drawn category, in descending order of count."
+    },
+    "shownValues": {
+      "help": "The first 2000 generated values, as the list shows them."
+    },
+    "chips": {
+      "help": "The first 2000 drawn categories, as the list shows them."
+    },
+    "targetGroups": {
+      "help": "The targets in the target picker: per sheet with an empty column its empty columns and a new column."
+    },
+    "histogramChart": {
+      "help": "The histogram of the generated values, with a normal curve for continuous distributions."
+    },
+    "paretoChart": {
+      "help": "The Pareto chart of the drawn categories with the 80 % line."
+    },
+    "histogramEdits": {
+      "help": "The histogram settings from the chart editor."
+    },
+    "paretoEdits": {
+      "help": "The Pareto chart settings from the chart editor."
     }
   },
   "actions": {

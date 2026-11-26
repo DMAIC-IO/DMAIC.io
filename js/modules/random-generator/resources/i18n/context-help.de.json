@@ -267,6 +267,39 @@
     },
     "targetColumns": {
       "help": "Die Ziele, die toWorksheet annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Je Blatt mit einer leeren Spalte stehen dort seine leeren Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt. Ein Ziel null legt ein neues Arbeitsblatt an."
+    },
+    "samples": {
+      "help": "Die erzeugten Werte des aktuellen Stands; sie folgen jeder Änderung sofort und werden nicht gespeichert."
+    },
+    "stats": {
+      "help": "Die Kennzahlen der erzeugten Werte, wie die Karten sie zeigen."
+    },
+    "probBars": {
+      "help": "Der Anteil jeder Kategorie nach ihrem Gewicht, in Prozent."
+    },
+    "freqRows": {
+      "help": "Die Häufigkeit je gezogener Kategorie, absteigend nach Anzahl."
+    },
+    "shownValues": {
+      "help": "Die ersten 2000 erzeugten Werte, wie die Liste sie zeigt."
+    },
+    "chips": {
+      "help": "Die ersten 2000 gezogenen Kategorien, wie die Liste sie zeigt."
+    },
+    "targetGroups": {
+      "help": "Die Ziele im Zielwähler: je Blatt mit leerer Spalte seine leeren Spalten und eine neue Spalte."
+    },
+    "histogramChart": {
+      "help": "Das Histogramm der erzeugten Werte, bei stetigen Verteilungen mit Normalkurve."
+    },
+    "paretoChart": {
+      "help": "Das Pareto-Diagramm der gezogenen Kategorien mit der 80-%-Linie."
+    },
+    "histogramEdits": {
+      "help": "Die Einstellungen des Histogramms aus dem Diagramm-Editor."
+    },
+    "paretoEdits": {
+      "help": "Die Einstellungen des Pareto-Diagramms aus dem Diagramm-Editor."
     }
   },
   "actions": {

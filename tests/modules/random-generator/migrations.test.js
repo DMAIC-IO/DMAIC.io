@@ -17,6 +17,9 @@ const plain = (v) => JSON.parse(JSON.stringify(v));
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
 const DEFAULTS = plain(new State().toJSON());
 delete DEFAULTS._schema;
+// Die Ansichtsfelder (Editor-Einstellungen) setzt die Migration nicht; ihre Vorgabe greift beim Laden.
+delete DEFAULTS.histogramEdits;
+delete DEFAULTS.paretoEdits;
 
 /** @param {URL} url */
 async function fetchJSON(url) {

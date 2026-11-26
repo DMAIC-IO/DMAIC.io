@@ -253,7 +253,6 @@
   "statKurtosis": "Kurtosis",
   "sentToWorksheet": "Daten an Arbeitsblatt gesendet",
   "selectTarget": "Ziel wählen",
-  "newColumn": "Neue Spalte",
   "catAttributive": "Attributiv",
   "distAttributive": "Attributive Kategorien",
   "attrName": "Attribut",
@@ -264,6 +263,7 @@
   "frequency": "Häufigkeitsverteilung",
   "catCount": "Kategorien",
   "mostFrequent": "Häufigstes",
+  "targetUnavailable": "Das gewählte Ziel ist nicht mehr frei. Bitte ein anderes Ziel wählen.",
   "invariants": {
     "uniformOrder": "Bei der Gleichverteilung darf die Obergrenze (b) nicht kleiner als die Untergrenze (a) sein.",
     "triangularOrder": "Bei der Dreiecksverteilung muss der Modus (c) zwischen Minimum (a) und Maximum (b) liegen.",
