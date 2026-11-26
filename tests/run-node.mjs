@@ -217,6 +217,7 @@ const SKIP = new Set([
   'modules/gage-run-chart-view.test.js',
   'modules/transformed-imr-chart-view.test.js',
   'modules/multivariate-control-chart-view.test.js',
+  'modules/sample-size-view.test.js',
   'modules/time-weighted-chart-view.test.js',
   'modules/rare-event-chart-view.test.js',
   'modules/short-run-chart-view.test.js',

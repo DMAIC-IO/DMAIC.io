@@ -1,0 +1,146 @@
+<div class="smpsize dmike-split" x-data="sampleSize">
+  <!-- data-help-key="" an Knöpfen, Eingaben und Auswahl ist gewollt: Gruppe bzw. Beschriftung tragen die Anker fields.*. -->
+  <div class="smpsize__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionCategory')"></div>
+    <div class="btn-group smpsize__toggle-row" role="radiogroup" data-help-key="modules.sample-size.fields.category.help" x-set="model.category">
+      <button type="button" role="radio" class="btn--segment smpsize__toggle-btn" data-help-key=""
+              value="variance" data-cat="variance"
+              :class="catActiveClass('variance')"
+              x-text="catVarianceLabel"></button>
+      <button type="button" role="radio" class="btn--segment smpsize__toggle-btn" data-help-key=""
+              value="mean" data-cat="mean"
+              :class="catActiveClass('mean')"
+              x-text="catMeanLabel"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
+    <div class="btn-group smpsize__toggle-row" role="radiogroup" data-help-key="modules.sample-size.fields.testType.help" x-set="model.testType">
+      <button type="button" role="radio" class="btn--segment smpsize__toggle-btn" data-help-key=""
+              value="one" data-type="one"
+              :class="typeActiveClass('one')"
+              x-text="t('oneSample')"></button>
+      <button type="button" role="radio" class="btn--segment smpsize__toggle-btn" data-help-key=""
+              value="two" data-type="two"
+              :class="typeActiveClass('two')"
+              x-text="t('twoSample')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionEffect')"></div>
+
+    <!-- Varianzen, eine Stichprobe: σ₀ und σ₁ -->
+    <template x-if="shows('effect.varianceOne.sigma0')">
+      <div class="field-grid field-grid--2">
+        <div class="field-group">
+          <label data-help-key="modules.sample-size.fields.effect.varianceOne.sigma0.help" x-text="hypothesizedStdLabel"></label>
+          <input class="field field--num" data-ref="sigma0" data-help-key=""
+                 :placeholder="t('sigma0Placeholder')"
+                 x-field="model.effect.varianceOne.sigma0">
+        </div>
+        <div class="field-group">
+          <label data-help-key="modules.sample-size.fields.effect.varianceOne.sigmaAlt.help" x-text="expectedStdLabel"></label>
+          <input class="field field--num" data-ref="sigma-alt" data-help-key=""
+                 :placeholder="t('sigmaAltPlaceholder')"
+                 x-field="model.effect.varianceOne.sigmaAlt">
+        </div>
+      </div>
+    </template>
+
+    <!-- Varianzen, zwei Stichproben: Verhältnis -->
+    <template x-if="shows('effect.varianceTwo.ratio')">
+      <div class="field-group">
+        <label data-help-key="modules.sample-size.fields.effect.varianceTwo.ratio.help" x-text="varianceRatioLabel"></label>
+        <input class="field field--num" data-ref="ratio" data-help-key=""
+               :placeholder="t('ratioPlaceholder')"
+               x-field="model.effect.varianceTwo.ratio">
+      </div>
+    </template>
+
+    <!-- Mittelwerte (eine oder zwei Stichproben): Δ und σ -->
+    <template x-if="shows('effect.mean.delta')">
+      <div class="field-row">
+        <div class="field-group field-group--major">
+          <label data-help-key="modules.sample-size.fields.effect.mean.delta.help" x-text="meanDifferenceLabel"></label>
+          <input class="field field--num" data-ref="delta" data-help-key=""
+                 :placeholder="t('deltaPlaceholder')"
+                 x-field="model.effect.mean.delta">
+        </div>
+        <div class="field-group field-group--minor">
+          <label data-help-key="modules.sample-size.fields.effect.mean.sigma.help" x-text="stdDevLabel"></label>
+          <input class="field field--num" data-ref="sigma" data-help-key=""
+                 :placeholder="t('sigmaPlaceholder')"
+                 x-field="model.effect.mean.sigma">
+        </div>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label data-help-key="modules.sample-size.fields.direction.help" x-text="t('direction')"></label>
+        <select class="field" data-ref="direction" data-help-key="" x-field="model.direction">
+          <template x-for="o in directionOptions" :key="o.value">
+            <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+          </template>
+        </select>
+      </div>
+      <div class="field-group field-group--minor">
+        <label data-help-key="modules.sample-size.fields.alpha.help">&#945;</label>
+        <input class="field field--num" data-ref="alpha" data-help-key="" x-field="model.alpha">
+      </div>
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.sample-size.fields.power.help" x-text="targetPowerLabel"></label>
+      <input class="field field--num" data-ref="power" data-help-key="" x-field="model.power">
+    </div>
+  </div>
+
+  <div class="smpsize__output dmike-split__output">
+    <div class="smpsize__placeholder" data-ref="placeholder" x-show="!hasResult"></div>
+    <div data-ref="results" x-show="hasResult">
+      <template x-if="hasResult">
+        <div>
+          <div class="dmike-split__output-section smpsize__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResult')"></span></div>
+          <div class="smpsize__summary">
+            <strong><span data-help-key="modules.sample-size.types.Result.nRequired" x-text="summaryStrong"></span></strong>
+            <p x-text="summaryText"></p>
+          </div>
+
+          <div class="dmike-kpi-strip">
+            <div class="dmike-kpi dmike-kpi--good">
+              <div class="dmike-kpi-value" x-text="kpi.n"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.sample-size.types.Result.nRequired" x-text="kpi.nLabel"></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="kpi.power"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.sample-size.types.Result.power" x-text="t('targetPower')"></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="kpi.alpha"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.sample-size.types.Result.alpha">&#945;</div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="kpi.effect"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.sample-size.types.Result.effectValue" x-text="kpi.effectLabel"></div>
+            </div>
+            <template x-if="isTwo">
+              <div class="dmike-kpi">
+                <div class="dmike-kpi-value" x-text="kpi.total"></div>
+                <div class="dmike-kpi-label" data-help-key="modules.sample-size.types.Result.totalN" x-text="t('totalN')"></div>
+              </div>
+            </template>
+          </div>
+
+          <div class="dmike-split__output-section smpsize__output-section">
+            <span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
+            <span x-text="t('sectionCurve')"></span>
+            <span class="smpsize__algo-link" x-widget="algo-lab-link" x-widget-algo-id="algoId"></span>
+          </div>
+          <div class="smpsize__chart" data-ref="power-chart"
+               x-widget="scatter-chart" x-widget-config="powerChart"
+               x-widget-value="model.powerCurveEdits" x-widget-legacy-edit-key="'scatter'"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
