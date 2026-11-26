@@ -85,7 +85,7 @@
               <span x-text="tieLabel"></span>
             </button>
           </div>
-          <div class="pairwise__compare-actions" role="radiogroup" x-set="model.viewPhase">
+          <div class="pairwise__compare-actions" role="radiogroup" :aria-label="t('backToInput')" x-set="model.viewPhase">
             <button class="pairwise__btn pairwise__btn--outline" type="button" role="radio" value="input"
                     data-action="back-to-input">
               <span class="icon icon--sm icon--text" data-icon="nav.back" aria-hidden="true"></span><span x-text="t('backToInput')"></span>

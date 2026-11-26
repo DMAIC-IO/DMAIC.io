@@ -69,7 +69,22 @@ export function ranked(criteria, sc) {
  * @param {{ pairs: ReadonlyArray<unknown>, currentPair: number }} m @returns {boolean}
  */
 export function compareReachable(m) {
-  return m.pairs.length > 0 && m.currentPair < m.pairs.length;
+  return m.pairs.length > 0 && m.currentPair >= 0 && m.currentPair < m.pairs.length;
+}
+
+/**
+ * Das anstehende Paar, wenn es zwei verschiedene gültige Zeilennummern der
+ * Matrix enthält; sonst null (ein von Hand geschriebener Stand prüft
+ * Matrixform und Paarnummern beim Laden nicht).
+ * @param {{ matrix: ReadonlyArray<ReadonlyArray<number>>, pairs: ReadonlyArray<ReadonlyArray<number>>, currentPair: number }} m
+ * @returns {[number, number]|null}
+ */
+export function currentPairOf(m) {
+  const pair = m.pairs[m.currentPair];
+  if (!Array.isArray(pair) || pair.length !== 2) return null;
+  const [a, b] = pair;
+  const valid = (x) => Number.isInteger(x) && x >= 0 && x < m.matrix.length && Array.isArray(m.matrix[x]);
+  return valid(a) && valid(b) && a !== b ? [a, b] : null;
 }
 
 /**

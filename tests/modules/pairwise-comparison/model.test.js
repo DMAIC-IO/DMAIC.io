@@ -288,6 +288,20 @@ suite('pairwise-comparison Model — Entscheidungen', () => {
       for (const name of ['chooseLeft', 'chooseRight', 'tieCurrent']) expectRejected(m, () => m[name]({}), 'command');
     }
   });
+  test('negativer Fortschritt: kein laufender Vergleich, Ablehnung param command', () => {
+    const m = load({ ...SCHEMA, criteria: ['A', 'B', 'C'], matrix: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], pairs: [[0, 1], [0, 2], [1, 2]], currentPair: -1, viewPhase: 'input' });
+    for (const name of ['chooseLeft', 'chooseRight', 'tieCurrent']) expectRejected(m, () => m[name]({}), 'command');
+  });
+  test('kaputtes anstehendes Paar: Ablehnung param pairs statt TypeError', () => {
+    const base = { ...SCHEMA, criteria: ['A', 'B', 'C'], matrix: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], currentPair: 0, viewPhase: 'compare' };
+    for (const broken of [{ pairs: [[0]] }, { pairs: [[0, 1, 2]] }, { pairs: [[0, 9]] }, { pairs: [[-1, 1]] }, { pairs: [[1, 1]] }, { pairs: [[0, 1]], matrix: [] }]) {
+      const m = load({ ...base, ...broken });
+      for (const name of ['chooseLeft', 'chooseRight', 'tieCurrent']) {
+        const err = expectRejected(m, () => m[name]({}), 'pairs');
+        assertTrue(!(err instanceof TypeError), `${name} ${json(broken)}: TypeError`);
+      }
+    }
+  });
   test('Altprojekt im Vergleich: Paar 3 ist [0, 2], Gleichstand setzt beide Zellen', () => {
     const m = load(COMPARE);
     m.tieCurrent({});

@@ -2,7 +2,7 @@
  * Tests for modules/pairwise-comparison/domain/migrations.js — '0→1.0'
  * übernimmt jeden Stand des alten `State.fromJSON`: Kriterien nur Texte,
  * Matrix und Paare als Listen von Listen (Nichtzahlen → 0, Länge bleibt,
- * Zahlen wörtlich), `currentPair` nur ganzzahlig, `viewPhase` aus den drei
+ * Zahlen wörtlich), `currentPair` nur ganzzahlig ab 0, `viewPhase` aus den drei
  * Reitern; unbekannte Schlüssel entfallen. Dazu die goldenen Fixtures (AHP-
  * Matrix wörtlich), das Altprojekt aus den E2E-Fixtures und beide Beispiele
  * in der Form ohne `_schema` über das Model.
@@ -102,11 +102,11 @@ suite('pairwise-comparison Migration 0→1.0 — Fälle des alten fromJSON', () 
     assertDeepEqual(from0({ pairs: [[0, 1.5], 'x', [2, '3', 4]] }).pairs, [[0, 0], [], [2, 0, 4]]);
   });
 
-  test('currentPair: nur eine Ganzzahl, sonst 0; keine Klemmung', () => {
+  test('currentPair: nur eine Ganzzahl ab 0, sonst 0; nach oben keine Klemmung', () => {
     assertEqual(from0({ currentPair: 1.5 }).currentPair, 0);
     assertEqual(from0({ currentPair: '2' }).currentPair, 0);
     assertEqual(from0({ currentPair: 99 }).currentPair, 99);
-    assertEqual(from0({ currentPair: -1 }).currentPair, -1);
+    assertEqual(from0({ currentPair: -1 }).currentPair, 0);
   });
 
   test('viewPhase: einer der drei Reiter, sonst input', () => {

@@ -30,7 +30,7 @@ const isFiniteNumber = (x) => typeof x === 'number' && Number.isFinite(x);
  * schrieb, von Hand oder als Beispieldatei). Kriterien nur Texte; Matrix und
  * Paare Listen von Listen, Nichtzahlen darin werden 0 (in Paaren auch
  * Nicht-Ganzzahlen), Zahlen bleiben wörtlich; `currentPair` nur eine
- * Ganzzahl, sonst 0 (ohne Klemmung); `viewPhase` aus den drei Reitern, sonst
+ * Ganzzahl ab 0, sonst 0 (nach oben ohne Klemmung); `viewPhase` aus den drei Reitern, sonst
  * `input`. Unbekannte Schlüssel entfallen.
  * @param {unknown} old gespeicherter Zustand ohne `_schema`
  * @returns {{ criteria: string[], matrix: number[][], pairs: number[][], currentPair: number, viewPhase: string }}
@@ -41,7 +41,7 @@ export function from0(old) {
     criteria: Array.isArray(o.criteria) ? o.criteria.filter((c) => typeof c === 'string') : [],
     matrix: rows(o.matrix, isFiniteNumber),
     pairs: rows(o.pairs, Number.isInteger),
-    currentPair: Number.isInteger(o.currentPair) ? o.currentPair : 0,
+    currentPair: Number.isInteger(o.currentPair) && o.currentPair >= 0 ? o.currentPair : 0,
     viewPhase: PHASES_1_0.includes(o.viewPhase) ? o.viewPhase : 'input',
   };
 }

@@ -9,7 +9,8 @@
  * Gespeichert: `{ _schema, criteria, matrix, pairs, currentPair, viewPhase }`.
  * Dass der Reiter zum Lauf passt, sichert die Invariante `reachablePhase` —
  * beim Laden repariert (auf `input`), beim Schreiben abgelehnt. Matrixform und
- * Paarnummern prüft das Model nicht (nicht strenger als die Altform).
+ * Paarnummern prüft das Model beim Laden nicht (nicht strenger als die
+ * Altform); die Entscheidungen lehnen ein kaputtes anstehendes Paar ab.
  */
 import {
   defineModel, command, list, number, text, oneOf, index,
@@ -19,7 +20,7 @@ import { finiteOrNull } from '../../../core/agent/agent-results.js';
 import { from0 } from './migrations.js';
 import {
   MAX_CRITERIA, MIN_CRITERIA, PHASES, makePairs, zeroMatrix, scores, ranked,
-  compareReachable, resultsReachable, phaseReachable, nextCell, mirrorCell,
+  compareReachable, currentPairOf, resultsReachable, phaseReachable, nextCell, mirrorCell,
 } from './run.js';
 
 export { MAX_CRITERIA, MIN_CRITERIA, PHASES };
@@ -37,11 +38,18 @@ function requireText(value, ok, allowed, hintKey) {
 }
 
 /**
- * Lehnt ein Kommando ab, solange kein Vergleich läuft.
- * @param {{ pairs: ReadonlyArray<unknown>, currentPair: number }} m @param {string} name
+ * Lehnt ein Kommando ab, solange kein Vergleich läuft (`param` `command`) oder
+ * das anstehende Paar keine zwei gültigen Zeilennummern der Matrix enthält
+ * (`param` `pairs`); liefert sonst das Paar.
+ * @param {{ matrix: ReadonlyArray<ReadonlyArray<number>>, pairs: ReadonlyArray<ReadonlyArray<number>>, currentPair: number }} m
+ * @param {string} name
+ * @returns {[number, number]}
  */
 function requireRunning(m, name) {
   requireForm('command', name, compareReachable(m), 'a command while a comparison is running');
+  const pair = currentPairOf(m);
+  requireForm('pairs', m.pairs[m.currentPair], pair !== null, 'two different row numbers of the matrix');
+  return /** @type {[number, number]} */ (pair);
 }
 
 /**
@@ -116,22 +124,19 @@ export class State extends defineModel({
     }),
     chooseLeft: command({
       run() {
-        requireRunning(this, 'chooseLeft');
-        const [a, b] = this.pairs[this.currentPair];
+        const [a, b] = requireRunning(this, 'chooseLeft');
         this.decide(a, b, 1);
       },
     }),
     chooseRight: command({
       run() {
-        requireRunning(this, 'chooseRight');
-        const [a, b] = this.pairs[this.currentPair];
+        const [a, b] = requireRunning(this, 'chooseRight');
         this.decide(b, a, 1);
       },
     }),
     tieCurrent: command({
       run() {
-        requireRunning(this, 'tieCurrent');
-        const [a, b] = this.pairs[this.currentPair];
+        const [a, b] = requireRunning(this, 'tieCurrent');
         this.decide(a, b, 0.5);
       },
     }),

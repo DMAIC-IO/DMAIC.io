@@ -778,12 +778,11 @@ export default createModule({
 
       /**
        * Reine Zahlenformatierung für den CSV-Export: fester Punkt als
-       * Dezimaltrennzeichen, '—' für null. Bewusst NICHT lokalisiert wie
-       * `fmt()` — das Projekt trennt CSV-Spalten mit Semikolon, aber schreibt
-       * Dezimalwerte trotzdem mit Punkt (siehe pairwise-comparison.js
-       * exportCSV: `scores[i].toFixed(1)` in einer `;`-getrennten Datei). Ein
-       * lokalisiertes Komma neben dem Semikolon wäre zwar Excel-kompatibel,
-       * würde aber vom projektweiten Muster abweichen.
+       * Dezimaltrennzeichen, '—' für null. Nicht lokalisiert wie `fmt()`.
+       * Achtung: das weicht inzwischen vom Kernformat ab — umgestellte Module
+       * (z. B. pairwise-comparison, `io/export.js` → `exports.table()`)
+       * geben Zahlen an den Kern-CSV-Export, der Dezimalwerte mit Komma in
+       * einer `;`-getrennten Datei schreibt.
        */
       _csvNum(v, dec) { return v === null || v === undefined ? '—' : Number(v).toFixed(dec); },
 

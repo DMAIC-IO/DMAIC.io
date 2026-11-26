@@ -7,7 +7,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import {
   MAX_CRITERIA, MIN_CRITERIA, PHASES, makePairs, zeroMatrix, scores, ranked,
-  compareReachable, resultsReachable, phaseReachable, nextCell, mirrorCell,
+  compareReachable, currentPairOf, resultsReachable, phaseReachable, nextCell, mirrorCell,
 } from '../../../js/modules/pairwise-comparison/domain/run.js';
 
 /** Zufallsquelle, die der Reihe nach die Werte liefert (danach 0). @param {number[]} values */
@@ -109,8 +109,26 @@ suite('pairwise-comparison run — Erreichbarkeit', () => {
     }
   });
 
+  test('negativer Fortschritt: weder Vergleich noch Ergebnis', () => {
+    const m = { pairs, currentPair: -1 };
+    assertEqual(compareReachable(m), false);
+    assertEqual(resultsReachable(m), false);
+  });
+
   test('fremder Reiter ist nie erreichbar', () => {
     assertEqual(phaseReachable('other', { pairs, currentPair: 0 }), false);
+  });
+});
+
+suite('pairwise-comparison run — anstehendes Paar', () => {
+  const matrix = zeroMatrix(3);
+  test('zwei verschiedene gültige Zeilennummern', () => {
+    assertDeepEqual(currentPairOf({ matrix, pairs: [[0, 1], [2, 1]], currentPair: 1 }), [2, 1]);
+  });
+  test('sonst null: kein Paar, falsche Länge, außerhalb der Matrix, doppelt, ohne Matrix', () => {
+    for (const [pairs, mx] of [[[], matrix], [[[0]], matrix], [[[0, 1, 2]], matrix], [[[0, 3]], matrix], [[[-1, 0]], matrix], [[[1, 1]], matrix], [[[0, 1]], []]]) {
+      assertEqual(currentPairOf({ matrix: mx, pairs, currentPair: 0 }), null, JSON.stringify(pairs));
+    }
   });
 });
 
