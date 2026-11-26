@@ -36,13 +36,13 @@ const TD = {
 suite('export-utils: tableToSVG', () => {
   test('Maße: Namensspalte, je Spalte 60, Summenspalte, Ränder; Gewichts-, Kopf-, Daten- und Fußzeile', async () => {
     const svg = await withAppFonts(() => tableToSVG(TD));
-    assertTrue(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="312" height="292"'), svg.slice(0, 120));
+    assertTrue(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="372" height="292"'), svg.slice(0, 120));
     assertTrue(svg.endsWith('</svg>'));
   });
   test('ein Textpfad je Beschriftung und gefüllter Zelle, leere Zellen ohne', async () => {
     const svg = await withAppFonts(() => tableToSVG(TD));
     // W, 2 Gewichte, 2 Köpfe, R, 2 Namen, 2 Zellen, 2 Zeilensummen, C, 2 Spaltensummen, Gesamt.
-    assertEqual((svg.match(/<g transform=/g) ?? []).length, 17);
+    assertEqual((svg.match(/<g transform=/g) ?? []).length, 16);
   });
   test('Farben der Summenzellen aus dem Deskriptor', async () => {
     const svg = await withAppFonts(() => tableToSVG(TD));

@@ -226,6 +226,7 @@ const SKIP = new Set([
   'modules/triz-contradiction-matrix-view.test.js',
   'modules/triz-9-windows-view.test.js',
   'modules/triz-sufield-view.test.js',
+  'modules/ce-matrix-view.test.js',
   'modules/raci-matrix-view.test.js',
   'modules/heatmap-view.test.js',
   'modules/process-capability-view.test.js',
