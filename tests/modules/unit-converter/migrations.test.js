@@ -2,8 +2,8 @@
  * Tests for modules/unit-converter/domain/migrations.js — '0→1.0' übernimmt
  * jeden Stand des alten `State.fromJSON` (Texte, Zeitzonen als Position,
  * auch als Ganzzahltext der Erstform; leeres Datum wird heute), das goldene
- * Fixture v0.3.0 (Größenart und Zeitzonen der Datei gab es nie: Vorgaben) und das Altprojekt aus den
- * E2E-Fixtures über das Model; ein '1.0'-Stand mit Reparatur.
+ * Fixture v0.3.0 (Größenart und Zeitzonen der Datei gab es nie: Vorgaben) und die
+ * Instanzen des Altprojekts über das Model; ein '1.0'-Stand mit Reparatur.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { from0 } from '../../../js/modules/unit-converter/domain/migrations.js';
@@ -80,12 +80,10 @@ suite('unit-converter Migration 0→1.0', () => {
     });
   });
 
-  test('Altprojekt der E2E-Fixtures: (a) 1.0 repariert, (b) Erstform', async () => {
-    const url = new URL('../../../../../test/playwright/fixtures/unit-converter/legacy-project.json', import.meta.url);
-    let project;
-    try { project = await fetchJSON(url); } catch { return; } // nur im Gesamtbaum vorhanden
-    const [a, b] = states(project);
-    assertDeepEqual(load(a), { ...SCHEMA, activeCat: 'laborwerte', fromUnit: 'mgdl_ch', toUnit: 'mmoll_ch', inputVal: '1.234,5', tzFrom: 5, tzTo: 17, tzTime: '23:30', tzDate: '2026-03-29' });
+  test('Altprojekt: (a) 1.0 repariert, (b) Erstform', () => {
+    const a = { ...SCHEMA, activeCat: 'laborwerte', fromUnit: 'mgdl_ch', toUnit: 'mmoll_bz', inputVal: '1.234,5', tzFrom: 5, tzTo: 17, tzTime: '23:30', tzDate: '2026-03-29' };
+    const b = { activeCat: 'time', fromUnit: 'h', toUnit: 'min', inputVal: '42', tzFrom: '5', tzTo: '13', tzTime: '08:15', tzDate: '' };
+    assertDeepEqual(load(a), { ...a, toUnit: 'mmoll_ch' });
     assertDeepEqual(load(b), { ...SCHEMA, activeCat: 'laenge', fromUnit: 'nm', toUnit: 'um', inputVal: '42', tzFrom: 5, tzTo: 13, tzTime: '08:15', tzDate: todayISO() });
   });
 
