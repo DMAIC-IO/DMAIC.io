@@ -6,7 +6,7 @@
  * Verteilung über `x-field` (Dezimalkomma, Grenze, Reihenfolge M5),
  * leerer Startwert, Kennzahlen in der App-Sprache, Kategorien (anlegen,
  * Gewicht, entfernen), Zielwähler aus dem Arbeitsblatt und das Senden
- * (neues Arbeitsblatt, gefüllte Spalte als Hinweis), den Export, zwei
+ * (neues Arbeitsblatt, gefüllte oder gelöschte Spalte als Hinweis), den Export, zwei
  * Instanzen und das Altprojekt ohne Verlaufsschritt.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
@@ -155,7 +155,7 @@ async function mount(instanceId, model, { keep = false, sheet = SHEET(), interac
   const q = (sel) => container.querySelector(sel);
   const qa = (sel) => [...container.querySelectorAll(sel)];
   const h = {
-    inst, states, notes, stacks, activated, container, q, qa,
+    inst, states, notes, stacks, activated, container, q, qa, bus,
     vm: () => Alpine.$data(container.querySelector('[x-data]')),
     btn: (dist) => /** @type {HTMLButtonElement} */ (q(`.rg-sidebar__btn[data-dist="${dist}"]`)),
     field: (ref) => /** @type {HTMLInputElement} */ (q(`[data-ref="${ref}"]`)),
@@ -321,6 +321,27 @@ suite('random-generator: Viewmodel im Browser', () => {
     assertEqual(out.status, 'done');
     assertEqual(h.activated.length, 0);
     assertEqual(h.stacks.length, 1);
+  });
+
+  test('Zielspalte zwischen Wahl und Senden gelöscht: Hinweis, kein Stapel', async () => {
+    const h = await mount('rg-1', null);
+    await h.click(h.btn('bernoulli'));
+    await until(() => h.q('[data-ref="target"]') !== null);
+    const sel = /** @type {HTMLSelectElement} */ (h.q('[data-ref="target"]'));
+    await until(() => sel.querySelectorAll('optgroup option').length === 2);
+    sel.value = 'ws1|s1|c2';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    assertEqual(h.vm().state.target, 'ws1|s1|c2');
+    const ws = h.states.ws1;
+    ws.sheets[0].state.columns = ws.sheets[0].state.columns.filter((c) => c.id !== 'c2');
+    h.bus.emit('worksheet:dataChanged', { instanceId: 'ws1' });
+    await settle();
+    assertTrue(!h.vm().targetOptions().some((o) => o.key === 'ws1|s1|c2'));
+    await h.click(h.q('[data-ref="send"]'));
+    await until(() => h.notes.length > 0);
+    assertDeepEqual(h.notes.at(-1), [tr('targetUnavailable'), 'warning']);
+    assertEqual(h.stacks.length, 0);
   });
 
   test('Export: CSV mit Spalte Value, Dateiname mit Startwert; ohne Verteilung keine Datei', async () => {
