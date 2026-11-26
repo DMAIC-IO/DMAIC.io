@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:ce-matrix|C&E Matrix}} (Cause-and-Effect Matrix, also called X-Y Matrix or priority matrix) links process inputs (X) to customer outputs (Y) and shows which X affect which Y most strongly. It is the structured bridge between SIPOC and deeper analyses like {{term:fmea|FMEA}}, DOE, or {{term:regression|regression}}."
+        },
+        {
+          "type": "definition",
+          "term": "Outputs (Y, columns)",
+          "content": "The customer-relevant results — e.g. dimensional accuracy, surface roughness, {{term:durchlaufzeit|lead time}}. Each output gets a weight (1–10) reflecting its importance from the customer perspective."
+        },
+        {
+          "type": "definition",
+          "term": "Inputs (X, rows)",
+          "content": "The process parameters and influencing factors — e.g. temperature, feed rate, material batch, tool wear. They typically come from SIPOC and the {{term:ishikawa|Ishikawa diagram}}."
+        },
+        {
+          "type": "definition",
+          "term": "Rating (cell)",
+          "content": "In each cell, rate how strongly the input affects the output. Choose the scale below the matrix: 0–10, 0/1/3/9 or 0/3/7/10. 0 = no impact, the top value = very strong impact. Values outside the chosen scale are rejected and marked red, never silently changed."
+        },
+        {
+          "type": "definition",
+          "term": "Weighted sum (score)",
+          "content": "For each row, the sum of (weight × rating) across all columns is computed. Inputs with high scores are the most important levers and are addressed first in the next phase."
+        },
+        {
+          "type": "definition",
+          "term": "Pareto of X",
+          "content": "The chart sorts the inputs by score. Unlike defect data, this {{term:pareto|Pareto}} is usually flat: every score is a sum over several outputs, so the values even out. That is normal and not a rating mistake. Cut at a natural gap in the profile and use a pairwise comparison for near-ties. With more than 20 inputs the last bar combines the rest as \"Other\"; the cumulative line always refers to all inputs."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Take outputs (Y) from SIPOC or the VoC-CTx tree — the customer requirements.",
+            "Set the weight of each Y (1–10) — these numbers should be aligned with the customer or sponsor.",
+            "Collect inputs (X) from SIPOC and Ishikawa — as complete as possible, better too many than too few.",
+            "Agree on the scale before the workshop (0–10, 0/1/3/9 or 0/3/7/10), then rate each cell: how strongly does this X affect this Y?",
+            "Compute scores (automatic in the matrix), sort inputs descending.",
+            "Mark the top candidates — they continue into FMEA, hypothesis tests, or DOE."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Flat score profile → the normal case; cut at a natural gap and settle near-ties with a pairwise comparison.",
+            "Few X with clearly higher score → less common, but then the choice is clear.",
+            "Σ column (control number) → shows how well each output is covered by the inputs. A small column sum on a highly weighted output means inputs are probably missing for that customer requirement.",
+            "Rows with score 0 → candidates to drop from the relevant X list.",
+            "Columns without high ratings → either well controlled or so far not well understood.",
+            "Inputs that dominate a single Y → specific, clearly addressable levers."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "The C&E matrix is a consensus tool. The values reflect team knowledge — they are hypotheses, not facts. Verify critical X with data ({{term:korrelation|correlation}}, regression, DOE)."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Too few inputs",
+          "content": "Listing only the obvious X often misses the critical ones. Walk through Ishikawa and SIPOC completely before rating the matrix."
+        },
+        {
+          "type": "definition",
+          "term": "Weights from gut feeling",
+          "content": "Y weights should come from VoC data or at least from a sponsor agreement — not from speculation. Otherwise the matrix reflects the loudest person's view."
+        },
+        {
+          "type": "definition",
+          "term": "Scale not exploited",
+          "content": "If all ratings sit at the top of the scale, the cells no longer differ. Use 0 and low values deliberately. A flat Pareto alone is not a sign of this — for the C&E matrix it is the normal case."
+        },
+        {
+          "type": "definition",
+          "term": "Matrix as result instead of hypothesis",
+          "content": "High scores do not automatically mean strong real effect — they mean the team believes so. Validate with data before far-reaching decisions."
+        },
+        {
+          "type": "definition",
+          "term": "Filled in alone at the desk",
+          "content": "The matrix lives from discussion. One person filling in all values reproduces only their own perspective. Work in a cross-functional team."
+        }
+      ]
+    }
+  }
+}

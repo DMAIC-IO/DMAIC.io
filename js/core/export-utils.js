@@ -505,6 +505,17 @@ function _textPath(font, txt, x, y, fontSize, opts = {}) {
  * @param {string} [filename='table.svg']
  */
 export async function exportTableAsSVG(td, filename = 'table.svg') {
+  const svg = await tableToSVG(td);
+  downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
+}
+
+/**
+ * A table as true-vector SVG text with text converted to paths — the image
+ * of `exportTableAsSVG` without the download (for `exports.image()`).
+ * @param {TableDescriptor} td
+ * @returns {Promise<string>} SVG markup with `width`/`height` on the root
+ */
+export async function tableToSVG(td) {
   const fonts = await _ensureSVGFonts();
   const col = _themeColors();
   const d = _dims(td);
@@ -639,7 +650,7 @@ export async function exportTableAsSVG(td, filename = 'table.svg') {
   }
 
   svg += '</svg>';
-  downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
+  return svg;
 }
 
 // ─── Column / card image export ──────────────────────────────

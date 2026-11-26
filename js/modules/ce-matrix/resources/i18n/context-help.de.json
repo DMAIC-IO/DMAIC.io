@@ -1,0 +1,102 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "inputs": {
+      "help": "Die Eingangsgrößen, die Zeilen der Matrix, in Anzeigereihenfolge, jede mit Kennung und Namen. Über die Kennung sprechen die Kommandos und die Bewertungen eine Eingangsgröße an; sie bleibt beim Umbenennen gleich.",
+      "id": {
+        "help": "Die Kennung der Eingangsgröße; Wert für inputId und erster Teil des Schlüssels in scores."
+      },
+      "name": {
+        "help": "Der Name der Eingangsgröße, so wie er in der ersten Spalte steht."
+      }
+    },
+    "outputs": {
+      "help": "Die Ergebnisgrößen, die Spalten der Matrix, in Anzeigereihenfolge, jede mit Kennung, Namen und Kundenwichtigkeit. Über die Kennung sprechen die Kommandos und die Bewertungen eine Ergebnisgröße an; sie bleibt beim Umbenennen gleich.",
+      "id": {
+        "help": "Die Kennung der Ergebnisgröße; Wert für outputId und zweiter Teil des Schlüssels in scores."
+      },
+      "name": {
+        "help": "Der Name der Ergebnisgröße, so wie er im Spaltenkopf steht."
+      },
+      "weight": {
+        "help": "Die Kundenwichtigkeit der Ergebnisgröße, eine ganze Zahl von 1 bis 10; mit ihr gehen die Bewertungen dieser Spalte in die Zeilensumme ein."
+      }
+    },
+    "scores": {
+      "help": "Die gesetzten Bewertungen, je bewertete Kreuzung ein Eintrag. Der Schlüssel verbindet die Kennung der Eingangsgröße und die der Ergebnisgröße mit einem Doppelpunkt, etwa i1:o2. Eine Kreuzung ohne Eintrag zählt in den Summen als 0. Eine Bewertung, die nach einem Skalenwechsel nicht auf der Skala liegt, bleibt stehen und wird markiert."
+    },
+    "scale": {
+      "help": "Die aktive Bewertungsskala: 0-10 (jede ganze Zahl von 0 bis 10), 0-1-3-9 oder 0-3-7-10. Ein Wechsel lässt die vorhandenen Bewertungen stehen."
+    },
+    "allowedScores": {
+      "help": "Die Bewertungen, die setScore auf der aktiven Skala annimmt — genau die Werte der Skala aus scale."
+    },
+    "rowSums": {
+      "help": "Die Summe je Eingangsgröße: jede Bewertung mit dem Gewicht ihrer Ergebnisgröße multipliziert und addiert, in der Reihenfolge von inputs. Die Spalte „Σ Zeile“ zeigt sie; je höher, desto stärker wirkt die Eingangsgröße auf die gewichteten Ergebnisgrößen."
+    },
+    "paretoEdits": {
+      "help": "Die Editor-Einstellungen des Pareto-Diagramms (Titel, Achsen, Schwellenwert, Balken, Linie); sie werden mit dem Modul gespeichert."
+    }
+  },
+  "actions": {
+    "addInput": {
+      "help": "Hängt eine weitere Eingangsgröße (Zeile) an die Matrix an und liefert ihre Kennung.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "addOutput": {
+      "help": "Hängt eine weitere Ergebnisgröße (Spalte) mit der Kundenwichtigkeit 1 an die Matrix an und liefert ihre Kennung.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "removeInput": {
+      "help": "Entfernt eine Eingangsgröße samt ihrer Bewertungen; die übrigen bleiben unverändert. Die letzte verbleibende Eingangsgröße bleibt stehen, der Aufruf wird dann abgelehnt.",
+      "params": {
+        "inputId": "Die Kennung der Eingangsgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit inputId."
+      }
+    },
+    "removeOutput": {
+      "help": "Entfernt eine Ergebnisgröße samt ihrer Bewertungen und ihrer Kundenwichtigkeit; die übrigen bleiben unverändert. Die letzte verbleibende Ergebnisgröße bleibt stehen, der Aufruf wird dann abgelehnt.",
+      "params": {
+        "outputId": "Die Kennung der Ergebnisgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit outputId."
+      }
+    },
+    "setScore": {
+      "help": "Bewertet die Kreuzung einer Eingangs- mit einer Ergebnisgröße.",
+      "params": {
+        "inputId": "Die Kennung der Eingangsgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "outputId": "Die Kennung der Ergebnisgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "value": "Die Bewertung aus der aktiven Skala; null löscht die Bewertung. Die Skala 0-10 lässt jede ganze Zahl von 0 bis 10 zu, die Skala 0-1-3-9 nur 0, 1, 3 und 9, die Skala 0-3-7-10 nur 0, 3, 7 und 10. Ein Wert, den die aktive Skala nicht zulässt, wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit inputId, outputId und value."
+      }
+    },
+    "setWeight": {
+      "help": "Setzt die Kundenwichtigkeit einer Ergebnisgröße — den Faktor, mit dem ihre Bewertungen in die Zeilensummen eingehen.",
+      "params": {
+        "outputId": "Die Kennung der Ergebnisgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "value": "Die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10. Ein Wert daneben wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit outputId und value."
+      }
+    },
+    "setInputName": {
+      "help": "Benennt eine Eingangsgröße; Kennung, Platz und Bewertungen bleiben.",
+      "params": {
+        "inputId": "Die Kennung der Eingangsgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Der neue Name der Eingangsgröße; ein leerer Text löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit inputId und text."
+      }
+    },
+    "setOutputName": {
+      "help": "Benennt eine Ergebnisgröße; Kennung, Platz, Kundenwichtigkeit und Bewertungen bleiben.",
+      "params": {
+        "outputId": "Die Kennung der Ergebnisgröße. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Der neue Name der Ergebnisgröße; ein leerer Text löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit outputId und text."
+      }
+    }
+  }
+}

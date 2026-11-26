@@ -132,6 +132,7 @@ const SKIP = new Set([
   'core/context-language.test.js',
   'core/dom.test.js',
   'core/exporter-run.test.js',
+  'core/table-to-svg.test.js',
   'core/field-directive.test.js',
   'core/field-errors.test.js',
   'core/file-drop-directive.test.js',

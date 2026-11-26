@@ -1,0 +1,102 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "inputs": {
+      "help": "The inputs, the rows of the matrix, in display order, each with an id and a name. The commands and the ratings address an input by its id; it stays the same when the input is renamed.",
+      "id": {
+        "help": "The id of the input; value for inputId and first part of the key in scores."
+      },
+      "name": {
+        "help": "The name of the input as shown in the first column."
+      }
+    },
+    "outputs": {
+      "help": "The outputs, the columns of the matrix, in display order, each with an id, a name and the customer importance. The commands and the ratings address an output by its id; it stays the same when the output is renamed.",
+      "id": {
+        "help": "The id of the output; value for outputId and second part of the key in scores."
+      },
+      "name": {
+        "help": "The name of the output as shown in the column header."
+      },
+      "weight": {
+        "help": "The customer importance of the output, a whole number from 1 to 10; with it the ratings of this column go into the row sum."
+      }
+    },
+    "scores": {
+      "help": "The ratings that are set, one entry per rated crossing. The key joins the id of the input and the id of the output with a colon, e.g. i1:o2. A crossing without an entry counts as 0 in the sums. A rating that is not on the scale after a change of scale stays and is marked."
+    },
+    "scale": {
+      "help": "The active rating scale: 0-10 (every whole number from 0 to 10), 0-1-3-9 or 0-3-7-10. A change keeps the existing ratings."
+    },
+    "allowedScores": {
+      "help": "The ratings setScore accepts on the active scale — exactly the values of the scale named in scale."
+    },
+    "rowSums": {
+      "help": "The sum per input: each rating multiplied by the weight of its output and added up, in the order of inputs. The “Σ Row” column shows it; the higher, the more strongly the input acts on the weighted outputs."
+    },
+    "paretoEdits": {
+      "help": "The editor settings of the Pareto chart (title, axes, threshold, bars, line); they are saved with the module."
+    }
+  },
+  "actions": {
+    "addInput": {
+      "help": "Appends another input (row) to the matrix and returns its id.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "addOutput": {
+      "help": "Appends another output (column) with customer importance 1 to the matrix and returns its id.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "removeInput": {
+      "help": "Removes an input together with its ratings; the others stay unchanged. The last remaining input stays, the call is then rejected.",
+      "params": {
+        "inputId": "The id of the input. An unknown id is an error.",
+        "command": "The command as an object with inputId."
+      }
+    },
+    "removeOutput": {
+      "help": "Removes an output together with its ratings and its customer importance; the others stay unchanged. The last remaining output stays, the call is then rejected.",
+      "params": {
+        "outputId": "The id of the output. An unknown id is an error.",
+        "command": "The command as an object with outputId."
+      }
+    },
+    "setScore": {
+      "help": "Rates the crossing of an input with an output.",
+      "params": {
+        "inputId": "The id of the input. An unknown id is an error.",
+        "outputId": "The id of the output. An unknown id is an error.",
+        "value": "The rating from the active scale; null clears the rating. The scale 0-10 allows every whole number from 0 to 10, the scale 0-1-3-9 only 0, 1, 3 and 9, the scale 0-3-7-10 only 0, 3, 7 and 10. A value the active scale does not allow is rejected.",
+        "command": "The command as an object with inputId, outputId and value."
+      }
+    },
+    "setWeight": {
+      "help": "Sets the customer importance of an output — the factor by which its ratings go into the row sums.",
+      "params": {
+        "outputId": "The id of the output. An unknown id is an error.",
+        "value": "The customer importance, a whole number from 1 to 10. Any other value is rejected.",
+        "command": "The command as an object with outputId and value."
+      }
+    },
+    "setInputName": {
+      "help": "Names an input; id, position and ratings stay.",
+      "params": {
+        "inputId": "The id of the input. An unknown id is an error.",
+        "text": "The new name of the input; an empty text clears it.",
+        "command": "The command as an object with inputId and text."
+      }
+    },
+    "setOutputName": {
+      "help": "Names an output; id, position, customer importance and ratings stay.",
+      "params": {
+        "outputId": "The id of the output. An unknown id is an error.",
+        "text": "The new name of the output; an empty text clears it.",
+        "command": "The command as an object with outputId and text."
+      }
+    }
+  }
+}

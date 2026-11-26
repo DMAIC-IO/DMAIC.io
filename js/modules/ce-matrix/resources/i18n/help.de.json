@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:ce-matrix|C&E-Matrix}} (Cause-and-Effect-Matrix, auch X-Y-Matrix oder Prioritätenmatrix) verbindet Prozess-Eingaben (X, Inputs) mit Kunden-Outputs (Y) und zeigt, welche X auf welche Y am stärksten wirken. Sie ist die strukturierte Brücke zwischen SIPOC und tieferen Analysen wie {{term:fmea|FMEA}}, DOE oder {{term:regression|Regression}}."
+        },
+        {
+          "type": "definition",
+          "term": "Outputs (Y, Spalten)",
+          "content": "Die kundenrelevanten Ergebnisgrößen — z. B. Maßhaltigkeit, Oberflächenrauheit, {{term:durchlaufzeit|Durchlaufzeit}}. Jeder Output bekommt eine Wichtung (1–10), die ausdrückt, wie wichtig er aus Kundensicht ist."
+        },
+        {
+          "type": "definition",
+          "term": "Inputs (X, Zeilen)",
+          "content": "Die Prozessparameter und Einflussgrößen — z. B. Temperatur, Vorschub, Materialcharge, Werkzeugverschleiß. Sie stammen typischerweise aus dem SIPOC und dem {{term:ishikawa|Ishikawa-Diagramm}}."
+        },
+        {
+          "type": "definition",
+          "term": "Bewertung (Zelle)",
+          "content": "In jeder Zelle wird bewertet, wie stark der jeweilige Input auf den jeweiligen Output wirkt. Die Skala wählen Sie unter der Matrix: 0–10, 0/1/3/9 oder 0/3/7/10. 0 = kein Einfluss, der höchste Wert = sehr starker Einfluss. Werte außerhalb der gewählten Skala werden abgelehnt und rot markiert, nicht still verändert."
+        },
+        {
+          "type": "definition",
+          "term": "Gewichtete Summe (Score)",
+          "content": "Pro Zeile wird die Summe (Wichtung × Bewertung) über alle Spalten gebildet. Inputs mit hohem Score sind die wichtigsten Hebel und werden in der nächsten Phase bevorzugt analysiert."
+        },
+        {
+          "type": "definition",
+          "term": "Pareto der X",
+          "content": "Das Diagramm sortiert die Inputs nach Score. Anders als bei Fehlerdaten ist dieser {{term:pareto|Pareto}} meist flach: Jeder Score ist eine Summe über mehrere Outputs, dadurch gleichen sich die Werte an. Das ist normal und kein Fehler der Bewertung. Schneiden Sie an einer natürlichen Lücke im Verlauf ab und entscheiden Sie bei nahezu gleichen Scores per Paarvergleich. Hat die Matrix mehr als 20 Inputs, fasst der letzte Balken den Rest als „Sonstige“ zusammen; die Summenlinie bezieht sich immer auf alle Inputs."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Outputs (Y) aus SIPOC oder VoC-CTx-Tree übernehmen — die Kundenanforderungen.",
+            "Wichtung jedes Y festlegen (1–10) — diese Zahlen sollten mit dem Kunden oder Sponsor abgestimmt sein.",
+            "Inputs (X) aus SIPOC und Ishikawa zusammentragen — möglichst vollständig, lieber zu viele als zu wenige.",
+            "Skala vor dem Workshop festlegen (0–10, 0/1/3/9 oder 0/3/7/10), dann pro Zelle bewerten: Wie stark wirkt dieses X auf dieses Y?",
+            "Scores berechnen (automatisch in der Matrix), Inputs absteigend sortieren.",
+            "Top-Kandidaten markieren — sie gehen weiter in FMEA, Hypothesentests oder DOE."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Flacher Verlauf der Scores → der Normalfall; an einer natürlichen Lücke abschneiden, knappe Fälle per Paarvergleich entscheiden.",
+            "Wenige X mit deutlich höherem Score → seltener, aber dann ist die Auswahl eindeutig.",
+            "Σ Spalte (Kontrollzahl) → zeigt, wie stark jeder Output durch die Inputs abgedeckt ist. Eine kleine Spaltensumme bei hoch gewichtetem Output heißt: Für diese Kundenanforderung fehlen vermutlich Inputs.",
+            "Zeilen mit Score 0 → kandidiert zum Streichen aus der Liste der relevanten X.",
+            "Spalten ohne hohe Bewertungen → entweder gut beherrscht oder bisher nicht genug verstanden.",
+            "Inputs, die nur ein einziges Y dominieren → spezielle, klar adressierbare Hebel."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Die C&E-Matrix ist ein Konsens-Werkzeug. Die Werte spiegeln das Wissen des Teams — sie sind Hypothesen, keine Fakten. Bei kritischen X mit Daten ({{term:korrelation|Korrelation}}, Regression, DOE) absichern."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu wenige Inputs",
+          "content": "Wer nur die offensichtlichen X einträgt, übersieht oft entscheidende. Ishikawa und SIPOC vollständig durchgehen, bevor die Matrix bewertet wird."
+        },
+        {
+          "type": "definition",
+          "term": "Wichtungen aus dem Bauch",
+          "content": "Y-Wichtungen sollten aus VoC-Daten oder mindestens aus einer Sponsor-Abstimmung stammen — nicht aus Vermutungen. Sonst spiegelt die Matrix die Ansicht der lautesten Person."
+        },
+        {
+          "type": "definition",
+          "term": "Skala nicht ausgenutzt",
+          "content": "Wenn alle Bewertungen im oberen Bereich der Skala liegen, geht die Differenzierung zwischen den Zellen verloren. Bewusst auch 0 und niedrige Werte vergeben. Ein flacher Pareto allein ist dagegen kein Zeichen dafür — er ist bei der C&E-Matrix der Normalfall."
+        },
+        {
+          "type": "definition",
+          "term": "Matrix als Ergebnis statt als Hypothese",
+          "content": "Hohe Scores bedeuten nicht automatisch starke reale Wirkung — sie bedeuten, dass das Team das vermutet. Vor weitreichenden Entscheidungen mit Daten validieren."
+        },
+        {
+          "type": "definition",
+          "term": "Allein im Büro ausgefüllt",
+          "content": "Die Matrix lebt von der Diskussion. Eine Person, die alle Werte allein einträgt, reproduziert nur die eigene Perspektive. Im Cross-Functional-Team arbeiten."
+        }
+      ]
+    }
+  }
+}
