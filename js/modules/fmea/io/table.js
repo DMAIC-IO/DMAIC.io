@@ -29,8 +29,9 @@ export function toRows(m, t) {
   m.risks.forEach((risk, idx) => {
     const s = risk.sev ?? 0, o = risk.occ ?? 0, d = risk.det ?? 0;
     const value = rpn(risk);
-    const ps = projS(risk), po = projO(risk), pd = projD(risk);
-    const prpn = (s && o && d) ? ps * po * pd : '';
+    // Ziel-S/O/D leer bei unbewerteter Stufe, wie die Tabelle sie zeigt.
+    const ps = s ? projS(risk) : '', po = o ? projO(risk) : '', pd = d ? projD(risk) : '';
+    const prpn = (s && o && d) ? Number(ps) * Number(po) * Number(pd) : '';
     const head = [idx + 1, risk.step, risk.failureMode, risk.effect, risk.cause,
       risk.prevention, risk.control, risk.specialChar, risk.justification,
       s || '', o || '', d || '', value || '', ap(risk) || ''];

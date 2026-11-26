@@ -163,6 +163,16 @@ suite('fmea Model — Ableitungen', () => {
     const t = new Date('2026-03-02').getTime();
     assertDeepEqual(plain(d.burndown), { kind: 'ap', planX: [t - 86400000, t], planH: [2, 1], planHM: [2, 1], actX: [t - 86400000, t], actH: [2, 1], actHM: [2, 1] });
   });
+  test('Datum ohne ISO-Form (Altstand) zählt nicht: kein NaN im Burndown', () => {
+    const m = State.fromJSON({ ...SCHEMA, method: 'rpn', risks: [RISK({ sev: 5, occ: 4, det: 3,
+      actions: [ACT({ date: 'morgen', deltaS: 1, done: true }), ACT({ id: 'a2', date: '2026-03-02', deltaO: 1 })] })] });
+    const d = evaluateDerived(m, /** @type {any} */ (undefined), ['burndown']).burndown;
+    const t = new Date('2026-03-02').getTime();
+    assertDeepEqual(d.planX, [t - 86400000, t]);
+    assertTrue(Object.values(plain(d)).flat().every((v) => typeof v !== 'number' || Number.isFinite(v)));
+    const only = State.fromJSON({ ...SCHEMA, risks: [RISK({ sev: 5, occ: 4, det: 3, actions: [ACT({ date: 'morgen', deltaS: 1 })] })] });
+    assertEqual(evaluateDerived(only, /** @type {any} */ (undefined), ['burndown']).burndown, null);
+  });
   test('burndown null ohne datierte Wirkung', () => {
     assertEqual(evaluateDerived(new State(), /** @type {any} */ (undefined), ['burndown']).burndown, null);
   });

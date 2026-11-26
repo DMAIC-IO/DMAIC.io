@@ -14,12 +14,22 @@ import { join, relative } from 'node:path';
 /** Classes of full-width headings that must not be help anchors themselves. */
 export const BLOCK_HEADING_CLASSES = ['dmike-split__section-title'];
 
+/**
+ * Screen-reader-only text must not be an anchor either: `.context-help-anchor
+ * { position: relative }` overrides its `position: absolute`, so the hidden
+ * text takes up space. Anchor on the visible wrapper instead.
+ */
+export const SR_ONLY_CLASSES = ['dmike-sr-only'];
+
+const NO_ANCHOR_CLASSES = [...BLOCK_HEADING_CLASSES, ...SR_ONLY_CLASSES];
+
 const OPENING_TAG = /<[a-zA-Z][\w-]*\b[^<>]*>/g;
 const CLASS_ATTR = /(?<![:\w-])class\s*=\s*["']([^"']*)["']/;
 const HELP_KEY_ATTR = /(?<![\w-]):?data-help-key\s*=/;
 
 /**
- * Opening tags in `source` that carry a help key on a block heading.
+ * Opening tags in `source` that carry a help key on a block heading or on
+ * screen-reader-only text.
  * @param {string} source  HTML or JS source text
  * @returns {Array<{ line: number, tag: string }>}
  */
@@ -29,7 +39,7 @@ export function findBlockHeadingAnchors(source) {
     const tag = m[0];
     if (!HELP_KEY_ATTR.test(tag)) continue;
     const cls = tag.match(CLASS_ATTR)?.[1]?.split(/\s+/) ?? [];
-    if (!cls.some(c => BLOCK_HEADING_CLASSES.includes(c))) continue;
+    if (!cls.some(c => NO_ANCHOR_CLASSES.includes(c))) continue;
     const line = source.slice(0, m.index).split('\n').length;
     hits.push({ line, tag });
   }

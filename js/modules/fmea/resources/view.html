@@ -149,9 +149,9 @@
       <template x-for="(risk, ri) in model.risks" :key="risk.id">
         <div class="fmea__risk-card" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="rpnOf(risk)" :data-ap="apOf(risk)" :data-proj-rpn="projRpnOf(risk)">
           <div class="fmea__risk-header">
-            <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" x-command="toggleRiskCollapsed" :data-arg-risk-id="risk.id">
+            <button type="button" class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" :aria-expanded="expandedAttr(risk)" x-command="toggleRiskCollapsed" :data-arg-risk-id="risk.id">
               <span class="fmea__collapse-arrow icon icon--sm" :data-icon="collapseIcon(risk)" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
-            </span>
+            </button>
             <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" :aria-label="t('step')" data-help-key="modules.fmea.fields.risks.step.help" x-model="risk.step">
             <div class="fmea__flags">
               <select class="field fmea__special-char" name="specialChar" :title="t('specialChar')" :aria-label="t('specialChar')" data-help-key="" x-field="risk.specialChar">
@@ -164,7 +164,7 @@
               <span class="fmea__badge fmea__badge--warning" data-unjustified-badge x-show="showUnjustified(risk)"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span> <span x-text="t('unjustifiedBadge')"></span></span>
               <span class="fmea__badge fmea__badge--severe" data-severe-badge x-show="showSevere(risk)" x-text="t('severeBadge')"></span>
             </div>
-            <div class="fmea__rpn-header-group">
+            <div class="fmea__rpn-header-group" data-help-key="modules.fmea.fields.riskRatings.help">
               <span class="fmea__rpn-badge" :class="badgeClass(risk)" data-rpn-badge x-text="badgeText(risk)"></span>
               <span class="fmea__secondary-rpn" data-secondary-rpn x-show="isAp" x-text="riskRpnText(risk)"></span>
               <span class="fmea__rpn-arrow-sep icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
@@ -175,29 +175,29 @@
           <div class="fmea__risk-body">
             <div class="field-grid field-grid--3">
               <div class="field-group">
-                <label data-help-key="modules.fmea.fields.risks.failureMode.help" x-text="t('failureMode')"></label>
-                <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" x-model="risk.failureMode"></textarea>
+                <label :for="riskFieldId(risk, 'failureMode')" data-help-key="modules.fmea.fields.risks.failureMode.help" x-text="t('failureMode')"></label>
+                <textarea class="field" name="failureMode" :id="riskFieldId(risk, 'failureMode')" :placeholder="t('failureModePlaceholder')" x-model="risk.failureMode"></textarea>
               </div>
               <div class="field-group">
-                <label data-help-key="modules.fmea.fields.risks.effect.help" x-text="t('effect')"></label>
-                <textarea class="field" name="effect" :placeholder="t('effectPlaceholder')" x-model="risk.effect"></textarea>
+                <label :for="riskFieldId(risk, 'effect')" data-help-key="modules.fmea.fields.risks.effect.help" x-text="t('effect')"></label>
+                <textarea class="field" name="effect" :id="riskFieldId(risk, 'effect')" :placeholder="t('effectPlaceholder')" x-model="risk.effect"></textarea>
               </div>
               <div class="field-group">
-                <label data-help-key="modules.fmea.fields.risks.cause.help" x-text="t('cause')"></label>
-                <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
+                <label :for="riskFieldId(risk, 'cause')" data-help-key="modules.fmea.fields.risks.cause.help" x-text="t('cause')"></label>
+                <textarea class="field" name="cause" :id="riskFieldId(risk, 'cause')" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
               </div>
             </div>
             <div class="field-grid field-grid--3">
               <div class="field-group">
-                <label data-help-key="modules.fmea.fields.risks.prevention.help" x-text="t('preventionControl')"></label>
-                <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" x-model="risk.prevention"></textarea>
+                <label :for="riskFieldId(risk, 'prevention')" data-help-key="modules.fmea.fields.risks.prevention.help" x-text="t('preventionControl')"></label>
+                <textarea class="field" name="prevention" :id="riskFieldId(risk, 'prevention')" :placeholder="t('preventionPlaceholder')" x-model="risk.prevention"></textarea>
               </div>
               <div class="field-group">
-                <label data-help-key="modules.fmea.fields.risks.control.help" x-text="t('currentControls')"></label>
-                <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" x-model="risk.control"></textarea>
+                <label :for="riskFieldId(risk, 'control')" data-help-key="modules.fmea.fields.risks.control.help" x-text="t('currentControls')"></label>
+                <textarea class="field" name="control" :id="riskFieldId(risk, 'control')" :placeholder="t('controlPlaceholder')" x-model="risk.control"></textarea>
               </div>
               <div class="field-group">
-                <label data-help-key="modules.fmea.fields.riskRatings.help" x-text="t('rating')"></label>
+                <label class="fmea__rating-label" x-text="t('rating')"></label>
                 <div class="fmea__sod-row">
                   <div class="fmea__sod-group"><label :title="t('tipS')" :for="sodId(risk, 'sev')" data-help-key="modules.fmea.fields.risks.sev.help" x-text="t('abbrS')"></label>
                     <select class="field" name="sev" :id="sodId(risk, 'sev')" data-help-key="" x-field="risk.sev">
@@ -248,8 +248,8 @@
               </div>
             </div>
             <div class="field-group fmea__justification" x-show="showJustification(risk)">
-              <label data-help-key="modules.fmea.fields.risks.justification.help" x-text="t('justification')"></label>
-              <textarea class="field" name="justification" :placeholder="t('justificationPlaceholder')" :aria-required="justificationRequired(risk)" :class="justificationClass(risk)" x-model="risk.justification"></textarea>
+              <label :for="riskFieldId(risk, 'justification')" data-help-key="modules.fmea.fields.risks.justification.help" x-text="t('justification')"></label>
+              <textarea class="field" name="justification" :id="riskFieldId(risk, 'justification')" :placeholder="t('justificationPlaceholder')" :aria-required="justificationRequired(risk)" :class="justificationClass(risk)" x-model="risk.justification"></textarea>
             </div>
 
             <hr class="fmea__section-sep">

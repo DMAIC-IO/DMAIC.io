@@ -2,7 +2,8 @@
  * FMEA Export (io/table.js): die Zeilen gegen den CSV-Download der Altform
  * am Altprojekt. Abweichungen nur aus der Umstellung: Zahlen statt
  * Zahlentext (A7) und die vier Zellen des Risikos mit S '15', das jetzt
- * unbewertet ist (A9: S, RPN, Ziel-S, Ziel-RPN).
+ * unbewertet ist (A9: S, RPN, Ziel-S, Ziel-RPN); Ziel-S dort leer wie in
+ * der Tabelle (T-Fehler aus dem Review, die Altform schrieb 1).
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { toRows } from '../../../js/modules/fmea/io/table.js';
@@ -25,7 +26,7 @@ suite('fmea Export: Zeilen', () => {
     /** @type {string[]} */
     const diffs = [];
     rows.forEach((row, i) => row.forEach((c, j) => { if (String(c) !== legacy[i][j]) diffs.push(`${i}:${j}:${c}/${legacy[i][j]}`); }));
-    assertDeepEqual(diffs, ['3:9:/15', '3:12:/90', '3:21:1/15', '3:24:/45']);
+    assertDeepEqual(diffs, ['3:9:/15', '3:12:/90', '3:21:/15', '3:24:/45']);
   });
   test('Zahlen als Zahl, leere Zellen als leerer Text, Ja/Nein aus den Texten', () => {
     const rows = toRows(State.fromJSON(LEGACY_STATE), T);

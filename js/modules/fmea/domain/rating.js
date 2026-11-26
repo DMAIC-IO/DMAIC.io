@@ -107,11 +107,20 @@ export const isHighSeverity = (r) => val(r.sev) >= 9;
 export const suggestsSpecialChar = (r) => isHighSeverity(r) && r.specialChar === '';
 
 /**
- * Die datierten Maßnahmen eines Risikos, nach Datum aufsteigend.
+ * Ein Kalendertag JJJJ-MM-TT, den `Date` versteht — Altstände können
+ * Freitext im Datum tragen, der sonst NaN in die Reihen schriebe.
+ * @param {unknown} v @returns {boolean}
+ */
+function isIsoDay(v) {
+  return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(new Date(v).getTime());
+}
+
+/**
+ * Die Maßnahmen eines Risikos mit gültigem ISO-Datum, nach Datum aufsteigend.
  * @param {RiskLike} r @returns {ActionLike[]}
  */
 function datedActions(r) {
-  return r.actions.filter((a) => a.date).sort((x, y) => x.date.localeCompare(y.date));
+  return r.actions.filter((a) => isIsoDay(a.date)).sort((x, y) => x.date.localeCompare(y.date));
 }
 
 /**

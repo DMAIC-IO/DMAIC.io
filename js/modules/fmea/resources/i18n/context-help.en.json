@@ -83,7 +83,7 @@
       "help": "The settings from the chart editor of the burndown, such as title and axis labels."
     },
     "stats": {
-      "help": "The key figures of the active rating method, as the tiles above the risk list show them."
+      "help": "The key figures of the active rating method, as the key-figure cards above the risk list show them."
     },
     "riskRatings": {
       "help": "Per risk in list order the risk priority number, the action priority, both after all actions, and whether a justification is missing — the values of the badges on the card."

@@ -121,8 +121,12 @@ export default createModule({
       collapseIcon(risk) { return this.isCollapsed(risk) ? 'nav.expand-right' : 'nav.expand-down'; },
       /** DOM-id je Instanz. @param {string} name @returns {string} */
       fieldId(name) { return `fmea-${name}-${ctx.instanceId}`; },
+      /** id eines Risikofelds je Instanz. @param {Risk} risk @param {string} name @returns {string} */
+      riskFieldId(risk, name) { return this.fieldId(`${name}-${risk.id}`); },
       /** id der Stufenauswahl je Instanz. @param {Risk} risk @param {Dim} dim @returns {string} */
-      sodId(risk, dim) { return this.fieldId(`${dim}-${risk.id}`); },
+      sodId(risk, dim) { return this.riskFieldId(risk, dim); },
+      /** @param {Risk} risk @returns {'true'|'false'} für aria-expanded des Zuklappers */
+      expandedAttr(risk) { return this.isCollapsed(risk) ? 'false' : 'true'; },
       /** @param {Risk} risk @returns {number} */
       rpnOf(risk) { return rpn(risk); },
       /** @param {Risk} risk @returns {string} */

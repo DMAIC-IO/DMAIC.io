@@ -52,6 +52,9 @@ export const ANCHOR_EXEMPTIONS = {
   'attribute-control-chart': [
     { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],
+  fmea: [
+    { match: 'fmea__rating-label', reason: 'Gruppenüberschrift über S, O und D; jede Stufe trägt ihren eigenen Anker, die Abzeichen den Satz zu riskRatings', count: 1 },
+  ],
   'control-chart': [
     { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],

@@ -83,7 +83,7 @@
       "help": "Die Einstellungen aus dem Diagramm-Editor des Burndowns, etwa Titel und Achsenbeschriftung."
     },
     "stats": {
-      "help": "Die Kennzahlen der aktiven Bewertungsmethode, wie die Kacheln über der Risikoliste sie zeigen."
+      "help": "Die Kennzahlen der aktiven Bewertungsmethode, wie die Kennzahlenkarten über der Risikoliste sie zeigen."
     },
     "riskRatings": {
       "help": "Je Risiko in Listenreihenfolge die Risikoprioritätszahl, die Aufgabenpriorität, beide nach allen Maßnahmen und ob eine Begründung fehlt — die Werte der Abzeichen auf der Karte."

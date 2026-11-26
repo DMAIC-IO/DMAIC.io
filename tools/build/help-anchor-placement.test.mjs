@@ -26,6 +26,16 @@ test('a lookalike class name does not count', () => {
   assert.deepEqual(findBlockHeadingAnchors(html), []);
 });
 
-test('no section title in the app carries its help key itself (key belongs on a span around the text)', () => {
+test('a help key on screen-reader-only text is reported (position: relative makes it take space)', () => {
+  const html = '<span class="dmike-sr-only" data-help-key="modules.x.help" x-text="t(\'a\')"></span>';
+  assert.equal(findBlockHeadingAnchors(html).length, 1);
+});
+
+test('the help key on the visible wrapper around screen-reader-only text passes', () => {
+  const html = '<span class="context-help-anchor--overlay" data-help-key="modules.x.help"><span class="dmike-sr-only" x-text="t(\'a\')"></span></span>';
+  assert.deepEqual(findBlockHeadingAnchors(html), []);
+});
+
+test('no section title and no screen-reader-only text in the app carries a help key itself', () => {
   assert.deepEqual(scanBlockHeadingAnchors(APP_DIR), []);
 });
