@@ -1,0 +1,67 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "category": {
+      "help": "The test category, buttons “σ² Variances” and “μ Means”: variances (variance) plan a test on the spread, means (mean) a t-test on the location. The choice decides which effect inputs apply."
+    },
+    "testType": {
+      "help": "The test type, buttons “1-Sample” and “2-Sample”: one compares one sample with a target value, two compares two equally sized groups with each other. With two samples the computed size is per group."
+    },
+    "direction": {
+      "help": "The direction, field “Direction”: “Two-sided” detects a deviation in either direction, “Greater” and “Less” only one in that direction. A one-sided test needs fewer observations only when it points in the direction of the effect. For means Δ always counts as a positive, upward deviation; “Less” therefore never reaches the target power and ends at the upper limit of 5000. For variances the direction must match the effect: “Greater” when σ₁ is above σ₀ or the ratio above 1, “Less” when below; otherwise the search also ends at 5000."
+    },
+    "alpha": {
+      "help": "The significance level α, the accepted probability of reporting an effect that does not exist; a number from 0.0001 to 0.5. Prefilled from the confidence in the settings (95% gives 0.05). A smaller α requires more observations. Values outside are rejected."
+    },
+    "power": {
+      "help": "The target power 1 − β, label “Target Power (1 − β)”: the probability of actually detecting an existing effect of the given size; a number from 0.5 to 0.9999, prefilled from the settings (typically 0.8). Higher power requires more observations. Values outside are rejected."
+    },
+    "effect": {
+      "help": "The effect inputs of all three variants: under varianceOne σ₀ and σ₁ (variances, one sample), under varianceTwo the variance ratio (variances, two samples), under mean Δ and σ (means, one or two samples). All sets stay stored; only those of the chosen category and test type apply (see activeParams). The effect inputs are written only as a whole, with all three variants and all five values.",
+      "varianceOne": {
+        "help": "The effect inputs for variances with one sample: σ₀ and σ₁. They apply only when Variances and 1-Sample are chosen.",
+        "sigma0": {
+          "help": "The hypothesized standard deviation σ₀, label “Hypothesized Std. (σ₀)”: the spread assumed by the hypothesis H₀ under test, as a positive number. Only for variances with one sample; the effect is the ratio σ₁² / σ₀². Empty while nothing is entered; 0 and negative values are rejected. A change recalculates."
+        },
+        "sigmaAlt": {
+          "help": "The expected standard deviation σ₁, label “Expected Std. (σ₁)”: the spread whose deviation from σ₀ the test should detect, as a positive number. Only for variances with one sample; the closer σ₁ is to σ₀, the more observations are needed. Empty while nothing is entered; 0 and negative values are rejected. A change recalculates."
+        }
+      },
+      "varianceTwo": {
+        "help": "The effect input for variances with two samples: the variance ratio. It applies only when Variances and 2-Sample are chosen.",
+        "ratio": {
+          "help": "The variance ratio σ²₁ / σ²₂, label “Variance Ratio (σ²₁ / σ²₂)”: the factor by which the variances of the two groups should differ, as a positive number. Only for variances with two samples; a ratio close to 1 requires very many observations. Empty while nothing is entered; 0 and negative values are rejected. A change recalculates."
+        }
+      },
+      "mean": {
+        "help": "The effect inputs for means: Δ and σ, for one as well as two samples. They apply only when Means is chosen.",
+        "delta": {
+          "help": "The mean difference Δ to detect, label “Difference (Δ)”, as a positive number in the unit of the measurements: with one sample the distance to the target, with two the distance between the group means. Only for means; together with σ it gives the effect size Cohen's d = Δ / σ. Empty while nothing is entered; 0 and negative values are rejected. A change recalculates."
+        },
+        "sigma": {
+          "help": "The standard deviation σ of the measurements, label “Std. Dev. (σ)”, as a positive number; with two samples it applies to both groups. Only for means; a larger σ makes the same difference harder to detect. Empty while nothing is entered; 0 and negative values are rejected. A change recalculates."
+        }
+      }
+    },
+    "powerCurveEdits": {
+      "help": "The settings from the chart editor of the power curve: title, axis titles, font sizes, background, reference lines, axis range and size as well as colour, symbol and size of the series. Empty without changes."
+    },
+    "activeParams": {
+      "help": "The fields that currently apply: category, testType, direction, alpha, power and the effect inputs of the chosen variant as a path under effect (effect.varianceOne.sigma0 and effect.varianceOne.sigmaAlt, effect.varianceTwo.ratio or effect.mean.delta and effect.mean.sigma). instance.set always writes effect as a whole field; the inputs of the other variants are stored along and apply only after a switch."
+    },
+    "result": {
+      "help": "The required sample size, each figure described individually under keys; empty while an effect input of the chosen variant is missing."
+    }
+  },
+  "types": {
+    "Result": {
+      "nRequired": "The required sample size n, tile “Required n” (with two samples “per group”): the smallest n from 4 on at which the power reaches the target power. The search runs up to 5000. If the target power is reached only at 5000 or not at all, this is 5000 and the tile shows “> 5,000” (German “> 5.000”) instead of the number; the summary above the tiles names the same value. The effect is then hardly detectable.",
+      "totalN": "The total size, tile “Total n”: with two samples n per group times two, with one sample equal to n. The tile appears only with two samples; from an n of 5000 on it shows “> 10,000” (German “> 10.000”).",
+      "alpha": "The significance level α used in the calculation, tile “α”; equal to the input.",
+      "power": "The target power 1 − β used in the calculation, as a fraction; the tile “Target Power” shows it as a percentage rounded to whole numbers. The size n reaches at least this power unless it sits at the upper limit of 5000, where the search ends.",
+      "effectLabel": "The name of the effect size as the tile shows it: “Variance Ratio” for variance tests, “Cohen's d” for mean tests.",
+      "effectValue": "The effect size the test should detect; the tile shows it with three decimals. Variances, one sample: σ₁² / σ₀². Variances, two samples: the entered ratio σ²₁ / σ²₂. Means: Cohen's d = Δ / σ.",
+      "algoId": "The procedure whose power was calculated; the interface uses it to link the Algorithm Lab. chi-square-variance: χ² test of one variance with n − 1 degrees of freedom. f-test: F-test of two variances with n − 1 degrees of freedom each. one-sample-t-test: t-test with noncentrality Δ · √n / σ and n − 1 degrees of freedom. two-sample-t-test: t-test with noncentrality Δ / (σ · √(2/n)) and 2n − 2 degrees of freedom."
+    }
+  }
+}

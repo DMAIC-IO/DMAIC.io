@@ -1,0 +1,95 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Sample size planning — tied to {{term:power|power}} and {{term:effektstaerke|effect size}} — determines how many observations are needed for a test or estimate to have the desired statistical power. Too few samples miss real effects; too many waste resources. Before any serious experiment or comparison, plan the sample size — not after."
+        },
+        {
+          "type": "definition",
+          "term": "Significance level (α)",
+          "content": "The risk of seeing an effect that does not exist ({{term:fehler-erster-art|Type I error}}). Usually {{term:signifikanzniveau|α}} = 0.05."
+        },
+        {
+          "type": "definition",
+          "term": "Power (1 − β)",
+          "content": "The {{term:power|power}} — probability of detecting an effect that really exists. Common: power = 0.80 or 0.90. Low power means: even a real effect is often missed."
+        },
+        {
+          "type": "definition",
+          "term": "Effect size (δ)",
+          "content": "The {{term:effektstaerke|effect size}} — the smallest difference still considered practically relevant. \"From which difference on would we act?\". Smaller effects need larger samples."
+        },
+        {
+          "type": "definition",
+          "term": "Variation (σ)",
+          "content": "The scatter of individual measurements. Greater variation requires more observations to pull an effect out of the noise."
+        },
+        {
+          "type": "definition",
+          "term": "Confidence interval width",
+          "content": "For estimates (not tests), the sample size is chosen so the interval becomes narrow enough to answer the question. Halving the width quadruples n."
+        },
+        {
+          "type": "paragraph",
+          "content": "The four quantities α, power, δ, and σ are coupled: fix three and the fourth follows. In planning, α, power, and δ are set; σ is estimated from prior knowledge or pilot data — n is the result."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Clarify test type or estimation problem — 1-sample, 2-sample, proportion comparison, regression?",
+            "Choose significance level (usually α = 0.05).",
+            "Set power (usually 0.80 or 0.90).",
+            "Define the smallest practically relevant effect size — not the expected one, the smallest still interesting.",
+            "Estimate variation — from history, pilot data, or literature.",
+            "Compute n and check whether it is resource-feasible. If not, honestly revise parameters or redesign the experiment.",
+            "Document the planned size — so it is later traceable why exactly this n was used."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Power too low",
+          "content": "Power of 0.50 is a coin flip — even a real effect is found only half the time. Below 0.80 it becomes risky."
+        },
+        {
+          "type": "definition",
+          "term": "Effect size too optimistic",
+          "content": "Assuming a large effect gives a comfortable small n. If reality shows only a small effect, the test is blind. Plan pessimistically to avoid empty results."
+        },
+        {
+          "type": "definition",
+          "term": "Variation underestimated",
+          "content": "Without pilot data or history, σ is often set too low. Result: n too small, test misses the effect. When uncertain, round up."
+        },
+        {
+          "type": "definition",
+          "term": "Post-hoc power",
+          "content": "Computing power after the test with the observed effect is nonsense — it correlates directly with the p-value. Power belongs to planning, not to evaluation."
+        },
+        {
+          "type": "definition",
+          "term": "Sampling design forgotten",
+          "content": "Size alone is not enough — how the sample is drawn matters equally. A biased draw cannot be fixed by any formula."
+        },
+        {
+          "type": "definition",
+          "term": "\"The more, the better\"",
+          "content": "Unnecessarily large samples inflate cost and produce significant but irrelevant results. Planning deliberately picks just the sample size needed."
+        }
+      ]
+    }
+  }
+}

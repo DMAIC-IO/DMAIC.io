@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../schemas/module-references.schema.json",
+  "references": [
+    {
+      "book": "melzer-2019",
+      "note": {
+        "de": "Abgleich der Power-Berechnung: Stichprobenumfänge für t-Tests beruhen auf der exakten Power der nichtzentralen t-Verteilung.",
+        "en": "Cross-check of the power calculation: sample sizes for t-tests rest on the exact power of the noncentral t distribution."
+      }
+    }
+  ]
+}
