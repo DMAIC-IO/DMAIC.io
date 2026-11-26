@@ -1,0 +1,163 @@
+<section class="module-unit-converter" x-data="unitConverter">
+  <!-- data-help-key="" an den Größenartknöpfen und an den Auswahlfeldern ist gewollt: die Hilfe hängt an der Knopfleiste bzw. an den Beschriftungen darüber. -->
+  <div class="module-unit-converter__categories" data-ref="categories" data-help-key="modules.unit-converter.actions.selectCategory.help">
+    <template x-for="(cat, catKey) in categories" :key="catKey">
+      <button type="button"
+        class="module-unit-converter__cat-btn"
+        :class="catActiveClass(catKey)"
+        :data-cat="catKey"
+        data-help-key=""
+        x-command="selectCategory" :data-arg-cat-key="catKey">
+        <span class="icon icon--sm" :data-icon="catIcon(catKey)" aria-hidden="true"></span>
+        <span x-text="catName(catKey)"></span>
+      </button>
+    </template>
+  </div>
+
+  <div class="module-unit-converter__panel">
+    <div class="module-unit-converter__panel-header">
+      <div class="module-unit-converter__panel-title">
+        <span class="icon" data-ref="catIcon" :data-icon="catIcon(model.activeCat)" aria-hidden="true"></span>
+        <span data-ref="catTitle" x-text="catName(model.activeCat)"></span>
+      </div>
+      <button class="module-unit-converter__swap-btn" type="button" data-action="swap" data-help-key="modules.unit-converter.actions.swapUnits.help" x-command="swapUnits">
+        <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
+        <span x-text="t('swap')"></span>
+      </button>
+    </div>
+    <div class="module-unit-converter__panel-body">
+      <div class="module-unit-converter__fields">
+        <div>
+          <label class="module-unit-converter__field-label" :for="fieldId('from')" data-help-key="modules.unit-converter.fields.fromUnit.help" x-text="t('from')"></label>
+          <select class="field" :id="fieldId('from')" data-ref="fromUnit" data-help-key="" @change="onFromUnit($event)">
+            <template x-for="grp in fromGroups" :key="grp.key">
+              <optgroup :label="grp.label">
+                <template x-for="uk in grp.members" :key="uk">
+                  <option :value="uk" :selected="model.fromUnit === uk" x-text="unitLabel(uk)"></option>
+                </template>
+              </optgroup>
+            </template>
+            <template x-for="uk in fromFlatUnits" :key="uk">
+              <option :value="uk" :selected="model.fromUnit === uk" x-text="unitLabel(uk)"></option>
+            </template>
+          </select>
+          <input class="module-unit-converter__input" data-ref="inputVal" type="text"
+            inputmode="decimal" placeholder="0" autocomplete="off" :aria-label="t('from')"
+            x-model="model.inputVal">
+        </div>
+        <div class="module-unit-converter__arrow">
+          <span class="icon" data-icon="action.send-to" aria-hidden="true"></span>
+        </div>
+        <div>
+          <label class="module-unit-converter__field-label" :for="fieldId('to')" data-help-key="modules.unit-converter.fields.toUnit.help" x-text="t('to')"></label>
+          <select class="field" :id="fieldId('to')" data-ref="toUnit" data-help-key="" x-model="model.toUnit">
+            <template x-for="uk in toUnitKeys" :key="uk">
+              <option :value="uk" :selected="model.toUnit === uk" x-text="unitLabel(uk)"></option>
+            </template>
+          </select>
+          <div class="module-unit-converter__result" data-ref="resultVal" data-help-key="modules.unit-converter.types.ConversionResult.value" x-text="resultText"></div>
+        </div>
+      </div>
+      <div class="module-unit-converter__formula">
+        <span class="module-unit-converter__formula-label" x-text="t('formula')"></span>
+        <span data-ref="formulaText" data-help-key="modules.unit-converter.types.ConversionResult.factor" x-text="formulaText"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="module-unit-converter__ref-section">
+    <div class="module-unit-converter__ref-title" x-text="t('quickRef')"></div>
+    <table class="dmike-table dmike-table--head-mono module-unit-converter__ref-table">
+      <thead><tr>
+        <th x-text="t('refValue')"></th>
+        <th x-text="t('refFrom')"></th>
+        <th x-text="t('refResult')"></th>
+        <th x-text="t('refTo')"></th>
+      </tr></thead>
+      <tbody data-ref="refBody">
+        <template x-for="row in refRows" :key="row.idx">
+          <tr>
+            <td x-text="row.val"></td>
+            <td x-text="row.from"></td>
+            <td class="module-unit-converter__ref-val" x-text="row.result"></td>
+            <td x-text="row.to"></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Zeitzonen -->
+  <div class="module-unit-converter__tz-panel">
+    <div class="module-unit-converter__panel">
+      <div class="module-unit-converter__panel-header">
+        <div class="module-unit-converter__panel-title">
+          <span class="icon" data-icon="unit.timezone" aria-hidden="true"></span> <span x-text="t('timezone')"></span>
+        </div>
+        <button class="module-unit-converter__swap-btn" type="button" data-action="tz-swap" data-help-key="modules.unit-converter.actions.swapTimezones.help" x-command="swapTimezones">
+          <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
+          <span x-text="t('swap')"></span>
+        </button>
+      </div>
+      <div class="module-unit-converter__panel-body">
+        <div class="module-unit-converter__fields">
+          <div>
+            <label class="module-unit-converter__field-label" :for="fieldId('tz-from')" data-help-key="modules.unit-converter.fields.tzFrom.help" x-text="t('fromTimezone')"></label>
+            <select class="field" :id="fieldId('tz-from')" data-ref="tzFrom" data-help-key="" x-field="model.tzFrom">
+              <template x-for="(z, i) in timezones" :key="i">
+                <option :value="i" :selected="model.tzFrom === i" x-text="tzLabel(z)"></option>
+              </template>
+            </select>
+            <div class="module-unit-converter__tz-input-row">
+              <input class="module-unit-converter__tz-time" data-ref="tzTime" type="time" step="60" :aria-label="t('tzTime')" x-model="model.tzTime">
+              <input class="module-unit-converter__tz-date" data-ref="tzDate" type="date" :aria-label="t('tzDate')" x-model="model.tzDate">
+            </div>
+          </div>
+          <div class="module-unit-converter__arrow">
+            <span class="icon" data-icon="action.send-to" aria-hidden="true"></span>
+          </div>
+          <div>
+            <label class="module-unit-converter__field-label" :for="fieldId('tz-to')" data-help-key="modules.unit-converter.fields.tzTo.help" x-text="t('toTimezone')"></label>
+            <select class="field" :id="fieldId('tz-to')" data-ref="tzTo" data-help-key="" x-field="model.tzTo">
+              <template x-for="(z, i) in timezones" :key="i">
+                <option :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
+              </template>
+            </select>
+            <div class="module-unit-converter__tz-result" data-ref="tzResult" data-help-key="modules.unit-converter.types.TimezoneResult.time" x-text="tzResultText"></div>
+            <div class="module-unit-converter__tz-result-date" data-ref="tzResultDate" data-help-key="modules.unit-converter.types.TimezoneResult.date" x-text="tzResultDateText"></div>
+          </div>
+        </div>
+        <div class="module-unit-converter__formula">
+          <span class="module-unit-converter__formula-label" x-text="t('difference')"></span>
+          <span data-ref="tzDiff" data-help-key="modules.unit-converter.types.TimezoneResult.diffHours" x-text="tzDiffText"></span>
+        </div>
+        <button class="module-unit-converter__tz-now-btn" type="button" data-action="tz-now" data-help-key="modules.unit-converter.actions.tzSetNow.help" x-command="tzSetNow">
+          <span class="icon icon--sm icon--text" data-icon="status.time" aria-hidden="true"></span>
+          <span x-text="t('now')"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="module-unit-converter__ref-section">
+      <div class="module-unit-converter__ref-title" x-text="t('worldClock')"></div>
+      <table class="dmike-table dmike-table--head-mono module-unit-converter__ref-table">
+        <thead><tr>
+          <th x-text="t('tzTimezone')"></th>
+          <th x-text="t('tzAbbr')"></th>
+          <th x-text="t('tzDate')"></th>
+          <th x-text="t('tzTime')"></th>
+        </tr></thead>
+        <tbody data-ref="tzRefBody">
+          <template x-for="row in worldClock" :key="row.idx">
+            <tr>
+              <td x-text="row.tz"></td>
+              <td x-text="row.abbr"></td>
+              <td x-text="row.date"></td>
+              <td class="module-unit-converter__ref-val" x-text="row.time"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
