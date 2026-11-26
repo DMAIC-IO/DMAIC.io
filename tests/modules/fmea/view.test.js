@@ -133,13 +133,14 @@ suite('fmea: Viewmodel im Browser', () => {
   test('Altprojekt: Karten, Abzeichen, Kennzahlen, Zuklappen, ohne Verlaufsschritt', async () => {
     const h = await mount('f-1', legacy());
     assertDeepEqual(h.qa('.fmea__risk-card').map((c) => c.dataset.riskId), ['r1', 'x2', 'r3']);
-    assertDeepEqual(['r1', 'x2', 'r3'].map(h.badge), ['RPN 216', 'RPN —', 'RPN 343']);
+    // x2 hat im Altprojekt S '15', auf 10 geklemmt (A9): RPN 10·3·2 = 60.
+    assertDeepEqual(['r1', 'x2', 'r3'].map(h.badge), ['RPN 216', 'RPN 60', 'RPN 343']);
     assertTrue(h.card('r3').classList.contains('fmea__risk-card--collapsed'));
     assertTrue(h.card('r1').classList.contains('fmea__risk-card--critical'));
     assertEqual(h.q('[data-stat="total"]').textContent, '3');
     assertEqual(h.q('[data-stat="max"]').textContent, '343');
-    assertEqual(h.q('[data-stat="avg"]').textContent, '280');
-    assertEqual(h.card('x2').querySelector('select[name="sev"]').value, '');
+    assertEqual(h.q('[data-stat="avg"]').textContent, '206');
+    assertEqual(h.card('x2').querySelector('select[name="sev"]').value, '10');
     assertEqual(h.card('r1').querySelector('select[name="sev"]').value, '9');
     assertEqual(h.card('r1').querySelector('select[name="deltaO"]').value, '2');
     assertEqual(h.card('r1').querySelector('[data-proj-rpn]').textContent, 'RPN 27');
@@ -167,6 +168,7 @@ suite('fmea: Viewmodel im Browser', () => {
     const h = await mount('f-1', legacy());
     const vm = h.vm();
     const sev = () => h.card('x2').querySelector('select[name="sev"]');
+    assertEqual(vm.model.risks[1].sev, 10);
     await h.enter(sev(), '5');
     assertEqual(vm.model.risks[1].sev, 5);
     assertEqual(h.badge('x2'), 'RPN 30');
@@ -177,7 +179,8 @@ suite('fmea: Viewmodel im Browser', () => {
     assertEqual(vm.model.risks[1].sev, 5);
     assertEqual(sev().value, '5');
     assertTrue(await h.undo());
-    assertEqual(vm.model.risks[1].sev, null);
+    assertEqual(vm.model.risks[1].sev, 10);
+    assertEqual(h.badge('x2'), 'RPN 60');
     assertEqual(h.inst.historyCan('undo'), false);
   });
 
@@ -199,6 +202,9 @@ suite('fmea: Viewmodel im Browser', () => {
   test('Merkmal: Abzeichen und Hinweis S ≥ 9', async () => {
     const h = await mount('f-1', legacy());
     const hint = () => /** @type {HTMLElement} */ (h.card('x2').querySelector('[data-special-char-hint]'));
+    // x2 steht mit S 10 (aus '15' geklemmt) schon über der Schwelle.
+    assertEqual(hint().style.display, '');
+    await h.enter(h.card('x2').querySelector('select[name="sev"]'), '');
     assertEqual(hint().style.display, 'none');
     await h.enter(h.card('x2').querySelector('select[name="sev"]'), '9');
     assertEqual(hint().style.display, '');
