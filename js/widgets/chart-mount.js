@@ -39,7 +39,7 @@ function leaveField(root) {
 
 /**
  * @param {any} widget Beschreibung aus chartWidget
- * @param {(config: any) => any} [toChart] geprüfte Konfiguration → Form des Typs
+ * @param {(config: any, services?: any) => any} [toChart] geprüfte Konfiguration → Form des Typs (mit den Diensten des Widgets)
  * @returns {(root: HTMLElement, w: { props: any, value: any, services: any, effect: Function, command?: (name: string, args: object) => Promise<any> }) => { destroy: () => void }}
  */
 export function chartMount(widget, toChart = (c) => c) {
@@ -122,7 +122,7 @@ export function chartMount(widget, toChart = (c) => c) {
      * @returns {any}
      */
     const build = (cfg, edits) => {
-      const config = toChart(applyEdits(cfg, edits, editable, ownedKeys(cfg)));
+      const config = toChart(applyEdits(cfg, edits, editable, ownedKeys(cfg)), services);
       if (value) config.onEditorChange = onEditorChange;
       const bound = roles.length ? boundRoles(props.config) : [];
       if (bound.length) { config.commandRoles = bound; config.onCommand = onCommand; }

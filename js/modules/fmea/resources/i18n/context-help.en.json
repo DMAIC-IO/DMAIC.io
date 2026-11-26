@@ -1,0 +1,212 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "method": {
+      "help": "The rating method: AP rates by action priority (AIAG-VDA) with the levels H, M and L, RPN by the risk priority number severity × occurrence × detection. A new FMEA uses the default from the settings."
+    },
+    "fmeaType": {
+      "help": "The type of the FMEA: process or design. It selects the action-priority scale texts and only matters with the AP method."
+    },
+    "risks": {
+      "help": "The risks in working order, each with id, failure chain, rating, special characteristic, justification and actions.",
+      "id": {
+        "help": "The id of the risk; it stays the same when sorting, and the commands address a risk by it (riskId or id)."
+      },
+      "step": {
+        "help": "The process step or component this risk card examines; free text."
+      },
+      "failureMode": {
+        "help": "The potential failure mode: the way in which the step or component can fail at its task. Free text."
+      },
+      "effect": {
+        "help": "The potential effect of failure: what the customer or the next process notices of the failure. It drives the severity rating. Free text."
+      },
+      "cause": {
+        "help": "The potential cause of failure: why the failure mode occurs. It drives the occurrence rating. Free text."
+      },
+      "prevention": {
+        "help": "The prevention control: what stops the cause from occurring in the first place. It feeds into the occurrence rating. Free text."
+      },
+      "control": {
+        "help": "The detection control: what detects the failure or its cause before it reaches the customer. It feeds into the detection rating. Free text."
+      },
+      "specialChar": {
+        "help": "The special characteristic: CC for a critical, SC for a significant characteristic, empty for none. From a severity of 9 the card points out that it should be checked, while none is set."
+      },
+      "justification": {
+        "help": "The justification why a risk with high action priority (H) gets no action. With the AP method the field appears while such a risk has neither an action text nor a justification, and stays visible once filled. Free text."
+      },
+      "sev": {
+        "help": "The severity (S) of the failure for the customer, 1 to 10: 1 means no noticeable effect, 10 a safety hazard or regulatory violation; empty means not yet rated. Together with occurrence and detection it gives the priority: with the AP method through the AIAG-VDA handbook table (H, M or L), with RPN as the product severity × occurrence × detection."
+      },
+      "occ": {
+        "help": "The occurrence (O), 1 to 10: 1 means the failure is unlikely, 10 that it occurs very frequently; empty means not yet rated. Together with severity and detection it gives the priority (AP table or RPN = severity × occurrence × detection)."
+      },
+      "det": {
+        "help": "The detection (D), 1 to 10: 1 means the failure is certain to be detected, 10 that it is almost never detected – so a high number is bad; empty means not yet rated. Together with severity and occurrence it gives the priority (AP table or RPN = severity × occurrence × detection)."
+      },
+      "actions": {
+        "help": "The actions for this risk in table order, each with its own id.",
+        "id": {
+          "help": "The id of the action, unique within its risk; value for actionId."
+        },
+        "text": {
+          "help": "The action that is meant to reduce the risk; free text. A risk with high action priority and no action text needs a justification."
+        },
+        "resp": {
+          "help": "Who is responsible for the action (Resp.); free text."
+        },
+        "date": {
+          "help": "The due date of the action as YYYY-MM-DD; empty means no deadline. Actions with a date form the course in the burndown."
+        },
+        "done": {
+          "help": "Whether the action is implemented, yes or no. In the burndown it only then counts toward the actual course."
+        },
+        "deltaS": {
+          "help": "By how many levels, 0 to 9, the action is meant to lower the severity. The projection of the risk is severity minus the sum over all its actions, at least 1."
+        },
+        "deltaO": {
+          "help": "By how many levels, 0 to 9, the action is meant to lower the occurrence. The projection of the risk is occurrence minus the sum over all its actions, at least 1."
+        },
+        "deltaD": {
+          "help": "By how many levels, 0 to 9, the action is meant to lower the detection number, that is improve detection. The projection of the risk is detection minus the sum over all its actions, at least 1."
+        }
+      }
+    },
+    "scales": {
+      "help": "The custom scale texts: meaning, description or failure rate per level of the RPN scales and meaning and criterion per level of the AP scales. A cell without a custom text shows the shipped one. Click into a cell to change its text."
+    },
+    "collapsed": {
+      "help": "The ids of the collapsed risk cards."
+    },
+    "burndownEdits": {
+      "help": "The settings from the chart editor of the burndown, such as title and axis labels."
+    },
+    "stats": {
+      "help": "The key figures of the active rating method, as the tiles above the risk list show them."
+    },
+    "riskRatings": {
+      "help": "Per risk in list order the risk priority number, the action priority, both after all actions, and whether a justification is missing — the values of the badges on the card."
+    },
+    "burndown": {
+      "help": "The burndown series of the active method, plan (all dated actions) and actual (implemented ones only); empty while no rated risk has a dated action with an effect."
+    },
+    "burndownChart": {
+      "help": "The burndown chart: plan dashed, actual solid; with AP the number of H and of H+M risks, with RPN the RPN sum over time."
+    }
+  },
+  "actions": {
+    "addRisk": {
+      "help": "Adds an empty risk at the end of the list and returns its id.",
+      "params": {
+        "command": "The command as an empty object."
+      }
+    },
+    "removeRisk": {
+      "help": "Removes a risk with its actions.",
+      "params": {
+        "id": "The id of the risk. An unknown id is an error.",
+        "command": "The command as one object with id."
+      }
+    },
+    "setRiskValue": {
+      "help": "Sets one field of a risk.",
+      "params": {
+        "riskId": "The id of the risk. An unknown id is an error.",
+        "field": "Which field: step, failureMode, effect, cause, prevention, control, specialChar, justification, sev, occ or det; each is described under fields.risks. Any other value is an error.",
+        "value": "The value: text for the text fields; for specialChar empty, CC or SC; for sev, occ and det a whole number 1 to 10 (also as numeric text), empty or null takes the rating back. A value outside is an error.",
+        "command": "The command as one object with riskId, field and value."
+      }
+    },
+    "addRiskAction": {
+      "help": "Appends an empty action to the risk; it then sits as the last row of the actions table.",
+      "params": {
+        "riskId": "The id of the risk. An unknown id is an error.",
+        "command": "The command as one object with riskId; it returns the id of the new action."
+      }
+    },
+    "removeRiskAction": {
+      "help": "Removes one action of a risk.",
+      "params": {
+        "riskId": "The id of the risk. An unknown id is an error.",
+        "actionId": "The id of the action. An id the risk does not have is an error.",
+        "command": "The command as one object with riskId and actionId."
+      }
+    },
+    "setActionValue": {
+      "help": "Sets one field of an action.",
+      "params": {
+        "riskId": "The id of the risk. An unknown id is an error.",
+        "actionId": "The id of the action. An id the risk does not have is an error.",
+        "field": "Which field: text, resp, date, done, deltaS, deltaO or deltaD; each is described under fields.risks.actions. Any other value is an error.",
+        "value": "The value: text for text and resp; for date a date YYYY-MM-DD or empty; for done true or false; for deltaS, deltaO and deltaD a whole number 0 to 9 (also as numeric text). A value outside is an error.",
+        "command": "The command as one object with riskId, actionId, field and value."
+      }
+    },
+    "setScaleValue": {
+      "help": "Sets a custom scale text; it replaces the shipped one.",
+      "params": {
+        "key": "The key of the scale cell. For the risk priority number these are sevNone, sevNoneDesc, sevLow, sevLowDesc, sevMod, sevModDesc, sevHigh, sevHighDesc, sevVHigh, sevVHighDesc, occUnlikely, occUnlikelyRate, occLow, occLowRate, occMod, occModRate, occHigh, occHighRate, occVHigh, occVHighRate, detCertain, detCertainDesc, detHigh, detHighDesc, detMod, detModDesc, detLow, detLowDesc, detVLow and detVLowDesc; for the action priority ap.<type>.<dimension>.<level>.meaning or .criterion with type process or design, dimension sev, occ or det and level 1 to 10. Any other key is an error.",
+        "text": "The new text. An empty text leaves the cell empty.",
+        "command": "The command as one object with key and text."
+      }
+    },
+    "resetScales": {
+      "help": "Discards all custom scale texts; the shipped ones apply again.",
+      "params": {
+        "command": "The command as an empty object."
+      }
+    },
+    "sortByPriority": {
+      "help": "Sorts the risks by the active rating method, the most urgent first: with AP by level, then severity, occurrence and detection, with RPN by the risk priority number. Equal risks keep their order.",
+      "params": {
+        "command": "The command as an empty object."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many of the most urgent rated risks the tile shows at most, 1 to 10."
+      },
+      "showLegend": {
+        "help": "Shows the legend of the categories with their count below the bar."
+      }
+    }
+  },
+  "types": {
+    "FmeaStats": {
+      "kind": "The active rating method, ap or rpn; the other entries depend on it.",
+      "total": "The number of all risks.",
+      "rated": "The number of risks with an action priority, ap only.",
+      "critical": "The number of risks with an RPN above 200, rpn only.",
+      "high": "With ap the number of risks at level H, with rpn with an RPN from 125 to 200.",
+      "medium": "With ap the number of risks at level M, with rpn with an RPN from 50 to 124.",
+      "low": "With ap the number of risks at level L, with rpn with an RPN below 50.",
+      "unjustified": "The number of risks at level H without action text and without justification, ap only.",
+      "highSeverity": "The number of risks with severity 9 or 10, rpn only.",
+      "avg": "The rounded mean RPN over the rated risks, null without such; rpn only.",
+      "max": "The largest RPN, 0 without a rated risk; rpn only."
+    },
+    "RiskRating": {
+      "riskId": "The id of the risk.",
+      "rpn": "Severity × occurrence × detection; 0 while one of the three is missing.",
+      "ap": "The action priority H, M or L; null while one of the three levels is missing.",
+      "projRpn": "The RPN after all reductions of the actions (each level at least 1); 0 without an RPN.",
+      "projAp": "The action priority after all reductions of the actions; null without an action priority.",
+      "needsJustification": "True at level H without action text and without justification."
+    },
+    "Burndown": {
+      "kind": "The active rating method, ap or rpn; the series depend on it.",
+      "planX": "The points in time of the plan in milliseconds since 1970: one day before the earliest action, then per dated action with an effect.",
+      "actX": "The points in time of the actual course: the start day, then per implemented action with an effect.",
+      "planY": "The RPN sum of the plan per point in time, rpn only.",
+      "actY": "The RPN sum of the actual course per point in time, rpn only.",
+      "totalRPN": "The RPN sum of all rated risks before the actions, rpn only.",
+      "planH": "The number of H risks in the plan per point in time, ap only.",
+      "planHM": "The number of H and M risks in the plan per point in time, ap only.",
+      "actH": "The number of H risks in the actual course per point in time, ap only.",
+      "actHM": "The number of H and M risks in the actual course per point in time, ap only."
+    }
+  }
+}

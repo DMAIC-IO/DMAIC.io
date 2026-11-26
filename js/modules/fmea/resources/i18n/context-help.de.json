@@ -1,0 +1,212 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "method": {
+      "help": "Die Bewertungsmethode: AP bewertet nach Aufgabenpriorität (AIAG-VDA) mit den Stufen H, M und L, RPN nach der Risikoprioritätszahl Bedeutung × Auftreten × Entdeckung. Eine neue FMEA nutzt die Vorgabe aus den Einstellungen."
+    },
+    "fmeaType": {
+      "help": "Die Art der FMEA: Prozess oder Design (Konstruktion). Sie wählt die Skalentexte der Aufgabenpriorität aus und wirkt nur bei der Methode AP."
+    },
+    "risks": {
+      "help": "Die Risiken in Bearbeitungsreihenfolge, jedes mit Kennung, Fehlerkette, Bewertung, besonderem Merkmal, Begründung und Maßnahmen.",
+      "id": {
+        "help": "Die Kennung des Risikos; sie bleibt beim Sortieren gleich, über sie sprechen die Kommandos ein Risiko an (riskId bzw. id)."
+      },
+      "step": {
+        "help": "Der Prozessschritt oder das Bauteil, das diese Risikokarte betrachtet; freier Text."
+      },
+      "failureMode": {
+        "help": "Der potenzielle Fehlermodus: auf welche Weise der Schritt oder das Bauteil seine Aufgabe verfehlen kann. Freier Text."
+      },
+      "effect": {
+        "help": "Die potenzielle Fehlerfolge: was der Kunde oder der nachfolgende Prozess vom Fehler merkt. Sie bestimmt die Bewertung der Bedeutung. Freier Text."
+      },
+      "cause": {
+        "help": "Die potenzielle Fehlerursache: warum der Fehlermodus auftritt. Sie bestimmt die Bewertung des Auftretens. Freier Text."
+      },
+      "prevention": {
+        "help": "Die Vermeidungsmaßnahme: was verhindert, dass die Ursache überhaupt auftritt. Sie fließt in die Bewertung des Auftretens ein. Freier Text."
+      },
+      "control": {
+        "help": "Die Entdeckungsmaßnahme: was den Fehler oder seine Ursache entdeckt, bevor er den Kunden erreicht. Sie fließt in die Bewertung der Entdeckung ein. Freier Text."
+      },
+      "specialChar": {
+        "help": "Das besondere Merkmal: CC für ein kritisches, SC für ein signifikantes Merkmal, leer für keines. Ab einer Bedeutung von 9 weist die Karte darauf hin, es zu prüfen, solange noch keines gesetzt ist."
+      },
+      "justification": {
+        "help": "Die Begründung, warum ein Risiko mit hoher Aufgabenpriorität (H) keine Maßnahme bekommt. Das Feld erscheint bei der Methode AP, solange ein solches Risiko weder einen Maßnahmentext noch eine Begründung hat, und bleibt sichtbar, sobald es gefüllt ist. Freier Text."
+      },
+      "sev": {
+        "help": "Die Bedeutung (S) des Fehlers für den Kunden, 1 bis 10: 1 heißt kein erkennbarer Effekt, 10 Sicherheitsgefährdung oder Gesetzesverstoß; leer heißt noch nicht bewertet. Zusammen mit Auftreten und Entdeckung ergibt sie die Priorität: bei der Methode AP über die Tabelle des AIAG-VDA-Handbuchs (H, M oder L), bei RPN als Produkt Bedeutung × Auftreten × Entdeckung."
+      },
+      "occ": {
+        "help": "Das Auftreten (O), 1 bis 10: 1 heißt, der Fehler ist unwahrscheinlich, 10 er tritt sehr häufig auf; leer heißt noch nicht bewertet. Zusammen mit Bedeutung und Entdeckung ergibt es die Priorität (AP-Tabelle bzw. RPN = Bedeutung × Auftreten × Entdeckung)."
+      },
+      "det": {
+        "help": "Die Entdeckung (D), 1 bis 10: 1 heißt, der Fehler wird sicher entdeckt, 10 er wird fast nie entdeckt – eine hohe Zahl ist also schlecht; leer heißt noch nicht bewertet. Zusammen mit Bedeutung und Auftreten ergibt sie die Priorität (AP-Tabelle bzw. RPN = Bedeutung × Auftreten × Entdeckung)."
+      },
+      "actions": {
+        "help": "Die Maßnahmen zu diesem Risiko in Tabellenreihenfolge, jede mit eigener Kennung.",
+        "id": {
+          "help": "Die Kennung der Maßnahme, eindeutig innerhalb ihres Risikos; Wert für actionId."
+        },
+        "text": {
+          "help": "Die Maßnahme, die das Risiko senken soll; freier Text. Hat ein Risiko mit hoher Aufgabenpriorität keinen Maßnahmentext, braucht es eine Begründung."
+        },
+        "resp": {
+          "help": "Wer die Maßnahme verantwortet (Verantw.); freier Text."
+        },
+        "date": {
+          "help": "Das Zieldatum der Maßnahme als JJJJ-MM-TT; leer heißt kein Termin. Maßnahmen mit Datum bilden den Verlauf im Burndown."
+        },
+        "done": {
+          "help": "Ob die Maßnahme umgesetzt ist, ja oder nein. Im Burndown zählt sie erst dann zum tatsächlichen Verlauf."
+        },
+        "deltaS": {
+          "help": "Um wie viele Stufen, 0 bis 9, die Maßnahme die Bedeutung senken soll. Die Prognose des Risikos ist Bedeutung minus die Summe über alle seine Maßnahmen, mindestens 1."
+        },
+        "deltaO": {
+          "help": "Um wie viele Stufen, 0 bis 9, die Maßnahme das Auftreten senken soll. Die Prognose des Risikos ist Auftreten minus die Summe über alle seine Maßnahmen, mindestens 1."
+        },
+        "deltaD": {
+          "help": "Um wie viele Stufen, 0 bis 9, die Maßnahme die Entdeckungszahl senken soll, die Entdeckung also verbessert. Die Prognose des Risikos ist Entdeckung minus die Summe über alle seine Maßnahmen, mindestens 1."
+        }
+      }
+    },
+    "scales": {
+      "help": "Die eigenen Skalentexte: Bedeutung, Beschreibung bzw. Fehlerrate je Stufe der RPN-Skalen und Bedeutung und Kriterium je Stufe der AP-Skalen. Eine Zelle ohne eigenen Text zeigt den mitgelieferten. Ein Klick in die Zelle ändert den Text."
+    },
+    "collapsed": {
+      "help": "Die Kennungen der zugeklappten Risikokarten."
+    },
+    "burndownEdits": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor des Burndowns, etwa Titel und Achsenbeschriftung."
+    },
+    "stats": {
+      "help": "Die Kennzahlen der aktiven Bewertungsmethode, wie die Kacheln über der Risikoliste sie zeigen."
+    },
+    "riskRatings": {
+      "help": "Je Risiko in Listenreihenfolge die Risikoprioritätszahl, die Aufgabenpriorität, beide nach allen Maßnahmen und ob eine Begründung fehlt — die Werte der Abzeichen auf der Karte."
+    },
+    "burndown": {
+      "help": "Die Reihen des Burndowns der aktiven Methode, Plan (alle datierten Maßnahmen) und Ist (nur umgesetzte); leer, solange kein bewertetes Risiko eine datierte Maßnahme mit Wirkung hat."
+    },
+    "burndownChart": {
+      "help": "Das Burndown-Diagramm: Plan gestrichelt, Ist durchgezogen, bei AP die Zahl der H- und der H+M-Risiken, bei RPN die RPN-Summe über die Zeit."
+    }
+  },
+  "actions": {
+    "addRisk": {
+      "help": "Legt ein leeres Risiko am Ende der Liste an und liefert seine Kennung.",
+      "params": {
+        "command": "Das Kommando als leeres Objekt."
+      }
+    },
+    "removeRisk": {
+      "help": "Entfernt ein Risiko samt seinen Maßnahmen.",
+      "params": {
+        "id": "Die Kennung des Risikos. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "setRiskValue": {
+      "help": "Setzt ein Feld eines Risikos.",
+      "params": {
+        "riskId": "Die Kennung des Risikos. Eine unbekannte Kennung ist ein Fehler.",
+        "field": "Welches Feld: step, failureMode, effect, cause, prevention, control, specialChar, justification, sev, occ oder det; jedes ist unter fields.risks beschrieben. Jeder andere Wert ist ein Fehler.",
+        "value": "Der Wert: Text für die Textfelder; für specialChar leer, CC oder SC; für sev, occ und det eine ganze Zahl 1 bis 10 (auch als Zahlentext), leer oder null nimmt die Bewertung zurück. Ein Wert außerhalb ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit riskId, field und value."
+      }
+    },
+    "addRiskAction": {
+      "help": "Hängt dem Risiko eine leere Maßnahme an; sie steht danach als letzte Zeile in der Maßnahmentabelle.",
+      "params": {
+        "riskId": "Die Kennung des Risikos. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit riskId; es liefert die Kennung der neuen Maßnahme."
+      }
+    },
+    "removeRiskAction": {
+      "help": "Entfernt eine Maßnahme eines Risikos.",
+      "params": {
+        "riskId": "Die Kennung des Risikos. Eine unbekannte Kennung ist ein Fehler.",
+        "actionId": "Die Kennung der Maßnahme. Eine Kennung, die das Risiko nicht hat, ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit riskId und actionId."
+      }
+    },
+    "setActionValue": {
+      "help": "Setzt ein Feld einer Maßnahme.",
+      "params": {
+        "riskId": "Die Kennung des Risikos. Eine unbekannte Kennung ist ein Fehler.",
+        "actionId": "Die Kennung der Maßnahme. Eine Kennung, die das Risiko nicht hat, ist ein Fehler.",
+        "field": "Welches Feld: text, resp, date, done, deltaS, deltaO oder deltaD; jedes ist unter fields.risks.actions beschrieben. Jeder andere Wert ist ein Fehler.",
+        "value": "Der Wert: Text für text und resp; für date ein Datum JJJJ-MM-TT oder leer; für done wahr oder falsch; für deltaS, deltaO und deltaD eine ganze Zahl 0 bis 9 (auch als Zahlentext). Ein Wert außerhalb ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit riskId, actionId, field und value."
+      }
+    },
+    "setScaleValue": {
+      "help": "Setzt einen eigenen Skalentext; er ersetzt den mitgelieferten.",
+      "params": {
+        "key": "Der Schlüssel der Skalenzelle. Bei der Risikoprioritätszahl sind es sevNone, sevNoneDesc, sevLow, sevLowDesc, sevMod, sevModDesc, sevHigh, sevHighDesc, sevVHigh, sevVHighDesc, occUnlikely, occUnlikelyRate, occLow, occLowRate, occMod, occModRate, occHigh, occHighRate, occVHigh, occVHighRate, detCertain, detCertainDesc, detHigh, detHighDesc, detMod, detModDesc, detLow, detLowDesc, detVLow und detVLowDesc; bei der Aufgabenpriorität ap.<art>.<dimension>.<stufe>.meaning bzw. .criterion mit art process oder design, dimension sev, occ oder det und stufe 1 bis 10. Jeder andere Schlüssel ist ein Fehler.",
+        "text": "Der neue Text. Ein leerer Text lässt die Zelle leer.",
+        "command": "Das Kommando als ein Objekt mit key und text."
+      }
+    },
+    "resetScales": {
+      "help": "Verwirft alle eigenen Skalentexte; es gelten wieder die mitgelieferten.",
+      "params": {
+        "command": "Das Kommando als leeres Objekt."
+      }
+    },
+    "sortByPriority": {
+      "help": "Sortiert die Risiken nach der aktiven Bewertungsmethode, das dringendste zuerst: bei AP nach Stufe, dann Bedeutung, Auftreten und Entdeckung, bei RPN nach der Risikoprioritätszahl. Gleichrangige behalten ihre Reihenfolge.",
+      "params": {
+        "command": "Das Kommando als leeres Objekt."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele der dringendsten bewerteten Risiken die Kachel höchstens zeigt, 1 bis 10."
+      },
+      "showLegend": {
+        "help": "Zeigt unter dem Balken die Legende der Kategorien mit ihrer Zahl."
+      }
+    }
+  },
+  "types": {
+    "FmeaStats": {
+      "kind": "Die aktive Bewertungsmethode, ap oder rpn; danach richten sich die übrigen Angaben.",
+      "total": "Die Zahl aller Risiken.",
+      "rated": "Die Zahl der Risiken mit Aufgabenpriorität, nur bei ap.",
+      "critical": "Die Zahl der Risiken mit einer RPN über 200, nur bei rpn.",
+      "high": "Bei ap die Zahl der Risiken mit Stufe H, bei rpn mit einer RPN von 125 bis 200.",
+      "medium": "Bei ap die Zahl der Risiken mit Stufe M, bei rpn mit einer RPN von 50 bis 124.",
+      "low": "Bei ap die Zahl der Risiken mit Stufe L, bei rpn mit einer RPN unter 50.",
+      "unjustified": "Die Zahl der Risiken mit Stufe H ohne Maßnahmentext und ohne Begründung, nur bei ap.",
+      "highSeverity": "Die Zahl der Risiken mit Bedeutung 9 oder 10, nur bei rpn.",
+      "avg": "Der gerundete Mittelwert der RPN über die bewerteten Risiken, null ohne solche; nur bei rpn.",
+      "max": "Die größte RPN, 0 ohne bewertetes Risiko; nur bei rpn."
+    },
+    "RiskRating": {
+      "riskId": "Die Kennung des Risikos.",
+      "rpn": "Bedeutung × Auftreten × Entdeckung; 0, solange eine der drei fehlt.",
+      "ap": "Die Aufgabenpriorität H, M oder L; null, solange eine der drei Stufen fehlt.",
+      "projRpn": "Die RPN nach allen Senkungen der Maßnahmen (jede Stufe mindestens 1); 0 ohne RPN.",
+      "projAp": "Die Aufgabenpriorität nach allen Senkungen der Maßnahmen; null ohne Aufgabenpriorität.",
+      "needsJustification": "Wahr bei Stufe H ohne Maßnahmentext und ohne Begründung."
+    },
+    "Burndown": {
+      "kind": "Die aktive Bewertungsmethode, ap oder rpn; danach richten sich die Reihen.",
+      "planX": "Die Zeitpunkte des Plans in Millisekunden seit 1970: einen Tag vor der frühesten Maßnahme, dann je datierte Maßnahme mit Wirkung.",
+      "actX": "Die Zeitpunkte des Ist: der Starttag, dann je umgesetzte Maßnahme mit Wirkung.",
+      "planY": "Die RPN-Summe des Plans je Zeitpunkt, nur bei rpn.",
+      "actY": "Die RPN-Summe des Ist je Zeitpunkt, nur bei rpn.",
+      "totalRPN": "Die RPN-Summe aller bewerteten Risiken vor den Maßnahmen, nur bei rpn.",
+      "planH": "Die Zahl der H-Risiken im Plan je Zeitpunkt, nur bei ap.",
+      "planHM": "Die Zahl der H- und M-Risiken im Plan je Zeitpunkt, nur bei ap.",
+      "actH": "Die Zahl der H-Risiken im Ist je Zeitpunkt, nur bei ap.",
+      "actHM": "Die Zahl der H- und M-Risiken im Ist je Zeitpunkt, nur bei ap."
+    }
+  }
+}

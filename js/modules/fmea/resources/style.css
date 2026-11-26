@@ -1,0 +1,44 @@
+/* ============================================================
+   FMEA (resources/style.css)
+   BEM: .fmea__ prefix; Kachel: .fmea-tile, .dashboard-fmea__*
+   ============================================================ */
+
+/* Kategoriefarben — eine Quelle für Karten, Abzeichen, Kennzahlen, Legende,
+   AP-Matrix und die Kachel (am Modulcontainer und an der Kachelwurzel). */
+.fmea,
+.fmea-tile {
+  --fmea-cat-critical: var(--color-error);
+  --fmea-cat-high: #fb923c;
+  --fmea-cat-medium: #fbbf24;
+  --fmea-cat-low: var(--color-success);
+  --fmea-cat-none: var(--color-text-tertiary);
+
+  /* Text und Symbole in einer Kategoriefarbe. Die reinen Farben erreichen
+     auf hellem Grund nur 1,7–3,6:1; 40 % Farbe in der Textfarbe behalten den
+     Ton und erreichen auf den getönten Flächen beider Themen mindestens
+     4,5:1 (hell dunkler, dunkel heller). */
+  --fmea-cat-critical-text: color-mix(in srgb, var(--fmea-cat-critical) 40%, var(--color-text-primary));
+  --fmea-cat-high-text: color-mix(in srgb, var(--fmea-cat-high) 40%, var(--color-text-primary));
+  --fmea-cat-medium-text: color-mix(in srgb, var(--fmea-cat-medium) 40%, var(--color-text-primary));
+  --fmea-cat-low-text: color-mix(in srgb, var(--fmea-cat-low) 40%, var(--color-text-primary));
+
+  /* Merker S ≥ 9 bei RPN */
+  --fmea-severe: var(--fmea-cat-critical);
+}
+
+/* ── Kachel ─────────────────────────────────────────────────── */
+
+/* Der Wurzelknoten trägt nur die Variablen und nimmt am Layout der Kachel nicht teil. */
+.fmea-tile {
+  display: contents;
+}
+
+.dashboard-fmea__top-flag {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 0 var(--spacing-2xs);
+  border: 1px solid currentcolor;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+  margin-inline: var(--spacing-xs);
+}

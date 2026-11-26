@@ -8,7 +8,7 @@ const ed = { optional: true, editable: true };
 export default chartWidget({
   name: 'scatter-chart',
   type: 'scatter',
-  keys: { xTicks: list(number(), opt), xTickLabels: list(text(), opt), xAxis: oneOf(['number', 'date'], opt), editConnectLine: boolean(opt) },
+  keys: { xTicks: list(number(), opt), xTickLabels: list(text(), opt), xAxis: oneOf(['number', 'date'], opt), xDateFormat: oneOf(['iso', 'short'], opt), editConnectLine: boolean(opt) },
   series: {
     name: text(), x: list(number()), y: list(number({ nullable: true })), labels: list(text(), opt),
     connectLine: object({ show: boolean(), dash: text(opt), width: number(opt), color: text(opt) }, ed),

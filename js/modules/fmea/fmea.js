@@ -25,7 +25,7 @@ import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireBoolean, requireEnum, requireIndex, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, METHODS, FMEA_TYPES, SPECIAL_CHARS, fmeaCreateDefault } from './fmea-model.js';
-import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
+import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './domain/ap.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
 function scaleRow(v) {

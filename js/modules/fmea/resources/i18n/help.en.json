@@ -1,0 +1,145 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "{{term:fmea|FMEA}} (Failure Mode and Effects Analysis) is a systematic method for identifying and evaluating potential failures in products or processes. The goal is to spot risks before they occur and tackle them by priority — it is a central tool of the Improve and Control phases but should already begin in Define or Analyze."
+        },
+        {
+          "type": "definition",
+          "term": "Function / step",
+          "content": "What should the process or part do? Every row starts with the expected function or process step — from this target view the possible deviations are derived."
+        },
+        {
+          "type": "definition",
+          "term": "Failure mode",
+          "content": "The {{term:fehlermoeglichkeit|failure mode}} is the possible kind of deviation from the function — e.g. \"not snapped in\", \"wrong dosage\", \"delivered too late\". Several failure modes per function are possible."
+        },
+        {
+          "type": "definition",
+          "term": "Effect",
+          "content": "What happens if the failure occurs — at the next step, at the final product, at the customer? A failure mode can have several effects of different severity."
+        },
+        {
+          "type": "definition",
+          "term": "Cause",
+          "content": "What might trigger the failure? Several causes per failure mode are the rule — each is rated separately because occurrence and actions differ."
+        },
+        {
+          "type": "definition",
+          "term": "S (Severity)",
+          "content": "{{term:bedeutung|Severity}}: How serious would the effect be for the customer? Scale 1–10: 1 = negligible, 10 = safety-critical. Defined by the product or requirement, not by the process."
+        },
+        {
+          "type": "definition",
+          "term": "O (Occurrence)",
+          "content": "{{term:auftreten|Occurrence}}: How often does the cause occur in practice? Scale 1–10: 1 = very rare, 10 = nearly permanent. Ideally backed by data, otherwise estimated."
+        },
+        {
+          "type": "definition",
+          "term": "D (Detection)",
+          "content": "{{term:entdeckung|Detection}}: How likely is the failure detected before reaching the customer? Scale 1–10: 1 = will surely be found, 10 = guaranteed to slip through. Note: a high number is bad (counterintuitive)."
+        },
+        {
+          "type": "definition",
+          "term": "RPN (Risk Priority Number)",
+          "content": "{{term:rpz|RPN}} = S × O × D. Values from 1 to 1000. The RPN is a rough prioritization — not an absolute risk measure. High severity (S ≥ 9) is often addressed regardless of RPN."
+        },
+        {
+          "type": "definition",
+          "term": "AP (Action Priority)",
+          "content": "In the AIAG-VDA FMEA handbook (2019) the AP replaces the RPN for prioritization. Instead of multiplying S × O × D it looks the combination up in a table and yields H (high), M (medium) or L (low). Severity weighs most: S 9–10 with O ≥ 6 is always H, even when the RPN would be low. H requires an action or a justified decision against one, M should be worked on, L may be worked on."
+        },
+        {
+          "type": "definition",
+          "term": "Prevention and detection control",
+          "content": "A prevention control keeps the cause from occurring — it feeds the O rating. A detection control finds the failure or cause before it reaches the customer — it feeds the D rating. Both are recorded separately; in older FMEAs the former \"current controls\" entry appears as the detection control. From version 1.3.0 the CSV export lists both columns plus special characteristic and justification right after the cause."
+        },
+        {
+          "type": "definition",
+          "term": "Special characteristic (CC/SC)",
+          "content": "A {{term:besonderes-merkmal|special characteristic}} marks product or process characteristics with a safety or regulatory impact (CC, critical characteristic) or a significant impact on fit, function or further processing (SC, significant characteristic). From S ≥ 9 the module suggests checking it; the flag shows as a badge on the card and in the dashboard tile."
+        },
+        {
+          "type": "definition",
+          "term": "Justification at AP H",
+          "content": "When a risk has action priority H but no action with text, AIAG-VDA requires a documented justification. The module then shows the hint \"H without action\" and the justification field; the stats count such risks. Nothing is blocked. A justification once entered stays visible, also below H and in RPN mode."
+        },
+        {
+          "type": "definition",
+          "term": "S ≥ 9 in RPN mode",
+          "content": "A low RPN can hide a safety-relevant risk. In RPN mode every risk with S 9 or 10 therefore gets its own marking and is counted in its own stats card; category and sort order stay RPN-based."
+        },
+        {
+          "type": "paragraph",
+          "content": "At the top of the module you choose the rating: AP (default for new FMEAs) or RPN (classic). Switching keeps all inputs; only the evaluation changes. In AP mode the FMEA type (process or design) selects which rating scales the scale reference shows. Which method and FMEA type a new FMEA starts with is set in the settings under \"Statistics\" → \"FMEA\"."
+        },
+        {
+          "type": "paragraph",
+          "content": "FMEA is a living document: updated on every relevant change. An FMEA filed away once loses its value."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Define scope — which function, which process slice is analyzed?",
+            "List functions or steps — ideally along the {{term:process-map|process map}}.",
+            "Brainstorm possible failures per step — with the team, experts, and practitioners.",
+            "Describe effects and causes per failure.",
+            "Assign S, O, D collectively — a uniform rating frame is mandatory.",
+            "Determine the AP (or RPN) and prioritize — H first.",
+            "Derive actions — reduce occurrence (lower O) or improve detection (lower D). Severity can only be lowered by design change.",
+            "After implementation, re-rate and check whether the action worked."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Done alone",
+          "content": "An FMEA by one person is just one person's brainstorm. In an interdisciplinary team — design, manufacturing, quality, service — far more failures surface."
+        },
+        {
+          "type": "definition",
+          "term": "Inconsistent scales",
+          "content": "When every rating runs against a different mental model of \"severity 7\", RPN values are incomparable. Calibrate the scale with examples before starting."
+        },
+        {
+          "type": "definition",
+          "term": "RPN threshold as only rule",
+          "content": "\"Anything above 100 gets addressed\" misses the case S = 10, O = 1, D = 1 — RPN 10, but safety-critical. Always consider action when severity is high, regardless of RPN."
+        },
+        {
+          "type": "definition",
+          "term": "Actions without effectiveness check",
+          "content": "An action \"on the plan\" is not the same as an effective action. After implementation re-rate S/O/D — if nothing changes, the action does not work."
+        },
+        {
+          "type": "definition",
+          "term": "Rating symptoms instead of causes",
+          "content": "Listing \"part breaks\" as cause is not FMEA but a symptom list. The cause is \"wrong material spec\" or \"load assumption too low\"."
+        },
+        {
+          "type": "definition",
+          "term": "FMEA as compliance exercise",
+          "content": "If FMEA is created only to satisfy an audit, it is not lived. Value comes from real discussion and actionable outcomes."
+        },
+        {
+          "type": "definition",
+          "term": "Outdated FMEA",
+          "content": "Processes and products change. An FMEA untouched for three years describes a state that may no longer exist."
+        }
+      ]
+    }
+  }
+}

@@ -27,7 +27,7 @@
  */
 
 import { uid } from '../../core/uid.js';
-import { actionPriority, AP_RANK, AP_CATEGORY } from './fmea-ap.js';
+import { actionPriority, AP_RANK, AP_CATEGORY } from './domain/ap.js';
 
 /** RPN category thresholds (inclusive lower bound). */
 export const RPN_CRITICAL = 200;   // > 200

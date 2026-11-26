@@ -738,6 +738,27 @@ suite('Diagramm-Widgets: Streudiagramm toChart', () => {
     assertEqual(c.xTickFormat(NaN), '');
     assertTrue(!('xAxis' in c));
   });
+  test('xAxis date mit xDateFormat short: TT.MM.JJ (de) bzw. TT/MM/JJ (en), NaN leer', () => {
+    const at = Date.UTC(2026, 2, 2, 12);
+    const de = scatterToChart({ xAxis: 'date', xDateFormat: 'short', series: [] }, { i18n: { getLanguage: () => 'de' } });
+    assertEqual(de.xTickFormat(at), '02.03.26');
+    assertEqual(de.xTickFormat(NaN), '');
+    const en = scatterToChart({ xAxis: 'date', xDateFormat: 'short', series: [] }, { i18n: { getLanguage: () => 'en' } });
+    assertEqual(en.xTickFormat(at), '02/03/26');
+    assertTrue(!('xDateFormat' in de) && !('xAxis' in de));
+  });
+  test('xDateFormat iso bzw. ohne Dienste: ISO wie ohne den Schlüssel', () => {
+    assertEqual(scatterToChart({ xAxis: 'date', xDateFormat: 'iso', series: [] }, { i18n: { getLanguage: () => 'de' } }).xTickFormat(Date.UTC(2026, 0, 5)), '2026-01-05');
+    assertEqual(scatterToChart({ xAxis: 'date', xDateFormat: 'short', series: [] }).xTickFormat(Date.UTC(2026, 0, 5, 12)), '05/01/26');
+  });
+  test('Widget reicht die Dienste an toChart: Achse nach Sprache', async () => {
+    const cm = fakeManager();
+    const cfg = { xAxis: 'date', xDateFormat: 'short', series: [{ name: 'A', x: [Date.UTC(2026, 2, 2, 12)], y: [1] }] };
+    await host('<div x-widget="scatter-chart" x-widget-config="scatter"></div>', { cm, extra: { scatter: cfg } });
+    await flush();
+    const chart = cm.log.created[0];
+    assertEqual(chart.config.xTickFormat(Date.UTC(2026, 2, 2, 12)), '02.03.26');
+  });
   test('y mit null wird NaN, Eingabe bleibt unverändert', () => {
     const cfg = { series: [{ name: 'R', x: [1, 2, 3], y: [1, null, 3] }] };
     const c = scatterToChart(cfg);

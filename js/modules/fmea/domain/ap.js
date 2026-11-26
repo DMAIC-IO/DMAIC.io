@@ -1,5 +1,5 @@
 /**
- * D.Mike — FMEA Action Priority (fmea-ap.js)
+ * D.Mike — FMEA Action Priority (domain/ap.js)
  *
  * AIAG & VDA FMEA Handbook (2019) Action Priority table for DFMEA and PFMEA.
  * Pure lookup: no DOM, no i18n. Verified cell by cell against
@@ -54,7 +54,7 @@ function bandIndex(bands, v) {
 export function actionPriority(s, o, d) {
   const S = toRating(s), O = toRating(o), D = toRating(d);
   if (S == null || O == null || D == null) return null;
-  return AP_TABLE[bandIndex(S_BANDS, S)][bandIndex(O_BANDS, O)][bandIndex(D_BANDS, D)];
+  return /** @type {'H'|'M'|'L'} */ (AP_TABLE[bandIndex(S_BANDS, S)][bandIndex(O_BANDS, O)][bandIndex(D_BANDS, D)]);
 }
 
 /**

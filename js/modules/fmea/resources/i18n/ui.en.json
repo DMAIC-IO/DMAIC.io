@@ -1,0 +1,395 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "FMEA",
+  "description": "Failure Mode and Effects Analysis with RPN calculation",
+  "whenToUse": "When a process or a design should be surveyed systematically for what can go wrong, what effect it has, how often it occurs and how reliably it is detected — rated by action priority (AIAG-VDA) or risk priority number, with actions and their effect on the rating; not for collecting possible causes without rating them, that is what Ishikawa and the cause-and-effect matrix are for.",
+  "abbrS": "S",
+  "abbrO": "O",
+  "abbrD": "D",
+  "abbrDeltaS": "ΔS",
+  "abbrDeltaO": "ΔO",
+  "abbrDeltaD": "ΔD",
+  "addRisk": "Add Risk",
+  "scales": "Scales",
+  "scalesShow": "Show scales",
+  "scalesHide": "Hide scales",
+  "methodLabel": "Rating",
+  "methodAp": "AP (AIAG-VDA)",
+  "methodRpn": "RPN (classic)",
+  "fmeaTypeLabel": "FMEA type",
+  "fmeaTypeProcess": "Process",
+  "fmeaTypeDesign": "Design",
+  "sortByPriority": "Sort by priority",
+  "sortedByAP": "Sorted by AP (H → L, then S, O, D)",
+  "statApHigh": "AP high (H)",
+  "statApMedium": "AP medium (M)",
+  "statApLow": "AP low (L)",
+  "statRated": "Rated",
+  "apScaleCriterion": "Criterion",
+  "apMatrixTitle": "Action Priority (AIAG-VDA)",
+  "apSourceNote": "Scale texts: our own wording based on the AIAG-VDA FMEA Handbook (2019). AP assignment per the handbook's table. All texts can be edited.",
+  "ap": {
+    "process": {
+      "sev": {
+        "1": {
+          "meaning": "No effect",
+          "criterion": "No discernible consequence."
+        },
+        "2": {
+          "meaning": "Barely noticeable",
+          "criterion": "Only attentive customers notice; minor process disruption."
+        },
+        "3": {
+          "meaning": "Noticeable",
+          "criterion": "Bothers some customers; minor rework."
+        },
+        "4": {
+          "meaning": "Clearly noticeable",
+          "criterion": "Appearance or noise bothers most customers; in-line rework."
+        },
+        "5": {
+          "meaning": "Secondary function degraded",
+          "criterion": "Secondary function reduced; rework of part of the lot."
+        },
+        "6": {
+          "meaning": "Secondary function lost",
+          "criterion": "Comfort or secondary function fails; off-line rework."
+        },
+        "7": {
+          "meaning": "Primary function degraded",
+          "criterion": "Primary function reduced; sorting and partial scrap."
+        },
+        "8": {
+          "meaning": "Primary function lost",
+          "criterion": "Product without its primary function; full scrap or line stop at the customer."
+        },
+        "9": {
+          "meaning": "Regulatory breach",
+          "criterion": "Legal or regulatory requirements are not met."
+        },
+        "10": {
+          "meaning": "Safety at risk",
+          "criterion": "Danger to the health or safety of workers or end users."
+        }
+      },
+      "occ": {
+        "1": {
+          "meaning": "Extremely low",
+          "criterion": "Failure prevented by design of the process, e.g. poka-yoke."
+        },
+        "2": {
+          "meaning": "Very low",
+          "criterion": "Prevention per proven standard; isolated cases only."
+        },
+        "3": {
+          "meaning": "Low",
+          "criterion": "Proven prevention; the failure is very rare."
+        },
+        "4": {
+          "meaning": "Moderate to low",
+          "criterion": "Prevention effective and proven; the failure is rare."
+        },
+        "5": {
+          "meaning": "Moderate",
+          "criterion": "Prevention effective; the failure occurs sporadically."
+        },
+        "6": {
+          "meaning": "Moderate",
+          "criterion": "Prevention partly effective; the failure occurs occasionally."
+        },
+        "7": {
+          "meaning": "High",
+          "criterion": "Prevention of limited effect; the failure recurs."
+        },
+        "8": {
+          "meaning": "High",
+          "criterion": "Prevention of little effect; the failure occurs often."
+        },
+        "9": {
+          "meaning": "Very high",
+          "criterion": "Prevention barely effective; the failure occurs very often."
+        },
+        "10": {
+          "meaning": "Extremely high",
+          "criterion": "No prevention control; the failure is practically certain."
+        }
+      },
+      "det": {
+        "1": {
+          "meaning": "Certain",
+          "criterion": "The failure cannot occur or is always detected."
+        },
+        "2": {
+          "meaning": "Very high",
+          "criterion": "The cause is detected automatically; no defective part is made."
+        },
+        "3": {
+          "meaning": "High",
+          "criterion": "Automatic inspection in the process step; the defective part is rejected."
+        },
+        "4": {
+          "meaning": "High",
+          "criterion": "Automatic inspection downstream; the defective part is rejected."
+        },
+        "5": {
+          "meaning": "Moderate",
+          "criterion": "Proven manual or machine inspection after the process step."
+        },
+        "6": {
+          "meaning": "Moderate",
+          "criterion": "Manual inspection with aids, e.g. a gauge."
+        },
+        "7": {
+          "meaning": "Low",
+          "criterion": "Manual visual or audible inspection, of limited reliability."
+        },
+        "8": {
+          "meaning": "Low",
+          "criterion": "Effectiveness of the inspection method not proven."
+        },
+        "9": {
+          "meaning": "Very low",
+          "criterion": "Inspection barely suitable; random sampling."
+        },
+        "10": {
+          "meaning": "No detection",
+          "criterion": "No inspection in place or inspection unsuitable."
+        }
+      }
+    },
+    "design": {
+      "sev": {
+        "1": {
+          "meaning": "No effect",
+          "criterion": "No perceptible consequence."
+        },
+        "2": {
+          "meaning": "Slightly annoying",
+          "criterion": "Only a few attentive customers notice."
+        },
+        "3": {
+          "meaning": "Annoying",
+          "criterion": "Appearance, noise or feel bothers many customers."
+        },
+        "4": {
+          "meaning": "Very annoying",
+          "criterion": "Appearance, noise or feel bothers most customers."
+        },
+        "5": {
+          "meaning": "Secondary function degraded",
+          "criterion": "Product usable, comfort function reduced."
+        },
+        "6": {
+          "meaning": "Secondary function lost",
+          "criterion": "Product usable, comfort function fails."
+        },
+        "7": {
+          "meaning": "Primary function degraded",
+          "criterion": "Product usable, performance clearly reduced."
+        },
+        "8": {
+          "meaning": "Primary function lost",
+          "criterion": "Product unusable for its intended purpose."
+        },
+        "9": {
+          "meaning": "Regulatory breach",
+          "criterion": "Product does not meet legal or regulatory requirements."
+        },
+        "10": {
+          "meaning": "Safety at risk",
+          "criterion": "Safe operation impaired; danger to people."
+        }
+      },
+      "occ": {
+        "1": {
+          "meaning": "Extremely low",
+          "criterion": "Failure excluded by the design."
+        },
+        "2": {
+          "meaning": "Very low",
+          "criterion": "Proven design; prevention demonstrably effective."
+        },
+        "3": {
+          "meaning": "Low",
+          "criterion": "Minor change to a proven design; prevention tested."
+        },
+        "4": {
+          "meaning": "Moderate to low",
+          "criterion": "Nearly identical design; proven prevention."
+        },
+        "5": {
+          "meaning": "Moderate",
+          "criterion": "Carry-over with changes; prevention partly proven."
+        },
+        "6": {
+          "meaning": "Moderate",
+          "criterion": "Similar design with known problems."
+        },
+        "7": {
+          "meaning": "High",
+          "criterion": "Known design in a new application."
+        },
+        "8": {
+          "meaning": "High",
+          "criterion": "New design based on similar technology; little experience."
+        },
+        "9": {
+          "meaning": "Very high",
+          "criterion": "First use of a new design; prevention not aimed at the requirement."
+        },
+        "10": {
+          "meaning": "Extremely high",
+          "criterion": "New technology without experience; no prevention."
+        }
+      },
+      "det": {
+        "1": {
+          "meaning": "Certain",
+          "criterion": "Failure excluded or always detected by the method."
+        },
+        "2": {
+          "meaning": "Very high",
+          "criterion": "Proven method early in development; test to failure or degradation."
+        },
+        "3": {
+          "meaning": "High",
+          "criterion": "Proven method early in development; pass/fail test."
+        },
+        "4": {
+          "meaning": "High",
+          "criterion": "Proven method before production release; degradation test."
+        },
+        "5": {
+          "meaning": "Moderate",
+          "criterion": "Proven method before production release; test to failure."
+        },
+        "6": {
+          "meaning": "Moderate",
+          "criterion": "Proven method before production release; pass/fail test."
+        },
+        "7": {
+          "meaning": "Low",
+          "criterion": "Proven method; test only after production release."
+        },
+        "8": {
+          "meaning": "Low",
+          "criterion": "New, unproven test method."
+        },
+        "9": {
+          "meaning": "Very low",
+          "criterion": "Test method not designed for this failure."
+        },
+        "10": {
+          "meaning": "No detection",
+          "criterion": "No test or inspection method in place."
+        }
+      }
+    }
+  },
+  "sortedByRPN": "Sorted by RPN (descending)",
+  "stepPlaceholder": "Enter process step / component...",
+  "failureMode": "Potential Failure Mode",
+  "failureModePlaceholder": "What could go wrong?",
+  "effect": "Potential Effect(s)",
+  "effectPlaceholder": "What happens if the failure occurs?",
+  "cause": "Potential Cause(s)",
+  "causePlaceholder": "Why could the failure occur?",
+  "currentControls": "Detection control",
+  "controlPlaceholder": "How is the failure or its cause detected?",
+  "preventionControl": "Prevention control",
+  "preventionPlaceholder": "What already prevents the cause?",
+  "specialChar": "Special characteristic",
+  "specialCharHint": "S ≥ 9 – check special characteristic?",
+  "unjustifiedBadge": "H without action",
+  "justification": "Justification (no action)",
+  "justificationPlaceholder": "Why is no action taken for AP H?",
+  "severeBadge": "S ≥ 9",
+  "statUnjustified": "H without action/justification",
+  "statHighSeverity": "S ≥ 9",
+  "rating": "Rating",
+  "tipS": "Severity – How severe is the effect of the failure on the customer? (1 = none, 10 = critical)",
+  "tipO": "Occurrence – How likely is it that the failure occurs? (1 = unlikely, 10 = very frequent)",
+  "tipD": "Detection – How likely is it that the failure is detected before delivery? (1 = certain, 10 = almost impossible)",
+  "actionsSection": "Actions & Impact Projection",
+  "action": "Action",
+  "actionPlaceholder": "Describe action...",
+  "responsible": "Resp.",
+  "actionResp": "Name",
+  "dueDate": "Due Date",
+  "done": "Done",
+  "addAction": "Add Action",
+  "projectedLabel": "Projection after implementing all actions:",
+  "target": "Target",
+  "collapseToggle": "Collapse / Expand",
+  "step": "Process Step",
+  "statTotal": "Risks",
+  "statCritical": "Critical (>200)",
+  "statHigh": "High (125-200)",
+  "statMedium": "Medium (50-124)",
+  "statLow": "Low (<50)",
+  "statAvg": "Avg RPN",
+  "statMax": "Max RPN",
+  "scaleSeverity": "Severity (S)",
+  "scaleOccurrence": "Occurrence (O)",
+  "scaleDetection": "Detection (D)",
+  "scaleValue": "Value",
+  "scaleMeaning": "Meaning",
+  "scaleDescription": "Description",
+  "scaleProbability": "Probability",
+  "scaleRate": "Failure Rate",
+  "scaleDetect": "Detection",
+  "sevNone": "None",
+  "sevNoneDesc": "No effect",
+  "sevLow": "Low",
+  "sevLowDesc": "Minor annoyance, barely noticeable",
+  "sevMod": "Moderate",
+  "sevModDesc": "Customer dissatisfied, performance degradation",
+  "sevHigh": "High",
+  "sevHighDesc": "Customer strongly affected, function severely limited",
+  "sevVHigh": "Very High",
+  "sevVHighDesc": "Safety hazard / regulatory violation",
+  "occUnlikely": "Unlikely",
+  "occLow": "Low",
+  "occMod": "Moderate",
+  "occHigh": "High",
+  "occVHigh": "Very High",
+  "occUnlikelyRate": "< 1 / 1.500.000",
+  "occLowRate": "1 / 150.000 – 15.000",
+  "occModRate": "1 / 2.000 – 80",
+  "occHighRate": "1 / 20 – 8",
+  "occVHighRate": "≥ 1 / 3",
+  "detCertain": "Almost Certain",
+  "detCertainDesc": "Failure is almost always detected",
+  "detHigh": "High",
+  "detHighDesc": "High probability of detection",
+  "detMod": "Moderate",
+  "detModDesc": "Moderate detection probability",
+  "detLow": "Low",
+  "detLowDesc": "Low detection probability",
+  "detVLow": "Very Low",
+  "detVLowDesc": "Failure is almost never detected",
+  "rpnCategories": "RPN Risk Categories",
+  "catLow": "Low",
+  "catMedium": "Medium",
+  "catHigh": "High",
+  "catCritical": "Critical",
+  "resetScales": "Reset Scales",
+  "burndown": "Burndown",
+  "burndownTitle": "Risk Burndown",
+  "burndownPlan": "Plan",
+  "burndownActual": "Actual",
+  "burndownNoData": "No rated risks with dated actions available.",
+  "burndownHPlan": "H planned",
+  "burndownHActual": "H achieved",
+  "burndownHmPlan": "H+M planned",
+  "burndownHmActual": "H+M achieved",
+  "burndownRiskCount": "Number of risks",
+  "csvYes": "Yes",
+  "csvNo": "No",
+  "invariants": {
+    "riskIds": "Every risk has its own non-empty id.",
+    "actionIds": "Every action of a risk has its own non-empty id.",
+    "knownCollapsed": "Only an existing risk can be collapsed.",
+    "knownScaleKeys": "Custom scale texts exist only for the cells of the supplied scales."
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:fmea|FMEA}} (Failure Mode and Effects Analysis, dt. Fehlermöglichkeits- und Einflussanalyse) ist eine systematische Methode zur Identifikation und Bewertung potenzieller Fehler in Produkten oder Prozessen. Ziel ist, Risiken zu erkennen, bevor sie auftreten, und sie nach Priorität anzugehen — sie ist ein zentrales Werkzeug der Improve- und Control-Phase, sollte aber bereits in Define oder Analyze begonnen werden."
+        },
+        {
+          "type": "definition",
+          "term": "Funktion / Schritt",
+          "content": "Was soll der Prozess oder das Bauteil leisten? Jede Zeile beginnt mit der erwarteten Funktion oder dem Prozessschritt — aus dieser Sollvorstellung leiten sich die möglichen Abweichungen ab."
+        },
+        {
+          "type": "definition",
+          "term": "Fehlermöglichkeit (Failure Mode)",
+          "content": "Die {{term:fehlermoeglichkeit|Fehlermöglichkeit}} ist die mögliche Art der Abweichung von der Funktion — z. B. „nicht eingerastet“, „falsch dosiert“, „zu spät geliefert“. Pro Funktion können mehrere Fehlermöglichkeiten existieren."
+        },
+        {
+          "type": "definition",
+          "term": "Folge (Effect)",
+          "content": "Was passiert, wenn der Fehler eintritt — beim nächsten Prozessschritt, am Endprodukt, beim Kunden? Eine Fehlermöglichkeit kann mehrere Folgen unterschiedlicher Schwere haben."
+        },
+        {
+          "type": "definition",
+          "term": "Ursache (Cause)",
+          "content": "Was könnte den Fehler auslösen? Mehrere Ursachen pro Fehlermöglichkeit sind die Regel — jede wird einzeln bewertet, weil sich Auftrittswahrscheinlichkeit und Maßnahmen unterscheiden."
+        },
+        {
+          "type": "definition",
+          "term": "B (Bedeutung) / Severity",
+          "content": "{{term:bedeutung|Bedeutung}}: Wie schwer wäre die Folge für den Kunden? Skala 1–10: 1 = unbedeutend, 10 = sicherheitskritisch. Wird durch das Produkt oder die Anforderung definiert, nicht durch den Prozess."
+        },
+        {
+          "type": "definition",
+          "term": "A (Auftreten) / Occurrence",
+          "content": "{{term:auftreten|Auftreten}}: Wie häufig tritt die Ursache erfahrungsgemäß auf? Skala 1–10: 1 = sehr selten, 10 = quasi permanent. Idealerweise mit Daten belegt, sonst geschätzt."
+        },
+        {
+          "type": "definition",
+          "term": "E (Entdeckung) / Detection",
+          "content": "{{term:entdeckung|Entdeckung}}: Wie wahrscheinlich wird der Fehler vor dem Kunden entdeckt? Skala 1–10: 1 = wird sicher gefunden, 10 = wird garantiert übersehen. Achtung: hohe Zahl ist schlecht (umgekehrt zur Intuition)."
+        },
+        {
+          "type": "definition",
+          "term": "RPZ (Risikoprioritätszahl) / RPN",
+          "content": "{{term:rpz|RPZ}} = B × A × E. Werte zwischen 1 und 1000. Die RPZ ist eine grobe Priorisierung — keine absolute Risikomessung. Hohe Bedeutung (B ≥ 9) wird oft unabhängig vom RPZ-Wert bearbeitet."
+        },
+        {
+          "type": "definition",
+          "term": "AP (Aufgabenpriorität / Action Priority)",
+          "content": "Nach dem AIAG-VDA-FMEA-Handbuch (2019) ersetzt die AP die RPZ als Priorisierung. Statt B × A × E zu multiplizieren, liest sie die Kombination aus einer Tabelle ab und liefert H (hoch), M (mittel) oder L (niedrig). Die Bedeutung B wiegt dabei am stärksten: B 9–10 ist ab A 6 immer H, auch wenn die RPZ niedrig wäre. H verlangt eine Maßnahme oder eine begründete Entscheidung dagegen, M sollte bearbeitet werden, L kann bearbeitet werden."
+        },
+        {
+          "type": "definition",
+          "term": "Vermeidungs- und Entdeckungsmaßnahme",
+          "content": "Die Vermeidungsmaßnahme verhindert, dass die Ursache auftritt — sie fließt in die Bewertung A ein. Die Entdeckungsmaßnahme findet den Fehler oder die Ursache, bevor er den Kunden erreicht — sie fließt in E ein. Beide werden getrennt erfasst; in älteren FMEAs steht der bisherige Eintrag „Aktuelle Kontrollmaßnahmen“ im Feld Entdeckungsmaßnahme. Der CSV-Export führt ab Version 1.3.0 beide Spalten sowie besonderes Merkmal und Begründung direkt nach der Ursache."
+        },
+        {
+          "type": "definition",
+          "term": "Besonderes Merkmal (CC/SC)",
+          "content": "Ein {{term:besonderes-merkmal|besonderes Merkmal}} kennzeichnet Produkt- oder Prozessmerkmale mit Sicherheits- oder Gesetzesbezug (CC, critical characteristic) bzw. mit erheblichem Einfluss auf Passform, Funktion oder Weiterverarbeitung (SC, significant characteristic). Ab S ≥ 9 schlägt das Modul vor, das Merkmal zu prüfen; die Kennzeichnung erscheint als Badge auf der Karte und in der Dashboard-Kachel."
+        },
+        {
+          "type": "definition",
+          "term": "Begründung bei AP H",
+          "content": "Hat ein Risiko die Aufgabenpriorität H, aber keine Maßnahme mit Text, verlangt AIAG-VDA eine dokumentierte Begründung. Das Modul zeigt dann den Hinweis „H ohne Maßnahme“ und das Feld Begründung; die Statistik zählt solche Risiken. Gesperrt wird nichts. Eine eingetragene Begründung bleibt sichtbar, auch unterhalb von H und bei der Bewertung nach RPZ."
+        },
+        {
+          "type": "definition",
+          "term": "S ≥ 9 im RPZ-Modus",
+          "content": "Eine niedrige RPZ kann ein sicherheitsrelevantes Risiko verdecken. Im RPZ-Modus erhält deshalb jedes Risiko mit S 9 oder 10 eine eigene Markierung und wird in einer eigenen Statistik-Kachel gezählt; Kategorie und Sortierung bleiben RPZ-basiert."
+        },
+        {
+          "type": "paragraph",
+          "content": "Oben im Modul wählst du die Bewertung: AP (Vorgabe für neue FMEAs) oder RPN (klassisch). Beim Umschalten bleiben alle Eingaben erhalten, nur die Auswertung ändert sich. Im AP-Modus bestimmt der FMEA-Typ (Prozess oder Design), welche Bewertungsskalen die Skalenreferenz zeigt. Welche Methode und welche FMEA-Art eine neue FMEA anfangs hat, legst du in den Einstellungen unter „Statistik“ → „FMEA“ fest."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die FMEA ist ein lebendes Dokument: Sie wird bei jeder relevanten Änderung aktualisiert. Eine einmal abgeheftete FMEA verliert ihren Wert."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Umfang abgrenzen — welche Funktion, welcher Prozessabschnitt wird analysiert?",
+            "Funktionen bzw. Schritte auflisten — am besten an der {{term:process-map|Prozesskarte}} entlang.",
+            "Pro Schritt mögliche Fehler brainstormen — im Team, mit Experten und Praktikern.",
+            "Pro Fehler die Folgen und Ursachen beschreiben.",
+            "B, A, E gemeinsam vergeben — ein einheitlicher Bewertungsrahmen ist Pflicht.",
+            "AP (oder RPZ) ermitteln und priorisieren — H zuerst.",
+            "Maßnahmen ableiten — Ursache reduzieren (A senken) oder Entdeckung verbessern (E senken). B lässt sich nur durch Designänderung senken.",
+            "Nach Umsetzung Bewertung erneuern und prüfen, ob die Maßnahme gewirkt hat."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Allein gemacht",
+          "content": "Eine FMEA von einer Person ist nur ein Brainstorming dieser Person. Im interdisziplinären Team — Konstruktion, Fertigung, Qualität, Service — werden weit mehr Fehler sichtbar."
+        },
+        {
+          "type": "definition",
+          "term": "Inkonsistente Skalen",
+          "content": "Wenn jede Bewertung gegen ein anderes mentales Modell von „Bedeutung 7“ erfolgt, sind RPZ-Werte unvergleichbar. Vor Beginn die Skala mit Beispielen kalibrieren."
+        },
+        {
+          "type": "definition",
+          "term": "RPZ-Schwellwert als einzige Regel",
+          "content": "„Alles über 100 wird bearbeitet“ übersieht den Fall B = 10, A = 1, E = 1 — RPZ 10, aber sicherheitskritisch. Bei hoher Bedeutung immer Maßnahme prüfen, unabhängig vom RPZ."
+        },
+        {
+          "type": "definition",
+          "term": "Maßnahmen ohne Wirkungsprüfung",
+          "content": "Eine Maßnahme „im Plan“ ist nicht gleich einer wirksamen Maßnahme. Nach Umsetzung B/A/E neu bewerten — wenn sich nichts ändert, wirkt die Maßnahme nicht."
+        },
+        {
+          "type": "definition",
+          "term": "Symptome bewerten statt Ursachen",
+          "content": "Wer „Bauteil bricht“ als Ursache einträgt, hat keine FMEA gemacht, sondern eine Symptomliste. Ursache ist „falsche Materialspezifikation“ oder „Lastannahme zu niedrig“."
+        },
+        {
+          "type": "definition",
+          "term": "FMEA ist Pflichtübung",
+          "content": "Wenn die FMEA nur erstellt wird, um eine Audit-Anforderung zu erfüllen, wird sie nicht gelebt. Der Wert entsteht durch echte Diskussion und ableitbare Maßnahmen."
+        },
+        {
+          "type": "definition",
+          "term": "Veraltete FMEA",
+          "content": "Prozesse und Produkte ändern sich. Eine FMEA, die seit drei Jahren nicht angefasst wurde, beschreibt einen Zustand, den es vielleicht nicht mehr gibt."
+        }
+      ]
+    }
+  }
+}

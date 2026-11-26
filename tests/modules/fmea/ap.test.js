@@ -1,7 +1,7 @@
-import { suite, test, assertEqual } from '../test-utils.js';
-import { actionPriority, AP_RANK, AP_CATEGORY, bandLabel } from '../../js/modules/fmea/fmea-ap.js';
+import { suite, test, assertEqual } from '../../test-utils.js';
+import { actionPriority, AP_RANK, AP_CATEGORY, bandLabel } from '../../../js/modules/fmea/domain/ap.js';
 
-const fixture = await (await fetch(new URL('../fixtures/fmea/fmea-ap-table.fixtures.json', import.meta.url))).json();
+const fixture = await (await fetch(new URL('../../fixtures/fmea/fmea-ap-table.fixtures.json', import.meta.url))).json();
 
 /** Expand a band label like '7-10' or '1' into its integer ratings. */
 function expand(label) {

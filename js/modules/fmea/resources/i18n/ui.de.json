@@ -1,0 +1,395 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "FMEA",
+  "description": "Fehlermöglichkeits- und Einflussanalyse mit RPN-Berechnung",
+  "whenToUse": "Wenn für einen Prozess oder eine Konstruktion systematisch erhoben werden soll, was fehlgehen kann, welche Folge das hat, wie oft es auftritt und wie sicher es entdeckt wird — bewertet nach Aufgabenpriorität (AIAG-VDA) oder Risikoprioritätszahl, mit Maßnahmen und deren Wirkung auf die Bewertung; nicht für das Sammeln möglicher Ursachen ohne Bewertung, dafür sind Ishikawa und die Ursache-Wirkungs-Matrix da.",
+  "abbrS": "S",
+  "abbrO": "O",
+  "abbrD": "D",
+  "abbrDeltaS": "ΔS",
+  "abbrDeltaO": "ΔO",
+  "abbrDeltaD": "ΔD",
+  "addRisk": "Risiko hinzufügen",
+  "scales": "Skalen",
+  "scalesShow": "Skalen anzeigen",
+  "scalesHide": "Skalen ausblenden",
+  "methodLabel": "Bewertung",
+  "methodAp": "AP (AIAG-VDA)",
+  "methodRpn": "RPN (klassisch)",
+  "fmeaTypeLabel": "FMEA-Typ",
+  "fmeaTypeProcess": "Prozess",
+  "fmeaTypeDesign": "Design",
+  "sortByPriority": "Nach Priorität sortieren",
+  "sortedByAP": "Nach AP sortiert (H → L, dann S, O, D)",
+  "statApHigh": "AP hoch (H)",
+  "statApMedium": "AP mittel (M)",
+  "statApLow": "AP niedrig (L)",
+  "statRated": "Bewertet",
+  "apScaleCriterion": "Kriterium",
+  "apMatrixTitle": "Action Priority (AIAG-VDA)",
+  "apSourceNote": "Skalentexte: eigene Formulierung in Anlehnung an das AIAG-VDA FMEA-Handbuch (2019). AP-Zuordnung nach der dortigen Tabelle. Alle Texte lassen sich anpassen.",
+  "ap": {
+    "process": {
+      "sev": {
+        "1": {
+          "meaning": "Keine Auswirkung",
+          "criterion": "Keine erkennbare Folge."
+        },
+        "2": {
+          "meaning": "Kaum wahrnehmbar",
+          "criterion": "Nur aufmerksamen Kunden auffällig; geringe Prozessstörung."
+        },
+        "3": {
+          "meaning": "Wahrnehmbar",
+          "criterion": "Stört einen Teil der Kunden; geringe Nacharbeit."
+        },
+        "4": {
+          "meaning": "Deutlich wahrnehmbar",
+          "criterion": "Aussehen oder Geräusch stört die meisten Kunden; Nacharbeit in der Linie."
+        },
+        "5": {
+          "meaning": "Nebenfunktion eingeschränkt",
+          "criterion": "Nebenfunktion gemindert; Nacharbeit eines Teils der Menge."
+        },
+        "6": {
+          "meaning": "Nebenfunktion verloren",
+          "criterion": "Komfort- oder Nebenfunktion fällt aus; Nacharbeit außerhalb der Linie."
+        },
+        "7": {
+          "meaning": "Hauptfunktion eingeschränkt",
+          "criterion": "Hauptfunktion gemindert; Aussortieren und teilweiser Ausschuss."
+        },
+        "8": {
+          "meaning": "Hauptfunktion verloren",
+          "criterion": "Produkt ohne Hauptfunktion; vollständiger Ausschuss oder Stillstand beim Kunden."
+        },
+        "9": {
+          "meaning": "Gesetzesverstoß",
+          "criterion": "Gesetzliche oder behördliche Anforderungen werden nicht erfüllt."
+        },
+        "10": {
+          "meaning": "Sicherheit gefährdet",
+          "criterion": "Gefahr für Gesundheit oder Sicherheit von Mitarbeitenden oder Endnutzern."
+        }
+      },
+      "occ": {
+        "1": {
+          "meaning": "Extrem gering",
+          "criterion": "Fehler durch Vermeidung ausgeschlossen, z. B. Poka-Yoke."
+        },
+        "2": {
+          "meaning": "Sehr gering",
+          "criterion": "Vermeidung nach bewährtem Standard; nur Einzelfälle."
+        },
+        "3": {
+          "meaning": "Gering",
+          "criterion": "Bewährte Vermeidung; Fehler tritt sehr selten auf."
+        },
+        "4": {
+          "meaning": "Mittel bis gering",
+          "criterion": "Vermeidung wirksam und erprobt; Fehler tritt selten auf."
+        },
+        "5": {
+          "meaning": "Mittel",
+          "criterion": "Vermeidung wirksam; Fehler tritt vereinzelt auf."
+        },
+        "6": {
+          "meaning": "Mittel",
+          "criterion": "Vermeidung teilweise wirksam; Fehler tritt gelegentlich auf."
+        },
+        "7": {
+          "meaning": "Hoch",
+          "criterion": "Vermeidung eingeschränkt wirksam; Fehler tritt wiederholt auf."
+        },
+        "8": {
+          "meaning": "Hoch",
+          "criterion": "Vermeidung wenig wirksam; Fehler tritt häufig auf."
+        },
+        "9": {
+          "meaning": "Sehr hoch",
+          "criterion": "Vermeidung kaum wirksam; Fehler tritt sehr häufig auf."
+        },
+        "10": {
+          "meaning": "Extrem hoch",
+          "criterion": "Keine Vermeidungsmaßnahme; Fehler tritt praktisch sicher auf."
+        }
+      },
+      "det": {
+        "1": {
+          "meaning": "Sicher",
+          "criterion": "Fehler kann nicht entstehen oder wird immer erkannt."
+        },
+        "2": {
+          "meaning": "Sehr hoch",
+          "criterion": "Ursache wird automatisch erkannt; Fehlerteil entsteht nicht."
+        },
+        "3": {
+          "meaning": "Hoch",
+          "criterion": "Automatische Prüfung im Prozessschritt; Fehlerteil wird ausgeschleust."
+        },
+        "4": {
+          "meaning": "Hoch",
+          "criterion": "Automatische Prüfung im Folgeprozess; Fehlerteil wird ausgeschleust."
+        },
+        "5": {
+          "meaning": "Mittel",
+          "criterion": "Nachgewiesene manuelle oder maschinelle Prüfung nach dem Prozessschritt."
+        },
+        "6": {
+          "meaning": "Mittel",
+          "criterion": "Manuelle Prüfung mit Hilfsmitteln, z. B. Lehre."
+        },
+        "7": {
+          "meaning": "Gering",
+          "criterion": "Manuelle Sicht- oder Hörprüfung, eingeschränkt zuverlässig."
+        },
+        "8": {
+          "meaning": "Gering",
+          "criterion": "Wirksamkeit der Prüfmethode nicht nachgewiesen."
+        },
+        "9": {
+          "meaning": "Sehr gering",
+          "criterion": "Prüfung kaum geeignet; zufällige Stichproben."
+        },
+        "10": {
+          "meaning": "Keine Entdeckung",
+          "criterion": "Keine Prüfung vorhanden oder Prüfung ungeeignet."
+        }
+      }
+    },
+    "design": {
+      "sev": {
+        "1": {
+          "meaning": "Keine Auswirkung",
+          "criterion": "Keine wahrnehmbare Folge."
+        },
+        "2": {
+          "meaning": "Leicht störend",
+          "criterion": "Nur wenigen, aufmerksamen Kunden auffällig."
+        },
+        "3": {
+          "meaning": "Störend",
+          "criterion": "Aussehen, Geräusch oder Haptik stören viele Kunden."
+        },
+        "4": {
+          "meaning": "Sehr störend",
+          "criterion": "Aussehen, Geräusch oder Haptik stören die meisten Kunden."
+        },
+        "5": {
+          "meaning": "Nebenfunktion eingeschränkt",
+          "criterion": "Produkt nutzbar, Komfortfunktion gemindert."
+        },
+        "6": {
+          "meaning": "Nebenfunktion verloren",
+          "criterion": "Produkt nutzbar, Komfortfunktion fällt aus."
+        },
+        "7": {
+          "meaning": "Hauptfunktion eingeschränkt",
+          "criterion": "Produkt nutzbar, Leistung deutlich gemindert."
+        },
+        "8": {
+          "meaning": "Hauptfunktion verloren",
+          "criterion": "Produkt für den vorgesehenen Einsatz unbrauchbar."
+        },
+        "9": {
+          "meaning": "Gesetzesverstoß",
+          "criterion": "Produkt erfüllt gesetzliche oder behördliche Anforderungen nicht."
+        },
+        "10": {
+          "meaning": "Sicherheit gefährdet",
+          "criterion": "Sicherer Betrieb beeinträchtigt; Gefahr für Personen."
+        }
+      },
+      "occ": {
+        "1": {
+          "meaning": "Extrem gering",
+          "criterion": "Fehler durch die Konstruktion ausgeschlossen."
+        },
+        "2": {
+          "meaning": "Sehr gering",
+          "criterion": "Bewährte Konstruktion; Vermeidung nachweislich wirksam."
+        },
+        "3": {
+          "meaning": "Gering",
+          "criterion": "Geringe Änderung einer bewährten Konstruktion; Vermeidung erprobt."
+        },
+        "4": {
+          "meaning": "Mittel bis gering",
+          "criterion": "Nahezu identische Konstruktion; bewährte Vermeidung."
+        },
+        "5": {
+          "meaning": "Mittel",
+          "criterion": "Übernahme mit Änderungen; Vermeidung teilweise nachgewiesen."
+        },
+        "6": {
+          "meaning": "Mittel",
+          "criterion": "Ähnliche Konstruktion mit bekannten Problemen."
+        },
+        "7": {
+          "meaning": "Hoch",
+          "criterion": "Bekannte Konstruktion in neuem Einsatzfall."
+        },
+        "8": {
+          "meaning": "Hoch",
+          "criterion": "Neue Konstruktion auf Basis ähnlicher Technik; wenig Erfahrung."
+        },
+        "9": {
+          "meaning": "Sehr hoch",
+          "criterion": "Erster Einsatz einer neuen Konstruktion; Vermeidung nicht auf die Anforderung ausgelegt."
+        },
+        "10": {
+          "meaning": "Extrem hoch",
+          "criterion": "Neue Technologie ohne Erfahrung; keine Vermeidung."
+        }
+      },
+      "det": {
+        "1": {
+          "meaning": "Sicher",
+          "criterion": "Fehler ausgeschlossen oder wird durch die Methode immer erkannt."
+        },
+        "2": {
+          "meaning": "Sehr hoch",
+          "criterion": "Erprobtes Verfahren früh in der Entwicklung; Test bis Ausfall oder Degradation."
+        },
+        "3": {
+          "meaning": "Hoch",
+          "criterion": "Erprobtes Verfahren früh in der Entwicklung; Gut/Schlecht-Test."
+        },
+        "4": {
+          "meaning": "Hoch",
+          "criterion": "Erprobtes Verfahren vor der Serienfreigabe; Degradationstest."
+        },
+        "5": {
+          "meaning": "Mittel",
+          "criterion": "Erprobtes Verfahren vor der Serienfreigabe; Test bis zum Ausfall."
+        },
+        "6": {
+          "meaning": "Mittel",
+          "criterion": "Erprobtes Verfahren vor der Serienfreigabe; Gut/Schlecht-Test."
+        },
+        "7": {
+          "meaning": "Gering",
+          "criterion": "Erprobtes Verfahren; Test erst nach der Serienfreigabe."
+        },
+        "8": {
+          "meaning": "Gering",
+          "criterion": "Neues, unerprobtes Testverfahren."
+        },
+        "9": {
+          "meaning": "Sehr gering",
+          "criterion": "Prüfverfahren nicht auf diesen Fehler ausgelegt."
+        },
+        "10": {
+          "meaning": "Keine Entdeckung",
+          "criterion": "Kein Test- oder Prüfverfahren vorhanden."
+        }
+      }
+    }
+  },
+  "sortedByRPN": "Nach RPN sortiert (absteigend)",
+  "stepPlaceholder": "Prozessschritt / Bauteil eingeben...",
+  "failureMode": "Potenzieller Fehlermodus",
+  "failureModePlaceholder": "Was könnte fehlschlagen?",
+  "effect": "Potenzielle Fehlerfolge(n)",
+  "effectPlaceholder": "Was passiert, wenn der Fehler auftritt?",
+  "cause": "Potenzielle Fehlerursache(n)",
+  "causePlaceholder": "Warum könnte der Fehler auftreten?",
+  "currentControls": "Entdeckungsmaßnahme",
+  "controlPlaceholder": "Wie wird der Fehler bzw. die Ursache entdeckt?",
+  "preventionControl": "Vermeidungsmaßnahme",
+  "preventionPlaceholder": "Was verhindert die Ursache bereits?",
+  "specialChar": "Besonderes Merkmal",
+  "specialCharHint": "S ≥ 9 – besonderes Merkmal prüfen?",
+  "unjustifiedBadge": "H ohne Maßnahme",
+  "justification": "Begründung (keine Maßnahme)",
+  "justificationPlaceholder": "Warum wird bei AP H keine Maßnahme ergriffen?",
+  "severeBadge": "S ≥ 9",
+  "statUnjustified": "H ohne Maßnahme/Begründung",
+  "statHighSeverity": "S ≥ 9",
+  "rating": "Bewertung",
+  "tipS": "Severity – Wie schwerwiegend ist die Auswirkung des Fehlers auf den Kunden? (1 = keine, 10 = kritisch)",
+  "tipO": "Occurrence – Wie wahrscheinlich ist es, dass der Fehler auftritt? (1 = unwahrscheinlich, 10 = sehr häufig)",
+  "tipD": "Detection – Wie wahrscheinlich ist es, dass der Fehler vor Auslieferung entdeckt wird? (1 = sicher, 10 = fast unmöglich)",
+  "actionsSection": "Maßnahmen & Wirkungsprognose",
+  "action": "Maßnahme",
+  "actionPlaceholder": "Maßnahme beschreiben...",
+  "responsible": "Verantw.",
+  "actionResp": "Name",
+  "dueDate": "Zieldatum",
+  "done": "Umgesetzt",
+  "addAction": "Maßnahme hinzufügen",
+  "projectedLabel": "Prognose nach Umsetzung aller Maßnahmen:",
+  "target": "Ziel",
+  "collapseToggle": "Minimieren / Maximieren",
+  "step": "Prozessschritt",
+  "statTotal": "Risiken",
+  "statCritical": "Kritisch (>200)",
+  "statHigh": "Hoch (125-200)",
+  "statMedium": "Mittel (50-124)",
+  "statLow": "Niedrig (<50)",
+  "statAvg": "Ø RPN",
+  "statMax": "Max RPN",
+  "scaleSeverity": "Bedeutung / Severity (S)",
+  "scaleOccurrence": "Auftretenswahrscheinlichkeit / Occurrence (O)",
+  "scaleDetection": "Entdeckungswahrscheinlichkeit / Detection (D)",
+  "scaleValue": "Wert",
+  "scaleMeaning": "Bedeutung",
+  "scaleDescription": "Beschreibung",
+  "scaleProbability": "Wahrscheinlichkeit",
+  "scaleRate": "Fehlerrate",
+  "scaleDetect": "Entdeckung",
+  "sevNone": "Keine",
+  "sevNoneDesc": "Kein Effekt erkennbar",
+  "sevLow": "Gering",
+  "sevLowDesc": "Geringfügige Störung, Kunde bemerkt es kaum",
+  "sevMod": "Mäßig",
+  "sevModDesc": "Kunde unzufrieden, Leistungsabfall",
+  "sevHigh": "Hoch",
+  "sevHighDesc": "Kundenverärgerung, Funktion stark eingeschränkt",
+  "sevVHigh": "Sehr hoch",
+  "sevVHighDesc": "Sicherheitsgefährdung / Gesetzesverstoß",
+  "occUnlikely": "Unwahrscheinlich",
+  "occLow": "Gering",
+  "occMod": "Mäßig",
+  "occHigh": "Hoch",
+  "occVHigh": "Sehr hoch",
+  "occUnlikelyRate": "< 1 / 1.500.000",
+  "occLowRate": "1 / 150.000 – 15.000",
+  "occModRate": "1 / 2.000 – 80",
+  "occHighRate": "1 / 20 – 8",
+  "occVHighRate": "≥ 1 / 3",
+  "detCertain": "Fast sicher",
+  "detCertainDesc": "Fehler wird fast immer entdeckt",
+  "detHigh": "Hoch",
+  "detHighDesc": "Hohe Wahrscheinlichkeit der Entdeckung",
+  "detMod": "Mäßig",
+  "detModDesc": "Mäßige Entdeckungswahrscheinlichkeit",
+  "detLow": "Gering",
+  "detLowDesc": "Geringe Entdeckungswahrscheinlichkeit",
+  "detVLow": "Sehr gering",
+  "detVLowDesc": "Fehler wird fast nie entdeckt",
+  "rpnCategories": "RPN Risikokategorien",
+  "catLow": "Niedrig",
+  "catMedium": "Mittel",
+  "catHigh": "Hoch",
+  "catCritical": "Kritisch",
+  "resetScales": "Skalen zurücksetzen",
+  "burndown": "Burndown",
+  "burndownTitle": "Risiko-Burndown",
+  "burndownPlan": "Plan",
+  "burndownActual": "Ist",
+  "burndownNoData": "Keine bewerteten Risiken mit datierten Maßnahmen vorhanden.",
+  "burndownHPlan": "H geplant",
+  "burndownHActual": "H erreicht",
+  "burndownHmPlan": "H+M geplant",
+  "burndownHmActual": "H+M erreicht",
+  "burndownRiskCount": "Anzahl Risiken",
+  "csvYes": "Ja",
+  "csvNo": "Nein",
+  "invariants": {
+    "riskIds": "Jedes Risiko hat eine eigene, nichtleere Kennung.",
+    "actionIds": "Jede Maßnahme eines Risikos hat eine eigene, nichtleere Kennung.",
+    "knownCollapsed": "Zugeklappt sein kann nur ein vorhandenes Risiko.",
+    "knownScaleKeys": "Eigene Skalentexte gibt es nur für die Zellen der mitgelieferten Skalen."
+  }
+}
