@@ -17,20 +17,20 @@
      <div class="vct__empty"><p class="vct__empty-text" x-text="t('noVocs')"></p></div>
     </template>
     <template x-for="voc in model.vocs" :key="voc.id">
-     <div class="vct__card" :class="cardClass(voc)" :data-voc-id="voc.id"
-          x-command="setActiveVoc" :data-arg-voc-id="voc.id" data-confirm-delete="off" data-help-key="">
-      <div class="vct__card-text" x-text="voc.text"></div>
-      <div class="vct__card-meta">
-       <span class="vct__card-count" x-text="cardCountText(voc)"></span>
-       <div class="vct__card-actions">
-        <button class="btn btn--icon-sm vct__card-action-btn vct__edit-voc-btn" type="button" :data-voc-id="voc.id"
-                :title="t('common.edit')" :aria-label="t('editVoc')" @click.stop
-                x-dialog="vocForm" data-dialog-command="updateVoc" :data-arg-voc-id="voc.id" :data-dialog-title="t('editVoc')"
-                data-help-key=""><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
-        <button class="btn btn--icon-sm btn--danger vct__card-action-btn vct__del-voc-btn" type="button"
-                :data-voc-id="voc.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click.stop
-                x-command="removeVoc" :data-arg-voc-id="voc.id" data-confirm-delete data-help-key="">×</button>
-       </div>
+     <div class="vct__card" :class="cardClass(voc)" :data-voc-id="voc.id">
+      <button class="vct__card-select" type="button" :aria-pressed="cardPressed(voc)"
+              x-command="setActiveVoc" :data-arg-voc-id="voc.id" data-confirm-delete="off" data-help-key="">
+       <span class="vct__card-text" x-text="voc.text"></span>
+       <span class="vct__card-meta"><span class="vct__card-count" x-text="cardCountText(voc)"></span></span>
+      </button>
+      <div class="vct__card-actions">
+       <button class="btn btn--icon-sm vct__card-action-btn vct__edit-voc-btn" type="button" :data-voc-id="voc.id"
+               :title="t('common.edit')" :aria-label="t('editVoc')"
+               x-dialog="vocForm" data-dialog-command="updateVoc" :data-arg-voc-id="voc.id" :data-dialog-title="t('editVoc')"
+               data-help-key=""><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+       <button class="btn btn--icon-sm btn--danger vct__card-action-btn vct__del-voc-btn" type="button"
+               :data-voc-id="voc.id" :title="t('common.delete')" :aria-label="t('common.delete')"
+               x-command="removeVoc" :data-arg-voc-id="voc.id" data-confirm-delete data-help-key="">×</button>
       </div>
      </div>
     </template>
@@ -115,7 +115,7 @@
           <div class="vct__node vct__node--need" :class="dropClass(need.id)" data-drag-type="need"
                :data-voc-id="activeVoc.id" :data-need-id="need.id">
            <div class="vct__node-text">
-            <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0"
+            <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0" :aria-label="reorderLabel(t('badgeNeed'))"
                  x-text="t('badgeNeed')"></div>
             <div x-text="need.text"></div>
            </div>
@@ -146,7 +146,7 @@
               <div class="vct__node" :class="driverNodeClass(drv)" data-drag-type="driver"
                    :data-voc-id="activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id">
                <div class="vct__node-text">
-                <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0"
+                <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0" :aria-label="reorderLabel(driverBadge(drv.type))"
                      x-text="driverBadge(drv.type)"></div>
                 <div x-text="drv.text"></div>
                </div>
@@ -179,7 +179,7 @@
                       :data-voc-id="activeVoc.id" :data-need-id="need.id"
                       :data-drv-id="drv.id" :data-req-id="req.id">
                   <div class="vct__node-text">
-                   <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0"
+                   <div class="vct__node-badge vct__drag-handle" role="button" tabindex="0" :aria-label="reorderLabel(t('badgeReq'))"
                         x-text="t('badgeReq')"></div>
                    <div x-text="req.text"></div>
                    <template x-if="req.target">

@@ -7,8 +7,8 @@
    Inhalt zu bemessen — sonst wächst er unbegrenzt (siehe .rest-api__detail
    unten) und der Überlauf entweicht nach .workspace__module-area. Gleiches
    Muster wie `.sha__split` in stakeholder-analysis/resources/style.css und
-   das inline `style="flex:1;min-height:0"` bei voc-ctx-tree.html, hier als
-   CSS-Regel, weil rest-api.html keinen Inline-Stil auf dem Split trägt. */
+   `.vct__split` in voc-ctx-tree/resources/style.css, hier auf dem Split
+   über den Modulselektor, weil rest-api.html ihm keine eigene Klasse gibt. */
 .rest-api.module-container > .dmike-split {
   flex: 1;
   min-height: 0;
@@ -28,7 +28,7 @@
      die unbegrenzte Endpunktliste wächst stattdessen über .dmike-split /
      .module-container hinaus und erzeugt eine zweite, äußere Scrollleiste
      (Bug-022-Zwilling, siehe stakeholder-analysis/resources/style.css /
-     voc-ctx-tree.css).
+     voc-ctx-tree/resources/style.css).
      Auf die volle Höhe des Splits strecken, damit der eigene Scroll der
      Liste der einzige ist, der je greift. */
   align-self: stretch;

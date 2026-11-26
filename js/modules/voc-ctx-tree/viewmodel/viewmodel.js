@@ -26,6 +26,16 @@ import { toRows } from '../io/table.js';
 import { buildTreeDiagram } from '../io/diagram.js';
 import { UiState } from './state.js';
 
+/**
+ * Gleiche Farbe trotz anderer Schreibweise (`rgba(1,2,3,1)` = `rgba(1,2,3,1.00)`).
+ * @param {string} a @param {string} b @returns {boolean}
+ */
+function sameColor(a, b) {
+  const x = parseRGBA(a);
+  const y = parseRGBA(b);
+  return x.r === y.r && x.g === y.g && x.b === y.b && x.a === y.a;
+}
+
 /** @typedef {import('../domain/tree.js').Voc} Voc */
 /** @typedef {import('../domain/tree.js').Driver} Driver */
 /** @typedef {typeof COLOR_KEYS[number]} ColorKey */
@@ -81,6 +91,8 @@ export default createModule({
       // ─── Karten ───────────────────────────────────────────
       /** @param {Voc} voc @returns {string} hebt die angezeigte Karte hervor */
       cardClass(voc) { return voc.id === this.activeVoc?.id ? 'vct__card--active' : ''; },
+      /** @param {Voc} voc @returns {string} `aria-pressed` des Auswahlknopfs der Karte */
+      cardPressed(voc) { return String(voc.id === this.activeVoc?.id); },
       /** @param {Voc} voc @returns {string} „{n} Bedürfnisse · {m} Req.“ */
       cardCountText(voc) {
         return `${voc.needs.length} ${this.t('needCount')} · ${totalReqs(voc)} ${this.t('reqShort')}`;
@@ -97,6 +109,8 @@ export default createModule({
       measureLine(v) { return `${this.t('measurement')}: ${v}`; },
       /** @param {string} type @returns {string} Treiberart als Kürzel */
       driverBadge(type) { return type.toUpperCase(); },
+      /** @param {string} badge Abzeichentext @returns {string} Beschriftung des Ziehgriffs */
+      reorderLabel(badge) { return `${badge}: ${this.t('common.reorder')}`; },
       /** @param {Driver} drv @returns {string} Knotenklasse der Treiberart, beim Ziehen mit Zielmarke */
       driverNodeClass(drv) { return `vct__node--${drv.type} ${this.dropClass(drv.id)}`.trim(); },
       /** @param {Driver} drv @returns {string} Kindklasse der Treiberart */
@@ -170,7 +184,7 @@ export default createModule({
             const d = this.state.styleDraft;
             this.state.styleDraft = null;
             const s = this.model.styles;
-            if (d && d.value !== s.colors[d.key]) {
+            if (d && !sameColor(d.value, s.colors[d.key])) {
               setFields(this.model, { styles: { ...s, colors: { ...s.colors, [d.key]: d.value } } });
             }
           },

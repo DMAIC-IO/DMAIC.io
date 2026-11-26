@@ -283,7 +283,7 @@ suite('voc-ctx-tree: Viewmodel im Browser', () => {
       'actions.addRequirement.params.text', 'actions.addRequirement.params.target', 'actions.addRequirement.params.measure',
     ].map((k) => `modules.${ID}.${k}`).sort();
     assertDeepEqual(keys, want);
-    for (const el of h.qa('.vct__card, .vct__node-btn, .vct__card-action-btn, .vct__form, .vct__form textarea, .vct__form input, .vct__type-selector, .dmike-slider, .dmike-chart-ed-color-swatch')) {
+    for (const el of h.qa('.vct__card-select, .vct__node-btn, .vct__card-action-btn, .vct__form, .vct__form textarea, .vct__form input, .vct__type-selector, .dmike-slider, .dmike-chart-ed-color-swatch')) {
       assertEqual(el.getAttribute('data-help-key'), '', el.className);
     }
     unmountAll();
@@ -294,7 +294,7 @@ suite('voc-ctx-tree: Viewmodel im Browser', () => {
     assertDeepEqual(h.active(), ['v2']);
     assertEqual(h.root(), `${tr('badgeVoc')} „Zweite Stimme“ ${tr('source')}: Umfrage +`);
     assertDeepEqual(h.counts(), [`0 ${tr('needCount')} · 0 ${tr('reqShort')}`, `2 ${tr('needCount')} · 2 ${tr('reqShort')}`]);
-    await h.click(h.qa('.vct__card')[0]);
+    await h.click(h.qa('.vct__card-select')[0]);
     await until(() => h.active()[0] === 'v1');
     assertDeepEqual(h.commands, ['setActiveVoc']);
     assertEqual(h.q('.vct__node--need'), null);
@@ -304,6 +304,43 @@ suite('voc-ctx-tree: Viewmodel im Browser', () => {
     await h.cancel();
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Auswahl)');
     await until(() => h.active()[0] === 'v2');
+    unmountAll();
+  });
+
+  test('Karte per Tastatur: echter Knopf um Text und Zählzeile, Aktionsknöpfe daneben, Zustand in aria-pressed', async () => {
+    const h = await mount('vct-1', plain(SMALL));
+    const sel = h.qa('.vct__card-select');
+    assertEqual(sel.length, 2);
+    for (const el of sel) {
+      assertEqual(el.tagName, 'BUTTON');
+      assertEqual(el.getAttribute('type'), 'button');
+      assertTrue(el.querySelector('.vct__card-text') !== null && el.querySelector('.vct__card-count') !== null, 'Text und Zählzeile im Knopf');
+      assertEqual(el.querySelector('button'), null, 'kein Knopf im Knopf');
+    }
+    assertEqual(h.qa('.vct__card-select .vct__card-action-btn').length, 0);
+    assertEqual(h.qa('.vct__card > .vct__card-actions .vct__card-action-btn').length, 4);
+    assertDeepEqual(sel.map((el) => el.getAttribute('aria-pressed')), ['false', 'true']);
+    // Volle Breite der Karte, kein Browser-Rahmen oder -Hintergrund.
+    const card = /** @type {HTMLElement} */ (h.qa('.vct__card')[0]);
+    const cs = getComputedStyle(sel[0]);
+    assertEqual(Math.round(sel[0].getBoundingClientRect().width), Math.round(card.clientWidth));
+    assertEqual(cs.borderTopWidth, '0px');
+    assertEqual(cs.backgroundColor, 'rgba(0, 0, 0, 0)');
+    assertEqual(cs.textAlign, 'left');
+    sel[0].focus();
+    assertEqual(document.activeElement, sel[0]);
+    await h.click(sel[0]);
+    await until(() => h.active()[0] === 'v1');
+    assertDeepEqual(h.qa('.vct__card-select').map((el) => el.getAttribute('aria-pressed')), ['true', 'false']);
+    unmountAll();
+  });
+
+  test('Ziehgriff: Beschriftung aus Abzeichen und Verschieben', async () => {
+    const h = await mount('vct-1', plain(SMALL));
+    const label = (sel) => h.badge(sel).getAttribute('aria-label');
+    assertEqual(label('.vct__node--need[data-need-id="n1"]'), `${tr('badgeNeed')}: common.reorder`);
+    assertEqual(label('.vct__node[data-drv-id="d2"]'), 'CTC: common.reorder');
+    assertEqual(label('.vct__node--req[data-req-id="r1"]'), `${tr('badgeReq')}: common.reorder`);
     unmountAll();
   });
 
@@ -551,6 +588,24 @@ suite('voc-ctx-tree: Viewmodel im Browser', () => {
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Farbe)');
     await until(() => h.vm().model.styles.colors.need === COLORS.need);
     assertEqual(h.inst.historyCan('undo'), false);
+    unmountAll();
+  });
+
+  test('Farbwähler: zurück auf den Ausgangswert (andere Schreibweise) ist kein Schritt', async () => {
+    const h = await mount('vct-1', plain(SMALL));
+    const swatch = /** @type {HTMLElement} */ (h.q('.dmike-chart-ed-color-swatch[data-style-key="need"]'));
+    swatch.click();
+    await until(() => document.querySelector('.dmike-chart-ed-cp-overlay') !== null);
+    h.vm().state.styleDraft = { key: 'need', value: 'rgba(1,2,3,1.00)' };
+    await settle();
+    h.vm().state.styleDraft = { key: 'need', value: 'rgba(155,89,182,1.00)' };
+    await settle();
+    /** @type {HTMLElement} */ (document.querySelector('.dmike-chart-ed-cp-overlay')).click();
+    await until(() => h.vm().state.styleDraft === null);
+    await settle();
+    assertEqual(h.vm().model.styles.colors.need, COLORS.need);
+    assertEqual(h.inst.historyCan('undo'), false);
+    assertEqual(h.commands.length, 0);
     unmountAll();
   });
 

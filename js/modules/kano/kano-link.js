@@ -4,7 +4,7 @@
  * Die einzige Stelle im Kano-Modul, die den Aufbau des voc-ctx-tree-States
  * kennt. Reine Funktionen: kein DOM, kein i18n, keine Mutation der Eingaben.
  *
- * Baum-Form (voc-ctx-tree-model.js):
+ * Baum-Form (voc-ctx-tree/domain/model.js):
  *   Voc { id, text, source, needs: Need[] }
  *   Need { id, text, drivers: Driver[] }
  *   Driver { id, text, type, requirements: Req[] }
