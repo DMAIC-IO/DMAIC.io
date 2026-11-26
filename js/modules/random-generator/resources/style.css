@@ -11,6 +11,13 @@
   overflow: hidden;
 }
 
+/* Anker der Verteilungswahl an der ganzen Seitenleiste: der Kreis liegt
+   überlagernd am rechten Rand, ein Stück weiter innen, sonst ragt er über die
+   Leiste hinaus und macht den Arbeitsbereich waagerecht scrollbar. */
+.rg-sidebar.context-help-anchor > .context-help__btn {
+  margin-left: calc(-1em - var(--spacing-sm));
+}
+
 /* ── Distribution Sidebar ── */
 
 .rg-sidebar__section {
