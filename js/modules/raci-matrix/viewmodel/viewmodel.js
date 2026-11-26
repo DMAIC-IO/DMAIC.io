@@ -138,7 +138,8 @@ export default createModule({
       },
       /**
        * Den Entwurf übernehmen. Nichts zu tun, wenn der Eintrag fehlt, der
-       * Entwurf leer ist oder dem Namen gleicht; sonst ein Kommando.
+       * Entwurf leer ist oder dem (getrimmten) Namen gleicht — ein Altname mit
+       * Rand-Leerzeichen bleibt dann wörtlich stehen; sonst ein Kommando.
        */
       commitRename() {
         const r = this.state.renaming;
@@ -146,7 +147,7 @@ export default createModule({
         const entry = this.renameTarget;
         const draft = String(this.state.renameDraft ?? '').trim();
         this.state.renaming = null;
-        if (!entry || draft === '' || draft === entry.name) return;
+        if (!entry || draft === '' || draft === entry.name.trim()) return;
         try {
           if (r.kind === 'activity') this.model.renameActivity({ activityId: r.id, value: draft });
           else this.model.renameStakeholder({ stakeholderId: r.id, value: draft });

@@ -2,7 +2,7 @@
  * RACI-Matrix: das Viewmodel im Browser (viewmodel/viewmodel.js) mit dem
  * echten Modul und der echten Vorlage. Prüft: Leerzustand, Hilfe-Anker,
  * Anlegen über die Formulare, Rollenzyklus an der Zelle, Inline-Umbenennen
- * samt Fokus, Esc, leerem und gleichem Text, Schließen bei Änderungen von
+ * samt Fokus, Esc, leerem und gleichem Text (auch bei Altnamen mit Rand-Leerzeichen), Schließen bei Änderungen von
  * außen, Entfernen mit Rückfrage, Verschieben über das Kommando und Alt+Pfeil
  * am Griff, Warnsymbole nur mit Stakeholdern, je ein Verlaufsschritt mit
  * Rückgängig/Wiederholen, Änderungen über Agent und `instance.set`, zwei
@@ -380,6 +380,23 @@ suite('raci-matrix: Viewmodel im Browser', () => {
     await until(() => h.heads()[0] === 'Leitung');
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig (Aktivität) ohne Wirkung');
     await until(() => h.names()[1] === 'Bauen');
+    assertEqual(h.inst.historyCan('undo'), false);
+    assertEqual(h.notes.length, 0);
+    unmountAll();
+  });
+
+  test('Umbenennen ohne Änderung: Altname mit Rand-Leerzeichen bleibt wörtlich, kein Schritt (Aktivität und Stakeholder)', async () => {
+    const h = await mount('rm-1', { activities: ['Planen', ' Bauen '], stakeholders: [' Team '], assignments: {} });
+    await h.dblclick('activity', 1);
+    assertEqual(h.renameInput().value, ' Bauen ');
+    h.renameInput().blur();
+    await until(() => h.renameInput() === null);
+    await h.dblclick('stakeholder', 0);
+    h.renameInput().blur();
+    await until(() => h.renameInput() === null);
+    await settle();
+    assertEqual(h.vm().model.activities[1].name, ' Bauen ');
+    assertEqual(h.vm().model.stakeholders[0].name, ' Team ');
     assertEqual(h.inst.historyCan('undo'), false);
     assertEqual(h.notes.length, 0);
     unmountAll();
