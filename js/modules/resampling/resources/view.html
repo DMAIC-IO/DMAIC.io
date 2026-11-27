@@ -104,7 +104,7 @@
         <label data-help-key="modules.resampling.fields.seed.help" x-text="t('seed')"></label>
         <input class="field field--num" data-ref="seed" x-field="model.seed">
       </div>
-      <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" x-command="rollSeed" :title="t('rollSeed')" :aria-label="t('rollSeed')">
+      <button type="button" class="btn btn--secondary resampling__seed-roll" data-ref="seed-roll" x-command="rollSeed" :title="t('rollSeed')" :aria-label="t('rollSeed')">
         <span class="icon" data-icon="action.roll-seed" aria-hidden="true"></span>
       </button>
     </div>
@@ -126,7 +126,7 @@
       </button>
       <div class="resampling__running">
         <progress class="resampling__progress" data-ref="progress" x-async-task-progress></progress>
-        <button type="button" class="btn" data-ref="cancel" x-async-task-cancel x-text="t('cancel')"></button>
+        <button type="button" class="btn btn--secondary" data-ref="cancel" x-async-task-cancel x-text="t('cancel')"></button>
       </div>
       <p class="field-error" data-ref="error" x-async-task-error></p>
     </div>

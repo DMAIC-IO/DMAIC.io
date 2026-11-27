@@ -114,13 +114,3 @@
   align-items: center;
   gap: var(--spacing-xs);
 }
-
-.triz-ifr__resources-btn {
-  background: var(--color-accent);
-  color: var(--triz-ifr-on-accent);
-  border-color: var(--color-accent);
-}
-
-.triz-ifr__resources-btn:hover {
-  filter: brightness(0.92);
-}

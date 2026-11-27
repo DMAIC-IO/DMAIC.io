@@ -70,13 +70,6 @@
   margin-bottom: var(--spacing-xs);
 }
 
-/* Der Knopf hat keine Variante und zeigt hell den Standardknopf des Browsers;
-   im dunklen Bild folgt er den Flächen der App statt hell zu bleiben. */
-[data-theme="dark"] .triz-pc__swap-btn {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-}
-
 .triz-pc__dot {
   width: 10px;
   height: 10px;

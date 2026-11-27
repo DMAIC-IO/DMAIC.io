@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -1817,4 +1817,21 @@ test('Template ↔ Schema: x-field auf table() ist ein Befund', () => {
   const files = [{ path: 'resources/view.html', text: '<div x-field="model.t"></div>' }];
   assert.deepEqual(checkTemplateBindings(files, schema), ['template: resources/view.html: x-field="model.t": t (table) hat keine Regeln — x-model verwenden']);
   assert.deepEqual(checkSchemaPaths(schema), []);
+});
+
+test('Knöpfe: `btn` in Modulvorlagen trägt eine Variante (sonst hell im Dunkeln)', () => {
+  const VARIANT = /\bbtn--(primary|secondary|ghost|danger|icon|icon-sm|segment)\b/;
+  const found = [];
+  const modules = join(APP_DIR, 'js/modules');
+  for (const id of readdirSync(modules, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
+    for (const rel of listModuleFiles(APP_DIR, id).filter((p) => p.endsWith('.html'))) {
+      const html = readFileSync(join(modules, id, rel), 'utf8');
+      for (const [tag] of html.matchAll(/<button\b[^>]*>/g)) {
+        const cls = /\sclass="([^"]*)"/.exec(tag)?.[1].split(/\s+/) ?? [];
+        // Eine gebundene Klasse (`:class`) setzt die Variante zur Laufzeit.
+        if (cls.includes('btn') && !VARIANT.test(cls.join(' ')) && !/\s:class=/.test(tag)) found.push(`${id}/${rel}: ${cls.join(' ')}`);
+      }
+    }
+  }
+  assert.deepEqual(found, [], 'btn--secondary ergänzen (kein eigenes Flächen-CSS)');
 });

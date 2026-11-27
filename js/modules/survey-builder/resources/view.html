@@ -75,7 +75,7 @@
             </div>
           </template>
         </div>
-        <button class="btn btn--sm" type="button" data-ref="addSection" data-help-key="modules.survey-builder.actions.addSection.help" x-command="addSection">
+        <button class="btn btn--sm btn--secondary" type="button" data-ref="addSection" data-help-key="modules.survey-builder.actions.addSection.help" x-command="addSection">
           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addSection')"></span>
         </button>
 
@@ -155,7 +155,7 @@
                                     x-command="removeItem" :data-arg-question-id="q.id" :data-arg-item-id="item.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                           </div>
                         </template>
-                        <button class="btn btn--sm" type="button" data-ref="addItem" data-help-key="modules.survey-builder.actions.addItem.help"
+                        <button class="btn btn--sm btn--secondary" type="button" data-ref="addItem" data-help-key="modules.survey-builder.actions.addItem.help"
                                 x-command="addItem" :data-arg-question-id="q.id">
                           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addItem')"></span>
                         </button>
@@ -175,7 +175,7 @@
                                     x-command="removeItem" :data-arg-question-id="q.id" :data-arg-item-id="item.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                           </div>
                         </template>
-                        <button class="btn btn--sm" type="button" data-ref="addItem" data-help-key="modules.survey-builder.actions.addItem.help"
+                        <button class="btn btn--sm btn--secondary" type="button" data-ref="addItem" data-help-key="modules.survey-builder.actions.addItem.help"
                                 x-command="addItem" :data-arg-question-id="q.id">
                           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addItem')"></span>
                         </button>
@@ -214,7 +214,7 @@
                         :title="t('removeCondition')" @click="removeCondition(c.key)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
               </div>
             </template>
-            <button class="btn btn--sm" type="button" data-ref="addCondition" @click="addCondition()">
+            <button class="btn btn--sm btn--secondary" type="button" data-ref="addCondition" @click="addCondition()">
               <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addCondition')"></span>
             </button>
           </div>
@@ -247,7 +247,7 @@
     <section class="survey-builder__tab survey-builder__page" data-ref="recipientsTab" x-show="isTab('recipients')">
       <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.recipients.help" x-text="t('recipientsTitle')"></span></div>
       <div class="survey-builder__toolbar">
-        <button class="btn btn--sm" type="button" data-ref="addRecipient" data-help-key="modules.survey-builder.actions.addRecipient.help" x-command="addRecipient">
+        <button class="btn btn--sm btn--secondary" type="button" data-ref="addRecipient" data-help-key="modules.survey-builder.actions.addRecipient.help" x-command="addRecipient">
           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addRecipient')"></span>
         </button>
         <span class="survey-builder__counts" data-ref="recipientCounts" x-text="countsLine"></span>
@@ -284,7 +284,7 @@
                 </td>
                 <td class="survey-builder__nowrap" data-ref="sent" x-text="sentLabel(r)"></td>
                 <td class="survey-builder__nowrap">
-                  <button class="btn btn--sm" type="button" data-action="exportRecipient" data-help-key="" @click="exportForRecipient(r.id)">
+                  <button class="btn btn--sm btn--secondary" type="button" data-action="exportRecipient" data-help-key="" @click="exportForRecipient(r.id)">
                     <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportRecipient')"></span>
                   </button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteRecipient" :title="t('delete')" data-help-key=""
@@ -352,11 +352,11 @@
             </template>
           </select>
           <span class="survey-builder__counts" data-ref="nLine" x-text="nLine"></span>
-          <button class="btn btn--sm" type="button" data-ref="takeToVoc" data-help-key="modules.survey-builder.asyncTasks.takeToVocTree.help"
+          <button class="btn btn--sm btn--secondary" type="button" data-ref="takeToVoc" data-help-key="modules.survey-builder.asyncTasks.takeToVocTree.help"
                   :disabled="!hasVocSelection || isHandoverRunning('takeToVocTree')" @click="takeSelected()">
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('takeToVoc')"></span>
           </button>
-          <button class="btn btn--sm" type="button" data-ref="toWorksheet" x-async-task="toWorksheet" x-async-task-start>
+          <button class="btn btn--sm btn--secondary" type="button" data-ref="toWorksheet" x-async-task="toWorksheet" x-async-task-start>
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('toWorksheet')"></span>
           </button>
         </div>
@@ -399,7 +399,7 @@
                 </template>
               </tbody>
             </table>
-            <button class="btn btn--sm survey-builder__more" type="button" data-ref="rankingToggle" data-help-key="" x-show="hasMoreRanking"
+            <button class="btn btn--sm btn--secondary survey-builder__more" type="button" data-ref="rankingToggle" data-help-key="" x-show="hasMoreRanking"
                     @click="toggleRanking()" x-text="rankingToggleLabel"></button>
           </div>
 
@@ -604,7 +604,7 @@
                         <option :value="o.value" :selected="isKanoTarget(b.key, o.value)" x-text="o.label"></option>
                       </template>
                     </select>
-                    <button class="btn btn--sm" type="button" data-action="handOverKano" data-help-key="modules.survey-builder.asyncTasks.handOverToKano.help"
+                    <button class="btn btn--sm btn--secondary" type="button" data-action="handOverKano" data-help-key="modules.survey-builder.asyncTasks.handOverToKano.help"
                             :disabled="isHandoverRunning('handOverToKano')" @click="handOver(b.key)">
                       <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('handOverKano')"></span>
                     </button>

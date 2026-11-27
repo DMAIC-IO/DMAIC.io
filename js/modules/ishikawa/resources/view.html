@@ -157,8 +157,8 @@
       <!-- Toolbar -->
       <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
         <button type="button" data-help-key="modules.ishikawa.actions.addRow.help" class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="addRowAndFocus()" x-text="'+ ' + t('hypothesis')"></button>
-        <button type="button" class="btn btn--sm" data-ref="expandAllBtn" @click="expandAll()" x-text="t('expandAll')"></button>
-        <button type="button" class="btn btn--sm" data-ref="collapseAllBtn" @click="collapseAll()" x-text="t('collapseAll')"></button>
+        <button type="button" class="btn btn--sm btn--secondary" data-ref="expandAllBtn" @click="expandAll()" x-text="t('expandAll')"></button>
+        <button type="button" class="btn btn--sm btn--secondary" data-ref="collapseAllBtn" @click="collapseAll()" x-text="t('collapseAll')"></button>
         <div class="ishikawa__toolbar-spacer"></div>
         <div class="ishikawa__filter-group" role="radiogroup" x-set="state.filter" data-help-key="">
           <button type="button" role="radio" value="" data-help-key="modules.ishikawa.actions.setFilter.help" class="ishikawa__filter-chip" :class="state.filter === '' ? 'ishikawa__filter-chip--active' : ''"
@@ -327,7 +327,7 @@
             <input type="text" class="field field--inline ishikawa__snapshot-name-input" data-ref="snapNameInput" data-help-key=""
                    :placeholder="t('snapNamePlaceholder')" x-param="name" />
             <button type="submit" data-help-key="modules.ishikawa.actions.saveSnapshot.help" class="btn btn--sm btn--primary" data-ref="saveSnapBtn" x-text="t('saveSnapshot')"></button>
-            <button type="button" class="btn btn--sm" data-ref="trendBtn" @click="toggleTrend()" x-text="t('trend')"></button>
+            <button type="button" class="btn btn--sm btn--secondary" data-ref="trendBtn" @click="toggleTrend()" x-text="t('trend')"></button>
           </form>
           <div class="ishikawa__snapshot-list">
             <div class="ishikawa__snap-items">
@@ -417,7 +417,7 @@
                   <td><input class="field field--sm field--ghost ishikawa__exp-date-input" :data-xp-end="x.id" data-help-key="" x-field="x.endDate" /></td>
                   <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" placeholder="0" :data-xp-money="x.id" data-help-key="" x-field="x.costMoney" /></td>
                   <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" placeholder="0" :data-xp-hours="x.id" data-help-key="" x-field="x.costHours" /></td>
-                  <td><button type="button" class="btn btn--sm ishikawa__exp-link-btn" :data-xp-link="x.id" data-help-key=""
+                  <td><button type="button" class="btn btn--sm btn--secondary ishikawa__exp-link-btn" :data-xp-link="x.id" data-help-key=""
                               x-dialog="hypLink" :data-arg-experiment-id="x.id" :data-dialog-title="t('chooseHypotheses')" x-text="expLinkText(x)"></button></td>
                   <td><div class="ishikawa__row-actions">
                     <button type="button" class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" data-help-key=""

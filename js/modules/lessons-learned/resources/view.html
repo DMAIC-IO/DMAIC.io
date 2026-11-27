@@ -196,7 +196,7 @@
         <div class="ll__action-input-row">
           <input :id="fieldId('actionText')" type="text" class="field ll__form-input" data-ref="actionInput" x-param="actionText"
             :placeholder="t('fieldActionPlaceholder')" @keydown.enter.prevent="addDraftAction(form)" data-help-key="">
-          <button class="btn btn--sm" data-ref="addActionBtn" type="button" :aria-label="t('fieldActionPlaceholder')" @click="addDraftAction(form)">+</button>
+          <button class="btn btn--sm btn--secondary" data-ref="addActionBtn" type="button" :aria-label="t('fieldActionPlaceholder')" @click="addDraftAction(form)">+</button>
         </div>
         <div class="ll__action-tags" data-ref="actionTags">
           <template x-for="(a, i) in form.actions" :key="i">

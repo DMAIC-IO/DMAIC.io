@@ -43,14 +43,14 @@
                   <option value="system" :selected="c.kind === 'system'" x-text="t('kind.system')"></option>
                   <option value="supersystem" :selected="c.kind === 'supersystem'" x-text="t('kind.supersystem')"></option>
                 </select>
-                <button type="button" class="btn btn--sm" data-role="component-remove" data-help-key=""
+                <button type="button" class="btn btn--sm btn--secondary" data-role="component-remove" data-help-key=""
                   :title="t('removeComponent')" :aria-label="t('removeComponent')" x-command="removeComponent" :data-arg-id="c.id">
                   <span class="icon icon--sm" data-icon="action.delete"></span>
                 </button>
               </div>
             </template>
           </template>
-          <button type="button" class="btn btn--sm tfa__add" data-role="component-add" data-help-key="modules.triz-function-analysis.actions.addComponent.help" :data-kind="kind"
+          <button type="button" class="btn btn--sm btn--secondary tfa__add" data-role="component-add" data-help-key="modules.triz-function-analysis.actions.addComponent.help" :data-kind="kind"
             x-show="canAdd(kind)" @click="newComponent(kind)">
             <span class="icon icon--sm" data-icon="action.add"></span>
             <span x-text="t('addComponent')"></span>
@@ -112,7 +112,7 @@
             <section class="tfa__pair" data-role="pair" :data-key="g.key">
               <header class="tfa__pair-head">
                 <span class="tfa__pair-name" data-role="pair-label" x-text="g.label"></span>
-                <button type="button" class="btn btn--sm" data-role="pair-add" :title="t('addOnPair')"
+                <button type="button" class="btn btn--sm btn--secondary" data-role="pair-add" :title="t('addOnPair')"
                   :aria-label="t('addOnPair')" x-show="g.complete" @click.stop="addOnPair(g)">
                   <span class="icon icon--sm" data-icon="action.add"></span>
                 </button>
@@ -120,14 +120,14 @@
               <template x-for="fn in g.functions" :key="fn.id">
                 <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" x-command="select" :data-arg-id="fn.id" data-arg-toggle="false" data-confirm-delete="off" data-help-key="">
                   <div class="tfa__fn-row">
-                    <button type="button" class="btn btn--sm tfa__dir" data-role="fn-swap" :title="t('swapDirection')" data-help-key=""
+                    <button type="button" class="btn btn--sm btn--secondary tfa__dir" data-role="fn-swap" :title="t('swapDirection')" data-help-key=""
                       :aria-label="directionLabel(fn)" x-command="swapDirection" :data-arg-id="fn.id" @click.stop>
                       <span class="icon icon--sm" data-icon="nav.arrow-right" x-show="isForward(fn, g)"></span>
                       <span class="icon icon--sm" data-icon="nav.arrow-left" x-show="isBackward(fn, g)"></span>
                     </button>
                     <input class="field" type="text" data-role="fn-verb" :aria-label="t('verb')"
                       :placeholder="t('verbPlaceholder')" x-model="fn.verb">
-                    <button type="button" class="btn btn--sm" data-role="fn-remove" :title="t('removeFunction')" data-help-key=""
+                    <button type="button" class="btn btn--sm btn--secondary" data-role="fn-remove" :title="t('removeFunction')" data-help-key=""
                       :aria-label="t('removeFunction')" x-command="removeFunction" :data-arg-id="fn.id" @click.stop>
                       <span class="icon icon--sm" data-icon="action.delete"></span>
                     </button>
@@ -155,7 +155,7 @@
 
         <div class="dmike-split__output" data-role="diagram-pane">
           <div class="tfa__toolbar">
-            <button type="button" class="btn btn--sm" data-role="reset-layout" data-help-key="modules.triz-function-analysis.actions.resetLayout.help" x-command="resetLayout">
+            <button type="button" class="btn btn--sm btn--secondary" data-role="reset-layout" data-help-key="modules.triz-function-analysis.actions.resetLayout.help" x-command="resetLayout">
               <span class="icon icon--sm" data-icon="action.reset"></span>
               <span x-text="t('resetLayout')"></span>
             </button>
