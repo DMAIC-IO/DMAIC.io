@@ -1,0 +1,270 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "testKind": {
+      "help": "Die Testart, gewählt im Abschnitt „Test“: „1 Anteil“ prüft einen Anteil gegen den hypothetischen Anteil p₀, „2 Anteile“ vergleicht die Anteile zweier Stichproben, „Äquivalenz Anteile“ prüft, ob ein Anteil oder eine Differenz innerhalb fachlich gesetzter Grenzen liegt, „McNemar (gepaart)“ vergleicht Anteile derselben Einheiten vorher und nachher, „1 Poisson-Rate“ und „2 Poisson-Raten“ prüfen Ereignisse je Umfang, „Chi-Quadrat-Assoziation“ prüft, ob zwei kategoriale Merkmale einer Kreuztabelle zusammenhängen. Vorgabe ist „2 Anteile“; ein Wechsel behält alle übrigen Eingaben."
+    },
+    "inputMode": {
+      "help": "Die Eingabeart im Abschnitt „Eingabe“: „Zusammengefasst“ nimmt Anzahlen von Hand (Ereignisse und Versuche bzw. die Kreuztabelle), „Spalten“ zählt sie aus Spalten einer Datensammlung. Vorgabe ist „Zusammengefasst“; beim Wechsel bleiben die Eingaben der anderen Art stehen."
+    },
+    "direction": {
+      "help": "Die Alternativhypothese: „≠ zweiseitig“, „> größer“ oder „< kleiner“. Bei einem und zwei Anteilen bestimmt sie p-Werte und Konfidenzintervall; einseitig reicht das Intervall bis 0 bzw. 1 (ein Anteil) oder bis −1 bzw. 1 (Differenz). Beim Zusammenhangstest erscheint sie nur bei einer 2 × 2-Tafel und wirkt nur auf den Fisher-exakten Test, Pearson χ² bleibt zweiseitig."
+    },
+    "alpha": {
+      "help": "Signifikanzniveau α, eine Zahl strikt zwischen 0 und 1, zum Beispiel 0,05; vorbelegt aus dem Vertrauensniveau der Einstellungen (95 % ergibt 0,05). H₀ wird verworfen, wenn der maßgebliche p-Wert kleiner als α ist; zugleich legt α das Niveau des Konfidenzintervalls fest, 1 − α in Prozent. Werte außerhalb werden abgelehnt."
+    },
+    "p0": {
+      "help": "Hypothetischer Anteil p₀ für den Test eines Anteils und den Äquivalenztest mit einer Stichprobe, eine Zahl strikt zwischen 0 und 1, Vorgabe 0,5. Werte außerhalb werden abgelehnt; leer gibt es kein Ergebnis."
+    },
+    "pooled": {
+      "help": "Gepoolte Schätzung von p für den z-Test zweier Anteile. Angekreuzt rechnet der Test den Standardfehler aus dem gemeinsamen Anteil p̄ = (x₁ + x₂)/(n₁ + n₂); sonst aus beiden Anteilen getrennt. Das Konfidenzintervall der Differenz bleibt immer ungepoolt. Vorgabe: nicht angekreuzt."
+    },
+    "ratePooled": {
+      "help": "Gemeinsame Rate für den z-Test zweier Raten. Angekreuzt rechnet der Test den Standardfehler aus der gemeinsamen Rate (x₁ + x₂)/(t₁ + t₂); das gilt nur, solange die hypothetische Differenz Δ₀ gleich 0 ist, sonst erscheint ein Hinweis und es wird getrennt gerechnet. Vorgabe: nicht angekreuzt."
+    },
+    "exposurePerRow": {
+      "help": "„Umfang je Zeile“ bei Raten aus Spalten: welcher Umfang (Zeit, Fläche, Stückzahl) zu einer Zeile der Anzahlspalte gehört, eine Zahl größer als 0, Vorgabe 1. Der Gesamtumfang ist die Zahl der Zeilen mit Wert mal diesem Umfang, bei zwei Raten je Gruppe. 0 und negative Werte werden abgelehnt."
+    },
+    "eventValue": {
+      "help": "Bei Spalteneingabe der Wert der Antwortspalte, der als Ereignis zählt („Ereignis =“); bei McNemar gilt er für beide gepaarten Spalten. Er zählt nur, solange er unter den Werten der Spalte vorkommt; sonst gilt wie bei Minitab der letzte Wert in natürlicher Sortierung, ohne dass sich die gespeicherte Wahl ändert."
+    },
+    "exampleWorksheetId": {
+      "help": "Das Arbeitsblatt, das ein geladenes Beispiel mitgebracht hat; das Laden des nächsten Beispiels räumt es wieder ab. Gehört nicht zur Auswertung."
+    },
+    "equiv": {
+      "help": "Die Einstellungen des Äquivalenztests: Stichprobenzahl, symmetrische oder getrennte Grenzen und die Grenzen selbst in Prozentpunkten. Sie wirken nur beim Äquivalenztest und werden als Ganzes geschrieben.",
+      "samples": {
+        "help": "„1 Stichprobe“ prüft, ob ein Anteil gleichwertig zu p₀ ist; „2 Stichproben“ prüft, ob die Differenz zweier Anteile innerhalb der Grenzen liegt. Vorgabe: 2 Stichproben. Die Anzahlen teilt der Test mit dem Test eines bzw. zweier Anteile."
+      },
+      "symmetric": {
+        "help": "„Symmetrische Grenzen (±δ)“ nimmt eine Grenze δ für beide Seiten, „Getrennte Grenzen“ eine untere und eine obere. Vorgabe: symmetrisch."
+      },
+      "delta": {
+        "help": "Äquivalenzgrenze δ in Prozentpunkten, als Zahl: gleichwertig heißt, die Differenz (bei einer Stichprobe p − p₀) liegt zwischen −δ und +δ. Die Grenze ist eine fachliche Entscheidung, keine statistische. Leer gibt es kein Ergebnis."
+      },
+      "lower": {
+        "help": "Untere Äquivalenzgrenze in Prozentpunkten, als Zahl kleiner als 0; bei einer Stichprobe relativ zu p₀. Sie muss kleiner als die obere sein, sonst gibt es kein Ergebnis."
+      },
+      "upper": {
+        "help": "Obere Äquivalenzgrenze in Prozentpunkten, als Zahl größer als 0; bei einer Stichprobe relativ zu p₀. Sie muss größer als die untere sein, sonst gibt es kein Ergebnis."
+      }
+    },
+    "summary": {
+      "help": "Die zusammengefassten Häufigkeiten aller Testarten: Ereignisse und Versuche, Umfänge und hypothetische Raten, die McNemar-Tafel und die Kreuztabelle, alle als Zahlen. Es wirken nur die der gewählten Testart; geschrieben wird das Ganze.",
+      "x": {
+        "help": "Ereignisse beim Test eines Anteils bzw. einer Rate: wie oft das betrachtete Ereignis eintrat, eine ganze Zahl ab 0, beim Anteil höchstens so groß wie die Versuche. Leer zählt als nicht eingegeben."
+      },
+      "n": {
+        "help": "Versuche (n) beim Test eines Anteils: die Zahl der Beobachtungen, eine ganze Zahl größer als 0. Der geschätzte Anteil ist p̂ = Ereignisse / n."
+      },
+      "x1": {
+        "help": "Ereignisse je Stichprobe beim Vergleich zweier Anteile bzw. Raten, Zeile „Stichprobe 1“: wie oft das Ereignis in der Stichprobe eintrat, eine ganze Zahl ab 0, beim Anteil höchstens so groß wie deren Versuche."
+      },
+      "n1": {
+        "help": "Versuche (n) je Stichprobe beim Vergleich zweier Anteile, Zeile „Stichprobe 1“: die Zahl der Beobachtungen der Stichprobe, eine ganze Zahl größer als 0. Der Anteil der Stichprobe ist Ereignisse / n."
+      },
+      "x2": {
+        "help": "Ereignisse in Stichprobe 2 beim Vergleich zweier Anteile bzw. Raten, eine ganze Zahl ab 0, beim Anteil höchstens so groß wie die Versuche von Stichprobe 2."
+      },
+      "n2": {
+        "help": "Versuche (n) in Stichprobe 2 beim Vergleich zweier Anteile, eine ganze Zahl größer als 0."
+      },
+      "t": {
+        "help": "Umfang (t) beim Test einer Rate: die Beobachtungsmenge, auf die sich die Ereignisse beziehen (Zeit, Fläche, Stückzahl), eine Zahl größer als 0. Die Rate ist λ̂ = Ereignisse / t."
+      },
+      "t1": {
+        "help": "Umfang (t) je Stichprobe beim Vergleich zweier Raten, Zeile „Stichprobe 1“, eine Zahl größer als 0. Die Rate der Stichprobe ist Ereignisse / t."
+      },
+      "t2": {
+        "help": "Umfang (t) der Stichprobe 2 beim Vergleich zweier Raten, eine Zahl größer als 0."
+      },
+      "lambda0": {
+        "help": "Hypothetische Rate λ₀ beim Test einer Rate, Ereignisse je Einheit des Umfangs, eine Zahl größer als 0."
+      },
+      "diff0": {
+        "help": "Hypothetische Differenz Δ₀ der Raten λ₁ − λ₂ beim Vergleich zweier Raten, Vorgabe 0; leer zählt als 0. Nur bei 0 gibt es den bedingten exakten Test und die gemeinsame Rate."
+      },
+      "pairs": {
+        "help": "Die McNemar-Tafel bei Eingabe als Zusammenfassung: die Bezeichnungen der beiden Zeitpunkte und die vier Anzahlen.",
+        "labels": {
+          "help": "Die Bezeichnungen der beiden Zeitpunkte der McNemar-Tafel.",
+          "before": {
+            "help": "Bezeichnung des ersten Zeitpunkts der McNemar-Tafel, etwa „Vorher“ oder ein Prüfername; erscheint in Hypothesen und Kennzahlen. Leer gilt „vorher“, bei Spalteneingabe der Spaltenname."
+          },
+          "after": {
+            "help": "Bezeichnung des zweiten Zeitpunkts der McNemar-Tafel, etwa „Nachher“; erscheint in Hypothesen und Kennzahlen. Leer gilt „nachher“, bei Spalteneingabe der Spaltenname."
+          }
+        },
+        "counts": {
+          "help": "Die vier Anzahlen der McNemar-Tafel, Zeile = Zustand vorher, Spalte = Zustand nachher, je Ereignis und kein Ereignis; ganze Zahlen ab 0, leer zählt als nicht eingegeben."
+        }
+      },
+      "table": {
+        "help": "Die Kreuztabelle des Zusammenhangstests bei Eingabe als Zusammenfassung: Zeilen- und Spaltennamen und die Anzahlen, mindestens 2 × 2.",
+        "rows": {
+          "help": "Die Namen der Zeilen der Kreuztabelle, in Anzeigereihenfolge; mindestens zwei."
+        },
+        "cols": {
+          "help": "Die Namen der Spalten der Kreuztabelle, in Anzeigereihenfolge; mindestens zwei."
+        },
+        "counts": {
+          "help": "Die Anzahlen der Kreuztabelle, je Zeile eine Liste mit einer Anzahl je Spalte; ganze Zahlen ab 0, leer zählt als nicht eingegeben."
+        }
+      }
+    },
+    "colRefs": {
+      "help": "Die gewählte Spalte einer Datensammlung je Rolle, bei Eingabe über Spalten. Es wirken nur die Rollen der gewählten Testart; eine gelöschte Spalte bleibt gewählt, die Auswertung nennt dann den Grund.",
+      "response": {
+        "help": "Die Antwortspalte bei Anteilen und Äquivalenz: genau zwei verschiedene Werte, von denen einer als Ereignis zählt."
+      },
+      "counts": {
+        "help": "Die Anzahlspalte bei Raten: je Zeile eine ganze Zahl ab 0, die Ereignisse dieser Zeile."
+      },
+      "before": {
+        "help": "Die Spalte des ersten Zeitpunkts bei McNemar, je Einheit ein Wert; zusammen mit der Spalte des zweiten Zeitpunkts genau zwei verschiedene Werte."
+      },
+      "after": {
+        "help": "Die Spalte des zweiten Zeitpunkts bei McNemar, gleich lang wie die des ersten."
+      },
+      "group": {
+        "help": "Die Gruppenspalte bei zwei Anteilen, zwei Raten und Äquivalenz mit zwei Stichproben: genau zwei verschiedene Werte."
+      },
+      "rowVar": {
+        "help": "Die Zeilenvariable des Zusammenhangstests: ihre Werte bilden die Zeilen der Kreuztabelle."
+      },
+      "colVar": {
+        "help": "Die Spaltenvariable des Zusammenhangstests: ihre Werte bilden die Spalten der Kreuztabelle."
+      }
+    },
+    "activeParams": {
+      "help": "Die Eingaben, die im aktuellen Stand wirken: Testart, Eingabeart, α und je nach Testart und Eingabeart die passenden Anzahlen, Optionen und Grenzen. Die Richtung wirkt beim Zusammenhangstest nur bei einem Ergebnis für eine 2 × 2-Tabelle."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenrollen, die im aktuellen Stand wirken: keine bei Eingabe als Zusammenfassung; bei Spalteneingabe die Antwortspalte (Anteile und Äquivalenz, bei zwei Stichproben auch die Gruppe), die Anzahlspalte (Raten, bei zwei Raten auch die Gruppe), die beiden Zeitpunkte (McNemar) oder Zeilen- und Spaltenvariable (Zusammenhangstest)."
+    },
+    "eventValueOptions": {
+      "help": "Die Werte, die als Ereignis gewählt werden können: die verschiedenen Werte der gewählten Antwortspalte, bei McNemar beider gepaarter Spalten zusammen, natürlich sortiert; leer bei Eingabe als Zusammenfassung oder ohne Spalte."
+    },
+    "result": {
+      "help": "Der Testbericht: Kennzahlen, Hinweise, Entscheidung und beim Zusammenhangstest die Kreuztabelle; die Werte der Kennzahlen als Texte mit Punkt als Dezimalzeichen. Ohne Ergebnis nennt er stattdessen den Grund, einen Eingabehinweis oder eine Absage."
+    }
+  },
+  "actions": {
+    "setTableCell": {
+      "help": "Setzt eine Anzahl der Kreuztabelle, die der Zusammenhangstest bei Eingabe als Zusammenfassung benutzt; leer heißt nicht eingegeben.",
+      "params": {
+        "command": "Das Kommando mit Zeile, Spalte und Anzahl.",
+        "row": "Zeilenindex, 0 ist die erste Zeile.",
+        "col": "Spaltenindex, 0 ist die erste Spalte.",
+        "value": "Die Anzahl als ganze Zahl ab 0, leer leert die Zelle; ein Bruch oder eine negative Zahl wird abgelehnt."
+      }
+    },
+    "setTableRowName": {
+      "help": "Setzt den Namen einer Zeile der Kreuztabelle.",
+      "params": {
+        "command": "Das Kommando mit Zeile und Name.",
+        "row": "Zeilenindex, 0 ist die erste Zeile.",
+        "name": "Der Name als Text, leer leert ihn."
+      }
+    },
+    "setTableColName": {
+      "help": "Setzt den Namen einer Spalte der Kreuztabelle.",
+      "params": {
+        "command": "Das Kommando mit Spalte und Name.",
+        "col": "Spaltenindex, 0 ist die erste Spalte.",
+        "name": "Der Name als Text, leer leert ihn."
+      }
+    },
+    "setPairCell": {
+      "help": "Setzt eine Anzahl der McNemar-Vierfeldertafel bei Eingabe als Zusammenfassung: wie viele Paare vorher und nachher im jeweiligen Zustand waren.",
+      "params": {
+        "command": "Das Kommando mit Zeile, Spalte und Anzahl.",
+        "row": "Zustand vorher: 0 = Ereignis, 1 = kein Ereignis.",
+        "col": "Zustand nachher: 0 = Ereignis, 1 = kein Ereignis.",
+        "value": "Die Anzahl als ganze Zahl ab 0, leer leert die Zelle; ein Bruch oder eine negative Zahl wird abgelehnt."
+      }
+    },
+    "addRow": {
+      "help": "Hängt der Kreuztabelle eine Zeile mit leeren Anzahlen an; ihr Name ist der nächste Buchstabe.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "addCol": {
+      "help": "Hängt der Kreuztabelle eine Spalte mit leeren Anzahlen an; ihr Name ist der nächste aus X, Y, Z und danach C4, C5 und so weiter.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "removeRow": {
+      "help": "Entfernt eine Zeile der Kreuztabelle samt Anzahlen. Nur solange die Tabelle mehr als zwei Zeilen hat; sonst wird das Kommando abgelehnt.",
+      "params": {
+        "command": "Das Kommando mit der Zeile.",
+        "row": "Zeilenindex, 0 ist die erste Zeile."
+      }
+    },
+    "removeCol": {
+      "help": "Entfernt eine Spalte der Kreuztabelle samt Anzahlen. Nur solange die Tabelle mehr als zwei Spalten hat; sonst wird das Kommando abgelehnt.",
+      "params": {
+        "command": "Das Kommando mit der Spalte.",
+        "col": "Spaltenindex, 0 ist die erste Spalte."
+      }
+    },
+    "checkEquivalence": {
+      "help": "Wechselt zum Äquivalenztest mit zwei Stichproben, wie die Schaltfläche „Mit Äquivalenztest prüfen“ unter einem nicht signifikanten Test zweier Anteile. Anzahlen und Spalten teilt er mit dem Test zweier Anteile, sie bleiben stehen; die Äquivalenzgrenzen bleiben unverändert.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    }
+  },
+  "types": {
+    "Action": {
+      "key": "Kennung des angebotenen Folgeschritts; derzeit nur „actionCheckEquivalence“ (unter einem nicht signifikanten zweiseitigen Test zweier Anteile), über checkEquivalence auszuführen."
+    },
+    "Result": {
+      "status": "Ob es ein Ergebnis gibt: ok mit Bericht, insufficient ohne; dann stehen nur Grund, Art des Grundes und Meldung.",
+      "reason": "Der Grund ohne Ergebnis als Kennung, etwa hintEnterCounts (Anzahlen fehlen), hintPickColumns (Spalten fehlen) oder errTableTooSmall; nur ohne Ergebnis.",
+      "hint": "Wahr, wenn der Grund ein Eingabehinweis ist (es fehlt noch etwas), falsch bei einer Absage (eine Eingabe passt nicht); nur ohne Ergebnis.",
+      "message": "Der Grund ohne Ergebnis als Satz in der App-Sprache, wie ihn die Fläche „Ergebnisse“ zeigt; nur ohne Ergebnis.",
+      "decisionParams": "Platzhalter der Äquivalenz-Entscheidung: untere und obere Grenze (formatiert), die Einheit (% bei einer Stichprobe, pp bei zwei) und α. Nur beim Äquivalenztest.",
+      "actions": "Die Folgeschritte unter dem Ergebnis: beim nicht signifikanten zweiseitigen Test zweier Anteile die Schaltfläche „Mit Äquivalenztest prüfen“, denn kein Unterschied heißt nicht gleichwertig. Sonst fehlt das Feld.",
+      "kind": "Die Testart, für die der Bericht gerechnet wurde, wie im Abschnitt „Test“ gewählt: ein Anteil, zwei Anteile, Äquivalenz, McNemar, eine Rate, zwei Raten oder Chi-Quadrat-Assoziation.",
+      "stats": "Die Kennzahlzeilen der Tabelle unter „Ergebnisse“, je Testart andere: Anzahlen, Anteile, Konfidenzintervall, Prüfgröße und p-Werte; jede Zeile ist einzeln erklärt: Alt halten und das Fragezeichen neben ihrer Beschriftung anklicken.",
+      "notes": "Hinweise unter der Entscheidung: übersprungene Zeilen mit fehlenden Werten, die ungeeignete Normalapproximation (ein Anteil), der gepoolte z-Test (zwei Anteile), entfernte leere Zeilen oder Spalten und die Warnungen zu kleinen erwarteten Häufigkeiten (Zusammenhangstest).",
+      "decision": "Die Entscheidung gegen α: „H₀ verwerfen“ (reject), wenn der maßgebliche p-Wert kleiner als α ist, sonst „H₀ nicht verwerfen“ (keep); beim Äquivalenztest „gleichwertig“ (equivalent) oder „nicht nachgewiesen“ (notEquivalent). Maßgeblich ist beim Test eines Anteils der exakte Binomialtest, bei zwei Anteilen der z-Test, bei einer Rate der exakte Poisson-Test, bei zwei Raten der z-Test der Differenz, bei McNemar der exakte Test, bei der Äquivalenz der TOST und beim Zusammenhangstest Pearson χ² (immer zweiseitig). Die Grundlage steht neben der Entscheidung.",
+      "basisKey": "Kennung des Satzes, der die Grundlage der Entscheidung nennt: exakter Binomialtest, z-Test, exakter Poisson-Test, z-Test der Ratendifferenz, exakter McNemar-Test, TOST oder Pearson χ².",
+      "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer.",
+      "noteDetails": "Die Hinweise als Code mit den eingesetzten Zahlen, in derselben Reihenfolge wie notes; die Zahlen sind ungerundet, zum Beispiel der Anteil bei warnShareBelow5 als Wert zwischen 0 und 1.",
+      "pValue": "Der p-Wert, auf dem die Entscheidung beruht, als Zahl: exakt beim Ein-Stichproben-Anteil, bei McNemar und bei der Poisson-Rate, z-Test bei zwei Anteilen und zwei Raten, TOST bei Äquivalenz, Pearson-χ² beim Zusammenhangstest. Null, wenn er nicht berechenbar ist.",
+      "ci": "Das Konfidenzintervall als [untere, obere Grenze] in der Einheit der Kennzahl, ungerundet; eine nicht endliche Grenze ist null. Null beim Zusammenhangstest, der kein Intervall hat. Bei der Äquivalenz ist es das (1 − 2α)-TOST-Intervall. Die Zahl ist immer ein Anteil oder eine Rate, nie Prozent."
+    },
+    "Stat": {
+      "key": "Kennung der Kennzahlzeile, innerhalb einer Testart eindeutig; dieselbe Kennung kann je Testart Verschiedenes bedeuten.",
+      "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel im Zusammenhangstest je Richtung eine eigene (beidseitig, einseitig größer, einseitig kleiner); beim Vergleich zweier Anteile trägt die Fisher-Zeile immer dieselbe Beschriftung ohne Richtung, auch bei einseitiger Alternative.",
+      "params": "Platzhalter der Beschriftung: das Konfidenzniveau in Prozent, der Gruppenname oder die Freiheitsgrade; fehlt bei Zeilen ohne Platzhalter.",
+      "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert.",
+      "num": "Die Kennzahl als Zahl; bei Zählern und Intervallen null — das Intervall steht unter ci. Anteile und Raten stehen als Bruch, nie in Prozent."
+    },
+    "Note": {
+      "key": "Kennung des Hinweistextes, der unter der Entscheidung steht.",
+      "params": "Platzhalter des Hinweises: die Zahl übersprungener Zeilen, die Namen entfernter Zeilen oder Spalten oder der gerundete Prozentanteil der Zellen mit erwarteter Häufigkeit unter 5; fehlt bei Hinweisen ohne Platzhalter."
+    },
+    "Warning": {
+      "code": "Die Kennung des Hinweises, gleich dem Textschlüssel.",
+      "values": "Die Zahlen hinter dem Hinweis, je Name, ungerundet; Anteile als Wert zwischen 0 und 1; nicht berechenbar ist null."
+    },
+    "CrossTable": {
+      "cols": "Die Spaltenstufen der Kreuztabelle; Spalten ohne Beobachtungen sind entfernt.",
+      "rows": "Die Zeilen der Kreuztabelle; Zeilen ohne Beobachtungen sind entfernt."
+    },
+    "CrossRow": {
+      "name": "Die Zeilenstufe, links in der Kreuztabelle.",
+      "cells": "Die Zellen der Zeile, je Spaltenstufe eine."
+    },
+    "CrossCell": {
+      "obs": "Beobachtete Anzahl der Zelle, die obere Zahl.",
+      "exp": "Erwartete Anzahl unter Unabhängigkeit: Zeilensumme · Spaltensumme / Gesamtzahl, mit zwei Nachkommastellen.",
+      "contrib": "Jede Zelle zeigt drei Zahlen: die beobachtete Anzahl o, die unter Unabhängigkeit erwartete Anzahl e = Zeilensumme · Spaltensumme / Gesamtzahl und den Beitrag (o − e)²/e zu Pearson χ². Große Beiträge zeigen, wo der Zusammenhang sitzt."
+    }
+  }
+}

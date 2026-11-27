@@ -1,0 +1,270 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "testKind": {
+      "help": "The test type, chosen in the “Test” section: “1 proportion” tests one proportion against the hypothesized proportion p₀, “2 proportions” compares the proportions of two samples, “Equivalence (proportions)” tests whether a proportion or a difference lies within subject-matter bounds, “McNemar (paired)” compares proportions of the same units before and after, “1 Poisson rate” and “2 Poisson rates” test events per exposure, “Chi-square association” tests whether two categorical variables of a cross table are associated. Default is “2 proportions”; switching keeps all other inputs."
+    },
+    "inputMode": {
+      "help": "The input type in the “Input” section: “Summarized” takes counts entered by hand (events and trials, or the cross table), “Columns” counts them from columns of a data collection. Default is “Summarized”; switching keeps the inputs of the other type."
+    },
+    "direction": {
+      "help": "The alternative hypothesis: “≠ two-sided”, “> greater” or “< less”. For one and two proportions it sets the p-values and the confidence interval; one-sided, the interval extends to 0 or 1 (one proportion) or to −1 or 1 (difference). For the association test it appears only for a 2 × 2 table and affects only Fisher's exact test; Pearson χ² stays two-sided."
+    },
+    "alpha": {
+      "help": "Significance level α, a number strictly between 0 and 1, for example 0.05; preset from the confidence level in the settings (95 % gives 0.05). H₀ is rejected when the deciding p-value is below α; α also sets the confidence level of the interval, 1 − α in percent. Values outside are rejected."
+    },
+    "p0": {
+      "help": "Hypothesized proportion p₀ for the one-proportion test and the one-sample equivalence test, a number strictly between 0 and 1, default 0.5. Values outside are rejected; when empty there is no result."
+    },
+    "pooled": {
+      "help": "Pooled estimate of p for the z-test of two proportions. When checked, the test computes the standard error from the common proportion p̄ = (x₁ + x₂)/(n₁ + n₂); otherwise from both proportions separately. The confidence interval of the difference always stays unpooled. Default: unchecked."
+    },
+    "ratePooled": {
+      "help": "Pooled rate for the two-rate z-test. When checked, the test computes the standard error from the common rate (x₁ + x₂)/(t₁ + t₂); this applies only while the hypothesized difference Δ₀ is 0, otherwise a note appears and the test uses separate estimates. Default: unchecked."
+    },
+    "exposurePerRow": {
+      "help": "“Exposure per row” for rates from columns: which exposure (time, area, units) belongs to one row of the counts column, a number greater than 0, default 1. The total exposure is the number of rows with a value times this exposure, per group for two rates. 0 and negative values are rejected."
+    },
+    "eventValue": {
+      "help": "With column input, the value of the response column that counts as an event (“Event =”); for McNemar it applies to both paired columns. It counts only while it occurs among the values of the column; otherwise, as in Minitab, the last value in natural sort order is used, without changing the stored choice."
+    },
+    "exampleWorksheetId": {
+      "help": "The worksheet a loaded example brought along; loading the next example removes it again. Not part of the analysis."
+    },
+    "equiv": {
+      "help": "The settings of the equivalence test: number of samples, symmetric or separate bounds and the bounds themselves in percentage points. They apply only to the equivalence test and are written as a whole.",
+      "samples": {
+        "help": "“1 sample” tests whether one proportion is equivalent to p₀; “2 samples” tests whether the difference of two proportions lies within the bounds. Default: 2 samples. The test shares its counts with the one- or two-proportion test."
+      },
+      "symmetric": {
+        "help": "“Symmetric bounds (±δ)” uses one margin δ for both sides, “Separate bounds” a lower and an upper bound. Default: symmetric."
+      },
+      "delta": {
+        "help": "Equivalence margin δ in percentage points, as a number: equivalent means the difference (p − p₀ for one sample) lies between −δ and +δ. The margin is a subject-matter decision, not a statistical one. When empty there is no result."
+      },
+      "lower": {
+        "help": "Lower equivalence bound in percentage points, as a number below 0; relative to p₀ for one sample. It must be below the upper bound, otherwise there is no result."
+      },
+      "upper": {
+        "help": "Upper equivalence bound in percentage points, as a number above 0; relative to p₀ for one sample. It must be above the lower bound, otherwise there is no result."
+      }
+    },
+    "summary": {
+      "help": "The summarized counts of all test types: events and trials, exposures and hypothesized rates, the McNemar table and the cross table, all as numbers. Only those of the chosen test type apply; the whole is written at once.",
+      "x": {
+        "help": "Events for the one-proportion or one-rate test: how often the event of interest occurred, a whole number from 0, for a proportion at most the number of trials. Empty counts as not entered."
+      },
+      "n": {
+        "help": "Trials (n) for the one-proportion test: the number of observations, a whole number greater than 0. The estimated proportion is p̂ = events / n."
+      },
+      "x1": {
+        "help": "Events per sample when comparing two proportions or rates, row “Sample 1”: how often the event occurred in that sample, a whole number from 0, for a proportion at most its number of trials."
+      },
+      "n1": {
+        "help": "Trials (n) per sample when comparing two proportions, row “Sample 1”: the number of observations in that sample, a whole number greater than 0. The sample's proportion is events / n."
+      },
+      "x2": {
+        "help": "Events in sample 2 when comparing two proportions or rates, a whole number from 0, for a proportion at most the trials of sample 2."
+      },
+      "n2": {
+        "help": "Trials (n) in sample 2 when comparing two proportions, a whole number greater than 0."
+      },
+      "t": {
+        "help": "Exposure (t) for the one-rate test: the amount of observation the events refer to (time, area, units), a number greater than 0. The rate is λ̂ = events / t."
+      },
+      "t1": {
+        "help": "Exposure (t) per sample for comparing two rates, row “Sample 1”, a number greater than 0. The sample's rate is events / t."
+      },
+      "t2": {
+        "help": "Exposure (t) of sample 2 when comparing two rates, a number greater than 0."
+      },
+      "lambda0": {
+        "help": "Hypothesized rate λ₀ for the one-rate test, events per unit of exposure, a number greater than 0."
+      },
+      "diff0": {
+        "help": "Hypothesized difference Δ₀ of the rates λ₁ − λ₂ when comparing two rates, default 0; empty counts as 0. Only at 0 are the conditional exact test and the pooled rate available."
+      },
+      "pairs": {
+        "help": "The McNemar table with summarized input: the labels of the two time points and the four counts.",
+        "labels": {
+          "help": "The labels of the two time points of the McNemar table.",
+          "before": {
+            "help": "Label of the first time point of the McNemar table, such as “Before” or an inspector's name; shown in hypotheses and figures. Empty means “before”, with column input the column name."
+          },
+          "after": {
+            "help": "Label of the second time point of the McNemar table, such as “After”; shown in hypotheses and figures. Empty means “after”, with column input the column name."
+          }
+        },
+        "counts": {
+          "help": "The four counts of the McNemar table, row = state before, column = state after, each event and no event; whole numbers from 0, empty counts as not entered."
+        }
+      },
+      "table": {
+        "help": "The cross table of the association test with summarized input: row and column names and the counts, at least 2 × 2.",
+        "rows": {
+          "help": "The names of the rows of the cross table, in display order; at least two."
+        },
+        "cols": {
+          "help": "The names of the columns of the cross table, in display order; at least two."
+        },
+        "counts": {
+          "help": "The counts of the cross table, per row a list with one count per column; whole numbers from 0, empty counts as not entered."
+        }
+      }
+    },
+    "colRefs": {
+      "help": "The chosen column of a data collection per role, with column input. Only the roles of the chosen test type apply; a deleted column stays chosen, and the analysis then names the reason.",
+      "response": {
+        "help": "The response column for proportions and equivalence: exactly two distinct values, one of which counts as the event."
+      },
+      "counts": {
+        "help": "The counts column for rates: per row a whole number from 0, the events of that row."
+      },
+      "before": {
+        "help": "The column of the first time point for McNemar, one value per unit; together with the column of the second time point exactly two distinct values."
+      },
+      "after": {
+        "help": "The column of the second time point for McNemar, as long as the first one."
+      },
+      "group": {
+        "help": "The group column for two proportions, two rates and equivalence with two samples: exactly two distinct values."
+      },
+      "rowVar": {
+        "help": "The row variable of the association test: its values form the rows of the cross table."
+      },
+      "colVar": {
+        "help": "The column variable of the association test: its values form the columns of the cross table."
+      }
+    },
+    "activeParams": {
+      "help": "The inputs that apply in the current state: test type, input type, α and, depending on test type and input type, the matching counts, options and bounds. For the association test the direction applies only to a result for a 2 × 2 table."
+    },
+    "activeColumnSlots": {
+      "help": "The column roles that apply in the current state: none with summarized input; with column input the response column (proportions and equivalence, with two samples also the group), the counts column (rates, with two rates also the group), the two time points (McNemar) or row and column variable (association test)."
+    },
+    "eventValueOptions": {
+      "help": "The values that can be chosen as the event: the distinct values of the chosen response column, for McNemar of both paired columns together, in natural sort order; empty with summarized input or without a column."
+    },
+    "result": {
+      "help": "The test report: figures, notes, decision and, for the association test, the cross table; the values of the figures as texts with a point as decimal separator. Without a result it names the reason instead, an input hint or a refusal."
+    }
+  },
+  "actions": {
+    "setTableCell": {
+      "help": "Sets a count of the cross table the association test uses with summarized input; empty means not entered.",
+      "params": {
+        "command": "The command with row, column and count.",
+        "row": "Row index, 0 is the first row.",
+        "col": "Column index, 0 is the first column.",
+        "value": "The count as a whole number from 0, empty clears the cell; a fraction or a negative number is rejected."
+      }
+    },
+    "setTableRowName": {
+      "help": "Sets the name of a row of the cross table.",
+      "params": {
+        "command": "The command with row and name.",
+        "row": "Row index, 0 is the first row.",
+        "name": "The name as text, empty clears it."
+      }
+    },
+    "setTableColName": {
+      "help": "Sets the name of a column of the cross table.",
+      "params": {
+        "command": "The command with column and name.",
+        "col": "Column index, 0 is the first column.",
+        "name": "The name as text, empty clears it."
+      }
+    },
+    "setPairCell": {
+      "help": "Sets a count of the McNemar 2 × 2 table with summarized input: how many pairs were in the given state before and after.",
+      "params": {
+        "command": "The command with row, column and count.",
+        "row": "State before: 0 = event, 1 = no event.",
+        "col": "State after: 0 = event, 1 = no event.",
+        "value": "The count as a whole number from 0, empty clears the cell; a fraction or a negative number is rejected."
+      }
+    },
+    "addRow": {
+      "help": "Appends a row with empty counts to the cross table; its name is the next letter.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    },
+    "addCol": {
+      "help": "Appends a column with empty counts to the cross table; its name is the next one of X, Y, Z and then C4, C5 and so on.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    },
+    "removeRow": {
+      "help": "Removes one row of the cross table with its counts. Only while the table has more than two rows; otherwise the command is rejected.",
+      "params": {
+        "command": "The command with the row.",
+        "row": "Row index, 0 is the first row."
+      }
+    },
+    "removeCol": {
+      "help": "Removes one column of the cross table with its counts. Only while the table has more than two columns; otherwise the command is rejected.",
+      "params": {
+        "command": "The command with the column.",
+        "col": "Column index, 0 is the first column."
+      }
+    },
+    "checkEquivalence": {
+      "help": "Switches to the equivalence test with two samples, like the “Check with equivalence test” button below a non-significant two-proportion test. It shares counts and columns with the two-proportion test, so they stay; the equivalence bounds stay unchanged.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    }
+  },
+  "types": {
+    "Action": {
+      "key": "Identifier of the offered next step; currently only “actionCheckEquivalence” (below a non-significant two-sided two-proportion test), run via checkEquivalence."
+    },
+    "Result": {
+      "status": "Whether there is a result: ok with a report, insufficient without; then only reason, kind of reason and message are present.",
+      "reason": "The reason without a result as an identifier, such as hintEnterCounts (counts missing), hintPickColumns (columns missing) or errTableTooSmall; only without a result.",
+      "hint": "True when the reason is an input hint (something is still missing), false for a refusal (an input does not fit); only without a result.",
+      "message": "The reason without a result as a sentence in the app language, as the “Results” area shows it; only without a result.",
+      "decisionParams": "Placeholders of the equivalence decision: lower and upper bound (formatted), the unit (% for one sample, pp for two) and α. Equivalence test only.",
+      "actions": "The next steps below the result: for a non-significant two-sided two-proportion test the “Check with equivalence test” button, because no difference does not mean equivalent. Otherwise the field is missing.",
+      "kind": "The test type the report was computed for, as chosen in the “Test” section: one proportion, two proportions, equivalence, McNemar, one rate, two rates or chi-square association.",
+      "stats": "The figure rows of the table under “Results”, different for each test type: counts, proportions, confidence interval, test statistic and p-values; each row is explained individually: hold Alt and click the question mark next to its label.",
+      "notes": "Notes below the decision: skipped rows with missing values, the unsuitable normal approximation (one proportion), the pooled z-test (two proportions), removed empty rows or columns and the warnings about small expected counts (association test).",
+      "decision": "The decision against α: “Reject H₀” (reject) when the deciding p-value is below α, otherwise “Do not reject H₀” (keep); for the equivalence test “equivalent” or “not shown” (notEquivalent). The deciding test is the exact binomial test for one proportion, the z-test for two proportions, the exact Poisson test for one rate, the z-test of the difference for two rates, the exact test for McNemar, the TOST for equivalence and Pearson χ² (always two-sided) for the association test. The basis is shown next to the decision.",
+      "basisKey": "Identifier of the sentence naming the basis of the decision: exact binomial test, z-test, exact Poisson test, z-test of the rate difference, exact McNemar test, TOST or Pearson χ².",
+      "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions.",
+      "noteDetails": "The notes as a code with the inserted numbers, in the same order as notes; the numbers are unrounded, for example the share for warnShareBelow5 as a value between 0 and 1.",
+      "pValue": "The p-value the decision rests on, as a number: exact for one proportion, McNemar and the Poisson rate, z-test for two proportions and two rates, TOST for equivalence, Pearson chi-square for the association test. Null when it cannot be computed.",
+      "ci": "The confidence interval as [lower, upper] in the unit of the statistic, unrounded; a non-finite bound is null. Null for the association test, which has no interval. For equivalence it is the (1 − 2α) TOST interval. The number is always a fraction or rate, never percent."
+    },
+    "Stat": {
+      "key": "Identifier of the figure row, unique within one test type; the same identifier can mean different things in different test types.",
+      "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table in the association test there is one per direction (two-sided, one-sided greater, one-sided less); when comparing two proportions the Fisher row always carries the same label without a direction, even for a one-sided alternative.",
+      "params": "Placeholders of the label: the confidence level in percent, the group name or the degrees of freedom; missing for rows without placeholders.",
+      "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed.",
+      "num": "The statistic as a number; null for counts and intervals — the interval is under ci. Shares and rates are given as fractions, never percent."
+    },
+    "Note": {
+      "key": "Identifier of the note text shown below the decision.",
+      "params": "Placeholders of the note: the number of skipped rows, the names of removed rows or columns, or the rounded percentage of cells with an expected count below 5; missing for notes without placeholders."
+    },
+    "Warning": {
+      "code": "The id of the note, equal to the text key.",
+      "values": "The numbers behind the notice, by name, unrounded; shares as a value between 0 and 1; not computable is null."
+    },
+    "CrossTable": {
+      "cols": "The column levels of the cross table; columns without observations are removed.",
+      "rows": "The rows of the cross table; rows without observations are removed."
+    },
+    "CrossRow": {
+      "name": "The row level, on the left of the cross table.",
+      "cells": "The cells of the row, one per column level."
+    },
+    "CrossCell": {
+      "obs": "Observed count of the cell, the top number.",
+      "exp": "Expected count under independence: row total · column total / grand total, with two decimals.",
+      "contrib": "Each cell shows three numbers: the observed count o, the count expected under independence e = row total · column total / grand total, and the contribution (o − e)²/e to Pearson χ². Large contributions show where the association lies."
+    }
+  }
+}

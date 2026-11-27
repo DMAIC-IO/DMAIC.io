@@ -1,0 +1,132 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Attribute tests work on counts instead of measurements: scrap rates, defect rates, assignments to categories. The module runs seven tests – one proportion against a target, two proportions against each other, the {{term:chi-quadrat-test|chi-square test}} of association in a {{term:kontingenztafel|cross table}}, the {{term:mcnemar-test|McNemar test}} for paired proportions, the {{term:aequivalenztest|equivalence test}} for equivalence, and one and two {{term:poisson-rate|Poisson rates}} (defects per unit)."
+        },
+        {
+          "type": "definition",
+          "term": "Input",
+          "content": "Summarized (\"37 of 1200\") or from worksheet columns. With columns the table is counted; the value that counts as event can be chosen (default: the alphabetically last). Empty cells are skipped and counted."
+        }
+      ]
+    },
+    "oneProportion": {
+      "title": "1 proportion",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Tests whether the proportion x/n fits a target p₀. The decision uses the exact binomial test; the confidence interval is the exact Clopper-Pearson interval. The two-sided exact p-value doubles the smaller one-sided value (doubling rule, capped at 1). The normal approximation (z) is shown alongside and is reliable only when n·p₀ and n·(1 − p₀) are at least 5."
+        },
+        {
+          "type": "definition",
+          "term": "Difference to Minitab",
+          "content": "For one proportion Minitab uses the adjusted Blaker method by default. This module uses Clopper-Pearson (Minitab's \"Exact\" option). Intervals are slightly wider and p-values can differ a little."
+        }
+      ]
+    },
+    "twoProportions": {
+      "title": "2 proportions",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Compares two proportions, e.g. scrap before and after an improvement. The z-test estimates the proportions separately (as Minitab does); \"pooled estimate\" uses a common proportion, as many textbooks do. The CI for the difference is always unpooled. Fisher's exact test is shown as a second {{term:p-wert|p-value}} – for small counts it is the more reliable one."
+        }
+      ]
+    },
+    "mcnemar": {
+      "title": "McNemar (paired proportions)",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:mcnemar-test|McNemar test}} compares two proportions when the same units are judged twice. The textbook case (Melzer 2019, §3.5.1): the same 500 parts are inspected before and after a cleaning. A test for two independent proportions would be wrong because it pretends the two inspections come from different parts. The table counts the pairs: both good, both bad and the two kinds of change (event → no event and vice versa). Only the changes carry information; {{term:nullhypothese|H₀}}: both directions are equally frequent."
+        },
+        {
+          "type": "definition",
+          "term": "Input",
+          "content": "Summarized as a 2×2 table of pairs (the labels for \"before\" and \"after\" are free) or from two columns of equal length. Rows in which one of the two cells is empty are skipped and counted. Both columns together may contain exactly two distinct values."
+        },
+        {
+          "type": "definition",
+          "term": "Result",
+          "content": "The exact test is decisive (binomial with p = 0.5; the two-sided value doubles the smaller one, capped at 1). Alongside are χ² with and without continuity correction and the confidence interval of the difference in proportions (after − before). The continuity-corrected χ² uses max(0, |b − c| − 1)², so for b = c it differs from R and statsmodels. Without any change nothing can be tested; with few changes (below 10) only the exact test is reliable."
+        }
+      ]
+    },
+    "equivalence": {
+      "title": "Equivalence test",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A non-significant comparison does not mean the proportions are equivalent – it only means no difference was shown. The {{term:aequivalenztest|equivalence test}} (TOST) turns the question around: it sets bounds and tests whether the difference lies safely inside. The result reads \"equivalent\" only if both one-sided tests pass."
+        },
+        {
+          "type": "definition",
+          "term": "Re-inspection example",
+          "content": "Melzer 2019, §13.4: 184 of 3902 parts against 179 of 4023. The ordinary test finds no difference (p = 0.571). The 90 % interval of the difference is about (−0.51; +1.04) percentage points – it reaches beyond +1, so equivalence within ±1 percentage point is not shown. With a bound of ±1.5 it would be."
+        },
+        {
+          "type": "definition",
+          "term": "Bounds",
+          "content": "The bounds are a practical, not a statistical decision: which difference in percentage points no longer matters? They are fixed before the analysis and not read off the result. Symmetric (± δ) by default; separate lower and upper bounds are possible. With 2 samples the bounds apply to the difference p₁ − p₂ and must enclose 0; with 1 sample they are relative to the target p₀ (bounds of ±2 at p₀ = 10 % test the range 8 % to 12 %), and the result is given in absolute percent."
+        },
+        {
+          "type": "definition",
+          "term": "Why 90 %?",
+          "content": "TOST passes if both one-sided tests pass at level α. This corresponds exactly to the (1 − 2α) interval, i.e. the 90 % interval at α = 0.05. The usual 95 % interval would be too strict for this decision."
+        },
+        {
+          "type": "definition",
+          "term": "Method",
+          "content": "Two samples: normal approximation (Wald) for both one-sided z-tests; the p-value is the larger of the two. One sample: exact procedure via the Clopper-Pearson (1 − 2α) interval, which stays usable at 0 events. If both proportions are 0 or both are 1 the approximation does not hold; the module then shows a notice instead of a result. Minitab offers equivalence tests only for means; there are no reference values for proportions."
+        }
+      ]
+    },
+    "poissonRates": {
+      "title": "1 and 2 Poisson rates",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "When you count defects instead of good and bad units – paint defects per area, breakdowns per operating hour – the result is a {{term:poisson-rate|Poisson rate}}: x events in the exposure t. The exposure is the area, time or number of units in which the events were counted; it need not be an integer and may differ between two rates – x/t is compared. With columns, the count column gives the events per row; the exposure per row is entered separately."
+        },
+        {
+          "type": "definition",
+          "term": "1 rate",
+          "content": "The exact test rests on the Poisson distribution with mean λ₀·t; the confidence interval is the exact (Garwood) interval. The two-sided p-value doubles the smaller one-sided value (doubling rule, capped at 1) and thus matches the interval. The normal approximation (z) is shown alongside and is reliable only when λ₀·t ≥ 5."
+        },
+        {
+          "type": "definition",
+          "term": "Difference to R",
+          "content": "The function poisson.test in R forms the two-sided p-value by the \"minlike\" method (all outcomes at most as likely as the observed one). This module doubles the smaller one-sided value instead (\"central\"). The p-values can therefore differ; the interval is the same."
+        },
+        {
+          "type": "definition",
+          "term": "2 rates",
+          "content": "Difference of the rates with a normal-approximation interval (unpooled standard error) and a z-test of the difference. By default the rates are estimated separately; \"pooled estimate\" uses a common rate and is possible only for the hypothesis \"difference = 0\". Alongside are the exact conditional test (binomial on x₁ out of x₁ + x₂, central as above) and the ratio of the rates with its interval."
+        }
+      ]
+    },
+    "association": {
+      "title": "Chi-square association",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Tests whether two categorical variables are related ({{term:nullhypothese|H₀}}: independent). Each cell shows observed and expected count and its contribution to χ² – large contributions show where the association sits. Pearson χ² is accompanied by the likelihood ratio G². For 2×2 tables Yates' correction and Fisher's exact test are added; only there the test direction can be chosen, and it applies to Fisher's exact test only – the decision always rests on the two-sided Pearson χ²."
+        },
+        {
+          "type": "definition",
+          "term": "Warnings",
+          "content": "If an expected count is below 1 or more than 20 % are below 5, the χ² test is unreliable – merge categories or, for 2×2, use Fisher's exact test. Rows and columns without observations are dropped."
+        },
+        {
+          "type": "paragraph",
+          "content": "The mosaic plot shows the same association visually."
+        }
+      ]
+    }
+  }
+}

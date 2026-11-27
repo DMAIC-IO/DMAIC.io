@@ -122,7 +122,7 @@ export const BOUND_HELP_KEY_FAMILIES = [
   {
     moduleId: 'attribute-test',
     keys: async () => {
-      const { STAT_ROWS } = await import('../../js/modules/attribute-test/attribute-test-report.js');
+      const { STAT_ROWS } = await import('../../js/modules/attribute-test/domain/report.js');
       return Object.entries(STAT_ROWS).flatMap(([kind, rows]) =>
         rows.map((key) => `modules.attribute-test.stats.${kind}.${key}`));
     },
