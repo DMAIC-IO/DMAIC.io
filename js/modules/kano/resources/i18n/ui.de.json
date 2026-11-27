@@ -78,7 +78,7 @@
   "confirm": {
     "setSourceLevel": "Die Ebene zu wechseln baut die Item-Liste neu auf. Alle erfassten Antworten gehen dabei verloren. Fortfahren?",
     "removeRespondent": "Diese:n Befragte:n samt aller Antworten löschen?",
-    "overwriteTree": "Der VoC→CTx-Baum im Projekt hat schon Inhalt. Mit dem Beispielbaum überschreiben? Bei „Abbrechen“ lädt das Beispiel ohne Baumbezug."
+    "overwriteTree": "Der VoC→CTx-Baum im Projekt hat schon Inhalt. Mit dem Beispielbaum überschreiben? Andere Kano-Instanzen, die an diesem Baum hängen, verlieren dabei ihren Bezug. Bei „Abbrechen“ lädt das Beispiel ohne Baumbezug."
   },
   "invariants": {
     "uniqueItemIds": "Jedes Merkmal hat eine eigene Kennung.",

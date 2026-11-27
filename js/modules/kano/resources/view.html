@@ -46,6 +46,7 @@
                 x-text="t('respondentAdd')"></button>
       </div>
 
+      <!-- data-help-key="" am Tablist ist gewollt: die Hilfe hängt am Reiternamen (fields.activeRespondentId). -->
       <div class="dmike-tabs" data-ref="respondentTabs" role="tablist" x-tablist
            x-set="model.activeRespondentId" data-help-key="">
         <template x-for="r in model.respondents" :key="r.id">

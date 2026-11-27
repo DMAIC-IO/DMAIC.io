@@ -96,6 +96,7 @@ export default createModule({
       blocked() {
         if (this.hasNoTree) return this.t('sourceNone');
         if (this.sourceId === null) return this.t('syncDetached');
+        if (this.activeTree === null) return this.t('sourceHint.unknownTree');
         if (!this.hasPending) return this.t('syncClean');
         return null;
       },
@@ -229,7 +230,9 @@ export default createModule({
       /** Die Statuszeile unter dem Übernahmeknopf. */
       get syncStatus() {
         if (this.isDetached) return this.t('syncDetached');
-        if (!this.activeTree) return '';
+        if (this.sourceId === null) return '';
+        // Verknüpfter Baum gelöscht: dieselbe Begründung wie am gesperrten Knopf.
+        if (!this.activeTree) return this.t('sourceHint.unknownTree');
         if (!this.hasPending) return this.t('syncClean');
         return this.t('syncPending', this.pending);
       },

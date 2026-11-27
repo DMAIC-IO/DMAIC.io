@@ -246,7 +246,28 @@ suite('kano: Viewmodel im Browser', () => {
     assertEqual(vm.model.source.instanceId, 't1', 'Verknüpfung bleibt gespeichert');
     assertEqual(h.qa('[data-ref="treeSelect"] option').length, 1);
     assertEqual(vm.read({ fields: ['sourceHint'] }).sourceHint, tr('sourceHint.unknownTree'));
-    assertEqual(text(h.q('[data-ref="syncStatus"]')), '');
+    assertEqual(text(h.q('[data-ref="syncStatus"]')), tr('sourceHint.unknownTree'));
+  });
+
+  test('zwei Bäume, verknüpfter gelöscht: Knopf gesperrt mit Grund „Baum fehlt“, Statuszeile nennt ihn', async () => {
+    const w = world({
+      t1: treeOf('Lieferung', [['n1', 'Schnell'], ['n2', 'Günstig']]),
+      t2: treeOf('Service', [['m1', 'Freundlich']]),
+    });
+    const h = await mount(filled(), { w });
+    const vm = h.vm();
+    await until(() => vm.state.trees.length === 2);
+    await until(() => text(h.q('[data-ref="syncStatus"]')) === tr('syncPending', { added: 0, renamed: 2, missing: 0 }));
+    delete w.trees.t1;
+    w.bus.emit('module:removed', { instanceId: 't1', moduleId: 'voc-ctx-tree' });
+    await until(() => vm.state.trees.length === 1);
+    assertEqual(vm.sourceId, 't1', 'Verknüpfung bleibt gespeichert');
+    assertEqual(vm.activeTree, null);
+    assertTrue(!shown(h.q('.dmike-infobox')), 'ein Baum ist noch da');
+    await until(() => text(h.q('[data-ref="syncStatus"]')) === tr('sourceHint.unknownTree'));
+    const btn = h.q('[data-ref="syncBtn"]');
+    assertTrue(btn.disabled);
+    assertEqual(btn.title, tr('sourceHint.unknownTree'));
   });
 
   test('Baumwahl „keine“: Verknüpfung gelöst, Heilung gesperrt, losgelöst-Hinweis', async () => {

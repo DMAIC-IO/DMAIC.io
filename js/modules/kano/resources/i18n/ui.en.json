@@ -78,7 +78,7 @@
   "confirm": {
     "setSourceLevel": "Changing the level rebuilds the item list. All captured answers will be lost. Continue?",
     "removeRespondent": "Delete this respondent along with all their answers?",
-    "overwriteTree": "The VoC→CTx tree in this project already has content. Overwrite it with the example tree? With “Cancel” the example loads without a tree link."
+    "overwriteTree": "The VoC→CTx tree in this project already has content. Overwrite it with the example tree? Other Kano instances linked to this tree lose their link as well. With “Cancel” the example loads without a tree link."
   },
   "invariants": {
     "uniqueItemIds": "Every item has its own identifier.",
