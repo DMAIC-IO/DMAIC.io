@@ -432,6 +432,29 @@ suite('GridInput — Bedienung meldet Kommandos', () => {
     const s = await setup({ roles: ['setCells'] });
     try {
       assertEqual(s.host.querySelector('thead th.datagrid__corner .datagrid__export-btn'), null);
+      assertEqual(s.host.querySelector('thead th.datagrid__corner .datagrid__open-in-ws-btn'), null);
+    } finally { s.done(); }
+  });
+
+  // Eckknopf „In Datensammlung öffnen“ wie im Altraster (`openInWorksheet`):
+  // nur mit der Rolle, auch im Nur-Lese-Zustand, neben dem Exportknopf.
+  test('Eckknopf „In Datensammlung öffnen“ meldet openInWorksheet, auch nur lesend', async () => {
+    const s = await setup({ roles: ['exportAs', 'openInWorksheet'], readOnly: true });
+    try {
+      const btns = [...s.host.querySelectorAll('thead th.datagrid__corner .datagrid__corner-btns > button')];
+      assertDeepEqual(btns.map((b) => b.className), ['datagrid__export-btn', 'datagrid__open-in-ws-btn']);
+      assertEqual(btns[1].title, 'openInWorksheet');
+      assertTrue(btns[1].querySelector('.icon') !== null, 'Icon');
+      btns[1].click();
+      assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['openInWorksheet', {}]]);
+    } finally { s.done(); }
+  });
+
+  test('openInWorksheet ohne exportAs: nur dieser Knopf in der Ecke', async () => {
+    const s = await setup({ roles: ['openInWorksheet'] });
+    try {
+      assertEqual(s.host.querySelector('thead th.datagrid__corner .datagrid__export-btn'), null);
+      assertTrue(s.host.querySelector('thead th.datagrid__corner .datagrid__open-in-ws-btn') !== null);
     } finally { s.done(); }
   });
 

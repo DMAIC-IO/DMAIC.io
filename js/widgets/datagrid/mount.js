@@ -6,7 +6,8 @@
  * Widget ruft `command(config.commands[role], { ...config.commandArgs, ...args })`.
  * Datenrollen wie in grid-input.js, darunter `moveCells { source, toCol, toRow }`
  * (Block am Auswahlrand verschieben, Merkmal `structure`).
- * Fehlt die Rolle in `commands`, ist ihr Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke. Die
+ * Fehlt die Rolle in `commands`, ist ihr Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke,
+ * `openInWorksheet {}` daneben den Knopf „In Datensammlung öffnen“ (beide auch nur lesend). Die
  * Ansichtsereignisse `contextMenu { id, columnId, row }` und
  * `openFormulaEditor { columnId, row, text? }` sind keine Datenrollen; sie gehen an
  * `config.commands.contextMenu` bzw. `.openFormulaEditor`, falls hinterlegt.
@@ -31,6 +32,7 @@ const ROLES = new Set([
   'setCells', 'setFormula', 'pasteBlock', 'fillRange', 'moveCells', 'clearRange', 'addColumn', 'removeColumn',
   'moveColumn', 'renameColumn', 'addRows', 'removeRows', 'moveRow', 'sortRows', 'setColumnType',
   'setColumnFormat', 'setColumnRole', 'undo', 'redo', 'gridView', 'contextMenu', 'openFormulaEditor', 'exportAs',
+  'openInWorksheet',
 ]);
 
 const EMPTY = Object.freeze({});

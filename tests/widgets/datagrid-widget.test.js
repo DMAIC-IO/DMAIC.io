@@ -80,6 +80,10 @@ const Sheet = defineModel({
       params: { sheetId: text(), id: text(), columnId: text(), row: number({ integer: true, min: 0 }) },
       run(args) { calls.push(['onMenu', args]); },
     }),
+    onOpen: command({
+      params: { sheetId: text() },
+      run(args) { calls.push(['onOpen', args]); },
+    }),
     keepView: command({
       params: {
         sheetId: text(),
@@ -266,6 +270,21 @@ suite('datagrid widget über table()', () => {
     item.click();
     await settle();
     assertDeepEqual(calls, [['onMenu', { sheetId: 's1', id: 'forbid', columnId: 'b', row: 2 }]]);
+  });
+
+  test('Rolle openInWorksheet: Eckknopf auch nur lesend, Klick → Kommando mit commandArgs', async () => {
+    const { root } = await host({ config: { readOnly: true, commands: { openInWorksheet: 'onOpen' } } });
+    const btn = root.querySelector('thead th.datagrid__corner .datagrid__open-in-ws-btn');
+    assertTrue(btn !== null, 'Knopf in der Ecke');
+    assertEqual(root.querySelector('thead th.datagrid__corner .datagrid__export-btn'), null, 'ohne exportAs kein Exportknopf');
+    btn.click();
+    await settle();
+    assertDeepEqual(calls, [['onOpen', { sheetId: 's1' }]]);
+  });
+
+  test('ohne Rolle openInWorksheet kein Knopf „In Datensammlung öffnen“', async () => {
+    const { root } = await host();
+    assertEqual(root.querySelector('thead th.datagrid__corner .datagrid__open-in-ws-btn'), null);
   });
 
   test('unbekannte Rolle in config.commands: Widget im Fehlerzustand', async () => {

@@ -147,6 +147,8 @@ export function createGridInput(view, {
   }
   // Export ändert keine Daten: auch im Nur-Lese-Zustand, aber nur mit hinterlegter Rolle.
   const canExport = Boolean(roleSet?.has('exportAs'));
+  // Ebenso „In Datensammlung öffnen“: liest nur, auch im Nur-Lese-Zustand.
+  const canOpenInWorksheet = Boolean(roleSet?.has('openInWorksheet'));
   function send(role, args) {
     if (can(role)) emit(role, args);
   }
@@ -190,7 +192,7 @@ export function createGridInput(view, {
     const sortIdx = sortState ? columns.findIndex((c) => c.id === sortState.columnId) : -1;
     view.draw(table, columns, formulas, {
       colWidths, lang, sortCol: sortIdx >= 0 ? sortIdx : undefined, sortDir: sortIdx >= 0 ? sortState.dir : undefined,
-      cornerExport: canExport,
+      cornerExport: canExport, cornerOpenInWorksheet: canOpenInWorksheet,
     });
   }
 
@@ -942,6 +944,11 @@ export function createGridInput(view, {
     if (exportBtn && canExport) {
       e.stopPropagation();
       openExportMenu(/** @type {HTMLElement} */ (exportBtn));
+      return;
+    }
+    if (canOpenInWorksheet && /** @type {HTMLElement} */ (e.target).closest('thead .datagrid__open-in-ws-btn')) {
+      e.stopPropagation();
+      emit('openInWorksheet', {});
       return;
     }
     const badge = /** @type {HTMLElement} */ (e.target).closest('thead .col-type-badge');

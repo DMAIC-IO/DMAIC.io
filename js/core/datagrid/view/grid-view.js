@@ -99,7 +99,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
   const headerSig = () => JSON.stringify([
     cols.map((c) => [c.id, c.name, c.shortName, c.type, c.unit, c.role, c.roleManual, c.lock, c.reason, c.managedBy, c.format]),
     viewState.colWidths || null, viewState.sortCol ?? null, viewState.sortDir ?? null, curLang,
-    viewState.cornerExport === true,
+    viewState.cornerExport === true, viewState.cornerOpenInWorksheet === true,
   ]);
   const colWidth = (col) => (viewState.colWidths && viewState.colWidths[col.id]) || defColW();
 
@@ -109,12 +109,17 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
       ...cols.map((col) => h('col', { style: `width:${colWidth(col)}px` })));
     table.querySelector('colgroup')?.remove();
     table.prepend(colgroup);
-    // Ecke: Exportknopf wie im Altraster (`_renderHeader`), nur mit `cornerExport`.
+    // Ecke: Exportknopf und „In Datensammlung öffnen“ wie im Altraster
+    // (`_renderHeader`), nur mit `cornerExport` bzw. `cornerOpenInWorksheet`.
     const corner = h('th', { class: 'datagrid__row-header datagrid__corner' });
+    const cornerBtns = [];
     if (viewState.cornerExport === true) {
-      corner.append(h('div', { class: 'datagrid__corner-btns' },
-        h('button', { class: 'datagrid__export-btn', type: 'button', title: t('app.export') }, icon('action.download'))));
+      cornerBtns.push(h('button', { class: 'datagrid__export-btn', type: 'button', title: t('app.export') }, icon('action.download')));
     }
+    if (viewState.cornerOpenInWorksheet === true) {
+      cornerBtns.push(h('button', { class: 'datagrid__open-in-ws-btn', type: 'button', title: t('ui.datagrid.openInWorksheet') }, icon('nav.external')));
+    }
+    if (cornerBtns.length) corner.append(h('div', { class: 'datagrid__corner-btns' }, ...cornerBtns));
     const tr = h('tr', { class: 'datagrid__column-header' }, corner);
     cols.forEach((col, i) => {
       const roleKey = col.role || defaultRoleForType(col.type);
@@ -277,7 +282,8 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
      * @param {GridColumn[]} columns Spaltenköpfe
      * @param {Record<string, Record<string, string>>} f Formeln je Spalten-Id und Zeile
      * @param {{ colWidths?: Record<string, number>, sortCol?: number, sortDir?: string, lang?: string,
-     *   cornerExport?: boolean }} [view] `cornerExport`: Exportknopf in der Ecke
+     *   cornerExport?: boolean, cornerOpenInWorksheet?: boolean }} [view] `cornerExport`: Exportknopf in der Ecke,
+     *   `cornerOpenInWorksheet`: Knopf „In Datensammlung öffnen“ daneben
      */
     draw(tbl, columns, f, view = {}) {
       cols = columns || [];
