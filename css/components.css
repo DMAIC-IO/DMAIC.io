@@ -2122,6 +2122,24 @@ th .context-help-anchor > .context-help__btn {
   top: 50%;
 }
 
+/* Abschnittsbeschriftung im Ausgabebereich (Marker-Icon + Text). Steht sie
+   als erstes Element bündig an der Oberkante des Scroll-Containers
+   (response-optimization: Ergebnis), ragte der an der Oberkante des Ankers
+   zentrierte Kreis über ihn hinaus und würde oben abgeschnitten. Der
+   16px-Kreis ist höher als die kleine Textzeile; zentriert auf dem Text
+   allein fehlten ihm Bruchteile eines Pixels. Der Anker füllt deshalb die
+   Zeilenhöhe (die des 16px-Icons), der Text bleibt darin mittig, und der
+   Kreis sitzt genau in der Zeile. */
+.dmike-split__output-section > .context-help-anchor {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.dmike-split__output-section > .context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
 /* Anker NEBEN einem Eingabefeld: DatasetPicker-Slotbuchstabe (X, Y, G) und
    der Text einer Optionszeile (`…__opt-row`, Label mit Select). Der Kreis
    rechts vom Anker läge auf dem Select und verdeckte dessen ersten Buchstaben
