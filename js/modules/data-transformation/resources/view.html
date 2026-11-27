@@ -111,7 +111,7 @@
     </template>
   </div>
 
-  <div class="dmike-split__output" data-ref="output">
+  <div class="dmike-split__output" data-ref="output" x-async-task="analysis">
     <p class="dt-hint" data-ref="fallback-hint" x-show="fallbackActive" x-text="t('warnBoxCoxFallback')"></p>
 
     <template x-if="errorText">

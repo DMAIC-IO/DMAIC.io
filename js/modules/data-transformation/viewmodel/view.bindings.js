@@ -10,4 +10,5 @@
 /** @type {WidgetProps['probability-plot-chart']['legacyEditKey']} */ export const b5 = vm.legacyPpOrigKey; // resources/view.html:138 x-widget-legacy-edit-key
 /** @type {WidgetProps['probability-plot-chart']['config']} */ export const b6 = vm.computed.ppTransChart(); // resources/view.html:142 x-widget-config
 /** @type {WidgetProps['probability-plot-chart']['legacyEditKey']} */ export const b7 = vm.legacyPpTransKey; // resources/view.html:143 x-widget-legacy-edit-key
-/** @type {import('../../../core/async-task.js').AsyncTaskDef} */ export const b8 = tasks.toWorksheet; // resources/view.html:186 x-async-task
+/** @type {import('../../../core/async-task.js').AsyncTaskDef} */ export const b8 = tasks.analysis; // resources/view.html:114 x-async-task
+/** @type {import('../../../core/async-task.js').AsyncTaskDef} */ export const b9 = tasks.toWorksheet; // resources/view.html:186 x-async-task
