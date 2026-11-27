@@ -17,13 +17,14 @@
 }
 
 /* ── Category Tabs ── */
+/* Größenart = Moduswahl: Kern-Segmentgruppe, hier umbrechend. */
 .module-unit-converter__categories {
-  display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-s);
   margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.module-unit-converter__cat-btn {
+  gap: var(--spacing-xs);
 }
 
 /* ── Converter Panel ── */

@@ -47,8 +47,10 @@ export default createModule({
       catIcon(catKey) { return CATEGORIES[catKey]?.icon || ''; },
       /** @param {string} catKey @returns {string} */
       catActiveClass(catKey) {
-        return this.model.activeCat === catKey ? 'chip--active module-unit-converter__cat-btn--active' : '';
+        return this.model.activeCat === catKey ? 'btn--active module-unit-converter__cat-btn--active' : '';
       },
+      /** @param {string} catKey @returns {'true'|'false'} Segmentzustand für aria-pressed */
+      catPressed(catKey) { return this.model.activeCat === catKey ? 'true' : 'false'; },
 
       /** @param {string} unitKey @returns {string} */
       unitLabel(unitKey) {
