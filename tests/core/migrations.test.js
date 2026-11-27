@@ -159,7 +159,7 @@ suite('Migrations — goldene Fixtures', () => {
   });
 });
 
-// Paket 3d, Kernschritt (Spec 2026-11-27-f2-regression-paket-design.md §1.6):
+// Modelle beim Besitzer:
 // echter Einzelexport der Altform mit `models` (Besitzer regression/glm, Waise
 // m-c ohne Besitzer) und `optimizations` (o1 verwiesen, o2 unverwiesen). Nach
 // Versionskette und `adoptProjectModels` tragen die Instanzen die Daten.

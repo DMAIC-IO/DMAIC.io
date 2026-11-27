@@ -158,8 +158,7 @@ das Migrationsverbot rechtfertigt (z.B. v2 → v3 unterstützt v0.x nicht mehr),
 darf eine Fixture mit dem entsprechenden Vermerk im CHANGELOG entfernt werden.
 
 Die v1.9.6-Fixture `v1.9.6_models_project.json` ist ein echter Einzelexport der
-Altform mit den Projektschlüsseln `models` und `optimizations` (Paket 3d,
-`docs/superpowers/specs/2026-11-27-f2-regression-paket-design.md` §1.6):
+Altform mit den Projektschlüsseln `models` und `optimizations`:
 `regression` mit Modell `m-a`, `glm-regression` mit `m-b`, Waise `m-c`
 (Besitzer gelöscht), `response-optimization` mit `o1` über `m-a`/`m-c` und
 einer unverwiesenen Optimierung `o2`. `migrations.test.js` führt sie durch die

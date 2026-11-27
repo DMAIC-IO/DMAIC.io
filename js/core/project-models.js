@@ -21,8 +21,6 @@
  * Pure and idempotent: the input document is never mutated; a second run on
  * the result (or on a document where the owners already carry their models)
  * reports `changed: []`.
- *
- * Spec: docs/superpowers/specs/2026-11-27-f2-regression-paket-design.md §1.3.
  */
 
 const OWNER_MODULES = new Set(['regression', 'glm-regression']);

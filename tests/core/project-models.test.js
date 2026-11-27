@@ -1,7 +1,7 @@
 /**
  * Tests for js/core/project-models.js — `adoptProjectModels` moves the legacy
  * project keys `models` / `optimizations` / `experiments` into the owner
- * instances (spec 2026-11-27-f2-regression-paket-design.md §1.3, §1.6).
+ * instances.
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
