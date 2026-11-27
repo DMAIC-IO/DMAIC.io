@@ -771,30 +771,6 @@
       ]
     },
     {
-      "id": "activity-flowchart-anfrage-zu-angebot",
-      "type": "project",
-      "title": {
-        "de": "Activity Flowchart Anfrage-zu-Angebot",
-        "en": "Activity Flowchart Quote Request"
-      },
-      "description": {
-        "de": "7 Schritte vom Erfassen der Kundenanfrage bis zur Auftragsbestätigung — 6 Aktivitäten plus eine Freigabe-Entscheidung, deren Nein-Zweig ein eigenes Band mit einem Überarbeitungs-Schritt öffnet, bevor es zurück in die Angebotskalkulation geht.",
-        "en": "7 steps from capturing a customer inquiry to the order confirmation — 6 activities plus one approval decision whose no-branch opens its own band with a revision step before looping back into the quote calculation."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/activity-flowchart-anfrage-zu-angebot.json",
-      "format": "json",
-      "modules": [
-        "activity-flowchart"
-      ],
-      "tags": [
-        "analyze",
-        "activity-flowchart",
-        "rfq-prozess"
-      ]
-    },
-    {
       "id": "worksheet-hubschrauber-flyer",
       "type": "project",
       "title": {

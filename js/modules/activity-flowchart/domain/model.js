@@ -233,7 +233,8 @@ export class State extends defineModel({
       returns: text(),
       run({ stepId }) {
         const id = `ss${uid()}`;
-        this.steps = addSubstep(copySteps(this.steps), stepId, { id, title: '' });
+        const substep = { id, title: '' };
+        this.steps = addSubstep(copySteps(this.steps), stepId, substep);
         return id;
       },
     }),

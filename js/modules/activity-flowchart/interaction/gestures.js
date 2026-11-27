@@ -63,12 +63,12 @@ export const flow = defineGesture({
    * @returns {FlowPosition|null}
    */
   locate(point, ctx, from) {
-    for (const gap of ctx.root.querySelectorAll('[data-gap]')) {
+    for (const gap of Array.from(ctx.root.querySelectorAll('[data-gap]'))) {
       if (!contains(gap, point)) continue;
       const at = gapToIndex(this.model.steps, from.id, Number(/** @type {HTMLElement} */ (gap).dataset.gap));
       return { id: from.id, index: at, band: from.band };
     }
-    for (const lane of ctx.root.querySelectorAll('.af__lane[data-band-id]')) {
+    for (const lane of Array.from(ctx.root.querySelectorAll('.af__lane[data-band-id]'))) {
       if (contains(lane, point)) return { id: from.id, index: from.index, band: /** @type {HTMLElement} */ (lane).dataset.bandId };
     }
     return null;

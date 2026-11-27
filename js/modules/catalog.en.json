@@ -1,5 +1,10 @@
 {
   "$schema": "../../schemas/catalog-texts.schema.json",
+  "activity-flowchart": {
+    "name": "Activity Flowchart",
+    "description": "Chain of activities and decisions with rework loops",
+    "whenToUse": "When a process is a chain of activities and yes/no decisions with rework loops — not for a plain chain without branches (Process Map covers that)."
+  },
   "attribute-control-chart": {
     "name": "Control Chart (Attribute)",
     "description": "SPC charts for count data: p, np, c, u",

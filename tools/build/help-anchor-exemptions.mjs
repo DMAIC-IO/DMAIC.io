@@ -278,6 +278,16 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.reorderNodes', reason: 'Ziehen am Abzeichen je Knoten; ein Fragezeichen je Griff wäre Rauschen' },
     { name: 'fields.vocs', reason: 'der Baum selbst hat keine Beschriftung (Karten und Knoten); verankert sind seine Formularfelder an fields.vocs.<feld>' },
   ],
+  'activity-flowchart': [
+    { name: 'actions.addSubstep', reason: 'Knopf „Unter-Schritt hinzufügen“ je Karte; geteilter Teil `substeps.view.part.html`, `x-command` verankert zur Laufzeit; statische Zählung sieht es nicht' },
+    { name: 'actions.appendSteps', reason: 'nur für den Agenten und den Importdialog; die Oberfläche importiert über „Importieren aus …“' },
+    { name: 'actions.moveSubstep', reason: 'Ziehgriff je Unterschritt, keine Beschriftung; ein Fragezeichen je Griff wäre Rauschen' },
+    { name: 'actions.removeStep', reason: 'Löschknopf je Karte und Raute; Anker bewusst abgeschaltet (`data-help-key=""`), ein Fragezeichen je Karte wäre Rauschen' },
+    { name: 'actions.removeSubstep', reason: 'Löschknopf je Unterschritt; geteilter Teil `substeps.view.part.html`, `x-command` verankert zur Laufzeit; statische Zählung sieht es nicht' },
+    { name: 'actions.setExpanded', reason: 'Umschaltleiste der Unterschritte je Karte; geteilter Teil `substeps.view.part.html`, `x-command` verankert zur Laufzeit; statische Zählung sieht es nicht' },
+    { name: 'actions.setStepBand', reason: 'die Oberfläche wechselt das Band durch Ziehen am Griff auf eine Bandzeile (moveStep, verankert); sonst nur für den Agenten' },
+    { name: 'fields.steps', reason: 'die Kette hat keine eigene Beschriftung; verankert sind Griff, Bandbeschriftung, „Nein“ an der Raute und die Textfelder der Karten' },
+  ],
   'deployment-flowchart': [
     { name: 'actions.addLane', reason: 'Knopf „Rolle hinzufügen“ in der Werkzeugleiste; die Werkzeugleiste verankert ihn erst zur Laufzeit' },
     { name: 'actions.addStep', reason: 'Knopf „Schritt hinzufügen“ in der Werkzeugleiste und Verbinder je Lücke und Bahn; x-command und Werkzeugleiste verankern erst zur Laufzeit, ein Fragezeichen je Verbinder wäre Rauschen' },

@@ -65,8 +65,11 @@ suite('Activity-Flowchart: Kontexthilfe', () => {
       const ch = await loadJson(`i18n/context-help.${lang}.json`);
       for (const k of ['steps', 'steps.title', 'steps.description', 'steps.kind', 'steps.branchId', 'steps.decision',
         'steps.decision.label', 'steps.decision.noTarget', 'steps.substeps', 'steps.substeps.title', 'expanded',
-        'bands', 'bands.id', 'bands.ownerId', 'bands.label', 'bands.depth']) {
+        'bands']) {
         assertTrue(filled(get(ch, `fields.${k}.help`)), `fields.${k}.help fehlt (${lang})`);
+      }
+      for (const k of ['id', 'ownerId', 'label', 'depth']) {
+        assertTrue(filled(get(ch, `types.BandRow.${k}`)), `types.BandRow.${k} fehlt (${lang})`);
       }
       for (const [cmd, params] of Object.entries(COMMANDS)) {
         assertTrue(filled(get(ch, `actions.${cmd}.help`)), `actions.${cmd}.help fehlt (${lang})`);
@@ -76,7 +79,7 @@ suite('Activity-Flowchart: Kontexthilfe', () => {
         }
       }
       for (const dead of DEAD_ACTIONS) assertEqual(get(ch, `actions.${dead}`), undefined, `${dead} (${lang})`);
-      assertEqual(get(ch, 'types'), undefined, `types (${lang}) muss entfallen`);
+      assertEqual(Object.keys(get(ch, 'types')).join(), 'BandRow', `types (${lang}) nur BandRow`);
     }
   });
 

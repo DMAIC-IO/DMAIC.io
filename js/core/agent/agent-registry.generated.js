@@ -6,6 +6,7 @@ export const AGENT_REGISTRY = {
   "activity-flowchart": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -21,348 +22,303 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setSubstepsExpanded": {
+      "addStep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the step whose substeps are shown or hidden"
-          },
-          {
-            "name": "expanded",
-            "type": "boolean",
-            "optional": false,
-            "help": "whether the substep list should be shown"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a step's substep disclosure absolutely."
-      },
-      "moveStep": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des zu verschiebenden Schritts"
-          },
-          {
-            "name": "gapIndex",
-            "type": "number",
-            "optional": false,
-            "help": "Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in der Kette VOR dem Verschieben."
-      },
-      "moveSubstep": {
-        "params": [
-          {
-            "name": "parentId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "substepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des zu verschiebenden Unter-Schritts"
-          },
-          {
-            "name": "targetSubstepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Unter-Schritts, dessen Platz er einnimmt"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts."
-      },
-      "addSubstep": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the step that gets the new substep"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Append an empty substep to a step."
-      },
-      "removeSubstep": {
-        "params": [
-          {
-            "name": "parentId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the step holding the substep"
-          },
-          {
-            "name": "substepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the substep to remove"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove one substep from its parent step."
-      },
-      "setSubstepTitle": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the step holding the substep"
-          },
-          {
-            "name": "substepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the substep"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "the new title"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a substep's title."
-      },
-      "appendStep": {
-        "params": [
-          {
-            "name": "kind",
+        "help": "",
+        "keysOf": "addStep",
+        "keysHelp": "actions.addStep.params",
+        "keys": {
+          "kind": {
             "type": "'activity'|'decision'",
-            "optional": false,
-            "help": "Art des neuen Schritts"
-          }
-        ],
-        "returns": "string",
-        "help": "Hängt eine Aktivität oder Entscheidung an die Kette und liefert ihre id. Blendet die neue Karte ins Sichtfeld, falls die Kette breiter ist als der Canvas — sonst wüchse sie aus dem Sichtbereich heraus."
-      },
-      "setStepTitle": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
+            "help": "",
+            "optional": true
           },
-          {
-            "name": "text",
+          "bandId": {
             "type": "string",
-            "optional": false,
-            "help": "der neue Titel"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Titel eines Schritts."
-      },
-      "setStepDescription": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
+            "help": "",
+            "optional": true
           },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die neue Beschreibung"
+          "index": {
+            "type": "number",
+            "help": "",
+            "optional": true
           }
-        ],
-        "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts."
-      },
-      "setDecisionLabel": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Entscheidung"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Text"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Frage einer Entscheidung."
-      },
-      "setDecisionTarget": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Entscheidung"
-          },
-          {
-            "name": "target",
-            "type": "string",
-            "optional": false,
-            "help": "neues Ziel: `'end'` oder die id eines anderen Schritts aus demselben Band, in dem die Entscheidung selbst steht (dasselbe Band wie der Picker in der UI anbietet — nicht das Band, das die Entscheidung öffnet). Eine unbekannte id, die eigene id, oder die id eines Schritts aus einem anderen Band ist ein Fehler."
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt das Ziel des Nein-Zweigs einer Entscheidung. Delegiert an die gleichnamige Model-Methode. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der ohnehin zum nächsten Schritt weiterfließt."
+        }
       },
       "removeStep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Schritt aus der Kette. Löst bei einer Entscheidung ihr Band auf: die darin liegenden Schritte erben das Band der entfernten Entscheidung, statt mit ihr zu verschwinden."
+        "help": "",
+        "keysOf": "removeStep",
+        "keysHelp": "actions.removeStep.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveStep": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveStep",
+        "keysHelp": "actions.moveStep.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "setStepBand": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "bandId",
-            "type": "string",
-            "optional": false,
-            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt das Band eines vorhandenen Schritts; seine Kettenposition bleibt."
-      },
-      "insertInBand": {
-        "params": [
-          {
-            "name": "idx",
-            "type": "number",
-            "optional": false,
-            "help": "Chain index the new step takes (0…Kettenlänge)"
+        "help": "",
+        "keysOf": "setStepBand",
+        "keysHelp": "actions.setStepBand.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
           },
-          {
-            "name": "bandId",
+          "bandId": {
             "type": "string",
-            "optional": false,
-            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+            "help": ""
           }
-        ],
-        "returns": "string",
-        "help": "Fügt eine Aktivität an einer Kettenlücke in ein bestimmtes Band ein und liefert ihre id."
+        }
       },
-      "addActivityToBand": {
+      "setDecisionTarget": {
+        "target": "model",
         "params": [
           {
-            "name": "bandId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string",
-        "help": "Hängt eine Aktivität ans Ende eines Bands und liefert ihre id."
+        "returns": "void",
+        "help": "",
+        "keysOf": "setDecisionTarget",
+        "keysHelp": "actions.setDecisionTarget.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "target": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "addDecisionToBand": {
+      "addSubstep": {
+        "target": "model",
         "params": [
           {
-            "name": "bandId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Hängt eine Entscheidung ans Ende eines Bands und liefert ihre id; die Entscheidung öffnet ein eigenes Band darunter."
+        "help": "",
+        "keysOf": "addSubstep",
+        "keysHelp": "actions.addSubstep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeSubstep": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeSubstep",
+        "keysHelp": "actions.removeSubstep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "substepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveSubstep": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveSubstep",
+        "keysHelp": "actions.moveSubstep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "substepId": {
+            "type": "string",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "setExpanded": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setExpanded",
+        "keysHelp": "actions.setExpanded.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "expanded": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "appendSteps": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "appendSteps",
+        "keysHelp": "actions.appendSteps.params",
+        "keys": {
+          "steps": {
+            "type": "{ title: string, description: string }[]",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "steps": {
-        "type": "ActivityStep[]",
-        "help": "die Kette in Reihenfolge, jede Angabe unter keys beschrieben",
+        "type": "Array<{ id: string, title: string, description: string, kind: 'activity'|'decision', branchId: string, decision: { label: string, noTarget: string }|null, substeps: { id: string, title: string }[] }>",
+        "help": "",
+        "bulk": false
+      },
+      "bands": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
-        "keysOf": "ActivityStep",
+        "keysOf": "BandRow",
         "keys": {
           "id": {
             "type": "string",
-            "help": "Kennung"
+            "help": "Band-id: `main` oder `no:<id der Raute>`"
           },
-          "title": {
+          "ownerId": {
+            "type": "string|null",
+            "help": "die Raute, die das Band öffnet; beim Hauptpfad keine"
+          },
+          "label": {
             "type": "string",
-            "help": "Titel"
+            "help": "Beschriftung in der App-Sprache"
           },
-          "description": {
-            "type": "string",
-            "help": "Beschreibung"
-          },
-          "kind": {
-            "type": "'activity'|'decision'",
-            "help": "Tätigkeit oder Entscheidung"
-          },
-          "branchId": {
-            "type": "string",
-            "help": "Band, in dem der Schritt steht: `main` oder `no:<id der Entscheidung>`"
-          },
-          "expanded": {
-            "type": "boolean",
-            "help": "Unter-Schritte aufgeklappt"
-          },
-          "substeps": {
-            "type": "FlowSubstep[]",
-            "help": "Unter-Schritte",
-            "keysOf": "FlowSubstep",
-            "keys": {
-              "id": {
-                "type": "string",
-                "help": "Kennung"
-              },
-              "title": {
-                "type": "string",
-                "help": "Titel"
-              }
-            }
-          },
-          "decision": {
-            "type": "ActivityDecision|null",
-            "help": "die Verzweigung, nur bei einer Entscheidung, sonst null",
-            "keysOf": "ActivityDecision",
-            "keys": {
-              "label": {
-                "type": "string",
-                "help": "Frage der Entscheidung"
-              },
-              "noTarget": {
-                "type": "string",
-                "help": "Ziel des Nein-Zweigs: `end` oder die id eines Schritts"
-              }
-            }
+          "depth": {
+            "type": "number",
+            "help": "Schachtelungstiefe, Hauptpfad 0"
           }
         }
-      },
-      "bands": {
-        "type": "Array<{id: string, ownerId: string|null, label: string, depth: number}>",
-        "help": "die Bänder, die `bandId` annimmt, Hauptpfad zuerst",
-        "bulk": false,
-        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "expanded"
+    ],
+    "settable": [
+      "steps"
+    ],
+    "invariants": [
+      "uniqueStepIds",
+      "uniqueSubstepIds",
+      "decisionShape",
+      "knownBranch",
+      "knownNoTarget",
+      "validExpanded"
+    ]
   },
   "attribute-control-chart": {
     "tagged": true,

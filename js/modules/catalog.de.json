@@ -1,5 +1,10 @@
 {
   "$schema": "../../schemas/catalog-texts.schema.json",
+  "activity-flowchart": {
+    "name": "Activity Flowchart",
+    "description": "Kette aus Aktivitäten und Entscheidungen mit Nacharbeits-Bögen",
+    "whenToUse": "Wenn ein Ablauf aus Aktivitäten und Ja/Nein-Entscheidungen mit Nacharbeits-Schleifen abgebildet werden soll — nicht für eine reine Verkettung ohne Verzweigungen (dafür reicht Process Map)."
+  },
   "attribute-control-chart": {
     "name": "Regelkarte (attributiv)",
     "description": "SPC-Karten für Zähldaten: p, np, c, u",

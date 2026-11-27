@@ -35,19 +35,7 @@
       "help": "The steps whose sub-steps are expanded; display only."
     },
     "bands": {
-      "help": "The bands from top to bottom, the main path first: then for each decision its No band, below the band the decision stands in. Exactly these band identifiers are what the commands accept.",
-      "id": {
-        "help": "The band's identifier: main or no:<identifier of the decision>."
-      },
-      "ownerId": {
-        "help": "The identifier of the decision that opens the band; empty for the main path."
-      },
-      "label": {
-        "help": "The band's label in the app language, as shown left of the chain."
-      },
-      "depth": {
-        "help": "The nesting depth: 0 for the main path, 1 for the band of a decision on the main path, one more for every further level."
-      }
+      "help": "The bands from top to bottom, the main path first: then for each decision its No band, below the band the decision stands in. Exactly these band identifiers are what the commands accept."
     }
   },
   "actions": {
@@ -129,6 +117,14 @@
         "command": "The command as one object with steps.",
         "steps": "The steps to append as a list; each entry has title and description."
       }
+    }
+  },
+  "types": {
+    "BandRow": {
+      "id": "The band's identifier: main or no:<identifier of the decision>.",
+      "ownerId": "The identifier of the decision that opens the band; empty for the main path.",
+      "label": "The band's label in the app language, as shown left of the chain.",
+      "depth": "The nesting depth: 0 for the main path, 1 for the band of a decision on the main path, one more for every further level."
     }
   }
 }

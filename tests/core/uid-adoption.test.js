@@ -11,7 +11,7 @@ import { suite, test, assertEqual } from '../test-utils.js';
 
 const FILES = [
   'js/core/datagrid/datagrid-utils.js',
-  'js/core/flowchart/flowchart-model.js',
+  'js/modules/activity-flowchart/domain/model.js',
   'js/core/state-manager.js',
   'js/core/storage/local-adapter.js',
   'js/modules/data-import/viewmodel/viewmodel.js',

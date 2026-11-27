@@ -21,19 +21,6 @@
  * @type {Array<object>}
  */
 export default [
-  // ─── Analyze ──────────────────────────────────────────────────
-  {
-    id: 'activity-flowchart',
-    phase: 'analyze',
-    group: 'flowcharts',
-    load: () => import('./activity-flowchart/activity-flowchart.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze'   },
-      dmadv:  { phase: 'analyze'   },
-      eightd: { phase: 'rootcause' },
-    },
-  },
-
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {
     id: 'regression',

@@ -355,7 +355,7 @@ suite('StateManager', () => {
     assertEqual(calls.includes('create:X:dmadv'), true);
   });
 
-  // ─── listInstances (generic flowchart-import support) ──────────
+  // ─── listInstances ─────────────────────────────────────────────
 
   suite('StateManager.listInstances', () => {
     test('returns [] when no phases match', () => {

@@ -35,19 +35,7 @@
       "help": "Die Schritte, deren Unter-Schritte aufgeklappt sind; rein darstellend."
     },
     "bands": {
-      "help": "Die Bänder von oben nach unten, der Hauptpfad zuerst: dann je Entscheidung ihr Nein-Band, unter dem Band, in dem die Entscheidung steht. Genau diese Band-Kennungen nehmen die Kommandos an.",
-      "id": {
-        "help": "Die Kennung des Bands: main oder no:<Kennung der Entscheidung>."
-      },
-      "ownerId": {
-        "help": "Die Kennung der Entscheidung, die das Band öffnet; beim Hauptpfad leer."
-      },
-      "label": {
-        "help": "Die Beschriftung des Bands in der App-Sprache, wie links neben der Kette."
-      },
-      "depth": {
-        "help": "Die Schachtelungstiefe: 0 für den Hauptpfad, 1 für das Band einer Entscheidung im Hauptpfad, jede weitere Ebene eins mehr."
-      }
+      "help": "Die Bänder von oben nach unten, der Hauptpfad zuerst: dann je Entscheidung ihr Nein-Band, unter dem Band, in dem die Entscheidung steht. Genau diese Band-Kennungen nehmen die Kommandos an."
     }
   },
   "actions": {
@@ -129,6 +117,14 @@
         "command": "Das Kommando als ein Objekt mit steps.",
         "steps": "Die anzuhängenden Schritte als Liste; jeder Eintrag hat title und description."
       }
+    }
+  },
+  "types": {
+    "BandRow": {
+      "id": "Die Kennung des Bands: main oder no:<Kennung der Entscheidung>.",
+      "ownerId": "Die Kennung der Entscheidung, die das Band öffnet; beim Hauptpfad leer.",
+      "label": "Die Beschriftung des Bands in der App-Sprache, wie links neben der Kette.",
+      "depth": "Die Schachtelungstiefe: 0 für den Hauptpfad, 1 für das Band einer Entscheidung im Hauptpfad, jede weitere Ebene eins mehr."
     }
   }
 }

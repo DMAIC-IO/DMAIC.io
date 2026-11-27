@@ -1,14 +1,12 @@
 /**
  * Activity-Flowchart: das Beispiel „Anfrage-zu-Angebot“ lädt ohne Reparatur,
- * `derived bands` gleicht dem `read()` der Altform. Die Datei liegt bis zum
- * Umschalten (Task 2b) noch unter `examples/projects/`; 2b zieht sie nach
- * `resources/examples/` und richtet den Pfad hier um.
+ * `derived bands` gleicht dem `read()` der Altform.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/activity-flowchart/domain/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 
-const FILE = new URL('../../../examples/projects/activity-flowchart-anfrage-zu-angebot.json', import.meta.url);
+const FILE = new URL('../../../js/modules/activity-flowchart/resources/examples/projects/activity-flowchart-anfrage-zu-angebot.json', import.meta.url);
 const T = (key, p) => ({ mainPath: 'Hauptpfad', unnamedDecision: '(ohne Frage)', bandLabel: `Nein: ${p?.q}` })[key] ?? key;
 
 suite('Activity-Flowchart Beispiel', () => {

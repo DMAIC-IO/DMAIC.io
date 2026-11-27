@@ -26,7 +26,7 @@ const END = '<!-- TEMPLATES:END -->';
  * Shared markup blocks live next to the code they belong to and end in
  * `.part.html`. They are never emitted as templates of their own — they only
  * exist to be inlined into real templates via the `@include` directive.
- * @param {string} key template key, e.g. 'js/core/flowchart/substeps.part.html'
+ * @param {string} key template key, e.g. 'js/core/flowchart/substeps.view.part.html'
  * @returns {boolean}
  */
 export function isPartial(key) {

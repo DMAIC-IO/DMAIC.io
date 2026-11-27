@@ -12,7 +12,10 @@ import { toJsonTree } from '../../../js/modules/activity-flowchart/io/export.js'
 async function fetchText(path) {
   const res = await fetch(new URL(path, import.meta.url), { cache: 'no-cache' });
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
-  return res.text();
+  // `res.text()` verschluckt im Browser die BOM; dort entscheiden die Bytes
+  // (der Node-Stub von run-node.mjs liefert nur text(), mit BOM).
+  if (typeof res.arrayBuffer !== 'function') return res.text();
+  return new TextDecoder('utf-8', { ignoreBOM: true }).decode(await res.arrayBuffer());
 }
 const plain = (v) => JSON.parse(JSON.stringify(v));
 const ORDER = ['id', 'title', 'description', 'kind', 'decision', 'branchId', 'expanded', 'substeps'];

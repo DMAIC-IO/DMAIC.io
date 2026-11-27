@@ -11,9 +11,6 @@
   "js/core/datagrid/datagrid.js": {
     "count": 2
   },
-  "js/core/flowchart/flowchart-view.js": {
-    "count": 2
-  },
   "js/modules/data-import/resources/view.html": {
     "count": 1,
     "reason": "Eingabe Kopfzeilen überspringen bleibt ein Zahlenfeld mit Pfeiltasten (Ganzzahl ab 0), wie bisher; der Wert läuft über x-field"

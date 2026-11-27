@@ -471,7 +471,7 @@ test('collectAgentData: a member of the module overrides the mixin member of the
 });
 
 test('collectAgentData: a data() that names a local function resolves its return literal', async () => {
-  // Das Muster von activity-flowchart: `data: activityFlowchartData` mit einer
+  // Das Muster `data: fooData` mit einer
   // exportierten Funktion, damit die Ansichtstransformationen testbar sind.
   const vm = `/**
  * Foo module.

@@ -16,10 +16,10 @@ assert.equal(KEY_PREFIX, 'js/');
 
 // expandIncludes inlines a shared partial in place of the directive
 {
-  const parts = new Map([['js/core/flowchart/substeps.part.html', '<div class="fc-substeps"></div>']]);
+  const parts = new Map([['js/core/flowchart/substeps.view.part.html', '<div class="fc-substeps"></div>']]);
   const out = expandIncludes(
-    'js/modules/activity-flowchart/activity-flowchart.html',
-    '<div class="card">\n  <!-- @include js/core/flowchart/substeps.part.html -->\n</div>',
+    'js/modules/activity-flowchart/resources/view.html',
+    '<div class="card">\n  <!-- @include js/core/flowchart/substeps.view.part.html -->\n</div>',
     (key) => parts.get(key),
   );
   assert.match(out, /<div class="fc-substeps"><\/div>/);
@@ -72,7 +72,7 @@ assert.throws(
 }
 
 // partials are not emitted as templates of their own
-assert.equal(isPartial('js/core/flowchart/substeps.part.html'), true);
+assert.equal(isPartial('js/core/flowchart/substeps.view.part.html'), true);
 assert.equal(isPartial('js/modules/sipoc/sipoc.html'), false);
 
 console.log('build-templates: all assertions passed');

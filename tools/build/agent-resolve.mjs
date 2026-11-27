@@ -35,8 +35,8 @@
  * `findLocalDeclaration`, `findImportSource`, `resolveSpecifier`) ist davon
  * unabhängig und wird von der Model-Seite mitbenutzt: `readModelFields` in
  * `agent-data.mjs` verfolgt damit die `extends`-Kette eines Models. Der
- * Parse-Zwischenspeicher wirkt dadurch über beide Seiten — `flowchart-model.js`
- * hängt an vier Modulen und wird trotzdem einmal geparst.
+ * Parse-Zwischenspeicher wirkt dadurch über beide Seiten — eine geteilte
+ * Basisklasse wird nur einmal geparst.
  *
  * Kein Schreibzugriff, keine Netzwerkzugriffe; alles rein lesend über die
  * TypeScript-Compiler-API wie in `agent-data.mjs`.
@@ -158,9 +158,8 @@ export function createResolver(_appDir) {
   /**
    * Das Objektliteral, das die `data`-Funktion des `createModule({…})`-
    * Arguments zurückgibt. Zwei Formen: Methode/Funktionsausdruck an Ort und
-   * Stelle, oder `data: fooData` mit einer benannten Funktion — das Muster von
-   * `activity-flowchart`, wo die Ansichtstransformationen testbar bleiben
-   * sollen.
+   * Stelle, oder `data: fooData` mit einer benannten Funktion, damit die
+   * Ansichtstransformationen testbar bleiben.
    * @returns {ts.ObjectLiteralExpression|null}
    */
   function findDataReturnLiteral(sf) {

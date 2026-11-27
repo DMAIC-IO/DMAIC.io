@@ -140,7 +140,6 @@ const SKIP = new Set([
   'core/command-directives.test.js',
   'core/async-task-directives.test.js',
   'core/choice-group.test.js',
-  'core/flowchart-view-autosize.test.js',
   'core/help-renderer.test.js',
   'core/html-utils.test.js',
   'core/i18n-module-texts.test.js',
@@ -184,10 +183,6 @@ const SKIP = new Set([
   'core/worksheet-preload.test.js',
   'core/workspace-detached.test.js',
   'dialogs/scenario-confirm-data.test.js',
-  // Zieht über activity-flowchart.js Alpine CSP herein, das beim Import
-  // MutationObserver anfasst. Läuft unverändert im Browser-Runner
-  // (tests/runner.html) — dort ist die Suite seit jeher registriert.
-  'modules/activity-flowchart.test.js',
   'modules/attribute-control-chart-view.test.js',
   // Ziehen über js/widgets/registry.js das Widget datagrid (F1.14) und damit
   // Alpine CSP herein, das beim Import MutationObserver anfasst. Laufen im

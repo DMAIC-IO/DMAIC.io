@@ -2,10 +2,10 @@
  * D.Mike — Flowchart Chain-Core (flowchart.css)
  *
  * Shared step-card look for the four chain-based flowchart modules:
- * Process Map, Activity, Opportunity, Deployment. The Core already shares
- * the model (flowchart-model.js), the drag/autosize behaviour
- * (flowchart-view.js) and the import registry (flowchart-import.js) — these
- * classes complete the set so a step card reads the same in every module.
+ * Process Map, Activity, Opportunity, Deployment. The Core shares the chain
+ * functions (chain.js), the gestures (interaction/) and the substeps view
+ * part (substeps.view.part.html) — these classes complete the set so a step
+ * card reads the same in every module.
  *
  * Values are Process Map's, lifted verbatim: PM is the oldest of the four
  * and ships visual snapshots, so the extraction is a pure move.
@@ -101,7 +101,7 @@
    an inline-block with its own padding and a baseline of its own, so without
    this it starts taller than one line and the text reads as shifted up
    against the badge — Process Map's <input> title never had that problem.
-   chainViewMixin auto-sizes it, so one line is the floor, not the cap. */
+   The module sizes it to its content, so one line is the floor, not the cap. */
 textarea.fc-card__title {
   display: block;
   padding: 0;
@@ -162,8 +162,8 @@ textarea.fc-card__title {
 .fc-card__body { padding: var(--spacing-sm) var(--spacing-md); }
 
 /* The `textarea.` prefix beats the .field base's `resize: vertical`.
-   `min-height` is only the empty-state floor — chainViewMixin auto-sizes the
-   field to its content (on input and on mount), so the body is always exactly
+   `min-height` is only the empty-state floor — the module sizes the field to
+   its content, so the body is always exactly
    as tall as its text and never hides that more of it follows. */
 textarea.fc-card__description {
   min-height: 44px;
@@ -173,12 +173,10 @@ textarea.fc-card__description {
 }
 
 /* ── Drag feedback ──────────────────────────────────────────────────────
-   chainViewMixin's stepDragStart/stepDragEnd toggle is-dragging on the drag
-   source (the element carrying the `draggable` attribute — the card itself
-   in some modules and its row wrapper in others, so both are matched). Cards
-   are no longer drop targets: is-drop-target is only ever emitted onto a
-   connector (gapClass(), below) or onto a substep item (subDragOver /
-   subDragLeave in flowchart-view.js). */
+   The module view sets is-dragging on the dragged step (the card itself in
+   some modules and its row wrapper in others, so both are matched). Cards
+   are no drop targets: is-drop-target is only ever emitted onto a connector
+   (below) or onto a substep item (substeps-view.js). */
 .fc-card.is-dragging,
 .is-dragging > .fc-card,
 .is-dragging .fc-card {
@@ -249,7 +247,7 @@ textarea.fc-card__description {
 /* ── Gap drops ──────────────────────────────────────────────────────────
    A connector carries both meanings that fit it: click inserts a new step
    here, drop moves an existing card here. While a card is in flight,
-   chainViewMixin adds `fc-connector--drop` and a ::before overlay grows the
+   the module view adds `fc-connector--drop` and a ::before overlay grows the
    hit area (see --fc-drop-grow).
 
    The overlay is a PSEUDO-element on purpose. A child <div> would be an
@@ -294,7 +292,7 @@ textarea.fc-card__description {
 
 /* ── Substeps ───────────────────────────────────────────────────────────
    Disclosure bar plus the collapsible list inside a step card. Markup lives
-   in substeps.part.html and is inlined into every module template at build
+   in substeps.view.part.html and is inlined into every module template at build
    time; the model has always carried `substeps`/`expanded`, so all four
    flowcharts share one implementation. Values lifted verbatim from Process
    Map, which shipped this UI first. */
