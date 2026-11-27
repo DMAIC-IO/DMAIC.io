@@ -292,7 +292,7 @@ export class ActivityModel extends FlowchartState {
 
 /**
  * Trimmed non-empty strings from an unknown array shape.
- * (mirrors `cleanStrings` in `modules/process-map/process-map-sipoc-import.js`)
+ * (mirrors `cleanStrings` in `modules/process-map/domain/import.js`)
  * @param {*} raw - Raw value, expected to be an array of strings.
  * @returns {string[]} Trimmed, non-empty strings.
  */
