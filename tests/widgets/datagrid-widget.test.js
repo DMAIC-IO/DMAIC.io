@@ -48,6 +48,8 @@ const asText = (v) => (v == null ? null : String(v));
 
 /** Aufrufe der Kommandos, je Test geleert. */
 const calls = [];
+/** performance.now() je gridView-Meldung, parallel zu `calls`. */
+const keepViewAt = [];
 const Sheet = defineModel({
   fields: { data: table() },
   commands: {
@@ -93,7 +95,7 @@ const Sheet = defineModel({
           activeCol: number(), activeRow: number(), extraCols: list(number()),
         }, { nullable: true }),
       },
-      run(args) { calls.push(['keepView', args]); },
+      run(args) { calls.push(['keepView', args]); keepViewAt.push(performance.now()); },
     }),
   },
 });
@@ -162,6 +164,7 @@ async function host(opts = {}) {
   } finally { console.warn = ow; }
   if (seen.length && !opts.warnings) throw new Error(`WARN ${seen.join(' || ')}`);
   calls.length = 0;
+  keepViewAt.length = 0;
   return { root, data: Alpine.$data(root), model, notes, observed, warnings: seen, el: root.querySelector('.g') };
 }
 
@@ -295,9 +298,14 @@ suite('datagrid widget über table()', () => {
 
   test('Ansichtszustand: gridView entprellt (300 ms) mit commandArgs', async () => {
     const { root } = await host({ config: { commands: { setCells: 'setCells', gridView: 'keepView' } } });
+    const t0 = performance.now();
     clickCell(root, 1, 2);
     await settle();
-    assertEqual(calls.length, 0, 'nicht sofort');
+    // Geprüft wird die Entprellung, nicht die Uhr: mit V8-Coverage brauchten
+    // Klick und die vier Zeitgeber-Runden von settle() schon 306 ms, dann ist
+    // die Meldung zu Recht da. Ohne Entprellung käme sie nach wenigen ms.
+    assertTrue(keepViewAt.every((t) => t - t0 >= 250),
+      `nicht sofort: nach ${keepViewAt.map((t) => Math.round(t - t0)).join(', ')} ms`);
     await wait(350);
     await settle();
     assertDeepEqual(calls, [['keepView', {

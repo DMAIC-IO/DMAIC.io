@@ -15,6 +15,13 @@
        ui/split-layout.test.js sie via getComputedStyle gegen die realen
        Werte prüfen kann, statt gegen die Runner-eigenen Inline-Styles. -->
   <link rel="stylesheet" href="../css/modules.css">
+  <!-- Rasterstile für jede Suite, die ein Datagrid zeichnet. Bisher luden nur
+       die Datagrid-Suiten selbst sie nach, und später geladene Suiten
+       (modules/doe-planner/runs-view.test.js: Füllgriff trifft per
+       Koordinaten die Zielzelle) verließen sich stumm darauf. Mit `?shard=`
+       läuft eine Suite ohne diese Vorgänger. -->
+  <link rel="stylesheet" href="../js/core/datagrid/datagrid.css">
+  <link rel="stylesheet" href="../js/core/datagrid/view/grid-view.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -1068,8 +1075,42 @@
   // regression and must surface as a failure instead of vanishing from counts.
   const BUNDLER_ONLY = ['tiny-inflate'];
 
+  /**
+   * `?shard=k/n` (1 ≤ k ≤ n) loads only every n-th file, starting with the
+   * k-th. The Playwright unit-test bridge runs the shards in parallel pages:
+   * with V8 coverage one page needs over 600 s for all files, on one core.
+   * Without the parameter every file runs, as before (tools/test-browser,
+   * opening the page by hand).
+   * Files are dealt out round-robin, so the heavy engine and pipeline suites
+   * at the end of the list spread over all shards — but per module: some test
+   * files import another one's helpers (`./analyze.test.js`), and an import
+   * from a different shard would run that file's suites a second time there.
+   * So `modules/<id>/…` and `modules/<id>-view.test.js` stay in one shard.
+   * @param {string[]} files
+   * @param {string|null} param
+   * @returns {string[]}
+   */
+  function selectShard(files, param) {
+    if (param === null) return files;
+    const m = /^(\d+)\/(\d+)$/.exec(param);
+    const k = m ? Number(m[1]) : 0;
+    const n = m ? Number(m[2]) : 0;
+    if (!(n >= 1 && k >= 1 && k <= n)) {
+      throw new Error(`runner.html: invalid shard "${param}" (expected k/n with 1 ≤ k ≤ n)`);
+    }
+    const groupOf = (f) => /^\.\/modules\/([^/]+?)(?:-view\.test\.js$|\/)/.exec(f)?.[1] ?? f;
+    const groups = [...new Set(files.map(groupOf))];
+    return files.filter((f) => groups.indexOf(groupOf(f)) % n === k - 1);
+  }
+
   async function loadTests() {
-    for (const file of testFiles) {
+    let files;
+    try { files = selectShard(testFiles, new URLSearchParams(location.search).get('shard')); }
+    catch (e) {
+      suite('load error: shard', () => { test('valid shard parameter', () => { throw e; }); });
+      return;
+    }
+    for (const file of files) {
       try { await import(file); }
       catch (e) {
         console.error(`Could not load ${file}:`, e.message);
