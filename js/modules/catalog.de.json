@@ -255,6 +255,11 @@
     "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",
     "whenToUse": "Wenn für eine Kennzahl von einer, zwei, gepaarten oder k Stichproben ein Konfidenzintervall oder ein Test ohne Verteilungsannahme gebraucht wird: bestimmt das Intervall per Bootstrap (BCa oder Perzentil) und testet per Permutation (zwei Stichproben, gepaart, k Gruppen) beziehungsweise gegen einen Zielwert (eine Stichprobe). Jede Stichprobe braucht mindestens 2 numerische Werte (10 bei Ppk)."
   },
+  "rest-api": {
+    "name": "REST API",
+    "description": "REST API Endpunkte zentral verwalten und testen",
+    "whenToUse": "Wenn Daten regelmäßig von einem Webdienst abgerufen werden sollen — Endpunkte mit Headern und Zeitplan verwalten und die Antwort prüfen."
+  },
   "run-chart": {
     "name": "Run Chart",
     "description": "Lauf-Diagramm mit Median und vier Lauftests",

@@ -24,7 +24,7 @@ const FILES = [
   'js/modules/makigami/domain/model.js',
   'js/modules/process-map/domain/model.js',
   'js/modules/random-generator/domain/model.js',
-  'js/modules/rest-api/rest-api-model.js',
+  'js/modules/rest-api/domain/model.js',
   'js/modules/worksheet/domain/sheet.js',
 ];
 

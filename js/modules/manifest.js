@@ -21,14 +21,6 @@
  * @type {Array<object>}
  */
 export default [
-  // ─── Daten-Bereich (cycle-independent) ────────────────────────
-  {
-    id: 'rest-api',
-    phase: 'data',
-    group: 'collect',
-    load: () => import('./rest-api/rest-api.js'),
-  },
-
   // ─── Analyze ──────────────────────────────────────────────────
   {
     id: 'activity-flowchart',

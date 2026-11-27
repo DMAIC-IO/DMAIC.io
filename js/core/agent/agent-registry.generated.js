@@ -17390,6 +17390,7 @@ export const AGENT_REGISTRY = {
   "rest-api": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -17406,262 +17407,307 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addEndpoint": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Einen neuen Endpunkt anlegen und aktiv setzen."
+        "help": "",
+        "keysOf": "addEndpoint",
+        "keysHelp": "actions.addEndpoint.params",
+        "keys": {}
       },
       "renameEndpoint": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "eine id aus `endpoints`"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name; \"\" löscht ihn"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Endpunkt umbenennen."
+        "help": "",
+        "keysOf": "renameEndpoint",
+        "keysHelp": "actions.renameEndpoint.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeEndpoint": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "eine id aus `endpoints`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Endpunkt entfernen, ohne Rückfrage; sein Zeitplan wird gestoppt."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "endpointId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Endpunkts"
-          },
-          {
-            "name": "key",
-            "type": "'url'|'writeMode'|'schedule.intervalValue'|'schedule.intervalUnit'",
-            "optional": false,
-            "help": "welcher Wert; `activeParams` nennt die gültigen"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "URL, Schreibmodus oder Zeitplan eines Endpunkts setzen.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "removeEndpoint",
+        "keysHelp": "actions.removeEndpoint.params",
         "keys": {
-          "url": {
+          "endpointId": {
             "type": "string",
-            "help": "Adresse der GET-Anfrage"
-          },
-          "writeMode": {
-            "type": "'replace'|'append'|'prepend'",
-            "help": "wie zugeordnete Daten geschrieben werden"
-          },
-          "schedule.intervalValue": {
-            "type": "number",
-            "help": "Abstand der automatischen Abfrage"
-          },
-          "schedule.intervalUnit": {
-            "type": "'minutes'|'hours'",
-            "help": "Einheit des Abstands"
+            "help": ""
           }
         }
       },
       "addHeader": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Eine leere Kopfzeile an einen Endpunkt hängen."
+        "help": "",
+        "keysOf": "addHeader",
+        "keysHelp": "actions.addHeader.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setHeader": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
-          },
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "Index in `endpoints[].headers`"
-          },
-          {
-            "name": "key",
-            "type": "string",
-            "optional": false,
-            "help": "der Name der Kopfzeile"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "der Wert der Kopfzeile"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Name und Wert einer Kopfzeile eines Endpunkts setzen."
+        "help": "",
+        "keysOf": "setHeader",
+        "keysHelp": "actions.setHeader.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          },
+          "key": {
+            "type": "string",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeHeader": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
-          },
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "Index in `endpoints[].headers`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Eine Kopfzeile eines Endpunkts löschen."
+        "help": "",
+        "keysOf": "removeHeader",
+        "keysHelp": "actions.removeHeader.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "addMapping": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Ein leeres Mapping an einen Endpunkt hängen. Mappings werden gespeichert, aber noch nicht angewendet."
+        "help": "",
+        "keysOf": "addMapping",
+        "keysHelp": "actions.addMapping.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setMapping": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
-          },
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "Index in `endpoints[].mappings`"
-          },
-          {
-            "name": "jsonPath",
-            "type": "string",
-            "optional": false,
-            "help": "der Pfad in der JSON-Antwort; \"\" löscht ihn"
-          },
-          {
-            "name": "ref",
-            "type": "object|null",
-            "optional": false,
-            "help": "eine Spalte aus `pickableColumns` als `{ instanceId, sheetId, columnId }`; null löst die Zuordnung"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Pfad und Zielspalte eines Mappings eines Endpunkts setzen."
+        "help": "",
+        "keysOf": "setMapping",
+        "keysHelp": "actions.setMapping.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          },
+          "jsonPath": {
+            "type": "string",
+            "help": ""
+          },
+          "ref": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+            "help": "",
+            "rules": [
+              "columnRef"
+            ]
+          }
+        }
       },
       "removeMapping": {
+        "target": "model",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeMapping",
+        "keysHelp": "actions.removeMapping.params",
+        "keys": {
+          "endpointId": {
+            "type": "string",
+            "help": ""
           },
-          {
-            "name": "index",
+          "index": {
             "type": "number",
-            "optional": false,
-            "help": "Index in `endpoints[].mappings`"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Ein Mapping eines Endpunkts löschen."
-      },
-      "setSchedule": {
-        "params": [
-          {
-            "name": "endpointId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Endpunkts"
-          },
-          {
-            "name": "enabled",
-            "type": "boolean",
-            "optional": false,
-            "help": "true startet die regelmäßigen Abrufe (nur mit gesetzter URL), false stoppt sie"
-          }
-        ],
-        "returns": "void",
-        "help": "Den Zeitplan eines Endpunkts ein- oder ausschalten."
+        }
       },
       "sendRequest": {
+        "target": "asyncTask",
         "params": [
           {
-            "name": "endpointId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Endpunkts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<{ status: number, statusText: string, ok: boolean, body: string }|null>",
-        "help": "Führt eine GET-Anfrage an die URL eines Endpunkts aus und wartet auf die Antwort. Ein Netzfehler wird zur Antwort mit Status 0."
+        "returns": "any",
+        "help": "",
+        "keysOf": "sendRequest",
+        "keysHelp": "asyncTasks.sendRequest.params",
+        "keys": {
+          "endpointId": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "sendRequest",
+        "op": "start",
+        "helpKey": "asyncTasks.sendRequest.help"
+      },
+      "sendRequest.cancel": {
+        "target": "asyncTask",
+        "task": "sendRequest",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.sendRequest.cancel.help"
       }
     },
     "fields": {
       "endpoints": {
-        "type": "Array<{ id: string, name: string, url: string, headers: Array<{ key: string, value: string }>, mappings: Array<{ jsonPath: string, columnRef: object|null }>, writeMode: string, schedule: { enabled: boolean, intervalValue: number, intervalUnit: string }, lastResponse: { status: number, statusText: string, ok: boolean, body: string }|null, scheduleRunning: boolean }>",
-        "help": "all endpoints; `lastResponse` is the last response of this endpoint, `scheduleRunning` says whether a timer runs for it",
+        "type": "Array<{ id: string, name: string, url: string, headers: { key: string, value: string }[], mappings: Array<{ jsonPath: string, columnRef: { instanceId: string, sheetId?: string, columnId: string }|null }>, writeMode: 'replace'|'append'|'prepend', schedule: { enabled: boolean, intervalValue: number, intervalUnit: 'minutes'|'hours' } }>",
+        "help": "",
+        "bulk": false
+      },
+      "scheduleWithoutUrl": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts; [] without endpoints",
+      "secretHeadersEmpty": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "pickableColumns": {
-        "type": "Array<{ key: string, name: string }>",
-        "help": "the columns `setMapping` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "loading": {
-        "type": "boolean",
-        "help": "a request is running",
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
     },
+    "asyncTasks": [
+      {
+        "name": "sendRequest",
+        "auto": false,
+        "params": [
+          "endpointId"
+        ]
+      }
+    ],
     "viewFields": [
       "activeId"
+    ],
+    "settable": [
+      "endpoints"
+    ],
+    "invariants": [
+      "uniqueIds",
+      "mappingColumnFree",
+      "noMaskedValue",
+      "knownActive"
     ]
   },
   "run-chart": {

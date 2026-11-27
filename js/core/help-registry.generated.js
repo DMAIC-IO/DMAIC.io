@@ -3,12 +3,10 @@ import h0 from '../modules/activity-flowchart/activity-flowchart-help.js';
 import h1 from '../modules/glm-regression/glm-regression-help.js';
 import h2 from '../modules/regression/regression-help.js';
 import h3 from '../modules/response-optimization/response-optimization-help.js';
-import h4 from '../modules/rest-api/rest-api-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
   "glm-regression": h1,
   "regression": h2,
   "response-optimization": h3,
-  "rest-api": h4,
 };

@@ -64,9 +64,6 @@
     "count": 1,
     "reason": "Abstand des Zeitplans bleibt ein Zahlenfeld mit Pfeiltasten (Ganzzahl 1 bis 999), wie bisher; der Wert läuft über x-field"
   },
-  "js/modules/rest-api/rest-api.html": {
-    "count": 1
-  },
   "js/modules/survey-builder/domain/labels.js": {
     "count": 2,
     "reason": "Ausgabe zeichengleich zur Altform (Bericht/Fragebogen)"

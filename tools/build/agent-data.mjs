@@ -2895,7 +2895,7 @@ function viewFieldFindings(paths, persisted, declared, directWritten) {
  *
  * Die Wurzel ist GENAU die Klasse, die `createModule({ … Model: State … })`
  * nennt — nicht „alle Klassen der Model-Datei". Der Unterschied ist keine
- * Feinheit: `rest-api-model.js` enthält neben dem Model die Hilfsklasse
+ * Feinheit: `rest-api-model.js` (Altform) enthielt neben dem Model die Hilfsklasse
  * `Endpoint`, deren Konstruktorfelder (`headers`, `mappings`) auf dem
  * Model-Objekt nicht existieren und in `State.toJSON()` nicht auftauchen.
  * Eine Registry, die Felder behauptet, die es nicht gibt, ist schlimmer als

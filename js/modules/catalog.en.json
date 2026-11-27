@@ -255,6 +255,11 @@
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",
     "whenToUse": "When a statistic of one, two, paired or k samples needs a confidence interval or a test without assuming a distribution: bootstraps the interval (BCa or percentile) and tests by permutation (two samples, paired, k groups) or against a target value (one sample). Each sample needs at least 2 numeric values (10 for Ppk)."
   },
+  "rest-api": {
+    "name": "REST API",
+    "description": "Centrally manage and test REST API endpoints",
+    "whenToUse": "When data should be fetched regularly from a web service — manage endpoints with headers and a schedule, and check the response."
+  },
   "run-chart": {
     "name": "Run Chart",
     "description": "Median run chart with four runs tests",
