@@ -208,11 +208,18 @@ export class ModuleRegistry {
 
   /**
    * Alle erklärten Haken `redact` laden — beim Start, damit der synchrone
-   * Projekt-Export (`StateManager.exportJSON`) sie hat.
+   * Projekt-Export (`StateManager.exportJSON`) sie hat. Wirft nie: ein Haken,
+   * der nicht lädt, wird gemeldet und bleibt ungeladen — der Start läuft
+   * weiter, `redactorOf` wirft für dieses Modul (kein Klartext-Export), und
+   * der nächste Aufruf versucht es erneut.
    * @returns {Promise<void>}
    */
   async loadRedactors() {
-    await Promise.all([...this._registry.keys()].map((id) => this.loadRedactor(id)));
+    const ids = [...this._registry.keys()];
+    const results = await Promise.allSettled(ids.map((id) => this.loadRedactor(id)));
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') console.error(`[ModuleRegistry] ${ids[i]}: redact nicht geladen`, r.reason);
+    });
   }
 
   /**

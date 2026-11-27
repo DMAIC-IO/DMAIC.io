@@ -11,7 +11,7 @@ import { stripPatch }      from '../../core/version-utils.js';
 import { VERSION }         from '../../core/version.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { buildExportScopeDialog } from '../../dialogs/export-scope/export-scope.js';
-import { downloadJSON, exportAllProjects, exportStamp } from '../../core/export-all.js';
+import { downloadJSON, exportAllProjects, exportStamp, notifyExportFailed } from '../../core/export-all.js';
 
 export { exportStamp };
 
@@ -57,7 +57,8 @@ function initExportImport({ stateManager, eventBus, i18n }, { dialog, notify }) 
 
     if (!hasMultiple) {
       // Single project — export directly
-      const json = stateManager.exportJSON();
+      let json;
+      try { json = stateManager.exportJSON(); } catch (err) { notifyExportFailed({ i18n, notify }, err); return; }
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
       downloadJSON(json, `${name}_${exportStamp()}.json`);
       eventBus.emit('project:exported');
@@ -72,10 +73,12 @@ function initExportImport({ stateManager, eventBus, i18n }, { dialog, notify }) 
     if (scope === null) return; // cancelled
     const date = exportStamp();
     if (scope === 'all') {
-      const json = await stateManager.exportAllJSON();
+      let json;
+      try { json = await stateManager.exportAllJSON(); } catch (err) { notifyExportFailed({ i18n, notify }, err); return; }
       downloadJSON(json, `qprovement_alle_projekte_${date}.json`);
     } else {
-      const json = stateManager.exportJSON();
+      let json;
+      try { json = stateManager.exportJSON(); } catch (err) { notifyExportFailed({ i18n, notify }, err); return; }
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
       downloadJSON(json, `${name}_${date}.json`);
     }

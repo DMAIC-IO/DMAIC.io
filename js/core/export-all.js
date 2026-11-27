@@ -39,13 +39,36 @@ export function exportStamp(now = new Date()) {
 }
 
 /**
- * Alle Projekte als eine JSON-Datei herunterladen.
+ * Alle Projekte als eine JSON-Datei herunterladen. Scheitert der Export
+ * (etwa ein Haken `redact`, der nicht lädt — dann lieber keine Datei als
+ * Klartext, `core/redact.js`), meldet ein Fehler-Toast es; nichts wird
+ * heruntergeladen und `project:exported` bleibt aus.
  * @param {{ stateManager: object, eventBus: object, i18n: object, notify: Function }} deps
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} ob die Datei heruntergeladen wurde
  */
 export async function exportAllProjects({ stateManager, eventBus, i18n, notify }) {
-  const json = await stateManager.exportAllJSON();
+  let json;
+  try {
+    json = await stateManager.exportAllJSON();
+  } catch (err) {
+    notifyExportFailed({ i18n, notify }, err);
+    return false;
+  }
   downloadJSON(json, `qprovement_alle_projekte_${exportStamp()}.json`);
   eventBus.emit('project:exported');
   notify?.(i18n.t('app.export'), 'success', 'status.ok');
+  return true;
+}
+
+/**
+ * Fehler-Toast eines gescheiterten Exports, wie beim Import:
+ * „Fehler: <Meldung>“.
+ * @param {{ i18n: object, notify?: Function }} deps
+ * @param {unknown} err
+ * @returns {void}
+ */
+export function notifyExportFailed({ i18n, notify }, err) {
+  console.error('[export]', err);
+  const message = err instanceof Error ? err.message : String(err);
+  notify?.(`${i18n.t('common.error')}: ${message}`, 'error');
 }

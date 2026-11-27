@@ -1,7 +1,7 @@
 /**
  * Tests for js/core/module-registry.js
  */
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { ModuleRegistry } from '../../js/core/module-registry.js';
 import { DEFAULT_CYCLE } from '../../js/core/cycles/cycles.js';
 
@@ -201,6 +201,29 @@ suite('ModuleRegistry redact', () => {
     assertEqual(calls, 1, 'einmal geladen');
     assertEqual(await reg.loadRedactor('b'), null);
     assertEqual(await reg.loadRedactor('a'), hide);
+  });
+
+  test('loadRedactors: ein Haken, der nicht lädt, hält den Start nicht an; redactorOf wirft, erneuter Versuch lädt', async () => {
+    const reg = new ModuleRegistry();
+    let fail = true;
+    reg.register({ id: 'a', phase: 'data', load: noopLoad, redact: () => (fail ? Promise.reject(new Error('chunk')) : Promise.resolve({ default: hide })) });
+    reg.register({ id: 'b', phase: 'data', load: noopLoad, redact: () => Promise.resolve({ default: hide }) });
+    const origError = console.error;
+    const logged = [];
+    console.error = (...args) => { logged.push(args[0]); };
+    try {
+      await reg.loadRedactors();
+    } finally {
+      console.error = origError;
+    }
+    assertDeepEqual(logged, ['[ModuleRegistry] a: redact nicht geladen']);
+    assertEqual(reg.redactorOf('b'), hide, 'die übrigen Haken sind geladen');
+    let err = null;
+    try { reg.redactorOf('a'); } catch (e) { err = e; }
+    assertEqual(err?.message, '[ModuleRegistry] a: redact nicht geladen');
+    fail = false;
+    await reg.loadRedactors();
+    assertEqual(reg.redactorOf('a'), hide);
   });
 
   test('loadRedactor: Ziel ohne Default-Funktion wird abgelehnt', async () => {
