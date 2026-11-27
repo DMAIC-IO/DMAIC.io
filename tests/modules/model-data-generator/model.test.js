@@ -194,4 +194,15 @@ suite('model-data-generator Model — Ableitungen, hasContent, Lesefläche', () 
     ]);
     assertDeepEqual(Object.keys(State.schema.commands), ['addFactor', 'removeFactor', 'setFactor', 'setBeta']);
   });
+
+  test('factors und maxOrder sind für den Agenten nicht schreibbar, die Oberfläche schreibt factors weiter', () => {
+    const { settable } = schemaAgentEntry(State);
+    assertTrue(!settable.includes('factors'), 'factors');
+    assertTrue(!settable.includes('maxOrder'), 'maxOrder');
+    assertDeepEqual(settable, ['betas', 'intercept', 'yName', 'samplingMethod', 'sampleSize', 'noiseStd', 'seed']);
+    // x-field/x-model gehen über setFields, nicht über instance.set.
+    const m = new State();
+    setFields(m, { factors: [{ name: 'A', min: 0, max: 1 }] });
+    assertDeepEqual(plain(m.factors), [{ name: 'A', min: 0, max: 1 }]);
+  });
 });

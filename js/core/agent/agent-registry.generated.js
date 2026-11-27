@@ -9554,7 +9554,6 @@ export const AGENT_REGISTRY = {
     ],
     "viewFields": [],
     "settable": [
-      "factors",
       "betas",
       "intercept",
       "yName",

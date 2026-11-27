@@ -62,6 +62,9 @@ export class State extends defineModel({
         { name: 'Druck', min: 1, max: 10 },
         { name: 'Zeit', min: 5, max: 60 },
       ],
+      // Agent nur über addFactor/removeFactor/setFactor: eine neue Faktorzahl
+      // ordnet die Terme um, die β-Schlüssel blieben sonst an fremden Termen.
+      agentWrite: false,
     }),
     /** höchste Wechselwirkungsordnung der Terme */
     maxOrder: number({ integer: true, min: 0, default: 3, agentWrite: false }),

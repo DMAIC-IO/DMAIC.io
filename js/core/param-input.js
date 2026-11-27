@@ -15,8 +15,6 @@ import { formatNumber } from './number-format.js';
  * @property {number} [exclusiveMin]
  * @property {number} [exclusiveMax]
  * @property {boolean} [integer]
- * @property {number} [step]  Schrittweite des Eingabefelds (Vorgabe 1 bei integer, sonst 'any')
- * @property {boolean} [nullable]  leere Eingabe bedeutet null (z. B. „alle“)
  */
 
 /**

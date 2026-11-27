@@ -140,7 +140,7 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.toWorksheet', reason: 'die Oberfläche startet das Senden über den Eckknopf des Vorschau-Rasters, der kein Fragezeichen trägt; der Agent liest die Hilfe unter asyncTasks.toWorksheet' },
     { name: 'actions.toWorksheet.cancel', reason: 'das Senden läuft ohne Wartezeit, die Oberfläche bietet keinen Abbrechen-Knopf' },
     { name: 'fields.asyncTasks', reason: 'Laufzustand des Sendens für den Agenten; die Oberfläche zeigt nur das neue Arbeitsblatt' },
-    { name: 'fields.factors', reason: 'die Faktorliste hat keine eigene Beschriftung; verankert sind die Spaltenköpfe Name, Min und Max und das Anlegen an addFactor' },
+    { name: 'fields.factors', reason: 'der Titel „Faktoren“ trägt wie in der Altform keinen Anker (ein Fragezeichen dort bräuchte ein neues Referenzbild); verankert sind die Spaltenköpfe Name, Min und Max und das Anlegen an addFactor' },
     { name: 'fields.maxOrder', reason: 'ohne Bedienelement (wie in der Altform); die höchste Ordnung zeigen die Gruppen der Koeffizienten' },
     { name: 'fields.terms', reason: 'Ableitung für den Agenten; die Oberfläche zeigt die Terme als Koeffizienten-Felder, verankert an fields.betas' },
   ],
