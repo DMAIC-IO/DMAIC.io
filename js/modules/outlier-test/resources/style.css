@@ -146,7 +146,7 @@
   margin-top: var(--spacing-xs);
 }
 
-/* Gefundene Werte als Kern-Chips ohne Klick. */
+/* Gefundene Werte als Kern-Chips ohne Klick, rot über chip--danger. */
 .outliertest__chip {
   font-family: var(--font-family-mono);
   cursor: default;

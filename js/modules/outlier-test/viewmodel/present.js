@@ -226,10 +226,10 @@ function resultCard(id, r, t, lang) {
       chips.push({
         text: `#${o.index + 1}: ${f(o.value)}`,
         stat: o.statistic != null ? ` (${f(o.statistic, 3)})` : '',
-        moreClass: '',
+        cls: 'chip--danger',
       });
     }
-    if (k > MAX_CHIPS) chips.push({ text: `+${k - MAX_CHIPS}`, stat: '', moreClass: 'outliertest__chip--more' });
+    if (k > MAX_CHIPS) chips.push({ text: `+${k - MAX_CHIPS}`, stat: '', cls: 'outliertest__chip--more' });
   }
 
   return {

@@ -102,6 +102,9 @@
   --btn-danger-text: var(--color-text-inverse);
   --chip-active-text: var(--color-accent); /* auf --color-accent-light 4,83:1 */
   --chip-border: var(--btn-secondary-border); /* Rahmen wie Sekundärknopf */
+  --chip-danger-bg: #ffefee;       /* 8 % #ff3b30 auf Weiß */
+  --chip-danger-text: var(--btn-danger-bg); /* #d70015 darauf 4,83:1 */
+  --chip-danger-border: #ffd8d6;   /* 20 % #ff3b30 auf Weiß */
 
   /* Phase Colors
      DMAIC: blue (Data) → red (D) → orange (M) → yellow (A) → lime (I) → green (C)
@@ -317,6 +320,9 @@
   --btn-danger-text: var(--color-text-inverse);
   --chip-active-text: var(--color-accent-hover); /* auf --color-accent-light 5,38:1 */
   --chip-border: var(--btn-secondary-border);
+  --chip-danger-bg: #3d2d2e;       /* 8 % #ff3b30 auf der Karte #2c2c2e */
+  --chip-danger-text: var(--btn-danger-bg-hover); /* #ff6961 darauf 4,62:1 */
+  --chip-danger-border: #562f2e;   /* 20 % #ff3b30 auf der Karte */
   --color-success-text: #a5d6a7;
   --color-readonly-bg: #3d3200;
   --color-readonly-text: #ffc107;

@@ -48,7 +48,7 @@ suite('outlier-test: Karten je Verfahren', () => {
     assertEqual(g.metrics[2].kpiClass, 'dmike-kpi--bad');
     assertEqual(g.verdictText, '1 flagged');
     assertEqual(g.verdictClass, 'outliertest__verdict--flag');
-    assertDeepEqual(plain(g.chips), [{ text: '#20: 10.4500', stat: ' (4.177)', moreClass: '' }]);
+    assertDeepEqual(plain(g.chips), [{ text: '#20: 10.4500', stat: ' (4.177)', cls: 'chip--danger' }]);
     assertDeepEqual(values(esd), { detected: '1', maxOutliers: '3' });
     assertEqual(esd.stepsHeader, 'Rᵢ > λᵢ');
     assertDeepEqual(plain(esd.steps[0]), { i: '1', value: '10.4500', R: '4.1774', lambda: '2.5566', markIcon: 'status.error', rejectClass: 'outliertest__step--reject' });
@@ -101,8 +101,8 @@ suite('outlier-test: Karten je Verfahren', () => {
     const analysis = { results: { 'z-score': { outliers, mean: 1, sd: 1, parameters: { threshold: 3 } } }, errs: {} };
     const [z] = methodCards(analysis, t, 'en');
     assertEqual(z.chips.length, 13);
-    assertDeepEqual(plain(z.chips[0]), { text: '#1: 0.5000', stat: ' (4.000)', moreClass: '' });
-    assertDeepEqual(plain(z.chips[12]), { text: '+3', stat: '', moreClass: 'outliertest__chip--more' });
+    assertDeepEqual(plain(z.chips[0]), { text: '#1: 0.5000', stat: ' (4.000)', cls: 'chip--danger' });
+    assertDeepEqual(plain(z.chips[12]), { text: '+3', stat: '', cls: 'outliertest__chip--more' });
   });
 
   test('num: „–“ für leer und nicht endlich', () => {

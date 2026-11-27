@@ -233,6 +233,14 @@
   color: var(--chip-active-text);
 }
 
+/* Gefahr/Befund (z. B. Ausreißer): Fehlertönung, unabhängig vom Hover. */
+.chip--danger,
+.chip--danger:hover:where(:not(:disabled, .chip--disabled)) {
+  background: var(--chip-danger-bg);
+  color: var(--chip-danger-text);
+  border-color: var(--chip-danger-border);
+}
+
 .chip:disabled,
 .chip--disabled {
   opacity: 0.45;

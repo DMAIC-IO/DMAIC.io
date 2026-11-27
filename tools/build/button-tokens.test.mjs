@@ -45,7 +45,8 @@ export function contrast(a, b) {
 }
 
 const TOKENS = ['--btn-secondary-bg', '--btn-secondary-bg-hover', '--btn-secondary-border', '--btn-secondary-text',
-  '--btn-danger-bg', '--btn-danger-bg-hover', '--btn-danger-text', '--chip-active-text', '--chip-border'];
+  '--btn-danger-bg', '--btn-danger-bg-hover', '--btn-danger-text', '--chip-active-text', '--chip-border',
+  '--chip-danger-bg', '--chip-danger-text', '--chip-danger-border'];
 
 test('Tokens: alle Knopf-/Chip-Tokens in :root und [data-theme="dark"]', () => {
   for (const t of TOKENS) {
@@ -70,6 +71,7 @@ test('Kontrast: Text auf Fläche ≥ 4,5:1 je Rolle und Theme', () => {
     ['danger', '--btn-danger-text', '--btn-danger-bg'],
     ['danger:hover', '--btn-danger-text', '--btn-danger-bg-hover'],
     ['chip--active', '--chip-active-text', '--color-accent-light'],
+    ['chip--danger', '--chip-danger-text', '--chip-danger-bg'],
   ];
   const low = [];
   for (const [name, theme] of [['hell', LIGHT], ['dunkel', DARK]]) {
@@ -94,6 +96,18 @@ test('Chip-Rahmen = Rahmen des Sekundärknopfs (border-primary), je Theme', () =
   }
   const chip = /\.chip \{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
   assert.match(chip, /border:[^;]*var\(--chip-border\)/);
+});
+
+test('chip--danger: Fehlertönung aus Tokens, vom aktiven Chip verschieden', () => {
+  const rule = /\.chip--danger[,\s][^{]*\{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
+  assert.match(rule, /background:\s*var\(--chip-danger-bg\)/);
+  assert.match(rule, /color:\s*var\(--chip-danger-text\)/);
+  assert.match(rule, /border-color:\s*var\(--chip-danger-border\)/);
+  for (const [name, theme] of [['hell', LIGHT], ['dunkel', DARK]]) {
+    const bg = resolve(theme, 'var(--chip-danger-bg)');
+    assert.notEqual(bg, resolve(theme, 'var(--color-accent-light)'), `${name}: Fläche ≠ aktiver Chip`);
+    assert.notEqual(bg, resolve(theme, 'var(--btn-secondary-bg)'), `${name}: Fläche ≠ Chip`);
+  }
 });
 
 test('components.css: Sperrzustand, Chip und Gefahr-Tokens', () => {

@@ -140,7 +140,7 @@
                   <template x-if="card.chips.length">
                     <div class="outliertest__chips">
                       <template x-for="(chip, chi) in card.chips" :key="chi">
-                        <span class="chip outliertest__chip" :class="chip.moreClass"><span x-text="chip.text"></span><template x-if="chip.stat"><span class="outliertest__chip-stat" x-text="chip.stat"></span></template></span>
+                        <span class="chip outliertest__chip" :class="chip.cls"><span x-text="chip.text"></span><template x-if="chip.stat"><span class="outliertest__chip-stat" x-text="chip.stat"></span></template></span>
                       </template>
                     </div>
                   </template>
