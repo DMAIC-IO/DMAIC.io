@@ -93,17 +93,6 @@ export default [
 
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {
-    id: 'doe-advisor',
-    phase: 'improve',
-    group: 'plan',
-    load: () => import('./doe-advisor/doe-advisor.js'),
-    cycles: {
-      dmaic:  { phase: 'improve' },
-      dmadv:  { phase: 'design'  },
-      eightd: { phase: 'corrective' },
-    },
-  },
-  {
     id: 'regression',
     phase: 'improve',
     group: 'evaluate',

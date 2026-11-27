@@ -4157,6 +4157,7 @@ export const AGENT_REGISTRY = {
   "doe-advisor": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -4173,61 +4174,84 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "answer": {
+        "target": "model",
         "params": [
           {
-            "name": "opt",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die gewählte Antwortmöglichkeit der OFFENEN Frage. Eine Möglichkeit, die diese Frage nicht kennt, ist ein Fehler; die Meldung nennt die zulässigen."
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Beantwortet die offene Frage und geht zur nächsten weiter — oder zur Empfehlung, wenn der Weg dort endet."
+        "returns": "'phase'|'goal'|'screening-curvature'|'factor-count'|'factor-levels'|'robustness-type'|'limits'|'corners'|'result:evop'|'result:mixture'|'result:taguchi'|'result:dispersion'|'result:plackett-burman'|'result:dsd'|'result:fractional'|'result:full'|'result:full-general'|'result:ccd-rotatable'|'result:ccd-face'|'result:box-behnken'|'result:d-optimal'|'result:none'",
+        "help": "",
+        "keysOf": "answer",
+        "keysHelp": "actions.answer.params",
+        "keys": {
+          "opt": {
+            "type": "'define-measure'|'analyze'|'improve'|'control'|'screening'|'interactions'|'optimization'|'robustness'|'mixture'|'yes'|'no'|'many-factors'|'few'|'many'|'two'|'multi-or-mixed'|'noise-factors'|'dispersion-only'|'expandable'|'hard'|'allowed'|'forbidden'|'constrained'",
+            "help": ""
+          }
+        }
       },
       "back": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Geht eine Frage zurück und verwirft die Antwort, die weggeführt hat."
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "'phase'|'goal'|'screening-curvature'|'factor-count'|'factor-levels'|'robustness-type'|'limits'|'corners'|'result:evop'|'result:mixture'|'result:taguchi'|'result:dispersion'|'result:plackett-burman'|'result:dsd'|'result:fractional'|'result:full'|'result:full-general'|'result:ccd-rotatable'|'result:ccd-face'|'result:box-behnken'|'result:d-optimal'|'result:none'",
+        "help": "",
+        "keysOf": "back",
+        "keysHelp": "actions.back.params",
+        "keys": {}
       },
       "restart": {
-        "params": [],
-        "returns": "void",
-        "help": "Beginnt den Berater neu: erste Frage, keine Antworten."
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "'phase'|'goal'|'screening-curvature'|'factor-count'|'factor-levels'|'robustness-type'|'limits'|'corners'|'result:evop'|'result:mixture'|'result:taguchi'|'result:dispersion'|'result:plackett-burman'|'result:dsd'|'result:fractional'|'result:full'|'result:full-general'|'result:ccd-rotatable'|'result:ccd-face'|'result:box-behnken'|'result:d-optimal'|'result:none'",
+        "help": "",
+        "keysOf": "restart",
+        "keysHelp": "actions.restart.params",
+        "keys": {}
       }
     },
     "fields": {
       "currentStep": {
-        "type": "string",
-        "help": "id of the open question, or `result:<key>` once a recommendation stands",
-        "bulk": false,
-        "via": [
-          "answer",
-          "back",
-          "restart"
-        ],
-        "derived": true
+        "type": "'phase'|'goal'|'screening-curvature'|'factor-count'|'factor-levels'|'robustness-type'|'limits'|'corners'|'result:evop'|'result:mixture'|'result:taguchi'|'result:dispersion'|'result:plackett-burman'|'result:dsd'|'result:fractional'|'result:full'|'result:full-general'|'result:ccd-rotatable'|'result:ccd-face'|'result:box-behnken'|'result:d-optimal'|'result:none'",
+        "help": "",
+        "bulk": false
       },
       "answers": {
-        "type": "object",
-        "help": "the given answers, one per question",
-        "bulk": false,
-        "derived": true
+        "type": "{ phase?: 'define-measure'|'analyze'|'improve'|'control', goal?: 'screening'|'interactions'|'optimization'|'robustness'|'mixture', screeningCurvature?: 'yes'|'no'|'many-factors', factorCount?: 'few'|'many', factorLevels?: 'two'|'multi-or-mixed', robustnessType?: 'noise-factors'|'dispersion-only', limits?: 'expandable'|'hard', corners?: 'allowed'|'forbidden'|'constrained' }",
+        "help": "",
+        "bulk": false
       },
       "history": {
-        "type": "string[]",
-        "help": "ids of the answered questions, in answering order",
-        "bulk": false,
-        "derived": true
+        "type": "Array<'phase'|'goal'|'screening-curvature'|'factor-count'|'factor-levels'|'robustness-type'|'limits'|'corners'>",
+        "help": "",
+        "bulk": false
       },
       "currentOptions": {
-        "type": "string[]",
-        "help": "the answer options the open question accepts; empty on a recommendation",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "recommendation": {
-        "type": "Recommendation|null",
-        "help": "der empfohlene Versuchsplan; leer, solange keine Empfehlung steht",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Recommendation",
@@ -4255,8 +4279,13 @@ export const AGENT_REGISTRY = {
         }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "tab"
+    ],
+    "settable": [],
+    "invariants": [
+      "wizardConsistent"
     ]
   },
   "doe-planner": {

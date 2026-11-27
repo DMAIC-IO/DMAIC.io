@@ -70,6 +70,11 @@
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",
     "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten."
   },
+  "doe-advisor": {
+    "name": "DoE-Berater",
+    "description": "Übersicht der DoE-Designs und geführter Wizard zur Designauswahl",
+    "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn die Übersicht der Versuchspläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht werden; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da."
+  },
   "doe-planner": {
     "name": "DoE-Planer",
     "description": "Versuchsplanung: Vollfaktoriell, Teilfaktoriell, Plackett-Burman, CCD, Box-Behnken, Taguchi",

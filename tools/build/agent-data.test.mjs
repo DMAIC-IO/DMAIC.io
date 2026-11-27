@@ -2882,7 +2882,7 @@ test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht
 });
 
 test('undeclared_option_source: eine zustandsabhängige Menge über einen lokalen Namen ist ein Befund', async () => {
-  // Die Form aus doe-advisor.js:170,176 — das dritte Argument ist ein
+  // Die Form aus der Altform von doe-advisor — das dritte Argument ist ein
   // Bezeichner, nicht `this.*`.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent

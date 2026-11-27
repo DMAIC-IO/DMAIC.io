@@ -238,6 +238,12 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.unitKeys', reason: 'Auswahlhilfe für den Agenten (welche Einheiten die Eingangsauswahl annimmt); die Auswahl selbst ist verankert' },
     { name: 'fields.toUnitKeys', reason: 'Auswahlhilfe für den Agenten (welche Einheiten die Ausgangsauswahl annimmt); die Auswahl selbst ist verankert' },
   ],
+  'doe-advisor': [
+    { name: 'fields.currentStep', reason: 'der Schritt zeigt sich als Frage oder Ergebniskarte; verankert sind die Frage (actions.answer) und die Angaben der Empfehlung' },
+    { name: 'fields.answers', reason: 'die Antworten zeigen sich in der Spur unter der Frage; geschrieben über die Antwortknöpfe, verankert an der Frage (actions.answer)' },
+    { name: 'fields.history', reason: 'die Spur unter der Frage hat keine Beschriftung; Zurück (actions.back) und die Frage (actions.answer) sind verankert' },
+    { name: 'fields.currentOptions', reason: 'Auswahlhilfe für den Agenten (welche Antworten die offene Frage annimmt); die Antwortknöpfe hängen an der verankerten Frage' },
+  ],
   'lessons-learned': [
     { name: 'actions.addAction', reason: 'nur für den Agenten; die Oberfläche hängt Maßnahmen im Bearbeiten-Dialog an (updateLesson), dessen Maßnahmenfeld an fields.lessons.actions verankert ist' },
     { name: 'actions.removeAction', reason: 'nur für den Agenten; die Oberfläche entfernt Maßnahmen im Bearbeiten-Dialog (updateLesson)' },
