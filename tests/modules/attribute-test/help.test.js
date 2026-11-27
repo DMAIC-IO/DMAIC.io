@@ -15,7 +15,7 @@ async function fetchJson(path) {
 
 /** @param {string} lang */
 async function load(lang) {
-  const { $schema, ...file } = await fetchJson(`${BASE}i18n/help.${lang}.json`);
+  const { $schema: _schema, ...file } = await fetchJson(`${BASE}i18n/help.${lang}.json`);
   return file;
 }
 

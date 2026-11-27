@@ -31,7 +31,7 @@ async function sourceDirs() {
 }
 
 async function listCsv(dir) {
-  let entries = [];
+  let entries;
   try { entries = await readdir(join(root, dir), { withFileTypes: true }); } catch { return []; }
   const out = [];
   for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {

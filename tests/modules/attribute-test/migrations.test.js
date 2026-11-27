@@ -152,7 +152,7 @@ suite('attribute-test: Migration 0→1.0', () => {
   test('die sechs Beispiele laden ohne Reparatur', async () => {
     for (const id of EXAMPLES) {
       const data = await fetchJSON(new URL(`../../../js/modules/attribute-test/resources/examples/projects/${id}.json`, import.meta.url));
-      const { sourceWorksheetFile, ...state } = data;
+      const { sourceWorksheetFile: _sourceWorksheetFile, ...state } = data;
       const { fields } = repaired(state);
       assertDeepEqual(fields, [], id);
       State.fromJSON(plain(state), { context: CTX });

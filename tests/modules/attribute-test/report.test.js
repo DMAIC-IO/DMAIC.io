@@ -10,7 +10,7 @@ import { toReadResult, formatValue } from '../../../js/modules/attribute-test/do
 function buildReport(s, norm) {
   const r = rawReport({ ratePooled: false, ...s }, norm);
   if ('error' in r) return r;
-  const { status, ...rest } = toReadResult(r);
+  const { status: _status, ...rest } = toReadResult(r);
   return rest;
 }
 const st = (over = {}) => ({ direction: 'two-sided', alpha: 0.05, pooled: false, ...over });
