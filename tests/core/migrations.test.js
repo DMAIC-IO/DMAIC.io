@@ -11,6 +11,7 @@ import { suite, test, assertEqual } from '../test-utils.js';
 import { migrateToLatest } from '../../js/core/migrations.js';
 import { VERSION } from '../../js/core/version.js';
 import { stripPatch } from '../../js/core/version-utils.js';
+import { adoptProjectModels } from '../../js/core/project-models.js';
 
 /**
  * Every export-file fixture that has ever been shipped. Add new entries
@@ -34,6 +35,7 @@ const KNOWN_FIXTURES = [
   { file: 'v1.7.0_single_project.json', kind: 'single' },
   { file: 'v1.8.0_single_project.json', kind: 'single' },
   { file: 'v1.9.0_single_project.json', kind: 'single' },
+  { file: 'v1.9.6_models_project.json', kind: 'single' },
 ];
 
 async function loadFixture(file) {
@@ -154,5 +156,65 @@ suite('Migrations — goldene Fixtures', () => {
         `Add one and register it in KNOWN_FIXTURES before tagging the release.`
       );
     }
+  });
+});
+
+// Paket 3d, Kernschritt (Spec 2026-11-27-f2-regression-paket-design.md §1.6):
+// echter Einzelexport der Altform mit `models` (Besitzer regression/glm, Waise
+// m-c ohne Besitzer) und `optimizations` (o1 verwiesen, o2 unverwiesen). Nach
+// Versionskette und `adoptProjectModels` tragen die Instanzen die Daten.
+suite('Migrations — golden v1.9.6_models_project through adoptProjectModels', () => {
+  const OWNER_A = 'fd4d076e-e27c-4b93-b77a-1d2671d8505c';
+  const OWNER_B = 'f4309ced-02f5-458f-a437-1d0b99aec268';
+  const ORPHAN_C = '1e9f66c8-6e81-47f1-876b-8796bbf550a5';
+  const RO = 'r0e5f6a7-0001-4b2c-8d3e-9f0a1b2c3d4e';
+
+  /** Kurzform der Zustände der drei Module nach der Übernahme. */
+  async function adopted() {
+    const raw = await loadFixture('v1.9.6_models_project.json');
+    const { doc, changed, phasesChanged } = adoptProjectModels(migrateToLatest(raw, VERSION), { phaseFor: () => 'analyze' });
+    const out = {};
+    for (const [phase, list] of Object.entries(doc.phases)) {
+      for (const e of list) {
+        if (!['regression', 'glm-regression', 'response-optimization'].includes(e.moduleId)) continue;
+        const st = doc.moduleStates[e.instanceId] || {};
+        out[e.instanceId] = {
+          phase, moduleId: e.moduleId, customName: e.customName ?? null,
+          savedModelId: st.savedModelId ?? null,
+          savedModel: st.savedModel?.id ?? null,
+          optimization: st.optimization ? { modelRefs: st.optimization.modelRefs, D: st.optimization.result?.D } : null,
+        };
+      }
+    }
+    return { doc, changed, phasesChanged, out };
+  }
+
+  test('owners, orphan and optimizer carry the legacy data', async () => {
+    const { out } = await adopted();
+    assertEqual(JSON.stringify(out), JSON.stringify({
+      [OWNER_B]: { phase: 'analyze', moduleId: 'glm-regression', customName: null, savedModelId: 'm-b', savedModel: 'm-b', optimization: null },
+      [OWNER_A]: { phase: 'improve', moduleId: 'regression', customName: null, savedModelId: 'm-a', savedModel: 'm-a', optimization: null },
+      [RO]: { phase: 'improve', moduleId: 'response-optimization', customName: null, savedModelId: null, savedModel: null,
+        optimization: { modelRefs: ['m-a', 'm-c'], D: 0.999880070146285 } },
+      [ORPHAN_C]: { phase: 'improve', moduleId: 'regression', customName: 'Lieferzeit quadratisch — Modell', savedModelId: 'm-c', savedModel: 'm-c', optimization: null },
+    }));
+  });
+
+  test('the records arrive unchanged (hash and coefficients)', async () => {
+    const raw = await loadFixture('v1.9.6_models_project.json');
+    const { doc } = await adopted();
+    for (const [id, owner] of [['m-a', OWNER_A], ['m-b', OWNER_B], ['m-c', ORPHAN_C]]) {
+      assertEqual(JSON.stringify(doc.moduleStates[owner].savedModel), JSON.stringify(raw.models[id]), id);
+    }
+  });
+
+  test('legacy keys are gone, a second run changes nothing', async () => {
+    const { doc, changed, phasesChanged } = await adopted();
+    assertEqual(JSON.stringify(changed.slice().sort()), JSON.stringify([OWNER_A, OWNER_B, ORPHAN_C, RO].sort()));
+    assertEqual(phasesChanged, true);
+    for (const k of ['models', 'optimizations', 'experiments']) assertEqual(k in doc, false, k);
+    const again = adoptProjectModels(doc, { phaseFor: () => 'analyze' });
+    assertEqual(again.changed.length, 0);
+    assertEqual(again.doc, doc);
   });
 });

@@ -40,6 +40,7 @@ Aktueller Stand:
 | v1.7.0_single_project.json      | 1        | 11              |
 | v1.8.0_single_project.json      | 1        | 11              |
 | v1.9.0_single_project.json      | 1        | 11              |
+| v1.9.6_models_project.json      | 1        | 5               |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -155,3 +156,11 @@ Auch wenn eine Fixture trivial aussieht — sie ist der Beweis, dass alle
 historischen Datenformate weiterhin lesbar bleiben. Erst wenn ein MAJOR-Bump
 das Migrationsverbot rechtfertigt (z.B. v2 → v3 unterstützt v0.x nicht mehr),
 darf eine Fixture mit dem entsprechenden Vermerk im CHANGELOG entfernt werden.
+
+Die v1.9.6-Fixture `v1.9.6_models_project.json` ist ein echter Einzelexport der
+Altform mit den Projektschlüsseln `models` und `optimizations` (Paket 3d,
+`docs/superpowers/specs/2026-11-27-f2-regression-paket-design.md` §1.6):
+`regression` mit Modell `m-a`, `glm-regression` mit `m-b`, Waise `m-c`
+(Besitzer gelöscht), `response-optimization` mit `o1` über `m-a`/`m-c` und
+einer unverwiesenen Optimierung `o2`. `migrations.test.js` führt sie durch die
+Versionskette und `adoptProjectModels` (`js/core/project-models.js`).
