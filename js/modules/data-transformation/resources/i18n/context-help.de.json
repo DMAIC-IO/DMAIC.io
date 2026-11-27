@@ -78,6 +78,39 @@
     },
     "targetColumns": {
       "help": "Die Ziele, die toWorksheet annimmt, je { key, name }: je Blatt alle seine Spalten (ihre Werte werden überschrieben), danach ein Eintrag mit columnId __new__, der eine neue Spalte anhängt (name ist der Blattname); null als Ziel legt ein neues Arbeitsblatt an."
+    },
+    "series": {
+      "help": "Die Original- und die transformierten Werte der letzten Rechnung; leer ohne Ergebnis."
+    },
+    "statRows": {
+      "help": "Die Zeilen der Deskriptiven Statistik, wie die Tabelle sie zeigt."
+    },
+    "norm": {
+      "help": "Die beiden Zeilen des Normalitätstests (A², p und Urteil) vorher und nachher."
+    },
+    "exportText": {
+      "help": "Die transformierten Werte, wie der Kasten und die Zwischenablage sie zeigen."
+    },
+    "errorText": {
+      "help": "Die Meldung der letzten Rechnung, leer ohne Fehler."
+    },
+    "fallbackActive": {
+      "help": "Box-Cox ist gewählt, gerechnet wird mit Yeo-Johnson, weil die Spalte einen Wert ≤ 0 hat."
+    },
+    "targetGroups": {
+      "help": "Die Ziele im Zielwähler: je Blatt seine Spalten und eine neue Spalte."
+    },
+    "histOrigChart": {
+      "help": "Das Histogramm der Originalwerte."
+    },
+    "histTransChart": {
+      "help": "Das Histogramm der transformierten Werte."
+    },
+    "ppOrigChart": {
+      "help": "Der Normalverteilungsplot der Originalwerte."
+    },
+    "ppTransChart": {
+      "help": "Der Normalverteilungsplot der transformierten Werte."
     }
   },
   "actions": {

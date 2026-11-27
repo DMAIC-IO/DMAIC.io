@@ -62,5 +62,6 @@
   "sentToWorksheet": "Spalte im Worksheet angelegt",
   "targetUnavailable": "Das gewählte Ziel gibt es nicht mehr. Bitte ein anderes Ziel wählen.",
   "nothingToCopy": "Es gibt noch keine transformierten Werte zum Kopieren.",
-  "copyFailed": "Die Zwischenablage ist nicht erreichbar."
+  "copyFailed": "Die Zwischenablage ist nicht erreichbar.",
+  "analysisTimeout": "Die Rechnung ist nicht rechtzeitig fertig geworden; es wurde nichts gesendet."
 }

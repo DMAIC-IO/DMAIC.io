@@ -1,0 +1,214 @@
+<div class="module-data-transformation dmike-split" x-data="dataTransformation">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title"><span data-help-key="modules.data-transformation.fields.columnRef.help" x-text="t('selectColumn')"></span></div>
+    <div data-ref="col-picker-wrap" data-help-key="" x-field="model.columnRef"></div>
+
+    <div class="dmike-split__section-title"><span data-help-key="modules.data-transformation.fields.currentTF.help" x-text="t('selectTransform')"></span></div>
+    <div class="dt-tf-grid" data-ref="tf-grid" role="radiogroup" x-set="model.currentTF" data-help-key="">
+      <template x-for="tf in transforms" :key="tf.id">
+        <button type="button" role="radio" :class="tfOptClass(tf.id)" :value="tf.id" :data-id="tf.id" data-help-key="">
+          <span class="dt-tf-opt__dot"></span>
+          <span class="dt-tf-opt__text">
+            <span class="dt-tf-opt__name" x-text="tfName(tf.id)"></span>
+            <span class="dt-tf-opt__desc" x-text="tfDesc(tf.id)"></span>
+          </span>
+        </button>
+      </template>
+    </div>
+
+    <template x-if="isTF('boxcox')">
+      <div data-ref="param-panel">
+        <div class="dmike-split__section-title" x-text="t('parameters')"></div>
+        <div class="dt-param-group">
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.boxcox.lambda.help" x-text="t('paramLambda')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="lambda" x-field="model.params.boxcox.lambda" :placeholder="lambdaPlaceholder('boxcox')">
+            <input class="dt-param__range" type="range" min="-5" max="5" step="0.1" data-range-for="lambda" data-help-key=""
+                   x-field="model.params.boxcox.lambda" :value="lambdaShown('boxcox')">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.boxcox.lambda')"></span>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="isTF('yeojohnson')">
+      <div data-ref="param-panel">
+        <div class="dmike-split__section-title" x-text="t('parameters')"></div>
+        <div class="dt-param-group">
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.yeojohnson.lambda.help" x-text="t('paramLambda')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="lambda" x-field="model.params.yeojohnson.lambda" :placeholder="lambdaPlaceholder('yeojohnson')">
+            <input class="dt-param__range" type="range" min="-5" max="5" step="0.1" data-range-for="lambda" data-help-key=""
+                   x-field="model.params.yeojohnson.lambda" :value="lambdaShown('yeojohnson')">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.yeojohnson.lambda')"></span>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="isTF('johnson_su')">
+      <div data-ref="param-panel">
+        <div class="dmike-split__section-title" x-text="t('parameters')"></div>
+        <div class="dt-param-group">
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_su.gamma.help" x-text="t('paramGamma')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="gamma" x-field="model.params.johnson_su.gamma">
+            <input class="dt-param__range" type="range" min="-5" max="5" step="0.1" data-range-for="gamma" data-help-key="" x-field="model.params.johnson_su.gamma">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_su.gamma')"></span>
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_su.delta.help" x-text="t('paramDelta')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="delta" x-field="model.params.johnson_su.delta">
+            <input class="dt-param__range" type="range" min="0.1" max="10" step="0.1" data-range-for="delta" data-help-key="" x-field="model.params.johnson_su.delta">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_su.delta')"></span>
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_su.xi.help" x-text="t('paramXi')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="xi" x-field="model.params.johnson_su.xi">
+            <input class="dt-param__range" type="range" min="-100" max="100" step="0.5" data-range-for="xi" data-help-key="" x-field="model.params.johnson_su.xi">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_su.xi')"></span>
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_su.lambdaJ.help" x-text="t('paramLambdaJ')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="lambdaJ" x-field="model.params.johnson_su.lambdaJ">
+            <input class="dt-param__range" type="range" min="0.1" max="100" step="0.5" data-range-for="lambdaJ" data-help-key="" x-field="model.params.johnson_su.lambdaJ">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_su.lambdaJ')"></span>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="isTF('johnson_sb')">
+      <div data-ref="param-panel">
+        <div class="dmike-split__section-title" x-text="t('parameters')"></div>
+        <div class="dt-param-group">
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_sb.gamma.help" x-text="t('paramGamma')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="gamma" x-field="model.params.johnson_sb.gamma">
+            <input class="dt-param__range" type="range" min="-5" max="5" step="0.1" data-range-for="gamma" data-help-key="" x-field="model.params.johnson_sb.gamma">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_sb.gamma')"></span>
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_sb.delta.help" x-text="t('paramDelta')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="delta" x-field="model.params.johnson_sb.delta">
+            <input class="dt-param__range" type="range" min="0.1" max="10" step="0.1" data-range-for="delta" data-help-key="" x-field="model.params.johnson_sb.delta">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_sb.delta')"></span>
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_sb.xi.help" x-text="t('paramXi')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="xi" x-field="model.params.johnson_sb.xi">
+            <input class="dt-param__range" type="range" min="-100" max="100" step="0.5" data-range-for="xi" data-help-key="" x-field="model.params.johnson_sb.xi">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_sb.xi')"></span>
+          <div class="dt-param">
+            <label class="dt-param__label" data-help-key="modules.data-transformation.fields.params.johnson_sb.lambdaJ.help" x-text="t('paramLambdaJ')"></label>
+            <input class="field field--num field--inline dt-param__number" data-param-key="lambdaJ" x-field="model.params.johnson_sb.lambdaJ">
+            <input class="dt-param__range" type="range" min="0.1" max="100" step="0.5" data-range-for="lambdaJ" data-help-key="" x-field="model.params.johnson_sb.lambdaJ">
+          </div>
+          <span class="dt-field-error" x-text="fieldError('model.params.johnson_sb.lambdaJ')"></span>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <div class="dmike-split__output" data-ref="output">
+    <p class="dt-hint" data-ref="fallback-hint" x-show="fallbackActive" x-text="t('warnBoxCoxFallback')"></p>
+
+    <template x-if="errorText">
+      <div class="dt-error-msg" data-ref="error" x-text="errorText"></div>
+    </template>
+
+    <template x-if="!errorText && hasResults">
+      <div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts')"></span></div>
+        <div class="dt-results-grid">
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('histOriginal')"></div>
+            <div class="dt-chart" data-ref="chart-hist-orig" x-widget="histogram-chart" x-widget-config="histOrigChart"
+                 x-widget-value="model.histOrigEdits" x-widget-legacy-edit-key="legacyHistOrigKey"></div>
+          </div>
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('histTransformed')"></div>
+            <div class="dt-chart" data-ref="chart-hist-trans" x-widget="histogram-chart" x-widget-config="histTransChart"
+                 x-widget-value="model.histTransEdits" x-widget-legacy-edit-key="legacyHistTransKey"></div>
+          </div>
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('ppOriginal')"></div>
+            <div class="dt-chart" data-ref="chart-pp-orig" x-widget="probability-plot-chart" x-widget-config="ppOrigChart"
+                 x-widget-value="model.ppOrigEdits" x-widget-legacy-edit-key="legacyPpOrigKey"></div>
+          </div>
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('ppTransformed')"></div>
+            <div class="dt-chart" data-ref="chart-pp-trans" x-widget="probability-plot-chart" x-widget-config="ppTransChart"
+                 x-widget-value="model.ppTransEdits" x-widget-legacy-edit-key="legacyPpTransKey"></div>
+          </div>
+        </div>
+
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('descriptiveStats')"></span></div>
+        <table class="dmike-table dt-stats-table">
+          <thead><tr>
+            <th x-text="t('statistic')"></th>
+            <th><span data-help-key="modules.data-transformation.types.Result.original" x-text="t('original')"></span></th>
+            <th><span data-help-key="modules.data-transformation.types.Result.transformed" x-text="t('transformed')"></span></th>
+          </tr></thead>
+          <tbody data-ref="stats-body">
+            <template x-for="row in statRows" :key="row.label">
+              <tr>
+                <td x-text="row.label"></td>
+                <td x-text="row.orig"></td>
+                <td x-text="row.trans"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.data-transformation.types.Descriptives.adPValue" x-text="t('normalityTest')"></span></div>
+        <div class="dt-normality" data-ref="normality">
+          <div class="dt-normality__row">
+            <strong x-text="normLabel('original')"></strong>
+            <span data-help-key="modules.data-transformation.types.Descriptives.adStatAdj" x-text="norm.orig.stat"></span>
+            <template x-if="norm.orig.badge">
+              <span :class="norm.orig.badgeClass"><span class="icon icon--sm icon--text" :data-icon="norm.orig.badgeIcon" aria-hidden="true"></span><span data-help-key="modules.data-transformation.types.Descriptives.normal" x-text="norm.orig.badgeText"></span></span>
+            </template>
+          </div>
+          <div class="dt-normality__row">
+            <strong x-text="normLabel('transformed')"></strong>
+            <span data-help-key="modules.data-transformation.types.Descriptives.adStatAdj" x-text="norm.trans.stat"></span>
+            <template x-if="norm.trans.badge">
+              <span :class="norm.trans.badgeClass"><span class="icon icon--sm icon--text" :data-icon="norm.trans.badgeIcon" aria-hidden="true"></span><span data-help-key="modules.data-transformation.types.Descriptives.normal" x-text="norm.trans.badgeText"></span></span>
+            </template>
+          </div>
+          <div class="dt-normality__alpha" x-text="alphaLine"></div>
+        </div>
+
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('exportData')"></span></div>
+        <div class="dt-export-box" data-ref="export-box" x-text="exportText"></div>
+        <div class="dt-export-actions" x-async-task="toWorksheet">
+          <button class="btn btn--secondary btn--sm" type="button" data-action="copy" data-help-key="modules.data-transformation.actions.copyExport.help"
+                  x-command="copyExport" x-text="t('copy')"></button>
+          <span class="dt-target-wrap" data-help-key="modules.data-transformation.asyncTasks.toWorksheet.params.target">
+            <span class="col-picker col-picker--single">
+              <select class="field col-picker__select dt-target__select" data-ref="target" x-model="state.target">
+                <option value="" x-text="targetPlaceholder"></option>
+                <option value="__create_worksheet__" x-text="newWorksheetLabel"></option>
+                <template x-for="g in targetGroups" :key="g.key">
+                  <optgroup :label="g.label">
+                    <template x-for="o in g.options" :key="o.value">
+                      <option :value="o.value" x-text="o.label"></option>
+                    </template>
+                  </optgroup>
+                </template>
+              </select>
+            </span>
+          </span>
+          <button class="btn btn--secondary btn--sm" type="button" data-action="to-worksheet" data-ref="send"
+                  data-help-key="modules.data-transformation.asyncTasks.toWorksheet.help"
+                  :disabled="asyncTasks.toWorksheet.running" @click="sendToWorksheet()">
+            <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+            <span x-text="t('toWorksheet')"></span>
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>

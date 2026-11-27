@@ -1,0 +1,259 @@
+/* ═══════════════════════════════════════════════════════════════
+   D.Mike — Datentransformation (resources/style.css)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base layout provided by .dmike-split (css/modules.css) */
+
+/* ── Transform selector ── */
+
+.dt-tf-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.dt-tf-opt {
+  /* Knopf ohne Browser-Vorgaben, sieht aus wie die Kachel der Altform */
+  appearance: none;
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+  padding: var(--spacing-sm) var(--spacing-m);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  background: var(--color-bg-primary);
+}
+
+.dt-tf-opt:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.dt-tf-opt--active {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.dt-tf-opt__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--color-text-tertiary);
+  transition: all var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.dt-tf-opt--active .dt-tf-opt__dot {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: inset 0 0 0 3px var(--color-bg-primary);
+}
+
+.dt-tf-opt:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.dt-tf-opt__name,
+.dt-tf-opt__desc {
+  display: block;
+}
+
+.dt-tf-opt__name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.dt-tf-opt__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+}
+
+/* ── Parameter inputs ── */
+
+.dt-param-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.dt-param {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.dt-param__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  min-width: 70px;
+}
+
+.dt-param__number {
+  width: 80px;
+}
+
+.dt-param__range {
+  flex: 1;
+  accent-color: var(--color-accent);
+}
+
+.dt-field-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+.dt-field-error:empty { display: none; }
+
+/* ── Results grid ── */
+
+.dt-results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.dt-chart-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  min-height: 200px;
+}
+
+.dt-chart {
+  height: 200px;
+}
+
+.dt-chart-card__title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ── Stats table (extends .dmike-table) ── */
+
+.dt-stats-table {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+.dt-stats-table th:first-child,
+.dt-stats-table td:first-child {
+  text-align: left;
+}
+
+.dt-stats-table th:nth-child(2),
+.dt-stats-table td:nth-child(2),
+.dt-stats-table th:nth-child(3),
+.dt-stats-table td:nth-child(3) {
+  text-align: right;
+}
+
+.dt-stats-table td:nth-child(3) {
+  color: var(--color-accent);
+}
+
+/* ── Normality badge ── */
+
+.dt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.dt-badge--pass {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+.dt-badge--fail {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+}
+
+/* ── Normality result ── */
+
+.dt-normality {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+.dt-normality__row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.dt-normality__alpha {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Export area ── */
+
+.dt-export-box {
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-m);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  max-height: 160px;
+  overflow-y: auto;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.dt-export-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.dt-target-wrap { min-width: 180px; max-width: 260px; }
+.dt-target__select { font-size: var(--font-size-sm); }
+
+/* ── Error message ── */
+
+.dt-error-msg {
+  padding: var(--spacing-md);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border: var(--border-width) solid var(--color-error);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Hinweis Rückfall Box-Cox → Yeo-Johnson ── */
+
+.dt-hint {
+  margin: 0 0 var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-m);
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}

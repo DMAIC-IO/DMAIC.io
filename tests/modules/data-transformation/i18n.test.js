@@ -27,7 +27,7 @@ suite('data-transformation Texte in ui.<lang>.json', () => {
     for (const lang of LANGS) {
       const t = await ui(lang);
       for (const k of ['name', 'description', 'whenToUse', 'sentToWorksheet', 'selectTarget', 'targetUnavailable',
-        'warnBoxCoxFallback', 'copied', 'nothingToCopy', 'copyFailed', 'original', 'transformed', ...ERRORS]) {
+        'warnBoxCoxFallback', 'copied', 'nothingToCopy', 'copyFailed', 'analysisTimeout', 'original', 'transformed', ...ERRORS]) {
         assertTrue(nonEmpty(t[k]), `${lang} ${k}`);
       }
       for (const tf of TRANSFORMS) {

@@ -78,6 +78,39 @@
     },
     "targetColumns": {
       "help": "The targets toWorksheet accepts, each { key, name }: per sheet all its columns (their values are overwritten), followed by an entry with columnId __new__ that appends a new column (name is the sheet name); a null target creates a new worksheet."
+    },
+    "series": {
+      "help": "The original and the transformed values of the last calculation; empty without a result."
+    },
+    "statRows": {
+      "help": "The rows of the Descriptive Statistics as the table shows them."
+    },
+    "norm": {
+      "help": "The two rows of the normality test (A², p and verdict) before and after."
+    },
+    "exportText": {
+      "help": "The transformed values as the box and the clipboard show them."
+    },
+    "errorText": {
+      "help": "The message of the last calculation, empty without an error."
+    },
+    "fallbackActive": {
+      "help": "Box-Cox is chosen, the calculation uses Yeo-Johnson because the column has a value ≤ 0."
+    },
+    "targetGroups": {
+      "help": "The targets in the target picker: per sheet its columns and a new column."
+    },
+    "histOrigChart": {
+      "help": "The histogram of the original values."
+    },
+    "histTransChart": {
+      "help": "The histogram of the transformed values."
+    },
+    "ppOrigChart": {
+      "help": "The probability plot of the original values."
+    },
+    "ppTransChart": {
+      "help": "The probability plot of the transformed values."
     }
   },
   "actions": {

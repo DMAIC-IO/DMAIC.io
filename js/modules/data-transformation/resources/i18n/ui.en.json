@@ -62,5 +62,6 @@
   "sentToWorksheet": "Column added to worksheet",
   "targetUnavailable": "The selected target no longer exists. Please choose another target.",
   "nothingToCopy": "There are no transformed values to copy yet.",
-  "copyFailed": "The clipboard is not available."
+  "copyFailed": "The clipboard is not available.",
+  "analysisTimeout": "The calculation did not finish in time; nothing was sent."
 }
