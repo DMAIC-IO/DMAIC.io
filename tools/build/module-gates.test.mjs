@@ -151,6 +151,27 @@ export default {
   ]);
 });
 
+test('Beschreibung: redact lädt nur aus domain/', () => {
+  const head = `/** @type {import('../../core/module-descriptor.js').ModuleDescriptor} */
+export default {
+  id: 'neu',
+  version: '1.0.0',
+  icon: 'module.neu',
+  load: () => import('./viewmodel/viewmodel.js'),
+`;
+  assert.deepEqual(checkDescriptor('neu', `${head}  redact: () => import('./domain/routing.js'),\n};\n`, CTX), []);
+  assert.deepEqual(parseDescriptor(`${head}  redact: () => import('./domain/routing.js'),\n};\n`).fields.get('redact'), { import: './domain/routing.js' });
+  assert.deepEqual(checkDescriptor('neu', `${head}  redact: () => import('./io/export.js'),\n};\n`, CTX), [
+    'descriptor: module.js: redact: Ziel ./io/export.js nicht erlaubt (erwartet ./domain/<name>.js)',
+  ]);
+  assert.deepEqual(checkDescriptor('neu', `${head}  redact: () => import('./domain/fehlt.js'),\n};\n`, CTX), [
+    'descriptor: module.js: redact: ./domain/fehlt.js existiert nicht',
+  ]);
+  assert.deepEqual(checkDescriptor('neu', `${head}  redact: (s) => s,\n};\n`, CTX), [
+    "descriptor: module.js: redact: () => import('./…') erwartet",
+  ]);
+});
+
 test('Beschreibung: export default ohne Objektliteral', () => {
   assert.deepEqual(checkDescriptor('neu', 'export default makeIt();\n', CTX), [
     'descriptor: module.js: genau eine Anweisung: export default { … } (kein import, keine weiteren Anweisungen)',

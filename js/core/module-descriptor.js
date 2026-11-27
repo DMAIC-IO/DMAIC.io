@@ -26,6 +26,9 @@
  * @property {string[]} [exampleRefs]  Beispiele anderer Module
  * @property {() => Promise<{ default: object }>} load  `() => import('./viewmodel/viewmodel.js')`
  * @property {() => Promise<{ default: object }>} [tile]  `() => import('./tile/tile.js')`
+ * @property {() => Promise<{ default: (state: any) => any }>} [redact]  `() => import('./domain/<name>.js')`:
+ *   reine Umformung für Lesen und Export (`core/redact.js`), z. B. Zugangsdaten maskieren;
+ *   nie beim Speichern, im Verlauf oder im eigenen Viewmodel
  */
 
 export {};

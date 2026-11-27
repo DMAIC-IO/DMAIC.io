@@ -563,6 +563,11 @@ und `points` (Zeilentabelle); schreibend bleibt nur das Kommando
 **`read()` liest.** Ein `read()` ist nebenwirkungsfrei; es ist deshalb auch
 im abgeschlossenen Projekt erlaubt.
 
+**Maskierte Werte.** Erklärt ein Modul den Haken `redact` (`module.js`), liefert
+`read()` die Werte danach umgeformt — etwa geheime Header-Werte von `rest-api`
+als `••••`. Der Platzhalter ist kein gültiger Wert: Zurückschreiben wird
+abgelehnt; neue Werte setzt der Agent wie sonst.
+
 ## Schreibvertrag
 
 ### Aufrufe sind serialisiert, und nichts wirft nach außen

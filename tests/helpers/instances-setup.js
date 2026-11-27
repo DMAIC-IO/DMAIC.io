@@ -100,12 +100,15 @@ export const PHASES = () => ({
   ],
 });
 
-export function setup({ states = {}, completed = false, modules = {}, live, workspace, i18n } = {}) {
+export function setup({ states = {}, completed = false, modules = {}, live, workspace, i18n, redactors = {} } = {}) {
   const bus = makeBus();
   const sm = makeState({ phases: PHASES(), states, completed, bus });
   const mods = { sipoc: targetModule(), [LEGACY_MODULE_ID]: { id: LEGACY_MODULE_ID }, kano: { id: 'kano' }, ...modules };
   const loaded = new Set(Object.keys(mods));
-  const moduleRegistry = { loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null) };
+  const moduleRegistry = {
+    loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null),
+    loadRedactor: async (id) => redactors[id] ?? null, redactorOf: (id) => redactors[id] ?? null,
+  };
   const ws = workspace ?? makeWorkspace(live);
   const source = Object.freeze({ read: () => ({}), list: () => [] });
   const svc = createInstances({ stateManager: sm, moduleRegistry, workspace: ws, eventBus: bus, createSource: () => source, i18n });

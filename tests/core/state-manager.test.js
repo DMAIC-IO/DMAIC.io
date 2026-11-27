@@ -797,3 +797,63 @@ suite('StateManager revisions', () => {
     assertDeepEqual(calls, [false], 'zweimal hintereinander speichert nicht zweimal');
   });
 });
+
+// ─── Lese-/Export-Umformung je Modul (redact, B6) ───────────────────────────
+
+suite('StateManager redact', () => {
+  const hide = { default: (s) => ({ ...s, token: s.token ? '••••' : s.token }) };
+  function redactRegistry() {
+    const reg = new ModuleRegistry();
+    reg.register({ id: 'geheim', phase: 'data', load: () => Promise.resolve({ default: {} }), redact: () => Promise.resolve(hide) });
+    reg.register({ id: 'sipoc', phase: 'define', load: () => Promise.resolve({ default: {} }) });
+    return reg;
+  }
+  function redactDoc() {
+    return {
+      ...baseDoc(),
+      phases: { data: [{ instanceId: 'g1', moduleId: 'geheim' }], define: [{ instanceId: 'i1', moduleId: 'sipoc' }] },
+      moduleStates: { g1: { token: 'abc' }, i1: { columns: [['a']] } },
+    };
+  }
+
+  test('exportJSON maskiert, Speicher und Cache behalten den Klartext', async () => {
+    const adapter = makeFakeAdapter(redactDoc());
+    const sm = new StateManager(new EventBus(), adapter);
+    const reg = redactRegistry();
+    sm.setModuleRegistry(reg);
+    await sm.load();
+    await reg.loadRedactors();
+    sm.setModuleState('g1', { token: 'neu' });
+    const out = JSON.parse(sm.exportJSON());
+    assertEqual(out.moduleStates.g1.token, '••••');
+    assertDeepEqual(out.moduleStates.i1, { columns: [['a']] }, 'ohne Haken unverändert');
+    assertEqual(sm.getModuleState('g1').token, 'neu', 'Cache ungekürzt');
+    assertEqual(adapter._writes.filter(([k]) => k === 'put').at(-1)[2].token, 'neu', 'Speichern ungekürzt');
+  });
+
+  test('exportJSON: Haken erklärt, aber nicht geladen → Fehler statt Klartext', async () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(redactDoc()));
+    sm.setModuleRegistry(redactRegistry());
+    await sm.load();
+    let err = null;
+    try { sm.exportJSON(); } catch (e) { err = e; }
+    assertTrue(/geheim/.test(err?.message ?? ''), `Fehler erwartet, war ${err?.message}`);
+  });
+
+  test('exportAllJSON lädt die Haken selbst und maskiert je Projekt', async () => {
+    const adapter = makeFakeAdapter(redactDoc());
+    adapter.exportProjectDocs = async () => [{ id: 'wb', ...redactDoc() }];
+    const sm = new StateManager(new EventBus(), adapter);
+    sm.setModuleRegistry(redactRegistry());
+    await sm.load();
+    const out = JSON.parse(await sm.exportAllJSON());
+    assertEqual(out.projects[0].moduleStates.g1.token, '••••');
+    assertDeepEqual(out.projects[0].moduleStates.i1, { columns: [['a']] });
+  });
+
+  test('ohne Registry und ohne Haken: Export wie bisher', async () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(redactDoc()));
+    await sm.load();
+    assertEqual(JSON.parse(sm.exportJSON()).moduleStates.g1.token, 'abc');
+  });
+});

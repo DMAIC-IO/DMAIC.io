@@ -139,10 +139,10 @@ function importTarget(n) {
   return arg && ts.isStringLiteral(arg) ? arg.text : null;
 }
 
-const DESCRIPTOR_KEYS = ['id', 'version', 'icon', 'phase', 'group', 'cycles', 'allowedPhases', 'singleton', 'hiddenFromMenu', 'uses', 'exampleRefs', 'load', 'tile'];
+const DESCRIPTOR_KEYS = ['id', 'version', 'icon', 'phase', 'group', 'cycles', 'allowedPhases', 'singleton', 'hiddenFromMenu', 'uses', 'exampleRefs', 'load', 'tile', 'redact'];
 const REQUIRED_KEYS = ['id', 'version', 'icon', 'load'];
-const LOADERS = { load: /^\.\/viewmodel\/viewmodel\.js$/, tile: /^\.\/tile\/[a-z0-9-]+\.js$/ };
-const LOADER_EXPECTED = { load: './viewmodel/viewmodel.js', tile: './tile/<name>.js' };
+const LOADERS = { load: /^\.\/viewmodel\/viewmodel\.js$/, tile: /^\.\/tile\/[a-z0-9-]+\.js$/, redact: /^\.\/domain\/[a-z0-9-]+\.js$/ };
+const LOADER_EXPECTED = { load: './viewmodel/viewmodel.js', tile: './tile/<name>.js', redact: './domain/<name>.js' };
 export const DESCRIPTOR_TYPE_TAG = "@type {import('../../core/module-descriptor.js').ModuleDescriptor}";
 
 /**

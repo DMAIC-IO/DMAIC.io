@@ -377,3 +377,25 @@ suite('instances.write', () => {
     assertEqual(err?.code, 'needs_mount');
   });
 });
+
+suite('instances.read: redact (B6)', () => {
+  const hide = (s) => ('n' in s ? { ...s, n: -1 } : s);
+  test('nicht gemountet: read und readSync maskieren, gespeicherter Stand bleibt', async () => {
+    const saved = { _schema: { version: '1.0' }, n: 5 };
+    const { svc, sm } = setup({ states: { d1: saved }, redactors: { sipoc: hide } });
+    assertEqual((await svc.read('d1')).n, -1);
+    assertEqual(svc.readSync('d1').n, -1);
+    assertEqual(sm.getModuleState('d1').n, 5, 'Speicher ungekürzt');
+  });
+
+  test('gemountet: vm.read maskiert', async () => {
+    const vm = { model: Doc.fromJSON({ n: 4 }), read: () => ({ n: 4 }) };
+    const { svc } = setup({ live: new Map([['d1', vm]]), redactors: { sipoc: hide } });
+    assertDeepEqual(await svc.read('d1'), { n: -1 });
+  });
+
+  test('ohne Haken: unverändert', async () => {
+    const { svc } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 5 } } });
+    assertEqual((await svc.read('d1')).n, 5);
+  });
+});

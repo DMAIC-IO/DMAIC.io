@@ -182,3 +182,32 @@ suite('ModuleRegistry', () => {
     assertEqual(msg, '[ModuleRegistry] Unknown module: "nope"');
   });
 });
+
+suite('ModuleRegistry redact', () => {
+  const hide = (s) => ({ ...s, token: '••••' });
+  test('redactorOf: ohne Haken null, nach loadRedactors die Funktion', async () => {
+    const reg = new ModuleRegistry();
+    let calls = 0;
+    reg.register({ id: 'a', phase: 'data', load: noopLoad, redact: () => { calls++; return Promise.resolve({ default: hide }); } });
+    reg.register({ id: 'b', phase: 'data', load: noopLoad });
+    assertEqual(reg.redactorOf('b'), null);
+    assertEqual(reg.redactorOf('unbekannt'), null);
+    let err = null;
+    try { reg.redactorOf('a'); } catch (e) { err = e; }
+    assertEqual(err?.message, '[ModuleRegistry] a: redact nicht geladen');
+    await reg.loadRedactors();
+    await reg.loadRedactors();
+    assertEqual(reg.redactorOf('a'), hide);
+    assertEqual(calls, 1, 'einmal geladen');
+    assertEqual(await reg.loadRedactor('b'), null);
+    assertEqual(await reg.loadRedactor('a'), hide);
+  });
+
+  test('loadRedactor: Ziel ohne Default-Funktion wird abgelehnt', async () => {
+    const reg = new ModuleRegistry();
+    reg.register({ id: 'a', phase: 'data', load: noopLoad, redact: () => Promise.resolve({ default: 5 }) });
+    let err = null;
+    try { await reg.loadRedactor('a'); } catch (e) { err = e; }
+    assertEqual(err?.message, '[ModuleRegistry] a: redact muss eine Funktion exportieren (default)');
+  });
+});

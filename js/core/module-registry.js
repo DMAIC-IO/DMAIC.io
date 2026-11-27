@@ -65,7 +65,7 @@ export class ModuleRegistry {
       console.warn(`[ModuleRegistry] Duplicate module id: "${definition.id}"`);
       return;
     }
-    const normalized = { ...definition, _loaded: null, _tile: null };
+    const normalized = { ...definition, _loaded: null, _tile: null, _redact: null };
     if (definition.phase !== 'data' && !definition.cycles) {
       normalized.cycles = {
         [DEFAULT_CYCLE]: {
@@ -186,6 +186,46 @@ export class ModuleRegistry {
       definition._loaded = module.default;
     }
     return definition._loaded;
+  }
+
+  /**
+   * Den Haken `redact` eines Moduls laden (Deskriptor-Feld, `core/redact.js`).
+   * Einmal je Modul; ohne Haken oder für unbekannte Ids `null`.
+   * @param {string} moduleId
+   * @returns {Promise<((state: any) => any)|null>}
+   * @throws {Error} wenn das Ziel keine Default-Funktion exportiert
+   */
+  async loadRedactor(moduleId) {
+    const definition = this._registry.get(moduleId);
+    if (typeof definition?.redact !== 'function') return null;
+    if (!definition._redact) {
+      const fn = (await definition.redact())?.default;
+      if (typeof fn !== 'function') throw new Error(`[ModuleRegistry] ${moduleId}: redact muss eine Funktion exportieren (default)`);
+      definition._redact = fn;
+    }
+    return definition._redact;
+  }
+
+  /**
+   * Alle erklärten Haken `redact` laden — beim Start, damit der synchrone
+   * Projekt-Export (`StateManager.exportJSON`) sie hat.
+   * @returns {Promise<void>}
+   */
+  async loadRedactors() {
+    await Promise.all([...this._registry.keys()].map((id) => this.loadRedactor(id)));
+  }
+
+  /**
+   * Der geladene Haken `redact`, synchron. `null` ohne Haken.
+   * @param {string} moduleId
+   * @returns {((state: any) => any)|null}
+   * @throws {Error} wenn der Haken erklärt, aber nicht geladen ist (lieber kein Export als Klartext)
+   */
+  redactorOf(moduleId) {
+    const definition = this._registry.get(moduleId);
+    if (typeof definition?.redact !== 'function') return null;
+    if (!definition._redact) throw new Error(`[ModuleRegistry] ${moduleId}: redact nicht geladen`);
+    return definition._redact;
   }
 
   /**

@@ -64,6 +64,8 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   MODULES.forEach(def => moduleRegistry.register(def));
   moduleRegistry.setActiveCycle(stateManager.getProjectCycle());
   stateManager.setModuleRegistry(moduleRegistry);
+  // Die Haken `redact` (core/redact.js) vorab: der Projekt-Export ist synchron.
+  await moduleRegistry.loadRedactors();
 
   // Module in neuer Form laden Templates, CSS und UI-Texte selbst nach; ein
   // Sprachwechsel holt die UI-Texte der schon geladenen Module, bevor

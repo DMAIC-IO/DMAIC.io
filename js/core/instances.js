@@ -175,11 +175,12 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     const { record } = locate(instanceId);
     const moduleId = record.moduleId;
     const m = await moduleRegistry.loadModule(moduleId);
+    const redact = await moduleRegistry.loadRedactor?.(moduleId) ?? null;
     await settle(instanceId);
     const vm = workspace.getLiveViewmodel(instanceId);
     // Eingehängt: `vm.read` zuerst, Agenten bekommen den Flush offener Eingaben.
-    if (vm) return stripPaths(await vm.read(options), viewFieldsOf(moduleId, m));
-    return readNow(record, m, options, { live: false });
+    if (vm) return redacted(redact, stripPaths(await vm.read(options), viewFieldsOf(moduleId, m)));
+    return redacted(redact, readNow(record, m, options, { live: false }));
   }
 
   /**
@@ -198,7 +199,20 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     const { record } = locate(instanceId);
     const m = moduleRegistry.getLoaded(record.moduleId);
     if (!m) throw codeError('not_loaded');
-    return readNow(record, m, options, { live: !workspace.isPending(instanceId), sync: true });
+    const redact = moduleRegistry.redactorOf?.(record.moduleId) ?? null;
+    return redacted(redact, readNow(record, m, options, { live: !workspace.isPending(instanceId), sync: true }));
+  }
+
+  /**
+   * Die Lesefläche nach dem Haken `redact` des Moduls (core/redact.js): gilt
+   * für jeden Leser über diesen Dienst — Agent wie andere Module. Das eigene
+   * Viewmodel liest sein Model direkt und sieht den Klartext.
+   * @param {((state: any) => any)|null} redact
+   * @param {object} out
+   * @returns {object}
+   */
+  function redacted(redact, out) {
+    return redact && out && typeof out === 'object' ? redact(out) : out;
   }
 
   /**

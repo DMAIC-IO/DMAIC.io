@@ -30,6 +30,7 @@ import { stripPaths } from './view-fields.js';
 import { VERSION } from './version.js';
 import { parseVersion, stripPatch } from './version-utils.js';
 import { migrateToLatest } from './migrations.js';
+import { redactModuleStates } from './redact.js';
 import { idbDeleteAllForProject } from './idb-store.js';
 import { LocalAdapter } from './storage/local-adapter.js';
 import {
@@ -766,6 +767,8 @@ export class StateManager {
     // the adapter's loadProjectDoc returns them for every project uniformly.
     this._eventBus.emit('project:before-export');
     await this.flushNow();
+    // Die Haken `redact` (core/redact.js) vor dem Lesen laden.
+    await this._moduleRegistry?.loadRedactors?.();
     // The export reads the top-level state back from the adapter, not from
     // memory — a change still waiting in the save debounce would be missing.
     this.saveNow();
@@ -799,7 +802,7 @@ export class StateManager {
         chartEdits: doc.chartEdits || {},
         dashboard: doc.dashboard ?? null,
         version: doc.version || VERSION,
-        moduleStates: doc.moduleStates || {},
+        moduleStates: this._redactStates(doc.moduleStates, doc.phases),
       });
     }
 
@@ -909,12 +912,23 @@ export class StateManager {
       ...this._state,
     };
     // Include all module states for the active project
-    const moduleStates = {};
-    for (const [instanceId, state] of this._moduleCache) {
-      moduleStates[instanceId] = state;
-    }
-    exportData.moduleStates = moduleStates;
+    exportData.moduleStates = this._redactStates(Object.fromEntries(this._moduleCache), this._state.phases);
     return JSON.stringify(exportData, null, 2);
+  }
+
+  /**
+   * Modulzustände für einen Export: je Instanz der Haken `redact` ihres
+   * Moduls (core/redact.js). Ohne Registry unverändert. Speicher und Cache
+   * bleiben ungekürzt.
+   * @param {Record<string, any>|undefined} moduleStates
+   * @param {object|undefined} phases
+   * @returns {Record<string, any>}
+   * @throws {Error} wenn ein erklärter Haken nicht geladen ist
+   */
+  _redactStates(moduleStates, phases) {
+    const reg = this._moduleRegistry;
+    if (!reg?.redactorOf) return { ...(moduleStates ?? {}) };
+    return redactModuleStates(moduleStates, phases, (id) => reg.redactorOf(id));
   }
 
   /**
