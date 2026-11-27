@@ -1,0 +1,214 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "Die Kette der Prozessschritte von links nach rechts; jeder Schritt mit Titel, Beschreibung, Wertschöpfung, Inputs, Outputs, Unter-Schritten und höchstens einem Loop.",
+      "title": {
+        "help": "Der Titel des Schritts, ein kurzer Name der Tätigkeit."
+      },
+      "description": {
+        "help": "Die Beschreibung des Schritts, freier Text."
+      },
+      "valueType": {
+        "help": "Die Wertschöpfung des Schritts: wertschöpfend (VA), geschäftlich notwendig (BNVA) oder nicht wertschöpfend (NVA); ohne Angabe ist der Schritt nicht klassifiziert.",
+        "va": {
+          "help": "Wertschöpfend (VA): der Schritt erzeugt direkten Kundennutzen."
+        },
+        "bnva": {
+          "help": "Geschäftlich notwendig (BNVA): betrieblich nötig, aber ohne Kundennutzen."
+        },
+        "nva": {
+          "help": "Nicht wertschöpfend (NVA): Verschwendung, Kandidat für das Eliminieren."
+        }
+      },
+      "inputs": {
+        "help": "Die Inputs des Schritts in Reihenfolge, je mit Bezeichnung und Input-Typ.",
+        "name": {
+          "help": "Die Bezeichnung des Inputs."
+        },
+        "inputType": {
+          "help": "Der Input-Typ: Prozessparameter (x) oder Störgröße (n); ohne Angabe ist der Input nicht klassifiziert.",
+          "param": {
+            "help": "Prozessparameter (x): eine steuerbare Eingangsgröße, etwa eine Maschineneinstellung."
+          },
+          "noise": {
+            "help": "Störgröße (n): eine nicht oder schwer kontrollierbare Eingangsgröße, etwa die Umgebungstemperatur."
+          }
+        }
+      },
+      "outputs": {
+        "help": "Die Outputs des Schritts in Reihenfolge, je mit Bezeichnung.",
+        "name": {
+          "help": "Die Bezeichnung des Outputs."
+        }
+      },
+      "substeps": {
+        "help": "Die Unter-Schritte (Detail-Schritte) des Schritts in Reihenfolge.",
+        "title": {
+          "help": "Der Titel des Unter-Schritts."
+        }
+      },
+      "loop": {
+        "help": "Der Loop des Schritts: ein Rücksprung zu einem früheren Schritt mit Bedingung und Rework-Schritten; fehlt er, hat der Schritt keinen Loop.",
+        "targetStepId": {
+          "help": "Der frühere Schritt, zu dem der Loop zurückführt; ohne Angabe ist das Band an seinem Schritt offen."
+        },
+        "condition": {
+          "help": "Die Bedingung, unter der der Loop ausgelöst wird."
+        },
+        "steps": {
+          "help": "Die Rework-Schritte, die nur im Rücksprungpfad laufen, in Reihenfolge.",
+          "title": {
+            "help": "Der Titel des Rework-Schritts."
+          }
+        }
+      }
+    },
+    "expanded": {
+      "help": "Die Schritte, deren Unter-Schritte aufgeklappt sind; rein darstellend, der Inhalt bleibt."
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Fügt einen leeren Schritt in die Kette ein und liefert seine id.",
+      "params": {
+        "command": "Das Kommando als ein Objekt, optional mit atIndex.",
+        "atIndex": "Position des neuen Schritts nach dem Einfügen (0 = ganz vorn, die Zahl der Schritte = ans Ende). Ohne Angabe wird am Ende angehängt. Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler."
+      }
+    },
+    "removeStep": {
+      "help": "Entfernt einen Schritt aus der Kette. Jeder Loop, der zu ihm zurückführt, wird dabei ganz gelöscht.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id.",
+        "id": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "moveStep": {
+      "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Ein Loop-Ziel, das danach nicht mehr vor seinem Schritt liegt, wird gelöscht.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id und index.",
+        "id": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+        "index": "Die Position des Schritts nach dem Verschieben, eine ganze Zahl von 0 (ganz vorn) bis zur Zahl der Schritte minus eins."
+      }
+    },
+    "appendSteps": {
+      "help": "Hängt mehrere Schritte ans Ende der Kette an, etwa aus der Prozess-Spalte eines SIPOC. Liefert die Zahl der angehängten Schritte.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit steps.",
+        "steps": "Die anzuhängenden Schritte als Liste; jeder Eintrag hat einen title."
+      }
+    },
+    "cycleValueType": {
+      "help": "Schaltet die Wertschöpfung eines Schritts weiter: nicht klassifiziert → wertschöpfend (VA) → geschäftlich notwendig (BNVA) → nicht wertschöpfend (NVA) → nicht klassifiziert.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "addIO": {
+      "help": "Hängt einen leeren Input oder Output an einen Schritt an und liefert seine id.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und type.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "type": "Die Liste: 'inputs' oder 'outputs'. Ein anderer Wert ist ein Fehler."
+      }
+    },
+    "removeIO": {
+      "help": "Entfernt einen Input oder Output von einem Schritt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId, type und ioId.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "type": "Die Liste: 'inputs' oder 'outputs'. Ein anderer Wert ist ein Fehler.",
+        "ioId": "Die id des Eintrags in dieser Liste. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "moveIO": {
+      "help": "Verschiebt einen Input oder Output innerhalb seiner Liste an den Platz eines anderen Eintrags derselben Liste.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId, type, ioId und targetIoId.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "type": "Die Liste: 'inputs' oder 'outputs'.",
+        "ioId": "Die id des Eintrags, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+        "targetIoId": "Die id des Eintrags, dessen Platz er einnimmt; ein anderer Eintrag derselben Liste. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "cycleInputType": {
+      "help": "Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter (x) → Störgröße (n) → kein Typ.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und ioId.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "ioId": "Die id des Inputs. Eine unbekannte id oder die id eines Outputs ist ein Fehler."
+      }
+    },
+    "addSubstep": {
+      "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu und liefert seine id.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId.",
+        "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "removeSubstep": {
+      "help": "Entfernt einen Unter-Schritt. Bleibt der Schritt ohne Unter-Schritte, klappt er zu.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und substepId.",
+        "stepId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+        "substepId": "Die id des zu entfernenden Unter-Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "moveSubstep": {
+      "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an eine andere Position.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId, substepId und index.",
+        "stepId": "Die id des Schritts, zu dem der Unter-Schritt gehört. Eine unbekannte id ist ein Fehler.",
+        "substepId": "Die id des Unter-Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+        "index": "Die Position des Unter-Schritts nach dem Verschieben, eine ganze Zahl von 0 (ganz vorn) bis zur Zahl der Unter-Schritte minus eins."
+      }
+    },
+    "setExpanded": {
+      "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id und expanded.",
+        "id": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
+      }
+    },
+    "setLoop": {
+      "help": "Legt den Loop eines Schritts an oder entfernt ihn. Ein neuer Loop ist leer, ohne Bedingung, Ziel und Rework-Schritte; ein entfernter nimmt diese Angaben mit.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und on.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "on": "true legt den Loop an (ein vorhandener bleibt), false entfernt ihn."
+      }
+    },
+    "removeLoop": {
+      "help": "Entfernt den Loop eines Schritts samt Bedingung, Ziel und Rework-Schritten.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "setLoopTarget": {
+      "help": "Wählt den früheren Schritt, zu dem der Loop zurückführt; ohne Ziel bleibt das Band offen.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und targetStepId.",
+        "stepId": "Die id des Schritts mit dem Loop. Hat der Schritt keinen Loop, wird abgelehnt.",
+        "targetStepId": "Die id eines Schritts vor diesem Schritt; leer löscht das Ziel. Eine unbekannte id ist ein Fehler, eine id, die nicht davor liegt, wird abgelehnt."
+      }
+    },
+    "addLoopStep": {
+      "help": "Hängt einen leeren Rework-Schritt an den Loop eines Schritts an und liefert seine id.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId.",
+        "stepId": "Die id des Schritts mit dem Loop. Hat der Schritt keinen Loop, wird abgelehnt."
+      }
+    },
+    "removeLoopStep": {
+      "help": "Entfernt einen Rework-Schritt aus dem Loop eines Schritts.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und loopStepId.",
+        "stepId": "Die id des Schritts mit dem Loop. Hat der Schritt keinen Loop, wird abgelehnt.",
+        "loopStepId": "Die id des Rework-Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    }
+  }
+}

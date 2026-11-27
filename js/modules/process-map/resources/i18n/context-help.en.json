@@ -1,0 +1,214 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "The chain of process steps from left to right; each step with title, description, value type, inputs, outputs, sub-steps and at most one loop.",
+      "title": {
+        "help": "The title of the step, a short name of the activity."
+      },
+      "description": {
+        "help": "The description of the step, free text."
+      },
+      "valueType": {
+        "help": "The value type of the step: value-adding (VA), business non-value-adding (BNVA) or non-value-adding (NVA); without one the step is unclassified.",
+        "va": {
+          "help": "Value-adding (VA): the step creates direct customer value."
+        },
+        "bnva": {
+          "help": "Business non-value-adding (BNVA): operationally necessary, but no customer value."
+        },
+        "nva": {
+          "help": "Non-value-adding (NVA): waste, a candidate for elimination."
+        }
+      },
+      "inputs": {
+        "help": "The inputs of the step in order, each with a name and an input type.",
+        "name": {
+          "help": "The name of the input."
+        },
+        "inputType": {
+          "help": "The input type: process parameter (x) or noise factor (n); without one the input is unclassified.",
+          "param": {
+            "help": "Process parameter (x): a controllable input, such as a machine setting."
+          },
+          "noise": {
+            "help": "Noise factor (n): an input that is hard or impossible to control, such as the ambient temperature."
+          }
+        }
+      },
+      "outputs": {
+        "help": "The outputs of the step in order, each with a name.",
+        "name": {
+          "help": "The name of the output."
+        }
+      },
+      "substeps": {
+        "help": "The sub-steps (detail steps) of the step in order.",
+        "title": {
+          "help": "The title of the sub-step."
+        }
+      },
+      "loop": {
+        "help": "The loop of the step: a return to an earlier step with a condition and rework steps; without it the step has no loop.",
+        "targetStepId": {
+          "help": "The earlier step the loop returns to; without one the band stays open at its step."
+        },
+        "condition": {
+          "help": "The condition that triggers the loop."
+        },
+        "steps": {
+          "help": "The rework steps that only run on the return path, in order.",
+          "title": {
+            "help": "The title of the rework step."
+          }
+        }
+      }
+    },
+    "expanded": {
+      "help": "The steps whose sub-steps are expanded; display only, the content stays."
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Inserts an empty step into the chain and returns its id.",
+      "params": {
+        "command": "The command as an object, optionally with atIndex.",
+        "atIndex": "Position of the new step after inserting (0 = the very front, the number of steps = at the end). Without it the step is appended. A value outside that range or a non-integer is an error."
+      }
+    },
+    "removeStep": {
+      "help": "Removes a step from the chain. Every loop that returns to it is removed entirely.",
+      "params": {
+        "command": "The command as an object with id.",
+        "id": "The id of the step to remove. An unknown id is an error."
+      }
+    },
+    "moveStep": {
+      "help": "Moves a step to another position in the chain. A loop target that then no longer lies before its step is cleared.",
+      "params": {
+        "command": "The command as an object with id and index.",
+        "id": "The id of the step to move. An unknown id is an error.",
+        "index": "The position of the step after the move, a whole number from 0 (the very front) to the number of steps minus one."
+      }
+    },
+    "appendSteps": {
+      "help": "Appends several steps to the end of the chain, for example from the process column of a SIPOC. Returns the number of appended steps.",
+      "params": {
+        "command": "The command as an object with steps.",
+        "steps": "The steps to append as a list; each entry has a title."
+      }
+    },
+    "cycleValueType": {
+      "help": "Cycles the value type of a step: unclassified → value-adding (VA) → business non-value-adding (BNVA) → non-value-adding (NVA) → unclassified.",
+      "params": {
+        "command": "The command as an object with stepId.",
+        "stepId": "The id of the step. An unknown id is an error."
+      }
+    },
+    "addIO": {
+      "help": "Appends an empty input or output to a step and returns its id.",
+      "params": {
+        "command": "The command as an object with stepId and type.",
+        "stepId": "The id of the step. An unknown id is an error.",
+        "type": "The list: 'inputs' or 'outputs'. Any other value is an error."
+      }
+    },
+    "removeIO": {
+      "help": "Removes an input or output from a step.",
+      "params": {
+        "command": "The command as an object with stepId, type and ioId.",
+        "stepId": "The id of the step. An unknown id is an error.",
+        "type": "The list: 'inputs' or 'outputs'. Any other value is an error.",
+        "ioId": "The id of the entry in that list. An unknown id is an error."
+      }
+    },
+    "moveIO": {
+      "help": "Moves an input or output within its list to the position of another entry of the same list.",
+      "params": {
+        "command": "The command as an object with stepId, type, ioId and targetIoId.",
+        "stepId": "The id of the step. An unknown id is an error.",
+        "type": "The list: 'inputs' or 'outputs'.",
+        "ioId": "The id of the entry to move. An unknown id is an error.",
+        "targetIoId": "The id of the entry whose position it takes; a different entry of the same list. An unknown id is an error."
+      }
+    },
+    "cycleInputType": {
+      "help": "Cycles the type of an input: no type → process parameter (x) → noise factor (n) → no type.",
+      "params": {
+        "command": "The command as an object with stepId and ioId.",
+        "stepId": "The id of the step. An unknown id is an error.",
+        "ioId": "The id of the input. An unknown id or the id of an output is an error."
+      }
+    },
+    "addSubstep": {
+      "help": "Adds an empty sub-step to a step and returns its id.",
+      "params": {
+        "command": "The command as an object with stepId.",
+        "stepId": "The id of the step that gets the new sub-step. An unknown id is an error."
+      }
+    },
+    "removeSubstep": {
+      "help": "Removes a sub-step. A step left without sub-steps collapses.",
+      "params": {
+        "command": "The command as an object with stepId and substepId.",
+        "stepId": "The id of the parent step. An unknown id is an error.",
+        "substepId": "The id of the sub-step to remove. An unknown id is an error."
+      }
+    },
+    "moveSubstep": {
+      "help": "Moves a sub-step to another position within its step.",
+      "params": {
+        "command": "The command as an object with stepId, substepId and index.",
+        "stepId": "The id of the step the sub-step belongs to. An unknown id is an error.",
+        "substepId": "The id of the sub-step to move. An unknown id is an error.",
+        "index": "The position of the sub-step after the move, a whole number from 0 (the very front) to the number of sub-steps minus one."
+      }
+    },
+    "setExpanded": {
+      "help": "Shows or hides the sub-steps of a step; display only, the content stays.",
+      "params": {
+        "command": "The command as an object with id and expanded.",
+        "id": "The id of the step. An unknown id is an error.",
+        "expanded": "true shows the sub-steps, false hides them."
+      }
+    },
+    "setLoop": {
+      "help": "Creates or removes the loop of a step. A new loop is empty, without condition, target or rework steps; removing one takes these with it.",
+      "params": {
+        "command": "The command as an object with stepId and on.",
+        "stepId": "The id of the step. An unknown id is an error.",
+        "on": "true creates the loop (an existing one stays), false removes it."
+      }
+    },
+    "removeLoop": {
+      "help": "Removes the loop of a step with its condition, target and rework steps.",
+      "params": {
+        "command": "The command as an object with stepId.",
+        "stepId": "The id of the step. An unknown id is an error."
+      }
+    },
+    "setLoopTarget": {
+      "help": "Chooses the earlier step the loop returns to; without a target the band stays open.",
+      "params": {
+        "command": "The command as an object with stepId and targetStepId.",
+        "stepId": "The id of the step with the loop. A step without a loop is rejected.",
+        "targetStepId": "The id of a step before this step; empty clears the target. An unknown id is an error, an id that does not lie before it is rejected."
+      }
+    },
+    "addLoopStep": {
+      "help": "Appends an empty rework step to the loop of a step and returns its id.",
+      "params": {
+        "command": "The command as an object with stepId.",
+        "stepId": "The id of the step with the loop. A step without a loop is rejected."
+      }
+    },
+    "removeLoopStep": {
+      "help": "Removes a rework step from the loop of a step.",
+      "params": {
+        "command": "The command as an object with stepId and loopStepId.",
+        "stepId": "The id of the step with the loop. A step without a loop is rejected.",
+        "loopStepId": "The id of the rework step. An unknown id is an error."
+      }
+    }
+  }
+}

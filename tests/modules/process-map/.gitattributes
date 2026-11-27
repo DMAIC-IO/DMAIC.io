@@ -1,0 +1,3 @@
+# Byte-Fixtures der Altform (BOM): nie umwandeln.
+legacy-export.csv -text
+legacy-export.json -text

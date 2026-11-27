@@ -1,0 +1,165 @@
+{
+  "appVersion": "1.3.2",
+  "exportedAt": "2026-06-07T12:00:00.000Z",
+  "version": "1.3.2",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "phases": {
+    "data": [],
+    "define": [],
+    "measure": [
+      {
+        "instanceId": "5c2e9a71-4b3d-4f80-9e16-7a0d3c8b2f41",
+        "moduleId": "process-map",
+        "order": 0,
+        "state": {}
+      }
+    ],
+    "analyze": [],
+    "improve": [],
+    "control": [],
+    "extras": []
+  },
+  "phaseAchievement": {
+    "define": 0,
+    "measure": 0,
+    "analyze": 0,
+    "improve": 0,
+    "control": 0
+  },
+  "phaseAchievementHistory": {},
+  "models": {},
+  "optimizations": {},
+  "chartEdits": {},
+  "projectMeta": {
+    "name": "Process Map Altprojekt",
+    "cycle": "dmaic",
+    "created": "2026-06-07T12:00:00.000Z",
+    "modified": "2026-06-07T12:00:00.000Z"
+  },
+  "dashboard": {
+    "layout": null
+  },
+  "moduleStates": {
+    "5c2e9a71-4b3d-4f80-9e16-7a0d3c8b2f41": {
+      "steps": [
+        {
+          "id": "pm-s1",
+          "title": "Bestellung annehmen",
+          "description": "Telefon oder online",
+          "valueType": "va",
+          "inputs": [
+            {
+              "id": "pm-i1",
+              "name": "Kundenanruf",
+              "inputType": "param"
+            },
+            {
+              "id": "pm-i2",
+              "name": "Wetter",
+              "inputType": "noise"
+            },
+            {
+              "id": "pm-i3",
+              "name": "Speisekarte",
+              "inputType": null
+            }
+          ],
+          "outputs": [
+            {
+              "id": "pm-o1",
+              "name": "Auftrag",
+              "inputType": "param"
+            }
+          ],
+          "substeps": [
+            {
+              "id": "pm-ss1",
+              "title": "Adresse prüfen"
+            },
+            {
+              "title": "Zahlart klären"
+            }
+          ],
+          "expanded": true,
+          "loop": null,
+          "legacyNote": "Altfeld ohne Leser"
+        },
+        {
+          "id": "pm-s2",
+          "title": "Teig vorbereiten",
+          "description": "",
+          "valueType": "bnva",
+          "inputs": [],
+          "outputs": [
+            {
+              "id": "pm-o2",
+              "name": "Teigling"
+            }
+          ],
+          "substeps": [],
+          "expanded": false,
+          "loop": {
+            "targetStepId": "pm-s1",
+            "condition": "Teig gerissen",
+            "steps": [
+              {
+                "id": "pm-l1",
+                "title": "Neu kneten"
+              },
+              {
+                "title": "Ruhen lassen"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Backen",
+          "description": "Steinofen, 90 s",
+          "valueType": "nva",
+          "inputs": [
+            {
+              "name": "Ofentemperatur",
+              "inputType": "param"
+            }
+          ],
+          "outputs": [],
+          "substeps": [],
+          "expanded": false,
+          "loop": {
+            "targetStepId": "pm-s4",
+            "condition": "Zu dunkel",
+            "steps": []
+          }
+        },
+        {
+          "id": "pm-s4",
+          "title": "Ausliefern",
+          "description": "",
+          "valueType": null,
+          "inputs": [],
+          "outputs": [
+            {
+              "id": "pm-o4",
+              "name": "Pizza beim Kunden"
+            }
+          ],
+          "substeps": [],
+          "expanded": false,
+          "loop": null
+        }
+      ]
+    }
+  }
+}

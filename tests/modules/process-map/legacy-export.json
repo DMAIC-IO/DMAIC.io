@@ -1,0 +1,87 @@
+﻿{
+  "tool": "ProcessMap",
+  "timestamp": "<masked>",
+  "steps": [
+    {
+      "step": 1,
+      "title": "Bestellung annehmen",
+      "description": "Telefon oder online",
+      "valueType": "va",
+      "inputs": [
+        {
+          "name": "Kundenanruf",
+          "type": "param"
+        },
+        {
+          "name": "Wetter",
+          "type": "noise"
+        },
+        {
+          "name": "Speisekarte"
+        }
+      ],
+      "outputs": [
+        "Auftrag"
+      ],
+      "substeps": [
+        {
+          "step": "1.1",
+          "title": "Adresse prüfen"
+        },
+        {
+          "step": "1.2",
+          "title": "Zahlart klären"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Teig vorbereiten",
+      "description": "",
+      "valueType": "bnva",
+      "inputs": [],
+      "outputs": [
+        "Teigling"
+      ],
+      "substeps": [],
+      "loop": {
+        "condition": "Teig gerissen",
+        "targetStep": 1,
+        "steps": [
+          "Neu kneten",
+          "Ruhen lassen"
+        ]
+      }
+    },
+    {
+      "step": 3,
+      "title": "Backen",
+      "description": "Steinofen, 90 s",
+      "valueType": "nva",
+      "inputs": [
+        {
+          "name": "Ofentemperatur",
+          "type": "param"
+        }
+      ],
+      "outputs": [],
+      "substeps": [],
+      "loop": {
+        "condition": "Zu dunkel",
+        "targetStep": 4,
+        "steps": []
+      }
+    },
+    {
+      "step": 4,
+      "title": "Ausliefern",
+      "description": "",
+      "valueType": null,
+      "inputs": [],
+      "outputs": [
+        "Pizza beim Kunden"
+      ],
+      "substeps": []
+    }
+  ]
+}

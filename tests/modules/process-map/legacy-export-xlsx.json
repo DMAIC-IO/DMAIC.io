@@ -1,0 +1,217 @@
+{
+  "sheetNames": [
+    "Process Map"
+  ],
+  "rows": [
+    [
+      {
+        "t": "s",
+        "v": "Schritt"
+      },
+      {
+        "t": "s",
+        "v": "Titel"
+      },
+      {
+        "t": "s",
+        "v": "Beschreibung"
+      },
+      {
+        "t": "s",
+        "v": "Wertschöpfung"
+      },
+      {
+        "t": "s",
+        "v": "Inputs"
+      },
+      {
+        "t": "s",
+        "v": "Outputs"
+      },
+      {
+        "t": "s",
+        "v": "Loop"
+      }
+    ],
+    [
+      {
+        "t": "n",
+        "v": 1
+      },
+      {
+        "t": "s",
+        "v": "Bestellung annehmen"
+      },
+      {
+        "t": "s",
+        "v": "Telefon oder online"
+      },
+      {
+        "t": "s",
+        "v": "Wertschöpfend"
+      },
+      {
+        "t": "s",
+        "v": "Kundenanruf (x), Wetter (n), Speisekarte"
+      },
+      {
+        "t": "s",
+        "v": "Auftrag"
+      },
+      {
+        "t": "s",
+        "v": ""
+      }
+    ],
+    [
+      {
+        "t": "s",
+        "v": "1.1"
+      },
+      {
+        "t": "s",
+        "v": "  Adresse prüfen"
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      }
+    ],
+    [
+      {
+        "t": "s",
+        "v": "1.2"
+      },
+      {
+        "t": "s",
+        "v": "  Zahlart klären"
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      }
+    ],
+    [
+      {
+        "t": "n",
+        "v": 2
+      },
+      {
+        "t": "s",
+        "v": "Teig vorbereiten"
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": "Geschäftlich notwendig"
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": "Teigling"
+      },
+      {
+        "t": "s",
+        "v": "Teig gerissen → Schritt 01 [Neu kneten, Ruhen lassen]"
+      }
+    ],
+    [
+      {
+        "t": "n",
+        "v": 3
+      },
+      {
+        "t": "s",
+        "v": "Backen"
+      },
+      {
+        "t": "s",
+        "v": "Steinofen, 90 s"
+      },
+      {
+        "t": "s",
+        "v": "Nicht wertschöpfend"
+      },
+      {
+        "t": "s",
+        "v": "Ofentemperatur (x)"
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": "Zu dunkel → Schritt 04"
+      }
+    ],
+    [
+      {
+        "t": "n",
+        "v": 4
+      },
+      {
+        "t": "s",
+        "v": "Ausliefern"
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": ""
+      },
+      {
+        "t": "s",
+        "v": "Pizza beim Kunden"
+      },
+      {
+        "t": "s",
+        "v": ""
+      }
+    ]
+  ]
+}

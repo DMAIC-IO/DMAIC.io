@@ -1,0 +1,8 @@
+﻿sep=;
+"Schritt";"Titel";"Beschreibung";"Wertschöpfung";"Inputs";"Outputs";"Loop"
+"1";"Bestellung annehmen";"Telefon oder online";"Wertschöpfend";"Kundenanruf (x), Wetter (n), Speisekarte";"Auftrag";""
+"1.1";"  Adresse prüfen";"";"";"";"";""
+"1.2";"  Zahlart klären";"";"";"";"";""
+"2";"Teig vorbereiten";"";"Geschäftlich notwendig";"";"Teigling";"Teig gerissen → Schritt 01 [Neu kneten, Ruhen lassen]"
+"3";"Backen";"Steinofen, 90 s";"Nicht wertschöpfend";"Ofentemperatur (x)";"";"Zu dunkel → Schritt 04"
+"4";"Ausliefern";"";"";"";"Pizza beim Kunden";""
