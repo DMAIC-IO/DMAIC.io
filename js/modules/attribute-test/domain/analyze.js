@@ -45,7 +45,7 @@ function nameOf(src, ref) {
  * @param {any} m @param {any} src
  */
 function columnsOf(m, src) {
-  /** @type {Record<string, any[]|null>} */
+  /** @type {any} */
   const cols = {};
   for (const slot of COLUMN_SLOTS) cols[slot] = values(src, m.colRefs[slot]);
   return cols;

@@ -1,0 +1,334 @@
+<div class="attrtest dmike-split" x-data="attributeTest">
+  <!-- data-help-key="" an Knöpfen, Eingaben, Auswahl und Wählerwirten ist gewollt: Gruppe bzw. Beschriftung tragen die Anker fields.*. -->
+
+  <!-- ─── Eingabe (links) ─────────────────────────────────────── -->
+  <div class="attrtest__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionTest')"></div>
+    <div class="attrtest__kinds" role="radiogroup" data-help-key="" x-set="model.testKind">
+      <div class="attrtest__group-label" x-text="t('groupProportions')"></div>
+      <div class="btn-group" data-help-key="modules.attribute-test.fields.testKind.help">
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="one" data-kind="one" :class="kindClass('one')" x-text="t('kindOne')"></button>
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="two" data-kind="two" :class="kindClass('two')" x-text="t('kindTwo')"></button>
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="equiv" data-kind="equiv" :class="kindClass('equiv')" x-text="t('kindEquiv')"></button>
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="mcnemar" data-kind="mcnemar" :class="kindClass('mcnemar')" x-text="t('kindMcNemar')"></button>
+      </div>
+      <div class="attrtest__group-label" x-text="t('groupRates')"></div>
+      <div class="btn-group" data-help-key="modules.attribute-test.fields.testKind.help">
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="rate1" data-kind="rate1" :class="kindClass('rate1')" x-text="t('kindRate1')"></button>
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="rate2" data-kind="rate2" :class="kindClass('rate2')" x-text="t('kindRate2')"></button>
+      </div>
+      <div class="attrtest__group-label" x-text="t('groupTables')"></div>
+      <div class="btn-group" data-help-key="modules.attribute-test.fields.testKind.help">
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="assoc" data-kind="assoc" :class="kindClass('assoc')" x-text="t('kindAssoc')"></button>
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionInput')"></div>
+    <div class="btn-group" role="radiogroup" data-help-key="modules.attribute-test.fields.inputMode.help" x-set="model.inputMode">
+      <button type="button" role="radio" class="btn--segment" data-help-key="" value="summary" data-mode="summary" :class="modeClass('summary')" x-text="t('modeSummary')"></button>
+      <button type="button" role="radio" class="btn--segment" data-help-key="" value="columns" data-mode="columns" :class="modeClass('columns')" x-text="t('modeColumns')"></button>
+    </div>
+
+    <!-- Zusammenfassung -->
+    <template x-if="isSummary && oneSample">
+      <div class="attrtest__grid">
+        <div class="field-group"><label data-help-key="modules.attribute-test.fields.summary.x.help" x-text="t('events')"></label>
+          <input class="field field--num" inputmode="numeric" data-ref="x" data-help-key="" x-field="model.summary.x"></div>
+        <div class="field-group"><label data-help-key="modules.attribute-test.fields.summary.n.help" x-text="t('trials')"></label>
+          <input class="field field--num" inputmode="numeric" data-ref="n" data-help-key="" x-field="model.summary.n"></div>
+      </div>
+    </template>
+
+    <template x-if="isSummary && twoSample">
+      <div class="attrtest__grid attrtest__grid--two">
+        <span class="attrtest__grid-head"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.fields.summary.x1.help" x-text="t('events')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.fields.summary.n1.help" x-text="t('trials')"></span>
+        <span class="attrtest__row-label" x-text="t('sample1')"></span>
+        <input class="field field--num" inputmode="numeric" data-ref="x1" data-help-key="" x-field="model.summary.x1">
+        <input class="field field--num" inputmode="numeric" data-ref="n1" data-help-key="" x-field="model.summary.n1">
+        <span class="attrtest__row-label" x-text="t('sample2')"></span>
+        <input class="field field--num" inputmode="numeric" data-ref="x2" data-help-key="" x-field="model.summary.x2">
+        <input class="field field--num" inputmode="numeric" data-ref="n2" data-help-key="" x-field="model.summary.n2">
+      </div>
+    </template>
+
+    <template x-if="isSummary && isKind('rate1')">
+      <div class="attrtest__grid">
+        <div class="field-group"><label data-help-key="modules.attribute-test.fields.summary.x.help" x-text="t('events')"></label>
+          <input class="field field--num" inputmode="numeric" data-ref="x" data-help-key="" x-field="model.summary.x"></div>
+        <div class="field-group"><label data-help-key="modules.attribute-test.fields.summary.t.help" x-text="t('exposure')"></label>
+          <input class="field field--num" inputmode="decimal" data-ref="t" data-help-key="" x-field="model.summary.t"></div>
+      </div>
+    </template>
+
+    <template x-if="isSummary && isKind('rate2')">
+      <div class="attrtest__grid attrtest__grid--two">
+        <span class="attrtest__grid-head"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.fields.summary.x1.help" x-text="t('events')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.fields.summary.t1.help" x-text="t('exposure')"></span>
+        <span class="attrtest__row-label" x-text="t('sample1')"></span>
+        <input class="field field--num" inputmode="numeric" data-ref="x1" data-help-key="" x-field="model.summary.x1">
+        <input class="field field--num" inputmode="decimal" data-ref="t1" data-help-key="" x-field="model.summary.t1">
+        <span class="attrtest__row-label" x-text="t('sample2')"></span>
+        <input class="field field--num" inputmode="numeric" data-ref="x2" data-help-key="" x-field="model.summary.x2">
+        <input class="field field--num" inputmode="decimal" data-ref="t2" data-help-key="" x-field="model.summary.t2">
+      </div>
+    </template>
+
+    <template x-if="isSummary && isKind('mcnemar')">
+      <div class="attrtest__grid attrtest__grid--pairs" data-ref="pairs-grid">
+        <input class="field attrtest__name attrtest__pair-label" data-ref="label-before" data-help-key=""
+          :placeholder="t('pairBefore')" :aria-label="t('pairBefore')" x-field="model.summary.pairs.labels.before">
+        <input class="field attrtest__name attrtest__pair-label attrtest__pair-label--after" data-ref="label-after" data-help-key=""
+          :placeholder="t('pairAfter')" :aria-label="t('pairAfter')" x-field="model.summary.pairs.labels.after">
+        <span></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.col" x-text="t('pairEvent')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.col" x-text="t('pairNoEvent')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.row" x-text="t('pairEvent')"></span>
+        <input class="field field--num attrtest__count" inputmode="numeric" data-pair="0-0" data-row="0" data-col="0" :value="pairText(0, 0)" @input="onPair($event)">
+        <input class="field field--num attrtest__count" inputmode="numeric" data-pair="0-1" data-row="0" data-col="1" :value="pairText(0, 1)" @input="onPair($event)">
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.row" x-text="t('pairNoEvent')"></span>
+        <input class="field field--num attrtest__count" inputmode="numeric" data-pair="1-0" data-row="1" data-col="0" :value="pairText(1, 0)" @input="onPair($event)">
+        <input class="field field--num attrtest__count" inputmode="numeric" data-pair="1-1" data-row="1" data-col="1" :value="pairText(1, 1)" @input="onPair($event)">
+      </div>
+    </template>
+
+    <template x-if="isSummary && isKind('assoc')">
+      <div class="attrtest__table-editor" data-ref="table-editor">
+        <table class="attrtest__edit-table">
+          <thead>
+            <tr>
+              <th></th>
+              <template x-for="j in colIdx" :key="'h' + j">
+                <th>
+                  <input class="field attrtest__name" :data-col-name="j" :data-col="j" :value="colName(j)" @input="onColName($event)">
+                  <button type="button" class="btn--icon attrtest__remove" data-help-key="modules.attribute-test.actions.removeCol.help" :title="t('removeCol')"
+                    :disabled="!canRemoveCol" x-command="removeCol" :data-arg-col="j">
+                    <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
+                  </button>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="i in rowIdx" :key="'r' + i">
+              <tr>
+                <th>
+                  <input class="field attrtest__name" :data-row-name="i" :data-row="i" :value="rowName(i)" @input="onRowName($event)">
+                  <button type="button" class="btn--icon attrtest__remove" data-help-key="modules.attribute-test.actions.removeRow.help" :title="t('removeRow')"
+                    :disabled="!canRemoveRow" x-command="removeRow" :data-arg-row="i">
+                    <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
+                  </button>
+                </th>
+                <template x-for="j in colIdx" :key="'c' + i + '-' + j">
+                  <td><input class="field field--num attrtest__count" inputmode="numeric"
+                    :data-cell="i + '-' + j" :data-row="i" :data-col="j" :value="cellText(i, j)" @input="onCell($event)"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <div class="attrtest__table-actions">
+          <button type="button" class="btn btn--secondary btn--sm" data-ref="add-row" data-help-key="modules.attribute-test.actions.addRow.help" x-command="addRow" x-text="t('addRow')"></button>
+          <button type="button" class="btn btn--secondary btn--sm" data-ref="add-col" data-help-key="modules.attribute-test.actions.addCol.help" x-command="addCol" x-text="t('addCol')"></button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Spalten -->
+    <template x-if="usesSlot('response')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.response.help" x-text="t('colResponse')"></label>
+        <div data-ref="picker-response-wrap" data-help-key="" x-field="model.colRefs.response"></div>
+      </div>
+    </template>
+    <template x-if="usesSlot('counts')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.counts.help" x-text="t('colCounts')"></label>
+        <div data-ref="picker-counts-wrap" data-help-key="" x-field="model.colRefs.counts"></div>
+      </div>
+    </template>
+    <template x-if="usesSlot('before')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.before.help" x-text="t('colBefore')"></label>
+        <div data-ref="picker-before-wrap" data-help-key="" x-field="model.colRefs.before"></div>
+      </div>
+    </template>
+    <template x-if="usesSlot('after')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.after.help" x-text="t('colAfter')"></label>
+        <div data-ref="picker-after-wrap" data-help-key="" x-field="model.colRefs.after"></div>
+      </div>
+    </template>
+    <template x-if="usesSlot('group')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.group.help" x-text="t('colGroup')"></label>
+        <div data-ref="picker-group-wrap" data-help-key="" x-field="model.colRefs.group"></div>
+      </div>
+    </template>
+    <template x-if="usesSlot('rowVar')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.rowVar.help" x-text="t('colRowVar')"></label>
+        <div data-ref="picker-row-wrap" data-help-key="" x-field="model.colRefs.rowVar"></div>
+      </div>
+    </template>
+    <template x-if="usesSlot('colVar')">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.colRefs.colVar.help" x-text="t('colColVar')"></label>
+        <div data-ref="picker-col-wrap" data-help-key="" x-field="model.colRefs.colVar"></div>
+      </div>
+    </template>
+    <template x-if="usesExposurePerRow">
+      <div class="field-group"><label data-help-key="modules.attribute-test.fields.exposurePerRow.help" x-text="t('exposurePerRow')"></label>
+        <input class="field field--num" inputmode="decimal" data-ref="exposure-per-row" data-help-key="" x-field="model.exposurePerRow"></div>
+    </template>
+    <template x-if="showEvent">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.fields.eventValue.help" x-text="t('eventValue')"></label>
+        <!-- Optionen aus den Daten: Handler statt x-field, gezeigt wird der wirksame Wert (der gespeicherte, wenn er unter den Werten ist, sonst der letzte). -->
+        <select class="field" data-ref="event" @change="onEventChange($event)">
+          <template x-for="o in eventOptions" :key="o.value">
+            <option :value="o.value" :selected="o.selected" x-text="o.value"></option>
+          </template>
+        </select>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
+    <template x-if="isKind('equiv')">
+      <div class="btn-group" role="radiogroup" data-ref="equiv-samples" data-help-key="modules.attribute-test.fields.equiv.samples.help" x-set="model.equiv.samples">
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="1" data-samples="1" :class="samplesClass(1)" x-text="t('equivSamples1')"></button>
+        <button type="button" role="radio" class="btn--segment" data-help-key="" value="2" data-samples="2" :class="samplesClass(2)" x-text="t('equivSamples2')"></button>
+      </div>
+    </template>
+    <template x-if="oneSample">
+      <div class="field-group"><label data-help-key="modules.attribute-test.fields.p0.help" x-text="t('p0')"></label>
+        <input class="field field--num" inputmode="decimal" data-ref="p0" data-help-key="" x-field="model.p0"></div>
+    </template>
+    <template x-if="isKind('rate1')">
+      <div class="field-group"><label data-help-key="modules.attribute-test.fields.summary.lambda0.help" x-text="t('lambda0')"></label>
+        <input class="field field--num" inputmode="decimal" data-ref="lambda0" data-help-key="" x-field="model.summary.lambda0"></div>
+    </template>
+    <template x-if="isKind('rate2')">
+      <div class="field-group"><label data-help-key="modules.attribute-test.fields.summary.diff0.help" x-text="t('diff0')"></label>
+        <input class="field field--num" inputmode="decimal" data-ref="diff0" data-help-key="" x-field="model.summary.diff0"></div>
+    </template>
+    <template x-if="isKind('equiv')">
+      <div class="attrtest__contents">
+        <div class="btn-group" role="radiogroup" data-ref="equiv-bounds" data-help-key="modules.attribute-test.fields.equiv.symmetric.help" x-set="model.equiv.symmetric">
+          <button type="button" role="radio" class="btn--segment" data-help-key="" value="true" data-bounds="symmetric" :class="boundsClass(true)" x-text="t('boundsSymmetric')"></button>
+          <button type="button" role="radio" class="btn--segment" data-help-key="" value="false" data-bounds="asymmetric" :class="boundsClass(false)" x-text="t('boundsAsymmetric')"></button>
+        </div>
+        <template x-if="model.equiv.symmetric">
+          <div class="field-group"><label data-help-key="modules.attribute-test.fields.equiv.delta.help" x-text="boundLabel('delta')"></label>
+            <input class="field field--num" inputmode="decimal" data-ref="delta" data-help-key="" x-field="model.equiv.delta"></div>
+        </template>
+        <template x-if="!model.equiv.symmetric">
+          <div class="attrtest__grid">
+            <div class="field-group"><label data-help-key="modules.attribute-test.fields.equiv.lower.help" x-text="boundLabel('boundLower')"></label>
+              <input class="field field--num" inputmode="decimal" data-ref="lower" data-help-key="" x-field="model.equiv.lower"></div>
+            <div class="field-group"><label data-help-key="modules.attribute-test.fields.equiv.upper.help" x-text="boundLabel('boundUpper')"></label>
+              <input class="field field--num" inputmode="decimal" data-ref="upper" data-help-key="" x-field="model.equiv.upper"></div>
+          </div>
+        </template>
+      </div>
+    </template>
+    <template x-if="showDirection">
+      <div class="field-group"><label data-help-key="modules.attribute-test.fields.direction.help" x-text="t('direction')"></label>
+        <select class="field" data-ref="direction" data-help-key="" x-field="model.direction">
+          <template x-for="o in directionOptions" :key="o.value">
+            <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+          </template>
+        </select>
+      </div>
+    </template>
+    <div class="field-group"><label data-help-key="modules.attribute-test.fields.alpha.help" x-text="t('alpha')"></label>
+      <input class="field field--num" inputmode="decimal" data-ref="alpha" data-help-key="" x-field="model.alpha"></div>
+    <template x-if="isKind('rate2')">
+      <label class="field-check" data-help-key="modules.attribute-test.fields.ratePooled.help" data-help-anchor="box">
+        <input type="checkbox" data-ref="rate-pooled" data-help-key="" x-model="model.ratePooled">
+        <span x-text="t('ratePooled')"></span>
+      </label>
+    </template>
+    <template x-if="isKind('two')">
+      <label class="field-check" data-help-key="modules.attribute-test.fields.pooled.help" data-help-anchor="box">
+        <input type="checkbox" data-ref="pooled" data-help-key="" x-model="model.pooled">
+        <span x-text="t('pooled')"></span>
+      </label>
+    </template>
+
+    <div class="attrtest__hypotheses">
+      <template x-for="h in hypotheses" :key="h">
+        <div class="attrtest__hypothesis" x-text="h"></div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ─── Ergebnis (rechts) ───────────────────────────────────── -->
+  <div class="attrtest__results dmike-split__output">
+    <div class="dmike-split__section-title" x-text="t('sectionResults')"></div>
+
+    <div class="attrtest__message" data-ref="message" x-show="!hasResult" :class="messageClass" x-text="message"></div>
+
+    <template x-if="hasResult">
+      <div class="attrtest__contents">
+        <table class="attrtest__stats">
+          <tbody>
+            <template x-for="s in stats" :key="s.key">
+              <tr :data-stat="s.key">
+                <th><span :data-help-key="s.help" x-text="s.label"></span></th>
+                <td class="attrtest__stat-value" x-text="s.value"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <div class="attrtest__decision" data-ref="decision" :class="decisionClass">
+          <span data-help-key="modules.attribute-test.types.Result.decision" x-text="decisionText"></span>
+          <span class="attrtest__basis" x-text="basisText"></span>
+        </div>
+
+        <template x-for="n in notes" :key="n.key">
+          <div class="attrtest__note" :data-note="n.key" x-text="n.text"></div>
+        </template>
+
+        <div class="attrtest__actions">
+          <template x-for="a in actions" :key="a.key">
+            <button type="button" class="btn btn--secondary btn--sm" :data-action="a.key" data-help-key="modules.attribute-test.actions.checkEquivalence.help"
+              x-command="checkEquivalence" x-text="a.label"></button>
+          </template>
+        </div>
+
+        <template x-if="hasTable">
+          <div>
+            <div class="attrtest__legend"><span data-help-key="modules.attribute-test.types.CrossCell.contrib" x-text="t('cellLegend')"></span></div>
+            <table class="attrtest__result-table" data-ref="result-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <template x-for="(c, ci) in tableCols" :key="ci"><th x-text="c"></th></template>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="(row, ri) in tableRows" :key="ri">
+                  <tr>
+                    <th x-text="row.name"></th>
+                    <template x-for="(cell, j) in row.cells" :key="j">
+                      <td>
+                        <div class="attrtest__obs" x-text="cell.obs"></div>
+                        <div class="attrtest__exp" x-text="cell.exp"></div>
+                        <div class="attrtest__contrib" x-text="cell.contrib"></div>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>

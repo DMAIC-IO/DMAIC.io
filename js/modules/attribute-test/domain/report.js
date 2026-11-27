@@ -370,7 +370,7 @@ function reportEquiv(s, norm) {
   const notes = [{ key: 'noteEquivBoundsPractical' }];
   if (!r.equivalent) notes.push({ key: 'noteEquivCiOutside' });
   missingNote(norm, notes);
-  const estimate = one ? r.pHat : r.diff;
+  const estimate = one ? /** @type {any} */ (r).pHat : /** @type {any} */ (r).diff;
   return {
     kind: 'equiv',
     stats: [
@@ -461,10 +461,10 @@ function reportAssoc(s, norm) {
  */
 export function buildReport(s, norm) {
   if (!norm.ok) return norm.hint ? { error: norm.error, hint: true } : { error: norm.error };
-  const report = dispatch(s, norm);
+  const report = /** @type {any} */ (dispatch(s, norm));
   if ('error' in report) return report;
   report.noteDetails ??= noteDetailsOf(report.notes);
-  return report;
+  return /** @type {RawReport} */ (report);
 }
 
 function dispatch(s, norm) {
