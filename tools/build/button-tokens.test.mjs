@@ -119,6 +119,23 @@ test('btn--icon-sm.btn--secondary: Icon-Knopf mit Rahmen und Fläche des Sekund�
   assert.match(hover, /background:\s*var\(--btn-secondary-bg-hover\)/);
 });
 
+test('btn--secondary als Umschalter: aktiv per btn--active/aria-pressed wie der aktive Chip', () => {
+  const rule = /\.btn--secondary\.btn--active,[^{]*\.btn--secondary\[aria-pressed="true"\][^{]*\{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
+  assert.match(rule, /background:\s*var\(--color-accent-light\)/);
+  assert.match(rule, /border-color:\s*var\(--color-accent\)/);
+  assert.match(rule, /color:\s*var\(--chip-active-text\)/);
+});
+
+test('unit-converter: Größenarten sind einzelne Sekundärknöpfe, keine Segmentgruppe', () => {
+  const html = readFileSync(join(APP_DIR, 'js/modules/unit-converter/resources/view.html'), 'utf8');
+  const cat = [...html.matchAll(/<button\b[^>]*\sclass="([^"]*)"/g)].map((m) => m[1].split(/\s+/))
+    .filter((l) => l.includes('module-unit-converter__cat-btn'));
+  assert.equal(cat.length, 1);
+  assert.ok(cat[0].includes('btn') && cat[0].includes('btn--secondary'), cat[0].join(' '));
+  assert.ok(!cat[0].includes('btn--segment'), 'kein Segment');
+  assert.doesNotMatch(html, /class="[^"]*\bbtn-group\b[^"]*module-unit-converter__categories/);
+});
+
 test('„+“-Knöpfe in Kopf und Karten: btn--secondary btn--icon-sm', () => {
   const ADD = {
     'stakeholder-analysis': ['sha__add-btn'],

@@ -49,7 +49,7 @@ export default createModule({
       catActiveClass(catKey) {
         return this.model.activeCat === catKey ? 'btn--active module-unit-converter__cat-btn--active' : '';
       },
-      /** @param {string} catKey @returns {'true'|'false'} Segmentzustand für aria-pressed */
+      /** @param {string} catKey @returns {'true'|'false'} Umschaltzustand für aria-pressed */
       catPressed(catKey) { return this.model.activeCat === catKey ? 'true' : 'false'; },
 
       /** @param {string} unitKey @returns {string} */

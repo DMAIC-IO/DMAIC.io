@@ -71,6 +71,18 @@
   background: var(--btn-secondary-bg-hover);
 }
 
+/* Sekundärknopf als Umschalter mit Text (z. B. Größenart im
+   Einheitenumrechner): aktiv per Klasse oder aria-pressed, Fläche wie der
+   aktive Chip, auch beim Hover. */
+.btn--secondary.btn--active,
+.btn--secondary[aria-pressed="true"],
+.btn--secondary.btn--active:hover:where(:not(:disabled, .btn--disabled)),
+.btn--secondary[aria-pressed="true"]:hover:where(:not(:disabled, .btn--disabled)) {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--chip-active-text);
+}
+
 .btn--ghost {
   background: transparent;
   color: var(--color-text-secondary);

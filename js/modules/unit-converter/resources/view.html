@@ -1,9 +1,9 @@
 <section class="module-unit-converter" x-data="unitConverter">
   <!-- data-help-key="" an den Größenartknöpfen und an den Auswahlfeldern ist gewollt: die Hilfe hängt an der Knopfleiste bzw. an den Beschriftungen darüber. -->
-  <div class="btn-group module-unit-converter__categories" data-ref="categories" data-help-key="modules.unit-converter.actions.selectCategory.help">
+  <div class="module-unit-converter__categories" data-ref="categories" data-help-key="modules.unit-converter.actions.selectCategory.help">
     <template x-for="(cat, catKey) in categories" :key="catKey">
       <button type="button"
-        class="btn btn--segment module-unit-converter__cat-btn"
+        class="btn btn--secondary module-unit-converter__cat-btn"
         :class="catActiveClass(catKey)"
         :aria-pressed="catPressed(catKey)"
         :data-cat="catKey"
