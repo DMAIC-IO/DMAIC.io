@@ -135,10 +135,20 @@ export default createModule({
     bandGridStyle() { return `--fc-lane-count: ${this.bands.length}`; },
     /** @returns {string} ohne Bänder Platz für die Schiene vor der ersten Karte */
     canvasClass() { return this.hasBands() ? '' : 'af__canvas--plain'; },
-    /** Platz einer Karte bzw. Raute im Raster. @param {ViewStep} step @returns {string} */
+    /**
+     * Platz einer Karte bzw. Raute im Raster. Das Band kommt aus dem Model, nicht
+     * aus dem Schleifeneintrag: ein Kommando zeichnet das Raster neu, bevor die
+     * Schleife ihre Einträge austauscht, und ein zweiter Lauf im selben Takt
+     * entfiele — die Karte bliebe in der Zeile ihres alten Bands.
+     * @param {ViewStep} step @returns {string}
+     */
     stepStyle(step) {
       const col = Number(layoutFor(this.model).colOf.get(step.id)) + this.gridOffset();
-      return `grid-row: ${this.bandRow(step.branchId)}; grid-column: ${col}`;
+      return `grid-row: ${this.bandRow(this.bandOfStep(step))}; grid-column: ${col}`;
+    },
+    /** Band eines Schritts laut Model. @param {ViewStep} step @returns {string} */
+    bandOfStep(step) {
+      return this.model.steps.find((s) => s.id === step.id)?.branchId ?? step.branchId;
     },
     /** Bahn eines Bands über die ganze Breite. @param {ViewBand} band @returns {string} */
     laneStyle(band) {
@@ -147,13 +157,13 @@ export default createModule({
     },
     /**
      * Klassen einer Karte: Art, Auswahlmodus, offenes Einfügemenü, gezogen.
-     * @param {ViewStep} step @param {number} i @returns {string}
+     * @param {ViewStep} step @returns {string}
      */
-    stepClass(step, i) {
+    stepClass(step) {
       return [
         this.isDecision(step) ? 'af__step--decision' : 'af__step--activity',
         this.pickClass(step),
-        this.isInsertMenuOpen(i) ? 'af__step--menu-open' : '',
+        this.isInsertMenuOpen(step) ? 'af__step--menu-open' : '',
         this.state.flowPreview?.id === step.id ? 'is-dragging' : '',
       ].filter(Boolean).join(' ');
     },
@@ -251,12 +261,19 @@ export default createModule({
     },
 
     // ─── Einfügemenü am Verbinder ──────────────────────
-    /** Menü an Lücke `i` öffnen bzw. schließen. @param {number} i @param {string} bandId */
-    toggleInsertMenu(i, bandId) {
-      this.state.insertMenu = this.state.insertMenu?.index === i ? null : { index: i, bandId };
+    /**
+     * Menü am Verbinder vor einer Karte öffnen bzw. schließen. Es hängt an der
+     * Karte, nicht an der Stelle: ein Klick im Menü legt davor einen Schritt an,
+     * und bei einem echten Klick ist die Kette schon neu gezeichnet, bevor das
+     * Ereignis zum Menü aufsteigt — an der Stelle wanderte es zur neuen Karte,
+     * und das Menü am Klickweg wäre abgebaut.
+     * @param {ViewStep} step
+     */
+    toggleInsertMenu(step) {
+      this.state.insertMenu = this.state.insertMenu?.stepId === step.id ? null : { stepId: step.id };
     },
-    /** @param {number} i @returns {boolean} */
-    isInsertMenuOpen(i) { return this.state.insertMenu?.index === i; },
+    /** @param {ViewStep} step @returns {boolean} das Menü vor dieser Karte ist offen */
+    isInsertMenuOpen(step) { return this.state.insertMenu?.stepId === step.id; },
     /** Menü schließen (nach der Wahl). */
     closeInsertMenu() { this.state.insertMenu = null; },
 
@@ -275,7 +292,7 @@ export default createModule({
       if (!bandId) return false;
       const owner = this.model.steps.find((s) => s.id === branchOwnerId(bandId));
       if (!owner || step.id === owner.id) return false;
-      return step.branchId === owner.branchId;
+      return this.bandOfStep(step) === owner.branchId;
     },
     /** @param {ViewStep} step @returns {string} hervorgehoben oder abgeblendet, ohne Auswahl leer */
     pickClass(step) {

@@ -290,7 +290,7 @@ suite('activity-flowchart: Viewmodel im Browser', () => {
   test('Einfügemenü: Verbinder öffnet, „Entscheidung“ legt an dieser Stelle im Band der Karte an, Menü schließt, ein Schritt', async () => {
     const h = await mount('af-1', plain(small()));
     await h.click(h.card('s2').querySelector('[data-action="insert-step"]'));
-    assertEqual(h.vm().state.insertMenu?.index, 2);
+    assertEqual(h.vm().state.insertMenu?.stepId, 's2');
     assertTrue(h.card('s2').classList.contains('af__step--menu-open'), 'Karte mit Menü nicht angehoben');
     await h.click(h.card('s2').querySelector('.af__insert-menu [data-insert="decision"]'));
     await until(() => h.ids().length === 5);
@@ -313,6 +313,46 @@ suite('activity-flowchart: Viewmodel im Browser', () => {
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig ohne Wirkung');
     await until(() => h.ids().length === 4);
     assertEqual(h.inst.historyCan('undo'), false);
+    unmountAll();
+  });
+
+  test('Bandwechsel: die Karte zieht in die Zeile ihres neuen Bands (auch zurück, nach Rückgängig/Wiederholen)', async () => {
+    // Das Raster liest das Band aus dem Model, nicht aus dem Schleifeneintrag:
+    // das Kommando zeichnet das Layout neu, bevor die Schleife den Eintrag
+    // austauscht, und ein zweiter Lauf im selben Takt fiele weg.
+    const h = await mount('af-1', plain(small()));
+    const row = (id) => /grid-row: (\d+)/.exec(h.card(id).getAttribute('style'))?.[1];
+    assertEqual(row('s3'), '1');
+    h.vm().model.setStepBand({ stepId: 's3', bandId: 'no:d1' });
+    await until(() => h.card('s3').dataset.bandId === 'no:d1');
+    await settle();
+    assertEqual(row('s3'), '2', h.card('s3').getAttribute('style'));
+    h.vm().model.setStepBand({ stepId: 's3', bandId: 'main' });
+    await until(() => h.card('s3').dataset.bandId === 'main');
+    await settle();
+    assertEqual(row('s3'), '1', h.card('s3').getAttribute('style'));
+    assertTrue(h.inst.historyStep('undo'), 'Rückgängig ohne Wirkung');
+    await until(() => h.card('s3').dataset.bandId === 'no:d1');
+    await settle();
+    assertEqual(row('s3'), '2', h.card('s3').getAttribute('style'));
+    unmountAll();
+  });
+
+  test('Einfügemenü bleibt an seiner Karte, wenn davor eingefügt wird (echter Klick rendert vor dem Aufsteigen)', async () => {
+    // Bei einem echten Klick laufen nach dem Kommando des Knopfs die Mikroaufgaben,
+    // bevor das Ereignis zum Menü aufsteigt: die Kette ist dann schon neu gezeichnet.
+    // Hinge das Menü an der Stelle, wanderte es zur neuen Karte, und das Menü am
+    // Klickweg wäre abgebaut (sein Schließen liefe nie).
+    const h = await mount('af-1', plain(small()));
+    await h.click(h.card('s2').querySelector('[data-action="insert-step"]'));
+    h.vm().model.addStep({ kind: 'activity', bandId: 'no:d1', index: 2 });
+    await until(() => h.ids().length === 5);
+    const menu = h.q('.af__insert-menu');
+    assertTrue(menu !== null, 'Menü verschwunden');
+    assertEqual(menu.closest('.af__step')?.dataset.stepId, 's2', 'Menü wanderte zur neuen Karte');
+    await h.click(menu);
+    assertEqual(h.vm().state.insertMenu, null);
+    assertEqual(h.q('.af__insert-menu'), null);
     unmountAll();
   });
 
@@ -430,7 +470,7 @@ suite('activity-flowchart: Viewmodel im Browser', () => {
     assertDeepEqual(h.steps().map((s) => [s.id, s.branchId]), [['d1', 'main'], ['s1', 'main'], ['s2', 'no:d1'], ['s3', 'no:d1']]);
     assertValid(h.saved());
     // Escape bricht ab, ohne zu schreiben (und lässt das Einfügemenü in Ruhe)
-    h.vm().toggleInsertMenu(2, 'no:d1');
+    h.vm().toggleInsertMenu(h.vm().model.steps[2]);
     await settle();
     const g = h.grip('s2');
     g.focus();
@@ -438,7 +478,7 @@ suite('activity-flowchart: Viewmodel im Browser', () => {
     await h.key(g, 'ArrowLeft');
     await h.key(g, 'Escape');
     assertEqual(h.vm().state.flowPreview, null);
-    assertEqual(h.vm().state.insertMenu?.index, 2, 'Escape der Geste schloss das Menü');
+    assertTrue(h.vm().state.insertMenu !== null, 'Escape der Geste schloss das Menü');
     assertDeepEqual(h.steps().map((s) => s.id), ['d1', 's1', 's2', 's3']);
     assertTrue(h.inst.historyStep('undo'), 'Rückgängig ohne Wirkung');
     await until(() => h.steps()[0].id === 's1');
@@ -547,7 +587,7 @@ suite('activity-flowchart: Viewmodel im Browser', () => {
     unmountAll();
   });
 
-  test('Textfelder wie die Altform: zwei Zeilen Grundhöhe, ein langer Titel und eine lange Frage wachsen (field-sizing)', async () => {
+  test('Textfelder wie die Altform: zwei Zeilen Grundhöhe, ein langer Titel, eine lange Beschreibung und eine lange Frage wachsen in die Höhe, nicht in die Breite (field-sizing)', async () => {
     for (const [key, path] of [['flowchart', 'js/core/flowchart/flowchart.css'], [ID, `js/modules/${ID}/resources/style.css`]]) {
       if (document.querySelector(`style[data-test-css="${key}"]`)) continue;
       const css = document.createElement('style');
@@ -563,19 +603,36 @@ suite('activity-flowchart: Viewmodel im Browser', () => {
     h.card('s1').querySelector('.fc-card__header').append(ref);
     const refWidth = ref.getBoundingClientRect().width;
     ref.remove();
+    // Höhe der Beschreibung wie die Altform: ein Textfeld mit zwei Zeilen (Vorgabe `rows`).
+    const descEl = /** @type {HTMLTextAreaElement} */ (h.q('.af__step[data-step-id="s1"] .af__step-description'));
+    const refDesc = document.createElement('textarea');
+    refDesc.className = descEl.className;
+    refDesc.style.fieldSizing = 'fixed';
+    refDesc.style.minHeight = '0';
+    descEl.after(refDesc);
+    const refDescHeight = refDesc.getBoundingClientRect().height;
+    refDesc.remove();
+    const descHeight = descEl.getBoundingClientRect().height;
+    assertTrue(Math.abs(descHeight - refDescHeight) < 0.5, `Beschreibung ${descHeight}px, Altform ${refDescHeight}px`);
     const titleEl = /** @type {HTMLTextAreaElement} */ (h.q('.af__step[data-step-id="s1"] .af__step-title'));
     const minWidth = parseFloat(getComputedStyle(titleEl).minWidth);
     assertTrue(Math.abs(minWidth - refWidth) < 1.5, `Mindestbreite ${minWidth}px, Altform ${refWidth}px`);
-    for (const sel of ['.af__step[data-step-id="s1"] .af__step-title', '.af__step[data-step-id="d1"] .af__decision-label']) {
+    for (const sel of ['.af__step[data-step-id="s1"] .af__step-title', '.af__step[data-step-id="s3"] .af__step-description', '.af__step[data-step-id="d1"] .af__decision-label']) {
       const el = /** @type {HTMLTextAreaElement} */ (h.q(sel));
       const line = parseFloat(getComputedStyle(el).lineHeight);
       assertTrue(line > 0, `line-height ${line}`);
       const short = el.getBoundingClientRect().height;
       assertTrue(short >= 2 * line - 1, `${sel}: ${short}px, erwartet ≥ ${2 * line}px`);
+      const box = /** @type {HTMLElement} */ (el.closest('.af__card, .af__diamond'));
+      const boxWidth = box.getBoundingClientRect().width;
       el.value = 'Ein recht langer Text, der sicher über mehrere Zeilen des schmalen Feldes umbricht und weiter';
       await settle();
       assertTrue(el.getBoundingClientRect().height > short + line / 2, `${sel} wächst nicht`);
-      assertTrue(el.getBoundingClientRect().width < 300, `${sel} wächst in die Breite`);
+      // Die Beschreibung füllt die Karte; für sie gilt nur die Kartenbreite unten.
+      if (!sel.endsWith('description')) assertTrue(el.getBoundingClientRect().width < 300, `${sel} wächst in die Breite`);
+      // Der Text bricht um, statt Karte bzw. Raute zu verbreitern (Altform: feste Feldbreite).
+      const grown = box.getBoundingClientRect().width;
+      assertTrue(Math.abs(grown - boxWidth) < 1, `${sel}: Karte ${boxWidth}px → ${grown}px`);
     }
     unmountAll();
   });

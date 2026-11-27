@@ -5,7 +5,7 @@
  * @typedef {object} UiState
  * @property {{ id: string, index: number, band: string }|null} flowPreview
  * @property {{ group: string, index: number, id: string }|null} substepPreview
- * @property {{ index: number, bandId: string }|null} insertMenu
+ * @property {{ stepId: string }|null} insertMenu
  * @property {string|null} pickBand
  * @property {Array<{ instanceId: string, moduleId: 'process-map'|'sipoc', label: string }>} importOptions
  * @property {string|null} importPick

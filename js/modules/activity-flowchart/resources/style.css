@@ -562,4 +562,12 @@
    Mindestbreite der Altform (Textfeld ohne `cols`: 161 px bei 14 px Schrift),
    sondern wüchse mit dem Text in die Breite statt in die Höhe. */
 .af textarea.af__step-title { width: 11.5em; min-width: 11.5em; }
-.af textarea.af__step-description { min-height: 44px; }
+
+/* Beschreibung zwei Zeilen hoch wie die Altform (Vorgabe `rows` 2 samt Innenabstand und Rand).
+   Sie füllt die Karte (Breite 100 %), trägt aber nichts zu deren Breite bei:
+   ohne `contain` zöge ein langer Text die Karte auf seine Zeilenlänge auf,
+   statt umzubrechen. */
+.af textarea.af__step-description {
+  min-height: calc(2lh + 2 * var(--spacing-xs) + 2 * var(--border-width));
+  contain: inline-size;
+}

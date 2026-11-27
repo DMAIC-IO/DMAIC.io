@@ -39,7 +39,7 @@
            column its position. -->
       <template x-for="(step, i) in model.steps" :key="step.id">
         <div class="af__step"
-             :class="stepClass(step, i)"
+             :class="stepClass(step)"
              :style="stepStyle(step)"
              :data-step-id="step.id"
              :data-step-index="i"
@@ -61,9 +61,9 @@
                  :class="gapClass(i)"
                  data-action="insert-step" :data-idx="i" :data-gap="i" data-help-key=""
                  :title="t('insertHere')"
-                 @click.stop="toggleInsertMenu(i, step.branchId)">
+                 @click.stop="toggleInsertMenu(step)">
               <span class="af__connector-arrow fc-connector__arrow" :class="arrowClass(i)">&raquo;</span>
-              <template x-if="isInsertMenuOpen(i)">
+              <template x-if="isInsertMenuOpen(step)">
                 <div class="af__insert-menu" @click.stop="closeInsertMenu()">
                   <button type="button" data-insert="activity" data-help-key=""
                           x-command="addStep" :data-arg-index="i" :data-arg-band-id="step.branchId" data-arg-kind="activity">
