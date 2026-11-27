@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "factors": {
+      "help": "Die Faktoren, je mit Name, unterer und oberer Grenze; ihre Position in der Liste ist ihre Adresse für die Kommandos. Faktoren hinzufügen und entfernen geht über addFactor und removeFactor, die alle Koeffizienten zurücksetzen; schreibt ein Agent die ganze Liste mit instance.set, behalten die Koeffizienten ihren Termindex, auch wenn sich die Terme dabei verschieben, und ein Koeffizient eines wegfallenden Terms lässt das Schreiben scheitern.",
+      "name": {
+        "help": "Name des Faktors, zugleich Spaltenname der erzeugten Daten und Name in Gleichung und Termen. Ein leerer Name erscheint als X mit der Nummer des Faktors; gleiche Namen bekommen in der Ausgabe eine Endung _2, _3."
+      },
+      "min": {
+        "help": "Untere Grenze des Faktorbereichs, eine Zahl. Sie darf die obere Grenze nicht übersteigen."
+      },
+      "max": {
+        "help": "Obere Grenze des Faktorbereichs, eine Zahl. Sie darf nicht unter der unteren Grenze liegen."
+      }
+    },
+    "maxOrder": {
+      "help": "Die obere Grenze der Wechselwirkungsordnung unter den Termen; bei weniger Faktoren enden die Terme bei der Faktorzahl. Sie ist fest und lässt sich nicht verstellen."
+    },
+    "betas": {
+      "help": "Die Koeffizienten der Terme: je Termindex der Koeffizient β, nur Werte ungleich 0; ein fehlender Term hat β = 0. Die Werte stehen auch in den Termen. Hinzufügen oder Entfernen eines Faktors setzt alle Koeffizienten auf 0 zurück."
+    },
+    "intercept": {
+      "help": "Achsenabschnitt β₀ der Modellgleichung, eine beliebige Zahl."
+    },
+    "yName": {
+      "help": "Name der Zielgröße Y, zugleich Spaltenname der erzeugten Daten und erster Teil der Gleichung. Leer erscheint er als Y; gleicht er einem Faktornamen, bekommt er in der Ausgabe eine Endung _2."
+    },
+    "samplingMethod": {
+      "help": "Das Stichprobenverfahren: zufällig (Monte Carlo), Latin Hypercube (gleichmäßiger über die Bereiche verteilt) oder vollfaktoriell (alle Kombinationen fester Stufen: 3 Stufen bis 4 Faktoren, sonst 2)."
+    },
+    "sampleSize": {
+      "help": "Die Zahl der Zeilen, eine ganze Zahl von 10 bis 100000. Beim vollfaktoriellen Verfahren bestimmt sie nur, wie oft jede Stufenkombination wiederholt wird (n geteilt durch die Zahl der Kombinationen, gerundet, mindestens 1); die Zeilenzahl weicht daher meist von ihr ab."
+    },
+    "noiseStd": {
+      "help": "Standardabweichung σε des normalverteilten Rauschens, das auf den modellierten Y-Wert addiert wird; eine Zahl ab 0. 0 erzeugt Werte ohne Rauschen."
+    },
+    "seed": {
+      "help": "Seed, der Startwert des Zufallsgenerators, eine ganze Zahl. Derselbe Seed mit denselben Einstellungen ergibt dieselben Daten."
+    },
+    "terms": {
+      "help": "Alle Terme des Modells — Haupteffekte und Wechselwirkungen — je mit Termindex, Namen, Ordnung und Koeffizient, auch die Nullen. Der Termindex adressiert den Term in setBeta; die Liste ändert sich mit der Zahl der Faktoren."
+    },
+    "generated": {
+      "help": "Zusammenfassung der erzeugten Y-Werte. Die Daten folgen jeder Änderung sofort und werden nicht gespeichert; die Karten zeigen die Kennzahlen mit vier Nachkommastellen."
+    }
+  },
+  "actions": {
+    "addFactor": {
+      "help": "Hängt einen Faktor mit Standardnamen und dem Bereich 0 bis 100 an. Die Terme werden neu aufgebaut und alle Koeffizienten auf 0 zurückgesetzt. Der Agent erhält die Position des neuen Faktors.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "removeFactor": {
+      "help": "Entfernt einen Faktor. Die Terme werden neu aufgebaut und alle Koeffizienten auf 0 zurückgesetzt. Der letzte Faktor bleibt stehen: dann wird das Entfernen abgelehnt.",
+      "params": {
+        "index": "Die Position eines Faktors in factors; jede andere wird abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit index."
+      }
+    },
+    "setFactor": {
+      "help": "Setzt Name oder Bereichsgrenze eines Faktors; die Koeffizienten bleiben erhalten. Ungültige Werte werden abgelehnt.",
+      "params": {
+        "index": "Die Position eines Faktors in factors; jede andere wird abgelehnt.",
+        "key": "Welches Feld: name, min oder max; jeder andere Wert wird abgelehnt.",
+        "value": "Der Wert: für name ein Text, nicht leer und weder ein anderer Faktorname noch der Name der Zielgröße; für min eine Zahl höchstens gleich max, für max eine Zahl mindestens gleich min. Als Text angegebene Zahlen werden angenommen.",
+        "command": "Das Kommando als ein Objekt mit index, key und value."
+      }
+    },
+    "setBeta": {
+      "help": "Setzt den Koeffizienten eines Terms; 0 entfernt ihn aus der Gleichung.",
+      "params": {
+        "index": "Der Termindex eines Terms aus terms; jeder andere wird abgelehnt.",
+        "value": "Eine endliche Zahl; als Text angegebene Zahlen werden angenommen.",
+        "command": "Das Kommando als ein Objekt mit index und value."
+      }
+    },
+    "toWorksheet": {
+      "params": {
+        "command": "Der Lauf als ein leeres Objekt; er nimmt keine Angaben."
+      }
+    }
+  },
+  "asyncTasks": {
+    "toWorksheet": {
+      "help": "Öffnet die erzeugten Daten in einem neuen Arbeitsblatt in der Phase dieser Instanz: ein Blatt mit dem Namen des Moduls, je Faktor und für Y eine Zahlenspalte mit vier Nachkommastellen, ganz oder gar nicht. Der Agent erhält die id des neuen Arbeitsblatts.",
+      "cancel": {
+        "help": "Bricht das Öffnen ab, solange noch nichts geschrieben ist."
+      }
+    }
+  },
+  "types": {
+    "Term": {
+      "index": "Termindex: die Adresse des Terms für setBeta.",
+      "label": "Name des Terms aus den Faktornamen, z. B. „A × B“.",
+      "order": "Ordnung des Terms: 1 Haupteffekt, 2 Zweifach-Wechselwirkung, 3 Dreifach-Wechselwirkung.",
+      "beta": "Koeffizient β des Terms, 0 wenn nicht gesetzt."
+    },
+    "Generated": {
+      "n": "N: die Zahl der erzeugten Zeilen.",
+      "mean": "Mittelwert der erzeugten Y-Werte.",
+      "sd": "Standardabweichung der erzeugten Y-Werte.",
+      "min": "Min: der kleinste erzeugte Y-Wert.",
+      "max": "Max: der größte erzeugte Y-Wert."
+    }
+  }
+}

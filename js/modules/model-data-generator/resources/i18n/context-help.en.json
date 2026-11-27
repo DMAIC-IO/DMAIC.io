@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "factors": {
+      "help": "The factors, each with name, lower and upper limit; their position in the list is their address for the commands. Adding and removing factors goes through addFactor and removeFactor, which reset all coefficients; if an agent writes the whole list with instance.set, the coefficients keep their term index even when the terms shift, and a coefficient of a term that disappears makes the write fail.",
+      "name": {
+        "help": "Name of the factor, also the column name of the generated data and its name in the equation and the terms. An empty name shows as X with the number of the factor; equal names get a suffix _2, _3 in the output."
+      },
+      "min": {
+        "help": "Lower limit of the factor range, a number. It must not exceed the upper limit."
+      },
+      "max": {
+        "help": "Upper limit of the factor range, a number. It must not be below the lower limit."
+      }
+    },
+    "maxOrder": {
+      "help": "The upper limit of the interaction order among the terms; with fewer factors the terms stop at the factor count. It is fixed and cannot be changed."
+    },
+    "betas": {
+      "help": "The coefficients of the terms: per term index the coefficient β, only values other than 0; a missing term has β = 0. The values also appear in the terms. Adding or removing a factor resets all coefficients to 0."
+    },
+    "intercept": {
+      "help": "Intercept β₀ of the model equation, any number."
+    },
+    "yName": {
+      "help": "Name of the response Y, also the column name of the generated data and the first part of the equation. Empty, it shows as Y; if it equals a factor name, it gets a suffix _2 in the output."
+    },
+    "samplingMethod": {
+      "help": "The sampling method: random (Monte Carlo), Latin Hypercube (spread more evenly over the ranges) or full factorial (all combinations of fixed levels: 3 levels up to 4 factors, otherwise 2)."
+    },
+    "sampleSize": {
+      "help": "The number of rows, an integer from 10 to 100000. With the full factorial method it only sets how often each level combination is repeated (n divided by the number of combinations, rounded, at least 1), so the row count usually differs from it."
+    },
+    "noiseStd": {
+      "help": "Standard deviation σε of the normally distributed noise added to the modelled Y value; a number from 0. 0 produces values without noise."
+    },
+    "seed": {
+      "help": "Seed, the starting value of the random generator, an integer. The same seed with the same settings gives the same data."
+    },
+    "terms": {
+      "help": "All terms of the model — main effects and interactions — each with term index, name, order and coefficient, zeros included. The term index addresses the term in setBeta; the list changes with the number of factors."
+    },
+    "generated": {
+      "help": "Summary of the generated Y values. The data follows every change at once and is not stored; the cards show the figures with four decimals."
+    }
+  },
+  "actions": {
+    "addFactor": {
+      "help": "Appends a factor with a default name and the range 0 to 100. The terms are rebuilt and all coefficients reset to 0. The agent receives the position of the new factor.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
+    "removeFactor": {
+      "help": "Removes a factor. The terms are rebuilt and all coefficients reset to 0. The last factor stays: removing it is then rejected.",
+      "params": {
+        "index": "The position of a factor in factors; any other is rejected.",
+        "command": "The command as an object with index."
+      }
+    },
+    "setFactor": {
+      "help": "Sets the name or a range limit of a factor; the coefficients are kept. Invalid values are rejected.",
+      "params": {
+        "index": "The position of a factor in factors; any other is rejected.",
+        "key": "Which field: name, min or max; any other value is rejected.",
+        "value": "The value: for name a text, not empty and neither another factor name nor the name of the response; for min a number at most max, for max a number at least min. Numbers given as text are accepted.",
+        "command": "The command as an object with index, key and value."
+      }
+    },
+    "setBeta": {
+      "help": "Sets the coefficient of a term; 0 removes it from the equation.",
+      "params": {
+        "index": "The term index of a term from terms; any other is rejected.",
+        "value": "A finite number; numbers given as text are accepted.",
+        "command": "The command as an object with index and value."
+      }
+    },
+    "toWorksheet": {
+      "params": {
+        "command": "The task as an empty object; it takes no arguments."
+      }
+    }
+  },
+  "asyncTasks": {
+    "toWorksheet": {
+      "help": "Opens the generated data in a new worksheet in the phase of this instance: one sheet named after the module, a number column with four decimals per factor and for Y, all or nothing. The agent receives the id of the new worksheet.",
+      "cancel": {
+        "help": "Cancels opening as long as nothing is written yet."
+      }
+    }
+  },
+  "types": {
+    "Term": {
+      "index": "Term index: the address of the term for setBeta.",
+      "label": "Name of the term from the factor names, e.g. “A × B”.",
+      "order": "Order of the term: 1 main effect, 2 two-way interaction, 3 three-way interaction.",
+      "beta": "Coefficient β of the term, 0 if not set."
+    },
+    "Generated": {
+      "n": "N: the number of generated rows.",
+      "mean": "Mean of the generated Y values.",
+      "sd": "Standard deviation of the generated Y values.",
+      "min": "Min: the smallest generated Y value.",
+      "max": "Max: the largest generated Y value."
+    }
+  }
+}

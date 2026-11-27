@@ -1,0 +1,96 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der Modell-Datengenerator erzeugt synthetische Datensätze aus einem konfigurierbaren {{term:regression|Regressionsmodell}}. Im Unterschied zum reinen Zufallsgenerator wird hier ein gerichteter Zusammenhang zwischen Eingangs- und Ausgangsgrößen modelliert — ideal, um DOE-Auswertungen, Regressionsanalysen oder Optimierungsmethoden an einem bekannten „wahren“ Modell zu üben und zu validieren."
+        },
+        {
+          "type": "definition",
+          "term": "Faktoren",
+          "content": "Die Eingangsgrößen (X1, X2, …) mit jeweils einem Min- und Max-Wert. Die Faktoren werden je nach Sampling-Methode innerhalb dieses Bereichs erzeugt."
+        },
+        {
+          "type": "definition",
+          "term": "Beta-Koeffizienten",
+          "content": "Die Modellkoeffizienten für Achsenabschnitt, Haupteffekte, Wechselwirkungen und ggf. quadratische Terme. Sie definieren das „wahre“ Modell — das Generator-Modell, gegen das später Auswertungen verglichen werden."
+        },
+        {
+          "type": "definition",
+          "term": "Wechselwirkungen",
+          "content": "Produkte zweier oder mehrerer Faktoren (X1·X2, X1·X2·X3, …). Bis zur 5. Ordnung möglich. Wechselwirkungen sind für die Interpretation von DOE-Ergebnissen besonders wichtig."
+        },
+        {
+          "type": "definition",
+          "term": "Sampling-Methode",
+          "content": "Steuert, wie die Faktorkombinationen erzeugt werden — Monte Carlo (zufällig), Latin Hypercube Sampling (LHS, gleichmäßiger verteilt) oder vollfaktoriell (alle Kombinationen einer festen Stufenanzahl)."
+        },
+        {
+          "type": "definition",
+          "term": "Rauschen",
+          "content": "Zusätzliches normalverteiltes Mess-Rauschen wird auf den modellierten Y-Wert addiert. Damit lässt sich realistische Streuung simulieren und das Signal-Rausch-Verhältnis kontrollieren."
+        },
+        {
+          "type": "definition",
+          "term": "Seed (Saat)",
+          "content": "Mit einem festen Seed entsteht bei jedem Lauf derselbe Datensatz — wichtig für {{term:reproduzierbarkeit|Reproduzierbarkeit}} von Schulungen und Vergleichen."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Faktoren anlegen — Name, Min und Max für jede Eingangsgröße eintragen.",
+            "Beta-Koeffizienten setzen: Achsenabschnitt, Haupteffekte und gewünschte Wechselwirkungs-Terme.",
+            "Sampling-Methode wählen: Monte Carlo für schnelle Streuung, LHS für gleichmäßige Abdeckung, vollfaktoriell für DOE-Schulungen.",
+            "Stichprobenumfang n bzw. Stufenzahl festlegen.",
+            "Noise-Stärke (z. B. σ = 0,5) eintragen — bestimmt die Streuung der {{term:zielgroesse|Antwortgröße}}.",
+            "Optional Seed setzen, dann „Generieren“.",
+            "Mit „In Worksheet übernehmen“ wird der Datensatz als neue Tabelle ins Arbeitsblatt geschrieben."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu viele Wechselwirkungs-Terme",
+          "content": "Modelle mit Wechselwirkungen 4. oder 5. Ordnung sind oft unrealistisch und schwer zu interpretieren. In der Praxis dominieren Haupteffekte und Wechselwirkungen 2. Ordnung — höhere Ordnungen nur einsetzen, wenn dafür ein konkreter Zweck besteht."
+        },
+        {
+          "type": "definition",
+          "term": "Skalenabhängigkeit der Beta-Koeffizienten",
+          "content": "Ein Beta von 5 hat unterschiedliche Wirkung, je nachdem ob X von 0–1 oder von 0–1000 läuft. Bei der Modellbildung die Faktorbereiche im Auge behalten oder Faktoren intern kodieren."
+        },
+        {
+          "type": "definition",
+          "term": "Rauschen vs. Effekt",
+          "content": "Wenn das Rauschen größer als die Effekte ist, lassen sich die Modellparameter selbst mit großen Stichproben kaum rekonstruieren. Verhältnis von Effekt zu σ bewusst wählen."
+        },
+        {
+          "type": "definition",
+          "term": "Vollfaktoriell explodiert mit Faktoren",
+          "content": "Bei k Faktoren mit l Stufen entstehen l^k Versuchspunkte — bei 5 Faktoren und 5 Stufen schon 3 125. Vollfaktoriell nur für kleine Faktorenzahlen einsetzen."
+        },
+        {
+          "type": "definition",
+          "term": "Seed dokumentieren",
+          "content": "Ohne dokumentierten Seed lässt sich ein Datensatz nicht reproduzieren — wichtig bei Schulungen, Vergleichstests und Validierungsstudien."
+        },
+        {
+          "type": "definition",
+          "term": "Synthetik bleibt Synthetik",
+          "content": "Ein Modell-Datensatz hat keine Mess-Drift, keine Maschinenwechsel und keine Operator-Effekte. Reale Streuung übersteigt synthetische oft deutlich — Methoden in der Praxis nochmals validieren."
+        }
+      ]
+    }
+  }
+}
