@@ -159,13 +159,21 @@ export default createModule({
   /** @type {import('./state.types.js').RegressionViewFn} */
   view(ctx) {
     const lang = () => ctx.i18n.getLanguage();
+    /** Planer, deren Modul diese Ansicht schon nachlädt. */
+    const loading = new Set();
+    /** Die Planer, deren Modul noch nicht geladen ist (Stand unbekannt). */
+    const unreadPlanners = () => plannerExperiments(ctx.source).filter((p) => !p.loaded).map((p) => p.plannerId);
     return {
       /**
        * Gerät Y unter die X, wird Y geleert, im Schritt der Änderung an den X.
        * Ändert sich Y im selben Durchgang mit (Rückgängig, Laden), bleibt alles.
        * Der Reiterwechsel steht in der Adresse, wenn diese Instanz angezeigt ist.
+       * Ungelesene Planer (nach dem Neuladen nicht geladen) lädt die Ansicht
+       * nach, damit die Übernahme ihre Versuche anbietet.
        */
       init() {
+        this.$watch(() => unreadPlanners().join(','), () => this.loadPlanners());
+        this.loadPlanners();
         this.watchPendingPreset();
         this.$watch(
           () => [this.model.colRefs.map(keyOf).join(','), keyOf(this.model.yRef)],
@@ -184,6 +192,15 @@ export default createModule({
           if (!route || route.instanceId !== ctx.instanceId) return;
           if (!Array.isArray(route.sub) || route.sub[0] !== tab) this.changeRoute(tab);
         });
+      },
+
+      /** Je ungelesenem Planer das Modul einmal laden. */
+      loadPlanners() {
+        for (const id of unreadPlanners()) {
+          if (loading.has(id)) continue;
+          loading.add(id);
+          ctx.source.ensureLoaded(id).catch((err) => console.warn('[regression] loading a planner failed', err));
+        }
       },
 
       /**
