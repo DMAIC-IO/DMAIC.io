@@ -1,0 +1,204 @@
+<div class="module-msa-typ6 dmike-split dmike-split--input-lg" x-data="msaTyp6">
+  <!-- data-help-key="" an Eingabe-, Auswahl-, Gruppen- und Spalten-Wirten ist gewollt: die Hilfe hängt an der Beschriftung daneben, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('name')"></div>
+    <p class="module-msa-typ6__hint" x-text="t('emptyHint')"></p>
+
+    <!-- Merkmal -->
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label data-help-key="modules.msa-typ6.types.Params.measurementName" x-text="t('input.measurementName')"></label>
+        <input type="text" class="field" data-ref="inp-measurement-name" data-help-key=""
+               :placeholder="t('input.measurementNamePlaceholder')" x-model="model.params.measurementName">
+      </div>
+      <div class="field-group field-group--minor">
+        <label data-help-key="modules.msa-typ6.types.Params.unit" x-text="t('input.unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit" data-help-key=""
+               placeholder="mm" x-model="model.params.unit">
+      </div>
+    </div>
+
+    <!-- Kartentyp -->
+    <fieldset class="field-radios field-radios--inline" data-ref="grp-chart-type" role="radiogroup" data-help-key="" x-set="model.params.chartType">
+      <legend data-help-key="modules.msa-typ6.types.Params.chartType" x-text="t('input.chartType')"></legend>
+      <label class="msa-typ6__choice"><input type="radio" value="i-mr"><span x-text="t('input.chartTypeIMr')"></span></label>
+      <label class="msa-typ6__choice"><input type="radio" value="xbar-r"><span x-text="t('input.chartTypeXbarR')"></span></label>
+    </fieldset>
+
+    <!-- Datenquelle -->
+    <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ6.types.Columns.timestamp" x-text="t('input.timestampColumn')"></label>
+      <div data-ref="col-picker-timestamp" data-help-key="" x-field="model.columns.timestamp"></div>
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ6.types.Columns.value" x-text="t('input.valueColumn')"></label>
+      <div data-ref="col-picker-value" data-help-key="" x-field="model.columns.value"></div>
+    </div>
+    <div class="field-group" data-ref="group-subgroup-picker" x-show="showSubgroup">
+      <label data-help-key="modules.msa-typ6.types.Columns.subgroup" x-text="t('input.subgroupColumn')"></label>
+      <div data-ref="col-picker-subgroup" data-help-key="" x-field="model.columns.subgroup"></div>
+    </div>
+
+    <!-- Grenzen-Modus -->
+    <div class="dmike-split__section-title" x-text="t('sections.limits')"></div>
+
+    <fieldset class="field-radios field-radios--inline" data-ref="grp-limits-mode" role="radiogroup" data-help-key="" x-set="model.params.limitsMode">
+      <legend data-help-key="modules.msa-typ6.types.Params.limitsMode" x-text="t('input.limitsMode')"></legend>
+      <label class="msa-typ6__choice"><input type="radio" value="from-study"><span x-text="t('input.limitsModeFromStudy')"></span></label>
+      <label class="msa-typ6__choice"><input type="radio" value="given"><span x-text="t('input.limitsModeGiven')"></span></label>
+    </fieldset>
+
+    <div class="field-group" data-ref="group-baseline-k" x-show="showBaselineK">
+      <label data-help-key="modules.msa-typ6.types.Params.baselineK" x-text="t('input.baselineK')"></label>
+      <input class="field field--num" data-ref="inp-baseline-k" data-help-key="" x-field="model.params.baselineK">
+    </div>
+
+    <div data-ref="group-given-limits" x-show="showGiven">
+      <div class="field-grid field-grid--2">
+        <div class="field-group">
+          <label data-help-key="modules.msa-typ6.types.Params.mu0" x-text="t('input.mu0')"></label>
+          <input class="field field--num" data-ref="inp-mu0" data-help-key="" x-field="model.params.mu0">
+        </div>
+        <div class="field-group">
+          <label data-help-key="modules.msa-typ6.types.Params.sigma0" x-text="t('input.sigma0')"></label>
+          <input class="field field--num" data-ref="inp-sigma0" data-help-key="" x-field="model.params.sigma0">
+        </div>
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ6.fields.sourceTyp1InstanceId.help" x-text="t('input.sourceTyp1')"></label>
+        <select class="field" data-ref="sel-source-typ1" data-help-key="" @change="onTyp1Selected($event)">
+          <option value="" :selected="noTyp1Selected" x-text="t('input.sourceTyp1Placeholder')"></option>
+          <template x-for="o in state.typ1Options" :key="o.instanceId">
+            <option :value="o.instanceId" :selected="isTyp1Selected(o.instanceId)" x-text="typ1Label(o)"></option>
+          </template>
+        </select>
+      </div>
+    </div>
+
+    <!-- Nelson-Regeln -->
+    <div class="dmike-split__section-title"><span class="glossary-term" data-glossary-term="nelson-regeln"><span data-help-key="modules.msa-typ6.types.Params.enabledRules" x-text="t('input.nelsonRules')"></span></span></div>
+    <div class="field-checks module-msa-typ6__nelson-list" data-ref="nelson-list">
+      <template x-for="id in ruleIds" :key="id">
+        <label class="field-check">
+          <input type="checkbox" :value="id" :checked="isRuleEnabled(id)" @change="ruleChanged(id, $event)">
+          <span><span class="glossary-term" :data-glossary-term="ruleTerm(id)"><strong x-text="ruleShort(id)"></strong></span><br><span class="field-check__desc" x-text="ruleDesc(id)"></span></span>
+        </label>
+      </template>
+    </div>
+
+    <!-- α für Drift-Test -->
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ6.types.Params.alpha" x-text="t('input.alpha')"></label>
+      <select class="field" data-ref="sel-alpha" data-help-key="" x-field="model.params.alpha">
+        <option value="0.01" x-text="num(0.01, 2)"></option>
+        <option value="0.05" x-text="num(0.05, 2)"></option>
+        <option value="0.1" x-text="num(0.1, 2)"></option>
+      </select>
+    </div>
+  </div>
+
+  <main class="dmike-split__output" data-ref="output">
+    <template x-if="res">
+      <div>
+        <!-- Urteil (generisches .dmike-infobox aus css/components.css) mit Deutungssatz. -->
+        <div class="dmike-infobox" :class="verdictClass">
+          <span class="dmike-infobox__label" data-help-key="modules.msa-typ6.types.Verdict.level" x-text="verdictLabel"></span>
+          <span class="dmike-infobox__detail" x-text="driverLabel"></span>
+          <span class="module-msa-typ6__interpretation" x-text="interpretation"></span>
+        </div>
+
+        <template x-for="w in warnings" :key="w.code">
+          <div class="dmike-infobox dmike-infobox--warn">
+            <span class="dmike-infobox__label" data-help-key="modules.msa-typ6.types.Meta.warnings" x-text="t('warningTitle')"></span>
+            <span class="dmike-infobox__detail" x-text="w.text"></span>
+          </div>
+        </template>
+
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Meta.pointCount" x-text="t('kpi.points')"></div>
+            <div class="dmike-kpi-value" x-text="res.meta.pointCount"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.PrimaryChart.series" x-text="t('kpi.mean')"></div>
+            <div class="dmike-kpi-value" x-text="kpiMean"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.PrimaryChart.sigma" x-text="t('kpi.sigma')"></div>
+            <div class="dmike-kpi-value" x-text="kpiSigma"></div>
+          </div>
+          <div class="dmike-kpi" :class="violationsClass">
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Verdict.nelsonCount" x-text="t('kpi.violations')"></div>
+            <div class="dmike-kpi-value" x-text="res.verdict.nelsonCount"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Drift.slope" x-text="t('kpi.driftSlope')"></div>
+            <div class="dmike-kpi-value" x-text="kpiSlope"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Drift.pValue" x-text="t('kpi.driftP')"></div>
+            <div class="dmike-kpi-value" x-text="kpiDriftP"></div>
+          </div>
+        </div>
+
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="primaryTitle"></span></div>
+        <div class="module-msa-typ6__chart-host" data-chart-host="primary" x-widget="control-chart" x-widget-config="primaryConfig"
+             x-widget-value="model.primaryChart" x-widget-legacy-edit-key="legacyPrimaryKey"></div>
+
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="secondaryTitle"></span></div>
+        <div class="module-msa-typ6__chart-host" data-chart-host="secondary" x-widget="control-chart" x-widget-config="secondaryConfig"
+             x-widget-value="model.secondaryChart" x-widget-legacy-edit-key="legacySecondaryKey"></div>
+
+        <!-- Verletzungstabelle: Klick auf eine Zeile scrollt zur Lagekarte und markiert die Zeile kurz. -->
+        <div class="dmike-split__output-section module-msa-typ6__violations-section" x-show="hasViolations"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('violations.title')"></span></div>
+        <table class="dmike-table module-msa-typ6__violations" x-show="hasViolations">
+          <thead>
+            <tr>
+              <th><span data-help-key="modules.msa-typ6.types.RuleViolation.time" x-text="t('violations.time')"></span></th>
+              <th><span data-help-key="modules.msa-typ6.types.RuleViolation.value" x-text="t('violations.value')"></span></th>
+              <th><span data-help-key="modules.msa-typ6.types.RuleViolation.ruleIds" x-text="t('violations.rules')"></span></th>
+              <th x-text="t('violations.description')"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="v in violationRows" :key="v.index">
+              <tr class="module-msa-typ6__violation-row" :class="rowClass(v.index)" @click="highlight(v.index)">
+                <td x-text="v.time"></td>
+                <td x-text="v.value"></td>
+                <td x-text="v.rules"></td>
+                <td x-text="v.description"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- Driftgrafik: Punkte über Zeit bzw. Nummer, Regressionsgerade als zweite Reihe; darunter die Formel. -->
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.drift')"></span></div>
+        <div class="module-msa-typ6__drift">
+          <div class="module-msa-typ6__chart-host" data-chart-host="drift" x-widget="scatter-chart" x-widget-config="driftConfig"
+               x-widget-value="model.driftChart" x-widget-legacy-edit-key="legacyDriftKey"></div>
+          <div class="module-msa-typ6__drift-info">
+            <div class="module-msa-typ6__drift-eq">
+              <span>y = </span><span x-text="driftNum('intercept', 3)"></span>
+              <span> + </span><span x-text="driftNum('slope', 4)"></span><span> · t</span>
+            </div>
+            <div class="module-msa-typ6__drift-stats">
+              <span>β₁ ± SE = <span x-text="driftNum('slope', 4)"></span> ± <span x-text="driftNum('se', 4)"></span></span>
+              <span>t = <span x-text="driftNum('tStat', 3)"></span>, df = <span x-text="res.drift.df"></span>, p = <span x-text="driftNum('pValue', 4)"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+    <template x-if="errorText">
+      <div class="dmike-infobox dmike-infobox--bad" data-ref="error-box">
+        <span class="dmike-infobox__detail" x-text="errorText"></span>
+      </div>
+    </template>
+    <template x-if="showEmpty">
+      <div class="module-msa-typ6__empty" x-text="t('empty')"></div>
+    </template>
+  </main>
+</div>

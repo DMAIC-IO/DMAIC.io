@@ -202,6 +202,7 @@ const SKIP = new Set([
   'modules/histogram-view.test.js',
   'modules/hypothesis-test-view.test.js',
   'modules/msa-typ1-view.test.js',
+  'modules/msa-typ6-view.test.js',
   'modules/msa-typ5-view.test.js',
   'modules/xy-plot-view.test.js',
   'modules/individual-value-plot-view.test.js',
