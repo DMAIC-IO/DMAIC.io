@@ -10,6 +10,11 @@
  *   node tools/test-browser/run.mjs            # run, exit non-zero on failure
  *   node tools/test-browser/run.mjs --headed   # watch it in a real window
  *
+ * The page runs as `SHARDS` parallel `runner.html?shard=k/n` pages, the same
+ * split as the DDEV bridge: one page is single-threaded and with ~14 000 tests
+ * no longer finishes within the timeout. Each shard has its own timeout; the
+ * results are added up in summary.mjs, and any bad shard fails the run.
+ *
  * Zero extra dependencies: `playwright` is already a devDependency. The
  * browser binary comes from `npx playwright install chromium`.
  */
@@ -19,6 +24,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { chromium } from 'playwright';
+import { SHARDS, summarize } from './summary.mjs';
 
 // The callbacks handed to page.waitForFunction/page.evaluate are serialised and
 // run inside the browser, not in this node process — `document` and `window`
@@ -27,6 +33,7 @@ import { chromium } from 'playwright';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const HEADED = process.argv.includes('--headed');
+// Per shard. The four shards together run what one page ran before.
 const TIMEOUT_MS = 180_000;
 
 const MIME = {
@@ -75,56 +82,74 @@ async function serveRoot() {
   };
 }
 
+/**
+ * Runs one shard in its own page and reports how it ended — never throws, so
+ * a timed-out shard does not hide the results of the others.
+ * @param {import('playwright').Browser} browser
+ * @param {string} origin
+ * @param {number} k
+ * @returns {Promise<import('./summary.mjs').ShardOutcome>}
+ */
+async function runShard(browser, origin, k) {
+  const outcome = { k, n: SHARDS, results: null, error: null, pageErrors: [] };
+  const started = Date.now();
+  // Same pinned time zone as tests/run-node.mjs — CI runners default to UTC.
+  const page = await browser.newPage({ timezoneId: 'Europe/Berlin' });
+  // Surface page-level breakage the suites themselves cannot report.
+  page.on('pageerror', (err) => outcome.pageErrors.push(err.message));
+  try {
+    await page.goto(`${origin}/tests/runner.html?shard=${k}/${SHARDS}`, { waitUntil: 'load' });
+    // `data-test-run="done"` is set only after every suite finished — a crashed
+    // or still-running load times out here instead of reading as green.
+    await page.waitForFunction(
+      () => document.body.dataset.testRun === 'done' && !!window.__testRunResults,
+      null,
+      { timeout: TIMEOUT_MS },
+    );
+    outcome.results = await page.evaluate(() => window.__testRunResults);
+  } catch (err) {
+    outcome.error = err.message;
+  } finally {
+    await page.close();
+  }
+  const r = outcome.results;
+  console.log(
+    `shard ${k}/${SHARDS}: ` +
+    (r ? `${r.passed} passed, ${r.failed} failed, ${r.suiteCount} suites` : 'did not finish') +
+    ` in ${((Date.now() - started) / 1000).toFixed(1)} s`,
+  );
+  return outcome;
+}
+
 const server = await serveRoot();
 
-// Surface page-level breakage the suites themselves cannot report.
-const pageErrors = [];
 let browser;
 let exitCode = 0;
 try {
   // Inside the try: a missing browser binary must still shut the server down.
   browser = await chromium.launch({ headless: !HEADED });
-  // Same pinned time zone as tests/run-node.mjs — CI runners default to UTC.
-  const page = await browser.newPage({ timezoneId: 'Europe/Berlin' });
-  page.on('pageerror', (err) => pageErrors.push(err.message));
-
-  await page.goto(`${server.origin}/tests/runner.html`, { waitUntil: 'load' });
-
-  // `data-test-run="done"` is set only after every suite finished — a crashed
-  // or still-running load times out here instead of reading as green.
-  await page.waitForFunction(
-    () => document.body.dataset.testRun === 'done' && !!window.__testRunResults,
-    null,
-    { timeout: TIMEOUT_MS },
+  const started = Date.now();
+  const shards = await Promise.all(
+    Array.from({ length: SHARDS }, (_, i) => runShard(browser, server.origin, i + 1)),
   );
+  const sum = summarize(shards);
 
-  const r = await page.evaluate(() => window.__testRunResults);
-
-  for (const f of r.failures) {
-    console.error(`\n✗ ${f.suite}`);
+  for (const f of sum.failures) {
+    console.error(`\n✗ ${f.suite} (${f.shard})`);
     for (const t of f.tests) console.error(`  ✗ ${t.name}\n    ${t.error ?? ''}`);
   }
+  if (sum.problems.length) console.error(`\nProblems:\n  ${sum.problems.join('\n  ')}`);
 
   console.log(
-    `\n${r.passed} passed, ${r.failed} failed, ${r.skipped} skipped, ${r.todo} todo ` +
-    `(${r.suiteCount} suites, browser DOM runner)`,
+    `\n${sum.passed} passed, ${sum.failed} failed, ${sum.skipped} skipped, ${sum.todo} todo ` +
+    `(${sum.suiteCount} suites, ${SHARDS} shards, browser DOM runner, ` +
+    `${((Date.now() - started) / 1000).toFixed(1)} s)`,
   );
-
-  if (r.failed > 0) exitCode = 1;
-
-  // A run that finds nothing means the loader broke, not that all is well.
-  if (r.suiteCount === 0) {
-    console.error('No suites ran — tests/runner.html loaded nothing.');
-    exitCode = 1;
-  }
+  exitCode = sum.exitCode;
 } catch (err) {
   console.error(`Browser test run failed: ${err.message}`);
   exitCode = 1;
 } finally {
-  if (pageErrors.length) {
-    console.error(`\nUncaught page errors:\n  ${pageErrors.join('\n  ')}`);
-    exitCode = 1;
-  }
   await browser?.close();
   await server.close();
 }
