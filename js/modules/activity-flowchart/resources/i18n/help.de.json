@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das {{term:flussdiagramm|Activity-Flowchart}} bildet eine Kette aus Aktivitäten (Rechtecke) und Entscheidungen (Rauten) von links nach rechts ab. In der Raute steht eine Ja/Nein-Frage; ihre beiden Ausgänge sind an den Ecken beschriftet, an denen sie die Raute verlassen: „Ja\" rechts, wo die Kette weiterläuft, „Nein\" unten. „Ja\" ist dabei der Weiterfluss selbst und trägt kein Ziel. Nur der Nein-Ausgang zweigt ab: Er öffnet unter dem Hauptpfad ein eigenes Band, und an dessen Ende steht, wo der Umweg wieder einmündet — ein Sprung auf einen anderen Schritt oder keiner, dann endet der Prozess dort."
+        }
+      ]
+    },
+    "whenToUse": {
+      "title": "Wann verwenden?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Activity Flowchart eignet sich in der Analyze-Phase, wenn ein Ablauf mit klaren Entscheidungspunkten und möglichen Rücksprüngen dokumentiert werden soll — z. B. Freigabe-, Prüf- oder Genehmigungsprozesse. Im Unterschied zur {{term:process-map|Prozesskarte}} verzichtet es bewusst auf Swim Lanes, Input/Output-Klassifikation und Wertschöpfungstypen und konzentriert sich auf die reine Ablauflogik inklusive Verzweigungen."
+        }
+      ]
+    },
+    "howToUse": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Über „Aktivität hinzufügen\" wird ein neuer Schritt am Ende der Kette angelegt, über „Entscheidung hinzufügen\" eine Raute mit Ja/Nein-Ausgängen. Der Ja-Ausgang ist der Weiterfluss: am rechten Zipfel läuft der Wertstrom einfach nach rechts zum nächsten Schritt weiter, es gibt dort nichts zu wählen. Der Nein-Ausgang öffnet dagegen ein eigenes Band unter dem Hauptpfad; wo der Umweg wieder einmündet, legt die Taste „Wiedereinstieg wählen\" am Ende des Bands fest — danach eine Karte anklicken. Der gewählte Wiedereinstieg steht unter der Zielkarte, ein Rücksprung ist mit ↩ markiert und damit eine Nacharbeitsschleife; das ✕ daneben hebt ihn wieder auf. Der `»`-Pfeil zwischen zwei Karten öffnet ein kleines Menü, das an dieser Stelle eine Aktivität oder eine Entscheidung im Band der folgenden Karte einfügt. Karten und Rauten werden am Griff, der blauen Nummer, gezogen; überall sonst bleibt der Text markierbar. Auf einem Pfeil zwischen zwei Schritten abgelegt, nimmt der Schritt genau diese Stelle in der Kette ein — auch vor dem ersten und hinter dem letzten Schritt, wo während des Ziehens je ein zusätzlicher Pfeil erscheint. Mit der Tastatur geht dasselbe am Griff: Enter nimmt den Schritt auf, ←/→ ändern seine Stelle in der Kette, ↑/↓ wechseln das Band, Enter legt ab, Escape bricht ab. Über „Detail-Schritte\" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …\" lassen sich Schritte aus einer bestehenden SIPOC- oder Process-Map-Instanz übernehmen."
+        }
+      ]
+    },
+    "noBranchBand": {
+      "title": "Nein-Band",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Jede Raute öffnet unter dem Hauptpfad ein eigenes Band für ihren Nein-Zweig. Darin lassen sich eigene Aktivitäten und weitere Rauten anlegen — eine Raute im Band öffnet ihrerseits ein Band darunter, beliebig tief verschachtelt. Am Ende jedes Nein-Bandes steht ein Platzhalter mit zwei Tasten, „Aktivität hinzufügen\" und „Entscheidung hinzufügen\", und dahinter der Ausgang des Bandes."
+        },
+        {
+          "type": "paragraph",
+          "content": "Der Ausgang eines Nein-Bands ist entweder ein Wiedereinstieg oder keiner. Ohne Wiedereinstieg endet der Umweg dort, wo seine Karten enden — eine Sackgasse (etwa „verschrotten\"), am Bandende steht dann die Einladung „Wiedereinstieg wählen\". Mit Wiedereinstieg mündet der Umweg in eine Karte des Bands, aus dem die Raute abzweigt — rückwärts mit ↩ als Nacharbeitsschleife markiert, vorwärts als Wiedereinstieg weiter hinten in der Kette. Der Name der Zielkarte steht unter ihr, das ✕ daneben hebt den Wiedereinstieg auf. Am Wort „Nein\" an der unteren Spitze der Raute steht dagegen kein Ziel; es beschriftet nur die Kante, die ins Band hinunterführt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Ein Schritt hat zwei Ablageziele, die sich nicht überschneiden: auf einer Bandzeile abgelegt — auch über einer Karte darin —, wechselt er das Band und behält seine Stelle in der Kette; auf einem Pfeil zwischen zwei Karten abgelegt, wechselt er die Stelle und behält sein Band. Ein Band, dessen Raute erst hinter dem Schritt steht, nimmt ihn nicht auf und leuchtet beim Ziehen nicht auf; mit der Tastatur überspringen ↑/↓ solche Bänder. Wird eine Raute selbst gezogen, nimmt sie ihr ganzes Band als zusammenhängenden Block mit. Wird sie gelöscht, löst sich ihr Band auf — die Schritte darin erben das Band der gelöschten Raute, statt mit ihr gelöscht zu werden."
+        }
+      ]
+    },
+    "reworkLoops": {
+      "title": "Rework-Loops",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Zeigt der Ausgang eines Nein-Bands auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — das Ziel steht am Bandausgang, mit ↩ als Schleifen-Markierung, nicht mehr an der Raute selbst. Der Umweg kann dabei mehr sein als ein bloßer Rücksprung: im Band lassen sich vor dem Sprung zurück beliebig viele Überarbeitungs-Schritte anlegen, z. B. „Angebot überarbeiten\" vor der Rückkehr in die Kalkulation. Ein visueller Bogen über die betroffenen Schritte ist noch nicht gerendert; das folgt in einem späteren Task. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende\" auf mindestens einem Zweig verhindert das."
+        }
+      ]
+    }
+  }
+}

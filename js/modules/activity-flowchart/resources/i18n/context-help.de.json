@@ -1,0 +1,134 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "Die Kette in Reihenfolge von links nach rechts, Aktivitäten und Entscheidungen gemischt. Das Band eines Schritts ist nur seine Zeile; seine Stelle in der Kette bleibt davon unberührt.",
+      "title": {
+        "help": "Der Titel des Schritts, ein kurzer Name der Tätigkeit. Eine Entscheidung zeigt statt des Titels ihre Frage."
+      },
+      "description": {
+        "help": "Die Beschreibung des Schritts, freier Text."
+      },
+      "kind": {
+        "help": "Die Art des Schritts: activity für eine Tätigkeit (Rechteck), decision für eine Ja/Nein-Entscheidung (Raute)."
+      },
+      "branchId": {
+        "help": "Das Band, in dem der Schritt steht: main für den Hauptpfad, no:<Kennung der Entscheidung> für den Nein-Zweig dieser Entscheidung. Die Entscheidung muss vor dem Schritt in der Kette stehen."
+      },
+      "decision": {
+        "help": "Frage und Wiedereinstieg einer Entscheidung; eine Aktivität hat keine.",
+        "label": {
+          "help": "Die Ja/Nein-Frage der Entscheidung."
+        },
+        "noTarget": {
+          "help": "Wo der Nein-Zweig wieder einmündet: end, wenn der Umweg dort endet, wo seine Karten enden, sonst die Kennung eines anderen Schritts aus dem Band, in dem die Entscheidung steht. Ein Schritt weiter vorn ist eine Nacharbeitsschleife."
+        }
+      },
+      "substeps": {
+        "help": "Die Unter-Schritte des Schritts in Reihenfolge.",
+        "title": {
+          "help": "Der Titel des Unter-Schritts."
+        }
+      }
+    },
+    "expanded": {
+      "help": "Die Schritte, deren Unter-Schritte aufgeklappt sind; rein darstellend."
+    },
+    "bands": {
+      "help": "Die Bänder von oben nach unten, der Hauptpfad zuerst: dann je Entscheidung ihr Nein-Band, unter dem Band, in dem die Entscheidung steht. Genau diese Band-Kennungen nehmen die Kommandos an.",
+      "id": {
+        "help": "Die Kennung des Bands: main oder no:<Kennung der Entscheidung>."
+      },
+      "ownerId": {
+        "help": "Die Kennung der Entscheidung, die das Band öffnet; beim Hauptpfad leer."
+      },
+      "label": {
+        "help": "Die Beschriftung des Bands in der App-Sprache, wie links neben der Kette."
+      },
+      "depth": {
+        "help": "Die Schachtelungstiefe: 0 für den Hauptpfad, 1 für das Band einer Entscheidung im Hauptpfad, jede weitere Ebene eins mehr."
+      }
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Legt eine leere Aktivität oder Entscheidung an und liefert ihre Kennung. Ohne Stelle kommt sie ans Ende ihres Bands, beim Hauptpfad ans Ende der Kette; eine Entscheidung öffnet darunter ein eigenes Band.",
+      "params": {
+        "command": "Das Kommando als ein Objekt, optional mit kind, bandId und index.",
+        "kind": "Art des neuen Schritts: 'activity' (Vorgabe) oder 'decision'.",
+        "bandId": "Das Band des neuen Schritts: 'main' (Vorgabe) oder 'no:<Kennung einer Entscheidung>'. Ein unbekanntes Band ist ein Fehler.",
+        "index": "Optional die Stelle in der Kette nach dem Einfügen (0 = ganz vorn, die Zahl der Schritte = ans Ende). Die Entscheidung des Bands muss davor stehen, sonst wird das Anlegen abgelehnt."
+      }
+    },
+    "removeStep": {
+      "help": "Entfernt einen Schritt samt seinen Unter-Schritten. Bei einer Entscheidung löst sich ihr Band auf: die Schritte darin erben das Band der Entscheidung. Jeder Wiedereinstieg, der auf den Schritt zeigte, endet danach im Prozessende.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id.",
+        "id": "Die Kennung des zu entfernenden Schritts. Eine unbekannte Kennung ist ein Fehler."
+      }
+    },
+    "moveStep": {
+      "help": "Verschiebt einen Schritt an eine andere Stelle der Kette; sein Band bleibt, solange dessen Entscheidung davor steht, sonst fällt er in den Hauptpfad. Eine Entscheidung nimmt ihr ganzes Band als zusammenhängenden Block mit.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id und index.",
+        "id": "Die Kennung des Schritts, der verschoben wird. Eine unbekannte Kennung ist ein Fehler.",
+        "index": "Die Stelle des Schritts bzw. der Entscheidung nach dem Verschieben, eine ganze Zahl von 0 (ganz vorn) bis zur Zahl der Schritte ohne den mitwandernden Block."
+      }
+    },
+    "setStepBand": {
+      "help": "Setzt das Band eines Schritts; seine Stelle in der Kette bleibt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und bandId.",
+        "stepId": "Die Kennung des Schritts. Eine unbekannte Kennung ist ein Fehler.",
+        "bandId": "Das neue Band: 'main' oder 'no:<Kennung einer Entscheidung>'. Ein unbekanntes Band oder eines, dessen Entscheidung nicht vor dem Schritt steht, ist ein Fehler."
+      }
+    },
+    "setDecisionTarget": {
+      "help": "Setzt den Wiedereinstieg des Nein-Zweigs einer Entscheidung. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der zum nächsten Schritt weiterfließt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und target.",
+        "stepId": "Die Kennung der Entscheidung. Eine unbekannte Kennung oder ein Schritt, der keine Entscheidung ist, ist ein Fehler.",
+        "target": "'end', wenn der Umweg dort endet, wo seine Karten enden, oder die Kennung eines anderen Schritts aus dem Band, in dem die Entscheidung selbst steht. Jede andere Angabe ist ein Fehler."
+      }
+    },
+    "addSubstep": {
+      "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu. Liefert die Kennung des neuen Unter-Schritts.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId.",
+        "stepId": "Die Kennung des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte Kennung ist ein Fehler."
+      }
+    },
+    "removeSubstep": {
+      "help": "Entfernt einen Unter-Schritt aus seinem übergeordneten Schritt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und substepId.",
+        "stepId": "Die Kennung des übergeordneten Schritts. Eine unbekannte Kennung ist ein Fehler.",
+        "substepId": "Die Kennung des zu entfernenden Unter-Schritts. Eine unbekannte Kennung ist ein Fehler."
+      }
+    },
+    "moveSubstep": {
+      "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an eine andere Stelle.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId, substepId und index.",
+        "stepId": "Die Kennung des Schritts, zu dem der Unter-Schritt gehört. Eine unbekannte Kennung ist ein Fehler.",
+        "substepId": "Die Kennung des Unter-Schritts, der verschoben wird. Eine unbekannte Kennung ist ein Fehler.",
+        "index": "Die Stelle des Unter-Schritts nach dem Verschieben, eine ganze Zahl von 0 (ganz vorn) bis zur Zahl der Unter-Schritte des Schritts minus eins."
+      }
+    },
+    "setExpanded": {
+      "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id und expanded.",
+        "id": "Die Kennung des Schritts, dessen Unter-Schritte gezeigt oder verborgen werden. Eine unbekannte Kennung ist ein Fehler.",
+        "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
+      }
+    },
+    "appendSteps": {
+      "help": "Hängt mehrere Aktivitäten ans Ende des Hauptpfads an, etwa aus einer anderen Instanz übernommen. Liefert die Zahl der angehängten Schritte.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit steps.",
+        "steps": "Die anzuhängenden Schritte als Liste; jeder Eintrag hat title und description."
+      }
+    }
+  }
+}

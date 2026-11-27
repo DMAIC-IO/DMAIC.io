@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Structure",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:flussdiagramm|Activity Flowchart}} renders a left-to-right chain of activities (rectangles) and decisions (diamonds). A diamond holds a yes/no question, and its two exits are labelled at the vertices they leave from: \"Yes\" on the right, where the chain flows on, \"No\" at the bottom. \"Yes\" is the flow on itself and carries no target. Only the No exit branches off: it opens a band of its own below the main path, and the end of that band says where the detour rejoins — a jump to another step, or none, and the process ends there."
+        }
+      ]
+    },
+    "whenToUse": {
+      "title": "When to use",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The Activity Flowchart fits the Analyze phase when a workflow needs clear decision points and possible loop-backs — e.g. approval, review, or sign-off processes. Unlike the process map, it deliberately drops swim lanes, input/output classification, and value-type tags, focusing purely on flow logic including branches."
+        }
+      ]
+    },
+    "howToUse": {
+      "title": "How to use",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Use \"Add activity\" to append a new step at the end of the chain, and \"Add decision\" for a diamond with Yes/No outputs. The Yes exit is the flow on: at the right vertex the value stream simply continues to the right into the next step, so there is nothing to choose there. The No exit, by contrast, opens a band of its own below the main path; where the detour rejoins is set with the \"Pick re-entry\" button at the end of the band — then click a card. The chosen re-entry is shown under the target card, a jump back is marked with ↩ and is a rework loop; the ✕ next to it drops it again. The `»` arrow between two cards opens a small menu that inserts an activity or a decision at that place, in the band of the following card. Cards and diamonds are dragged by their grip, the blue number, so text stays selectable everywhere else. Dropped on an arrow between two steps, a step takes exactly that place in the chain — including in front of the first and behind the last step, where an extra arrow appears while dragging. The same works from the keyboard at the grip: Enter picks the step up, ←/→ change its place in the chain, ↑/↓ switch the band, Enter drops it, Escape cancels. \"Detail steps\" expands any card into sub-steps. \"Import from …\" pulls steps in from an existing SIPOC or Process Map instance."
+        }
+      ]
+    },
+    "noBranchBand": {
+      "title": "No-branch band",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Every diamond opens its own band below the main path for its No branch. Inside it, activities and further diamonds can be added — a diamond inside a band opens a band of its own underneath, nested as deep as needed. At the end of every No band sits a placeholder with two buttons, \"Add activity\" and \"Add decision\", and behind it the band's exit."
+        },
+        {
+          "type": "paragraph",
+          "content": "The exit of a No band is either a re-entry or none. Without a re-entry the detour ends where its cards end — a dead end (e.g. \"scrap\"), and the end of the band shows the invitation \"Pick re-entry\". With a re-entry the detour flows into a card of the band the diamond branches off — marked with ↩ for a jump back as a rework loop, or plain for a jump forward further down the chain. The target card's name is shown under it, and the ✕ next to it drops the re-entry. At the \"No\" word at the diamond's lower vertex, by contrast, no target is shown; it only labels the edge leading down into the band."
+        },
+        {
+          "type": "paragraph",
+          "content": "A step has two drop targets that never overlap: dropped on a band row — also over a card in it — it changes its band and keeps its place in the chain; dropped on an arrow between two cards it changes its place and keeps its band. A band whose diamond only stands behind the step does not take it and does not light up while dragging; from the keyboard, ↑/↓ skip such bands. Dragging a diamond itself takes its whole band along as one connected block. Deleting it dissolves its band — the steps inside inherit the deleted diamond's own band instead of being deleted along with it."
+        }
+      ]
+    },
+    "reworkLoops": {
+      "title": "Rework loops",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "When a band's exit points back to an earlier step instead of the next one, a rework loop appears — the target is spelled out at the band's exit, marked with ↩, no longer at the diamond itself. The detour can be more than a bare jump back: the band can hold any number of revision steps before the jump back, e.g. \"Revise quote\" before returning to the calculation. A visual arc spanning the affected steps is not rendered yet; that follows in a later task. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting \"process end\" on at least one branch prevents that."
+        }
+      ]
+    }
+  }
+}

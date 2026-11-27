@@ -1,0 +1,134 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "The chain in order from left to right, activities and decisions mixed. A step's band is only its row; its place in the chain stays untouched by it.",
+      "title": {
+        "help": "The step's title, a short name of the activity. A decision shows its question instead of the title."
+      },
+      "description": {
+        "help": "The step's description, free text."
+      },
+      "kind": {
+        "help": "The kind of step: activity for a task (rectangle), decision for a yes/no decision (diamond)."
+      },
+      "branchId": {
+        "help": "The band the step stands in: main for the main path, no:<identifier of the decision> for that decision's No branch. The decision must come before the step in the chain."
+      },
+      "decision": {
+        "help": "Question and re-entry of a decision; an activity has none.",
+        "label": {
+          "help": "The decision's yes/no question."
+        },
+        "noTarget": {
+          "help": "Where the No branch rejoins: end when the detour ends where its cards end, otherwise the identifier of another step from the band the decision stands in. A step further back is a rework loop."
+        }
+      },
+      "substeps": {
+        "help": "The step's sub-steps in order.",
+        "title": {
+          "help": "The sub-step's title."
+        }
+      }
+    },
+    "expanded": {
+      "help": "The steps whose sub-steps are expanded; display only."
+    },
+    "bands": {
+      "help": "The bands from top to bottom, the main path first: then for each decision its No band, below the band the decision stands in. Exactly these band identifiers are what the commands accept.",
+      "id": {
+        "help": "The band's identifier: main or no:<identifier of the decision>."
+      },
+      "ownerId": {
+        "help": "The identifier of the decision that opens the band; empty for the main path."
+      },
+      "label": {
+        "help": "The band's label in the app language, as shown left of the chain."
+      },
+      "depth": {
+        "help": "The nesting depth: 0 for the main path, 1 for the band of a decision on the main path, one more for every further level."
+      }
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Creates an empty activity or decision and returns its identifier. Without a place it goes to the end of its band, for the main path to the end of the chain; a decision opens a band of its own below.",
+      "params": {
+        "command": "The command as one object, optionally with kind, bandId and index.",
+        "kind": "Kind of the new step: 'activity' (default) or 'decision'.",
+        "bandId": "The new step's band: 'main' (default) or 'no:<identifier of a decision>'. An unknown band is an error.",
+        "index": "Optionally the place in the chain after inserting (0 = at the front, the number of steps = at the end). The band's decision must stand before it, otherwise the step is rejected."
+      }
+    },
+    "removeStep": {
+      "help": "Removes a step together with its sub-steps. For a decision its band dissolves: the steps in it inherit the decision's own band. Every re-entry that pointed at the step ends in the process end afterwards.",
+      "params": {
+        "command": "The command as one object with id.",
+        "id": "The identifier of the step to remove. An unknown identifier is an error."
+      }
+    },
+    "moveStep": {
+      "help": "Moves a step to another place in the chain; its band stays as long as that band's decision stands before it, otherwise it falls into the main path. A decision takes its whole band along as one connected block.",
+      "params": {
+        "command": "The command as one object with id and index.",
+        "id": "The identifier of the step being moved. An unknown identifier is an error.",
+        "index": "The place of the step or decision after the move, a whole number from 0 (at the front) to the number of steps without the block that moves along."
+      }
+    },
+    "setStepBand": {
+      "help": "Sets a step's band; its place in the chain stays.",
+      "params": {
+        "command": "The command as one object with stepId and bandId.",
+        "stepId": "The identifier of the step. An unknown identifier is an error.",
+        "bandId": "The new band: 'main' or 'no:<identifier of a decision>'. An unknown band, or one whose decision does not stand before the step, is an error."
+      }
+    },
+    "setDecisionTarget": {
+      "help": "Sets the re-entry of a decision's No branch. The Yes branch has no target — it is the value stream flowing on to the next step.",
+      "params": {
+        "command": "The command as one object with stepId and target.",
+        "stepId": "The identifier of the decision. An unknown identifier, or a step that is not a decision, is an error.",
+        "target": "'end' when the detour ends where its cards end, or the identifier of another step from the band the decision itself stands in. Anything else is an error."
+      }
+    },
+    "addSubstep": {
+      "help": "Adds an empty sub-step to a step. Returns the identifier of the new sub-step.",
+      "params": {
+        "command": "The command as one object with stepId.",
+        "stepId": "The identifier of the step that gets the new sub-step. An unknown identifier is an error."
+      }
+    },
+    "removeSubstep": {
+      "help": "Removes a sub-step from its parent step.",
+      "params": {
+        "command": "The command as one object with stepId and substepId.",
+        "stepId": "The identifier of the parent step. An unknown identifier is an error.",
+        "substepId": "The identifier of the sub-step to remove. An unknown identifier is an error."
+      }
+    },
+    "moveSubstep": {
+      "help": "Moves a sub-step to another place within its step.",
+      "params": {
+        "command": "The command as one object with stepId, substepId and index.",
+        "stepId": "The identifier of the step the sub-step belongs to. An unknown identifier is an error.",
+        "substepId": "The identifier of the sub-step being moved. An unknown identifier is an error.",
+        "index": "The sub-step's place after the move, a whole number from 0 (at the front) to the number of the step's sub-steps minus one."
+      }
+    },
+    "setExpanded": {
+      "help": "Shows or hides a step's sub-steps; display only, the content stays.",
+      "params": {
+        "command": "The command as one object with id and expanded.",
+        "id": "The identifier of the step whose sub-steps are shown or hidden. An unknown identifier is an error.",
+        "expanded": "true shows the sub-steps, false hides them."
+      }
+    },
+    "appendSteps": {
+      "help": "Appends several activities to the end of the main path, for example taken over from another instance. Returns the number of appended steps.",
+      "params": {
+        "command": "The command as one object with steps.",
+        "steps": "The steps to append as a list; each entry has title and description."
+      }
+    }
+  }
+}
