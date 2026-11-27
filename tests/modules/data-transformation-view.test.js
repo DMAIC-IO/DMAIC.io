@@ -335,7 +335,7 @@ suite('data-transformation: Viewmodel im Browser', () => {
     assertDeepEqual([...sel.querySelectorAll('optgroup option')].map((o) => o.value), ['ws1|s1|c1', 'ws1|s1|c2', 'ws1|s1|c3', 'ws1|s1|__new__']);
     assertEqual(sel.querySelector('optgroup').label, 'Messung');
     await h.click(h.q('[data-ref="send"]'));
-    assertDeepEqual(h.notes.at(-1), [tr('selectTarget')]);
+    assertDeepEqual(h.notes.at(-1), [tr('selectTarget'), 'warning']);
     sel.value = '__create_worksheet__';
     sel.dispatchEvent(new Event('change', { bubbles: true }));
     await settle();

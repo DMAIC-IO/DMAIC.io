@@ -120,7 +120,7 @@
       }
     },
     "copyExport": {
-      "help": "Kopiert die transformierten Werte in die Zwischenablage, je Wert eine Zeile mit sechs Nachkommastellen und Punkt, wie der Kasten sie zeigt. Ohne Werte oder ohne Zugriff auf die Zwischenablage wird abgelehnt.",
+      "help": "Kopiert die transformierten Werte in die Zwischenablage, je Wert eine Zeile mit sechs Nachkommastellen und Punkt, wie der Kasten sie zeigt. Ohne Werte oder wenn der Browser keine Zwischenablage-Schnittstelle bietet, wird abgelehnt. Verweigert der Browser das Schreiben, meldet der Agent dennoch Erfolg, und es erscheint ein Fehler-Toast.",
       "params": {
         "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
       }

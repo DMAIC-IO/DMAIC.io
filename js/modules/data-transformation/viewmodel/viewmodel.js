@@ -214,7 +214,7 @@ export default createModule({
       async sendToWorksheet() {
         const choice = this.state.target;
         if (!choice) {
-          ctx.notify(this.t('selectTarget'));
+          ctx.notify(this.t('selectTarget'), 'warning');
           return;
         }
         const target = choice === NEW_WORKSHEET ? null : choice;

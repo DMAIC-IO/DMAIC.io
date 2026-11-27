@@ -120,7 +120,7 @@
       }
     },
     "copyExport": {
-      "help": "Copies the transformed values to the clipboard, one value per line with six decimals and a point, as the box shows them. Rejected without values or without access to the clipboard.",
+      "help": "Copies the transformed values to the clipboard, one value per line with six decimals and a point, as the box shows them. Rejected without values or when the browser offers no clipboard API. If the browser refuses the write, the agent still reports success and an error toast appears.",
       "params": {
         "command": "The command as an empty object; it takes no input."
       }
