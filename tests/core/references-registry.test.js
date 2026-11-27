@@ -9,6 +9,7 @@ import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/
 import msaTyp1Refs from '../../js/modules/msa-typ1/resources/data/references.json' with { type: 'json' };
 import msaTyp2Refs from '../../js/modules/msa-typ2/resources/data/references.json' with { type: 'json' };
 import msaTyp5Refs from '../../js/modules/msa-typ5/resources/data/references.json' with { type: 'json' };
+import msaTyp6Refs from '../../js/modules/msa-typ6/resources/data/references.json' with { type: 'json' };
 import processCapabilityRefs from '../../js/modules/process-capability/resources/data/references.json' with { type: 'json' };
 import sampleSizeRefs from '../../js/modules/sample-size/resources/data/references.json' with { type: 'json' };
 
@@ -21,6 +22,7 @@ const JSON_REFS = {
   'msa-typ1': resolveReferences(msaTyp1Refs.references ?? []),
   'msa-typ2': resolveReferences(msaTyp2Refs.references ?? []),
   'msa-typ5': resolveReferences(msaTyp5Refs.references ?? []),
+  'msa-typ6': resolveReferences(msaTyp6Refs.references ?? []),
   'process-capability': resolveReferences(processCapabilityRefs.references ?? []),
   'sample-size': resolveReferences(sampleSizeRefs.references ?? []),
 };

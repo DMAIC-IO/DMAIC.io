@@ -49,6 +49,9 @@
     "driftChart": {
       "help": "The settings of the drift chart from the chart editor (title, axes, series)."
     },
+    "driftConfig": {
+      "help": "The drift chart as drawn: measurements over the time axis and the regression line, computed from the chosen columns."
+    },
     "result": {
       "help": "The computed result, each figure described under keys; empty while the value column or values are missing. When the computation rejects the inputs, only the reason is given."
     },

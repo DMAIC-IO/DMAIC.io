@@ -52,3 +52,32 @@ suite('MSA Typ 6: Handbuch aus help.<lang>.json', () => {
     }
   });
 });
+
+// Die Lauflänge der Nelson-Regel 2 im Handbuch folgt dem Regeltext
+// `common.nelson.2.short` (A5: derselbe Wortlaut wie in der Regelliste), die
+// Quelle ist Nelson 1984 (neun Punkte auf einer Seite der Mittellinie).
+const NUMBER_WORDS = {
+  de: { 7: 'sieben', 8: 'acht', 9: 'neun' },
+  en: { 7: 'seven', 8: 'eight', 9: 'nine' },
+};
+
+suite('MSA Typ 6: Nelson-Regeln im Handbuch wie die Regeltexte', () => {
+  for (const lang of ['de', 'en']) {
+    test(`${lang}: Lauflänge der Regel 2 und Quelle Nelson 1984`, async () => {
+      const res = await fetch(new URL(`../../../i18n/${lang}.json`, import.meta.url));
+      const runLength = Number.parseInt((await res.json()).common.nelson['2'].short, 10);
+      assertEqual(runLength, 9);
+      const help = await loadJson(`i18n/help.${lang}.json`);
+      const block = help.sections.parameters.blocks
+        .find((b) => b.type === 'definition' && /nelson-regeln/.test(b.term));
+      assertTrue(!!block, 'Definition der Nelson-Regeln fehlt');
+      assertTrue(block.content.includes(`${NUMBER_WORDS[lang][runLength]} `), `"${NUMBER_WORDS[lang][runLength]}" fehlt: ${block.content}`);
+      for (const [n, other] of Object.entries(NUMBER_WORDS[lang])) {
+        if (Number(n) === runLength) continue;
+        assertTrue(!block.content.includes(`${other} Punkte`) && !block.content.includes(`${other} points`),
+          `veraltete Lauflänge "${other}": ${block.content}`);
+      }
+      assertTrue(block.content.includes('{{ref:nelson-1984}}'));
+    });
+  }
+});

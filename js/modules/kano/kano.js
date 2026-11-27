@@ -313,7 +313,7 @@ export default createModule({
 
       /**
        * Lesbarer Name einer Baum-Instanz für das Auswahlfeld: Text der ersten
-       * VoC, sonst die instanceId als Rückfall (Muster msa-typ6.js:507).
+       * VoC, sonst die instanceId als Rückfall (wie die Typ-1-Auswahl in msa-typ6).
        * @param {{instanceId: string, state: object|null}} tr
        * @returns {string}
        * @noagent view transform

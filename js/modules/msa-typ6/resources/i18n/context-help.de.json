@@ -49,6 +49,9 @@
     "driftChart": {
       "help": "Die Einstellungen der Driftgrafik aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
     },
+    "driftConfig": {
+      "help": "Die Darstellung der Driftgrafik: Messwerte über der Zeitachse und die Regressionsgerade, gerechnet aus den gewählten Spalten."
+    },
     "result": {
       "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; leer, solange Messwertspalte oder Messwerte fehlen. Lehnt die Rechnung die Eingaben ab, steht nur der Grund da."
     },

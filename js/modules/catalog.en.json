@@ -130,6 +130,11 @@
     "description": "Attribute Measurement System Analysis — multiple appraisers, kappa-based agreement (Cohen, Fleiss, weighted)",
     "whenToUse": "When an attribute measurement system (good/bad, classes, ordinal levels) is to be assessed: several appraisers rate parts, repeatedly, against an optional reference. The result is kappa agreement, effectiveness and a verdict by AIAG or Bosch rules — not for measured characteristics, which types 1 to 3 cover. Requires a data collection with a part column and either an appraiser and a rating column (long layout) or one rating column per appraiser and trial (wide layout)."
   },
+  "msa-typ6": {
+    "name": "MSA Type 6 (stability)",
+    "description": "Stability / long-term behavior — control chart (I-MR/x̄-R) over a repeatedly measured reference part, Nelson rules 1–8 and a linear drift test",
+    "whenToUse": "When a measurement system has to stay stable over time: a reference part is measured repeatedly, the control chart (I-MR or x̄-R) shows violations of the Nelson rules, and a linear drift test checks for a trend. Needs a data collection with a value column, optionally a timestamp column and, for x̄-R, a subgroup column — not for the spread of a single measurement series, use types 1 to 3 for that."
+  },
   "multi-vari": {
     "name": "Multi-Vari Chart",
     "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",

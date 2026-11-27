@@ -22,16 +22,11 @@ export const SPC_CONSTANTS = {
 
 // ── Nelson Rules Definition ──
 
-export const NELSON_RULES = [
-  { id: 1, short: { de: '1 Punkt > 3σ', en: '1 point > 3σ' }, desc: { de: 'Ein Punkt außerhalb der 3σ-Grenzen', en: 'One point beyond 3σ limits' } },
-  { id: 2, short: { de: '9 gleiche Seite', en: '9 same side' }, desc: { de: '9 aufeinanderfolgende Punkte auf derselben Seite der Mittellinie', en: '9 consecutive points on the same side of the center line' } },
-  { id: 3, short: { de: '6 steigend/fallend', en: '6 increasing/decreasing' }, desc: { de: '6 aufeinanderfolgende steigende oder fallende Punkte', en: '6 consecutive increasing or decreasing points' } },
-  { id: 4, short: { de: '14 alternierend', en: '14 alternating' }, desc: { de: '14 aufeinanderfolgende alternierend steigende und fallende Punkte', en: '14 consecutive alternating up and down points' } },
-  { id: 5, short: { de: '2/3 > 2σ', en: '2/3 > 2σ' }, desc: { de: '2 von 3 aufeinanderfolgenden Punkten jenseits 2σ (gleiche Seite)', en: '2 of 3 consecutive points beyond 2σ (same side)' } },
-  { id: 6, short: { de: '4/5 > 1σ', en: '4/5 > 1σ' }, desc: { de: '4 von 5 aufeinanderfolgenden Punkten jenseits 1σ (gleiche Seite)', en: '4 of 5 consecutive points beyond 1σ (same side)' } },
-  { id: 7, short: { de: '15 in Zone C', en: '15 in Zone C' }, desc: { de: '15 aufeinanderfolgende Punkte innerhalb 1σ beiderseits', en: '15 consecutive points within 1σ on both sides' } },
-  { id: 8, short: { de: '8 außerhalb C', en: '8 outside C' }, desc: { de: '8 aufeinanderfolgende Punkte jenseits 1σ auf beiden Seiten', en: '8 consecutive points beyond 1σ on both sides' } },
-];
+/**
+ * The eight Nelson rules (ids only). Their short and long texts live in the
+ * i18n keys `common.nelson.<id>.short|desc`, not in the engine.
+ */
+export const NELSON_RULES = [1, 2, 3, 4, 5, 6, 7, 8].map((id) => ({ id }));
 
 /**
  * Default enabled rules: test 1 only, as in Minitab. Every extra test raises

@@ -66,10 +66,8 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'name="msa4-pv"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
   ],
   'msa-typ6': [
-    { match: 'name="msa-typ6-chartType"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
-    { match: 'name="msa-typ6-limitsMode"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
+    { match: 'class="msa-typ6__choice"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 4 },
     { match: ':checked="isRuleEnabled(id)"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
-    { match: "t('input.sourceTyp1')", reason: 'Übernahme aus einer Typ-1-Instanz füllt μ₀ und σ₀; keine eigene Eingabe der Studie und über die Agentenfläche nicht setzbar', count: 1 },
     { match: "t('violations.description')", reason: 'Klartext der Regeln derselben Zeile; der Satz steht an der Spalte Regeln', count: 1 },
   ],
   'msa-typ5': [

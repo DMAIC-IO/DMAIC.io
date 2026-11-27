@@ -12509,6 +12509,7 @@ export const AGENT_REGISTRY = {
   "msa-typ6": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -12524,134 +12525,87 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setParam": {
+      "toggleRule": {
+        "target": "model",
         "params": [
           {
-            "name": "key",
-            "type": "'measurementName'|'unit'|'chartType'|'limitsMode'|'baselineK'|'mu0'|'sigma0'|'enabledRules'|'alpha'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "welcher Parameter; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number|number[]|null",
-            "optional": false,
-            "help": "der Wert; Wertebereich je Schlüssel siehe `Params`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse folgt nach kurzer Ruhezeit.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "toggleRule",
+        "keysHelp": "actions.toggleRule.params",
         "keys": {
-          "measurementName": {
-            "type": "string",
-            "help": "Bezeichnung des Merkmals"
+          "ruleId": {
+            "type": "1|2|3|4|5|6|7|8",
+            "help": ""
           },
-          "unit": {
-            "type": "string",
-            "help": "Maßeinheit"
-          },
-          "chartType": {
-            "type": "'i-mr'|'xbar-r'",
-            "help": "Kartentyp"
-          },
-          "limitsMode": {
-            "type": "'from-study'|'given'",
-            "help": "Herkunft der Eingriffsgrenzen"
-          },
-          "baselineK": {
-            "type": "number",
-            "help": "Basis-Untergruppen, nur bei from-study",
-            "optional": true
-          },
-          "mu0": {
-            "type": "number",
-            "help": "vorgegebene Lage, nur bei given",
-            "optional": true
-          },
-          "sigma0": {
-            "type": "number",
-            "help": "vorgegebene Streuung, nur bei given",
-            "optional": true
-          },
-          "enabledRules": {
-            "type": "number[]",
-            "help": "angehakte Nelson-Regeln 1–8"
-          },
-          "alpha": {
-            "type": "'0.01'|'0.05'|'0.10'",
-            "help": "Signifikanzniveau des Drift-Tests"
+          "on": {
+            "type": "boolean",
+            "help": ""
           }
         }
       },
-      "setColumn": {
+      "adoptTyp1": {
+        "target": "model",
         "params": [
           {
-            "name": "slot",
-            "type": "'timestamp'|'value'|'subgroup'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Slot; `subgroup` nur bei chartType xbar-r"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet sofort mit den aktuellen Eingaben und zeichnet die Regelkarten neu; fehlende oder ungültige Eingaben leeren das Ergebnis (bei einem Rechenfehler nennt `errorMsg` dessen Code)."
-      },
-      "scheduleAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Rechnung nach kurzer Ruhezeit (~120 ms) anstoßen; jede Eingabe-Änderung ruft dies auf, damit schnelle Tipp-/Klick-Folgen nur einen `analyze()`-Aufruf auslösen."
-      },
-      "clearResults": {
-        "params": [],
-        "returns": "void",
-        "help": "Das Ergebnis und die Diagramme verwerfen; die Eingaben bleiben."
+        "help": "",
+        "keysOf": "adoptTyp1",
+        "keysHelp": "actions.adoptTyp1.params",
+        "keys": {
+          "instanceId": {
+            "type": "string|null",
+            "help": ""
+          },
+          "mu0": {
+            "type": "number|null",
+            "help": "",
+            "optional": true
+          },
+          "sigma0": {
+            "type": "number|null",
+            "help": "",
+            "optional": true
+          }
+        }
       }
     },
     "fields": {
       "params": {
-        "type": "object",
-        "help": "the entered parameters (measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, sourceTyp1InstanceId, enabledRules, alpha); `enabledRules` is a list of rule ids (numbers), `mu0` and `sigma0` are numbers or null while unset",
-        "bulk": false,
-        "derived": true
+        "type": "{ measurementName: string, unit: string, chartType: 'i-mr'|'xbar-r', limitsMode: 'from-study'|'given', baselineK: number, mu0: number|null, sigma0: number|null, enabledRules: Array<1|2|3|4|5|6|7|8>, alpha: 0.01|0.05|0.1 }",
+        "help": "",
+        "bulk": false
       },
       "columns": {
-        "type": "object",
-        "help": "the chosen columns `{ timestamp, value, subgroup }`, each a `{ instanceId, sheetId, columnId }` or null",
-        "bulk": false,
-        "derived": true
+        "type": "{ timestamp: { instanceId: string, sheetId?: string, columnId: string }|null, value: { instanceId: string, sheetId?: string, columnId: string }|null, subgroup: { instanceId: string, sheetId?: string, columnId: string }|null }",
+        "help": "",
+        "bulk": false
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state (`baselineK` only for limitsMode from-study, `mu0` and `sigma0` only for limitsMode given)",
-        "bulk": false,
-        "derived": true
+      "sourceTyp1InstanceId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state (`subgroup` only for chartType xbar-r)",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null while the inputs are incomplete or invalid",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -12913,16 +12867,50 @@ export const AGENT_REGISTRY = {
                 }
               }
             }
+          },
+          "invalid": {
+            "type": "Invalid",
+            "help": "Ablehnung der Engine",
+            "optional": true,
+            "keysOf": "Invalid",
+            "keys": {
+              "code": {
+                "type": "string",
+                "help": "Fehlercode der Engine"
+              },
+              "params": {
+                "type": "object|null",
+                "help": "Werte im Fehlertext"
+              }
+            }
           }
         }
       },
-      "errorMsg": {
-        "type": "string|null",
-        "help": "the error code of a failed analysis, or null",
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "primaryChart",
+      "secondaryChart",
+      "driftChart"
+    ],
+    "settable": [
+      "params",
+      "columns",
+      "exampleWorksheetId"
+    ],
+    "invariants": []
   },
   "multi-vari": {
     "tagged": true,

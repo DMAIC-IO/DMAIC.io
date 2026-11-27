@@ -44,9 +44,10 @@ suite('msa-typ6 Texte in ui.<lang>.json', () => {
 });
 
 suite('msa-typ6 Kontexthilfe in context-help.<lang>.json', () => {
-  test('jedes Feld, Ansichtsfeld und jede Ableitung hat einen Hilfetext', async () => {
+  test('jedes Feld, Ansichtsfeld, jede Ableitung und das computed driftConfig hat einen Hilfetext', async () => {
     const s = State.schema;
-    const names = [...Object.keys(s.fields), ...Object.keys(s.view), ...Object.keys(s.derived)];
+    // `driftConfig` ist das `computed` des Viewmodels; das Gate verlangt `fields.<computed>.help`.
+    const names = [...Object.keys(s.fields), ...Object.keys(s.view), ...Object.keys(s.derived), 'driftConfig'];
     for (const lang of LANGS) {
       const { fields } = await contextHelp(lang);
       assertDeepEqual(Object.keys(fields).sort(), [...names].sort(), lang);
