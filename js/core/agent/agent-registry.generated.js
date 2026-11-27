@@ -6081,6 +6081,7 @@ export const AGENT_REGISTRY = {
   "glm-regression": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -6096,195 +6097,189 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setColumns": {
+      "setConfLevel": {
+        "target": "model",
         "params": [
           {
-            "name": "slot",
-            "type": "'x'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Slot; dieses Modul führt nur `x`"
-          },
-          {
-            "name": "refs",
-            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
-            "optional": false,
-            "help": "die Spaltenbezüge wählbarer Spalten (`pickableColumns.x`); `[]` leert die Auswahl"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht die Zielgröße Y unter den neuen X, wird Y geleert; steht die Spalte der Versuchszahl darunter, wird sie geleert. Danach wird gerechnet, wenn X und Y gewählt sind, sonst wird das Ergebnis verworfen."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'y'|'trials'",
-            "optional": false,
-            "help": "der Slot; `activeColumnSlots` nennt sie"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte (`pickableColumns.y` ohne die X, `pickableColumns.trials` zusätzlich ohne Y), oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Zielgröße (`y`) oder die Versuchszahl (`trials`) setzen oder mit null leeren. Y auf die Spalte der Versuchszahl leert diese. Danach wird gerechnet, wenn X und Y gewählt sind, sonst wird das Ergebnis verworfen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'method'|'confLevel'|'alpha'|'cutoff'",
-            "optional": false,
-            "help": "welcher Parameter; `activeParams` nennt die jetzt gültigen"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert, siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen. `method`, `confLevel` und `alpha` rechnen neu; `cutoff` rechnet nur die Klassifikationstafel neu.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "setConfLevel",
+        "keysHelp": "actions.setConfLevel.params",
         "keys": {
-          "method": {
-            "type": "'auto'|'binomial'|'poisson'|'negbin'",
-            "help": "Verteilungsfamilie"
-          },
-          "confLevel": {
+          "value": {
             "type": "number",
-            "help": "Konfidenzniveau als Anteil"
-          },
-          "alpha": {
+            "help": ""
+          }
+        }
+      },
+      "setAlpha": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setAlpha",
+        "keysHelp": "actions.setAlpha.params",
+        "keys": {
+          "value": {
             "type": "number",
-            "help": "Signifikanzniveau als Anteil"
-          },
-          "cutoff": {
-            "type": "number",
-            "help": "Klassifikationsschwelle, nur binomial",
-            "optional": true
+            "help": ""
           }
         }
       },
       "swapSuccess": {
-        "params": [],
-        "returns": "void",
-        "help": "Bei binärer Zielgröße Erfolg und Misserfolg tauschen und neu rechnen (`successClass`); ohne binären Fit geschieht nichts."
-      },
-      "autoRun": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Jetzt rechnen. Ohne X, ohne Y oder mit weniger als drei Zeilen wird das Ergebnis verworfen und `errorMsg` nennt den Grund."
-      },
-      "predict": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "values",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "je Term aus predictionTerms eine Zahl"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null",
-        "help": "Die Zielgröße für Werte der Terme vorhersagen."
+        "returns": "void",
+        "help": "",
+        "keysOf": "swapSuccess",
+        "keysHelp": "actions.swapSuccess.params",
+        "keys": {}
+      },
+      "predict": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "predict",
+        "keysHelp": "actions.predict.params",
+        "keys": {
+          "values": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       },
       "saveAsModel": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "saveAsModel",
+        "keysHelp": "asyncTasks.saveAsModel.params",
+        "keys": {},
+        "task": "saveAsModel",
+        "op": "start",
+        "helpKey": "asyncTasks.saveAsModel.help"
+      },
+      "saveAsModel.cancel": {
+        "target": "asyncTask",
+        "task": "saveAsModel",
+        "op": "cancel",
         "params": [],
-        "returns": "string|null",
-        "help": "Den gezeigten Fit in die Projektmodelle speichern (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein gezeigter konvergierter Fit vorliegt oder die Zielgröße keine Werte hat."
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.saveAsModel.cancel.help"
       }
     },
     "fields": {
       "colRefs": {
-        "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
-        "help": "the predictor columns X",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric,currency,percent,text",
+          "minCount:1"
+        ]
       },
-      "yKey": {
-        "type": "string|null",
-        "help": "the response column as key `instanceId|sheetId|columnId`",
+      "yRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "minCount:1"
+        ]
       },
-      "trialsKey": {
-        "type": "string|null",
-        "help": "the column with the number of trials, null for none",
+      "trialsRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "minCount:1"
+        ]
+      },
+      "successClass": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
       "method": {
-        "type": "string",
-        "help": "one of `methods`",
-        "bulk": false,
-        "derived": true
-      },
-      "methods": {
-        "type": "string[]",
-        "help": "all methods, `auto` included",
-        "bulk": false,
-        "derived": true
+        "type": "'auto'|'binomial'|'poisson'|'negbin'",
+        "help": "",
+        "bulk": false
       },
       "confLevel": {
         "type": "number",
-        "help": "confidence level as a fraction; alpha is 1 − confLevel",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "alpha": {
         "type": "number",
-        "help": "significance level as a fraction",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "cutoff": {
         "type": "number",
-        "help": "classification threshold of a binomial fit",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
-      "successClass": {
-        "type": "{ success: number, failure: number }|null",
-        "help": "the levels of a binary response, null otherwise",
-        "bulk": false,
-        "derived": true
+      "savedModelId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts now",
-        "bulk": false,
-        "derived": true
+      "savedModelName": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
+      "modelRecord": {
+        "type": "{ experimentId?: string|null, responseSpec?: { sourceColumn: string|null, transform: string, aggregateOver: string|null }, family?: { name: string, link: string, theta?: number }, terms?: string[], termSet?: string[], coef?: Array<number|null>|null, vcov?: Array<Array<number|null>>|null, sigma2?: number|null, df?: number|null, rSqAdj?: number|null, lofPValue?: number|null, factorSpec?: Array<{ name: string, kind?: string, low?: number|null, high?: number|null, levels?: string[], reference?: string }>, spec?: { predictors: { id: string, kind: string, levels?: string[], reference?: string }[], terms: { id: string, factors: { id: string, degree: number }[] }[] }|null, dataSnapshot?: { X: Array<Array<number|null>>, y: Array<number|null>, factorSpec: Array<{ name: string, kind?: string, low?: number|null, high?: number|null, levels?: string[], reference?: string }>, termSet: string[], trainedAt?: string, sourceFingerprint?: { experimentId: string|null, responseColumn: string|null, workbookHash: string|null } }|null, dataHash?: string|null, createdAt?: string, updatedAt?: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "activeMultiSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumns` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "omit": [
+          ""
+        ]
       },
       "result": {
-        "type": "Result|null",
-        "help": "the fit as numbers, null without a shown result",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -6491,14 +6486,73 @@ export const AGENT_REGISTRY = {
             }
           },
           "equation": {
-            "type": "string|null",
+            "type": "string",
             "help": "Modellgleichung"
           }
         }
       },
+      "error": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "FitError",
+        "keys": {
+          "reason": {
+            "type": "string",
+            "help": "Grund als Schlüssel"
+          },
+          "params": {
+            "type": "Record<string, any>|null",
+            "help": "Angaben zum Grund"
+          },
+          "message": {
+            "type": "string",
+            "help": "der Grund als Text in der App-Sprache"
+          }
+        }
+      },
+      "detection": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Detection",
+        "keys": {
+          "reason": {
+            "type": "string",
+            "help": "Grund als Schlüssel"
+          },
+          "family": {
+            "type": "'binomial'|'poisson'|'negbin'",
+            "help": "gewählte Familie"
+          },
+          "message": {
+            "type": "string",
+            "help": "der Grund als Text in der App-Sprache"
+          }
+        }
+      },
+      "successClassInfo": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "SuccessClassInfo",
+        "keys": {
+          "success": {
+            "type": "number",
+            "help": "Stufe, die als Erfolg zählt"
+          },
+          "failure": {
+            "type": "number",
+            "help": "die andere Stufe"
+          }
+        }
+      },
       "classification": {
-        "type": "Classification|null",
-        "help": "confusion table and rates at `cutoff`, binomial only",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Classification",
@@ -6541,34 +6595,148 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "the message the module shows, '' without error",
-        "bulk": false,
-        "derived": true
-      },
       "predictionTerms": {
-        "type": "string[]",
-        "help": "the terms `predict` takes, in model order",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "prediction": {
-        "type": "{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null",
-        "help": "the last prediction, null without one or without a shown result",
+      "effectiveTab": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "savedModelId": {
-        "type": "string|null",
-        "help": "id of the model saved last in the project models",
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "canSaveModel": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "savedModel": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "SavedModel",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung des Modells"
+          },
+          "name": {
+            "type": "string",
+            "help": "Name des Modells"
+          },
+          "experimentId": {
+            "type": "string|null",
+            "help": "Quellversuch",
+            "optional": true
+          },
+          "responseSpec": {
+            "type": "object",
+            "help": "Quelle der Zielgröße",
+            "optional": true
+          },
+          "family": {
+            "type": "object",
+            "help": "Familie und Link",
+            "optional": true
+          },
+          "terms": {
+            "type": "string[]",
+            "help": "Terme",
+            "optional": true
+          },
+          "termSet": {
+            "type": "string[]",
+            "help": "Terme",
+            "optional": true
+          },
+          "coef": {
+            "type": "Array<number|null>|null",
+            "help": "Koeffizienten",
+            "optional": true
+          },
+          "df": {
+            "type": "number|null",
+            "help": "Restfreiheitsgrade",
+            "optional": true
+          },
+          "rSqAdj": {
+            "type": "number|null",
+            "help": "Nagelkerke-R²",
+            "optional": true
+          },
+          "factorSpec": {
+            "type": "object[]",
+            "help": "Faktorbereiche",
+            "optional": true
+          },
+          "spec": {
+            "type": "object|null",
+            "help": "Modellspezifikation",
+            "optional": true
+          },
+          "dataSnapshot": {
+            "type": "object|null",
+            "help": "Trainingsdaten",
+            "optional": true
+          },
+          "dataHash": {
+            "type": "string|null",
+            "help": "Prüfsumme der Daten",
+            "optional": true
+          },
+          "createdAt": {
+            "type": "string",
+            "help": "angelegt",
+            "optional": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "help": "zuletzt gespeichert",
+            "optional": true
+          }
+        }
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
     },
+    "asyncTasks": [
+      {
+        "name": "saveAsModel",
+        "auto": false,
+        "params": []
+      }
+    ],
     "viewFields": [
-      "activeTab"
-    ]
+      "activeTab",
+      "exampleWorksheetId",
+      "residualsEdits",
+      "qqEdits",
+      "cooksEdits",
+      "rocEdits"
+    ],
+    "settable": [
+      "colRefs",
+      "yRef",
+      "trialsRef",
+      "successClass",
+      "method",
+      "cutoff"
+    ],
+    "invariants": []
   },
   "heatmap": {
     "tagged": true,

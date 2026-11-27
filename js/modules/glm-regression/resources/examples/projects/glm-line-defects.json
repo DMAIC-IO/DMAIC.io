@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -11,7 +14,11 @@
       "columnId": "c-age"
     }
   ],
-  "yKey": "__source__|sheet-line|c-defects",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-line",
+    "columnId": "c-defects"
+  },
   "method": "poisson",
   "activeTab": "model",
   "sourceWorksheetFile": "worksheets/glm-line-defects.json"

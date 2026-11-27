@@ -1,0 +1,112 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "glm-logistic-yield",
+      "type": "project",
+      "title": {
+        "de": "Yield-Versuche (logistische GLM)",
+        "en": "Yield Trials (logistic GLM)"
+      },
+      "description": {
+        "de": "Acht Temperaturstufen mit je 50 Versuchen. Binomial-Response (Erfolge / Versuche) folgt einer logistischen Kurve mit Wendepunkt um 160 °C. Klassischer Anwendungsfall für binomiale GLM mit Trials-Spalte.",
+        "en": "Eight temperature levels with 50 trials each. Binomial response (successes / trials) follows a logistic curve with inflection around 160 °C. Textbook case for binomial GLM with a trials column."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=101",
+      "license": "public-domain",
+      "file": "projects/glm-logistic-yield.json",
+      "format": "json",
+      "tags": [
+        "glm",
+        "binomial",
+        "logistic"
+      ]
+    },
+    {
+      "id": "glm-poisson-defects",
+      "type": "project",
+      "title": {
+        "de": "Defekte pro Schicht (Poisson-GLM)",
+        "en": "Defects per Shift (Poisson GLM)"
+      },
+      "description": {
+        "de": "40 Schichten mit Vorschub (mm/s) und Werkzeugverschleiß (h) als Prädiktoren, Defekt-Counts als Response. Poisson-Modell mit log(λ) = -1 + 0,02·Vorschub + 0,03·Verschleiß.",
+        "en": "40 shifts with feed rate (mm/s) and tool wear (h) as predictors, defect counts as response. Poisson model with log(λ) = -1 + 0.02·feed + 0.03·wear."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=202",
+      "license": "public-domain",
+      "file": "projects/glm-poisson-defects.json",
+      "format": "json",
+      "tags": [
+        "glm",
+        "poisson",
+        "counts"
+      ]
+    },
+    {
+      "id": "glm-soldering",
+      "type": "project",
+      "title": {
+        "de": "Lötstellen-Inspektion (logistische GLM)",
+        "en": "Solder Inspection (logistic GLM)"
+      },
+      "description": {
+        "de": "50 Leiterplatten mit Löttemperatur (220–255 °C) und Anpressdruck (2,0–3,5 bar) als Prädiktoren, Defekt (0/1) als Response. Klassischer Anwendungsfall für binäre logistische Regression ohne Trials-Spalte.",
+        "en": "50 PCBs with solder temperature (220–255 °C) and pressure (2.0–3.5 bar) as predictors, defect (0/1) as response. Textbook case for binary logistic regression without a trials column."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/glm-soldering.json",
+      "format": "json",
+      "tags": [
+        "glm",
+        "binomial",
+        "logistic",
+        "binary"
+      ]
+    },
+    {
+      "id": "glm-line-defects",
+      "type": "project",
+      "title": {
+        "de": "Oberflächendefekte (Poisson-GLM)",
+        "en": "Surface Defects (Poisson GLM)"
+      },
+      "description": {
+        "de": "30 Fertigungslinien mit Geschwindigkeit (Stück/min) und Anlagenalter (Jahre) als Prädiktoren, gezählte Oberflächendefekte als Response. Poisson-Modell zur Vorhersage der erwarteten Defektrate.",
+        "en": "30 production lines with speed (parts/min) and line age (years) as predictors, surface defect counts as response. Poisson model for predicting the expected defect rate."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/glm-line-defects.json",
+      "format": "json",
+      "tags": [
+        "glm",
+        "poisson",
+        "counts"
+      ]
+    },
+    {
+      "id": "glm-batch-complaints",
+      "type": "project",
+      "title": {
+        "de": "Chargen-Reklamationen (NegBin-GLM)",
+        "en": "Batch Complaints (NegBin GLM)"
+      },
+      "description": {
+        "de": "30 Chargen mit Chargengröße und Lieferant als Prädiktoren, Reklamationen als Response. Überdispergierte Zähldaten — die Negativ-Binomial-Regression schätzt zusätzlich den Dispersionsparameter θ.",
+        "en": "30 batches with batch size and supplier as predictors, complaints as response. Overdispersed count data — negative binomial regression additionally estimates the dispersion parameter θ."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/glm-batch-complaints.json",
+      "format": "json",
+      "tags": [
+        "glm",
+        "negbin",
+        "overdispersion",
+        "counts"
+      ]
+    }
+  ]
+}

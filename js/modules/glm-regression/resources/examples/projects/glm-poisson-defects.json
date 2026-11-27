@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -11,7 +14,11 @@
       "columnId": "c-wear"
     }
   ],
-  "yKey": "__source__|sheet-poisson|c-defs",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-poisson",
+    "columnId": "c-defs"
+  },
   "method": "poisson",
   "activeTab": "model",
   "sourceWorksheetFile": "worksheets/glm-poisson-defects.json"

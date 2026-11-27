@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -11,7 +14,11 @@
       "columnId": "c-press"
     }
   ],
-  "yKey": "__source__|sheet-solder|c-defect",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-solder",
+    "columnId": "c-defect"
+  },
   "method": "binomial",
   "cutoff": 0.5,
   "activeTab": "model",

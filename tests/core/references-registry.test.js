@@ -4,6 +4,7 @@ import { getModuleReferences, hasModuleReferences } from '../../js/core/referenc
 import { REFS } from '../../js/core/references-registry.generated.js';
 import attributeControlChartRefs from '../../js/modules/attribute-control-chart/resources/data/references.json' with { type: 'json' };
 import controlChartRefs from '../../js/modules/control-chart/resources/data/references.json' with { type: 'json' };
+import glmRegressionRefs from '../../js/modules/glm-regression/resources/data/references.json' with { type: 'json' };
 import doePlannerRefs from '../../js/modules/doe-planner/resources/data/references.json' with { type: 'json' };
 import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/references.json' with { type: 'json' };
 import msaTyp1Refs from '../../js/modules/msa-typ1/resources/data/references.json' with { type: 'json' };
@@ -18,6 +19,7 @@ const JSON_REFS = {
   'attribute-control-chart': resolveReferences(attributeControlChartRefs.references ?? []),
   'control-chart': resolveReferences(controlChartRefs.references ?? []),
   'doe-planner': resolveReferences(doePlannerRefs.references ?? []),
+  'glm-regression': resolveReferences(glmRegressionRefs.references ?? []),
   'hypothesis-test': resolveReferences(hypothesisTestRefs.references ?? []),
   'msa-typ1': resolveReferences(msaTyp1Refs.references ?? []),
   'msa-typ2': resolveReferences(msaTyp2Refs.references ?? []),

@@ -105,6 +105,11 @@
     "description": "Plots every single measurement grouped by part and appraiser against a common reference line — reveals appraiser bias and unusual parts.",
     "whenToUse": "Look at a measurement system study before computing statistics: every measurement per part and operator, against a reference line."
   },
+  "glm-regression": {
+    "name": "Regression (Attributive)",
+    "description": "Binary logistic, Poisson, and negative binomial regression for attributive/count data",
+    "whenToUse": "When a response is attributive — good/bad, yes/no, proportions — or a count (defects, complaints), and its relationship with predictors is to be modelled: binary logistic, Poisson or negative binomial, detected automatically on request."
+  },
   "heatmap": {
     "name": "Heatmap",
     "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",

@@ -105,6 +105,11 @@
     "description": "Zeigt jede Einzelmessung, gruppiert nach Prüfeinheit und Prüfer, gegen eine gemeinsame Referenzlinie — deckt Prüfer-Bias und auffällige Prüfeinheiten auf.",
     "whenToUse": "Eine Messsystemstudie ansehen, bevor Kennzahlen gerechnet werden: jeder Messwert je Teil und Prüfer, gegen eine Bezugslinie."
   },
+  "glm-regression": {
+    "name": "Regression (attributiv)",
+    "description": "Binäre logistische, Poisson- und Negativ-Binomial-Regression für attributive Daten und Zähldaten",
+    "whenToUse": "Wenn eine Zielgröße attributiv ist — gut/schlecht, ja/nein, Anteile — oder eine Anzahl (Fehler, Reklamationen), und ihr Zusammenhang mit Einflussgrößen modelliert werden soll: binär-logistisch, Poisson oder negativ-binomial, auf Wunsch automatisch erkannt."
+  },
   "heatmap": {
     "name": "Heatmap",
     "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",

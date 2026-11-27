@@ -74,10 +74,6 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('table.verdict')", reason: 'Ampel aus κ nach den Richtwerten derselben Zeile, kein eigener Wert; der Satz steht an der κ-Spalte', count: 2 },
     { match: '<th x-text="a">', reason: 'eine Spalte je Prüfer, Kopf ist der Prüfername (Daten, keine Beschriftung)', count: 1 },
   ],
-  'glm-regression': [
-    { match: ':name="methodRadioName()"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
-    { match: 'x-text="term.label"', reason: 'je Prädiktor ein Eingabefeld; der Satz steht am Vorhersage-Knopf', count: 1 },
-  ],
   'pairwise-comparison': [
     { match: 'class="pairwise__matrix-col-header"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
     { match: 'pairwise__matrix-row-label', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
