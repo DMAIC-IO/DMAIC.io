@@ -110,6 +110,32 @@ test('chip--danger: Fehlertönung aus Tokens, vom aktiven Chip verschieden', () 
   }
 });
 
+test('btn--icon-sm.btn--secondary: Icon-Knopf mit Rahmen und Fläche des Sekundärknopfs', () => {
+  const rule = /\.btn--icon-sm\.btn--secondary \{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
+  assert.match(rule, /background:\s*var\(--btn-secondary-bg\)/);
+  assert.match(rule, /border-color:\s*var\(--btn-secondary-border\)/);
+  assert.match(rule, /color:\s*var\(--btn-secondary-text\)/);
+  const hover = /\.btn--icon-sm\.btn--secondary:hover[^{]*\{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
+  assert.match(hover, /background:\s*var\(--btn-secondary-bg-hover\)/);
+});
+
+test('„+“-Knöpfe in Kopf und Karten: btn--secondary btn--icon-sm', () => {
+  const ADD = {
+    'stakeholder-analysis': ['sha__add-btn'],
+    'voc-ctx-tree': ['vct__add-voc-btn', 'vct__add-need-btn', 'vct__add-ctx-btn', 'vct__add-req-btn'],
+    'rest-api': ['rest-api__add-btn'],
+  };
+  const wrong = [];
+  for (const [id, classes] of Object.entries(ADD)) {
+    const html = readFileSync(join(APP_DIR, 'js/modules', id, 'resources/view.html'), 'utf8');
+    for (const c of classes) {
+      const tags = [...html.matchAll(/<button\b[^>]*\sclass="([^"]*)"/g)].map((m) => m[1].split(/\s+/)).filter((l) => l.includes(c));
+      if (!tags.length || tags.some((l) => !l.includes('btn--secondary') || !l.includes('btn--icon-sm'))) wrong.push(`${id}: ${c}`);
+    }
+  }
+  assert.deepEqual(wrong, []);
+});
+
 test('components.css: Sperrzustand, Chip und Gefahr-Tokens', () => {
   for (const sel of ['.btn:disabled', '.btn--disabled', '.chip {', '.chip--active', '.chip:disabled', '.chip__dot']) {
     assert.ok(COMPONENTS.includes(sel), `${sel} fehlt`);

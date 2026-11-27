@@ -121,6 +121,18 @@
   color: var(--color-text-primary);
 }
 
+/* Icon-Knopf mit Rahmen („+“ in Kopf und Karten): Fläche, Rahmen und Schrift
+   des Sekundärknopfs, Maß von icon-sm. */
+.btn--icon-sm.btn--secondary {
+  background: var(--btn-secondary-bg);
+  border-color: var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
+}
+
+.btn--icon-sm.btn--secondary:hover:where(:not(:disabled, .btn--disabled)) {
+  background: var(--btn-secondary-bg-hover);
+}
+
 /* Umschalter mit Icon (an/aus): aktiv in Akzentfarbe. */
 .btn--icon-sm.btn--active {
   color: var(--color-accent);

@@ -7,7 +7,7 @@
     <span class="vct__sidebar-title" data-help-key="modules.voc-ctx-tree.actions.setActiveVoc.help" x-text="t('name')"></span>
     <div class="vct__sidebar-header-right">
      <span class="vct__counter" x-text="model.vocs.length"></span>
-     <button class="btn btn--icon-sm vct__add-btn vct__add-voc-btn" type="button" :title="t('addVoc')" :aria-label="t('addVoc')"
+     <button class="btn btn--secondary btn--icon-sm vct__add-btn vct__add-voc-btn" type="button" :title="t('addVoc')" :aria-label="t('addVoc')"
              x-dialog="vocForm" :data-dialog-title="t('addVoc')"
              data-help-key="modules.voc-ctx-tree.actions.addVoc.help">+</button>
     </div>
@@ -93,7 +93,7 @@
         </template>
        </div>
        <div class="vct__node-actions">
-        <button class="btn btn--icon-sm vct__node-btn vct__add-need-btn" type="button" :data-voc-id="activeVoc.id"
+        <button class="btn btn--secondary btn--icon-sm vct__node-btn vct__add-need-btn" type="button" :data-voc-id="activeVoc.id"
                 :title="t('addNeed')" :aria-label="t('addNeed')"
                 x-dialog="needForm" :data-arg-voc-id="activeVoc.id" :data-dialog-title="t('addNeed')"
                 data-help-key="">+</button>
@@ -120,7 +120,7 @@
             <div x-text="need.text"></div>
            </div>
            <div class="vct__node-actions">
-            <button class="btn btn--icon-sm vct__node-btn vct__add-ctx-btn" type="button"
+            <button class="btn btn--secondary btn--icon-sm vct__node-btn vct__add-ctx-btn" type="button"
                     :data-voc-id="activeVoc.id" :data-need-id="need.id"
                     :title="t('addDriver')" :aria-label="t('addDriver')"
                     x-dialog="driverForm" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id" :data-dialog-title="t('addDriver')"
@@ -151,7 +151,7 @@
                 <div x-text="drv.text"></div>
                </div>
                <div class="vct__node-actions">
-                <button class="btn btn--icon-sm vct__node-btn vct__add-req-btn" type="button"
+                <button class="btn btn--secondary btn--icon-sm vct__node-btn vct__add-req-btn" type="button"
                         :data-voc-id="activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
                         :title="t('addReq')" :aria-label="t('addReq')"
                         x-dialog="reqForm" :data-arg-voc-id="activeVoc.id" :data-arg-need-id="need.id" :data-arg-drv-id="drv.id"
