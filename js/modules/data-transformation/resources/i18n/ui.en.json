@@ -52,6 +52,7 @@
   "paramLambdaJ": "λ",
   "errBoxCoxPositive": "Box-Cox requires strictly positive data",
   "warnBoxCoxFallback": "Data contains values ≤ 0 — calculating with Yeo-Johnson",
+  "tfEffective": "in effect",
   "errLogPositive": "Logarithm requires positive data",
   "errLog10Positive": "Log₁₀ requires positive data",
   "errSqrtNonNeg": "Square root requires non-negative data",

@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "currentTF": {
-      "help": "Die gewählte Transformation, eine der neun Kacheln: Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB, Logarithmus, Log₁₀, Quadratwurzel, Inverse oder Quadrat. Die Rechnung folgt jeder Wahl sofort. Box-Cox bleibt gewählt, wenn die Spalte Werte ≤ 0 enthält; gerechnet wird dann mit Yeo-Johnson."
+      "help": "Die gewählte Transformation, eine der neun Kacheln: Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB, Logarithmus, Log₁₀, Quadratwurzel, Inverse oder Quadrat. Die Rechnung folgt jeder Wahl sofort. Box-Cox bleibt gewählt, wenn die Spalte Werte ≤ 0 enthält; gerechnet wird dann mit Yeo-Johnson, dessen Kachel die Markierung „wirksam“ trägt."
     },
     "columnRef": {
       "help": "Die Datenspalte, die transformiert wird: eine numerische Spalte einer Datensammlung mit mindestens 3 Werten. Gezählt werden die Zahlen der Spalte, auch Text wie 2,5; leere und nicht numerische Zellen zählen nicht. Wird die Spalte gelöscht, bleibt die Wahl stehen und es wird nichts gerechnet."

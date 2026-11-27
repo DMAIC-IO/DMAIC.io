@@ -288,11 +288,16 @@ suite('data-transformation: Viewmodel im Browser', () => {
     assertEqual(h.vm().effectiveTF, 'yeojohnson');
     assertTrue(h.q('[data-ref="fallback-hint"]').style.display !== 'none');
     assertEqual(h.q('[data-ref="fallback-hint"]').textContent, tr('warnBoxCoxFallback'));
+    // Die Yeo-Johnson-Kachel trägt „wirksam“, gewählt bleibt Box-Cox.
+    const marked = () => h.qa('[data-ref="tf-effective"]').filter((b) => b.style.display !== 'none').map((b) => b.closest('[data-id]').dataset.id);
+    assertDeepEqual(marked(), ['yeojohnson']);
+    assertEqual(h.q('[data-id="yeojohnson"] [data-ref="tf-effective"]').textContent, tr('tfEffective'));
     assertTrue(h.q('[data-help-key="modules.data-transformation.fields.params.yeojohnson.lambda.help"]') !== null);
     await until(() => h.num('lambda').placeholder === '0,8');
     assertEqual(h.inst.historyCan('undo'), false);
     setFields(h.vm().model, { columnRef: ref('c1') });
     await until(() => h.q('[data-ref="fallback-hint"]').style.display === 'none' && h.num('lambda').placeholder === '-0,35');
+    assertDeepEqual(marked(), []);
   });
 
   test('Fehler bleibt stehen, solange die Ursache besteht; gelöschte Quellspalte: keine Ausgabe, Bezug bleibt', async () => {

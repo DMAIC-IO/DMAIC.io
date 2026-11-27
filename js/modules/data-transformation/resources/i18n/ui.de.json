@@ -52,6 +52,7 @@
   "paramLambdaJ": "λ",
   "errBoxCoxPositive": "Box-Cox benötigt strikt positive Daten",
   "warnBoxCoxFallback": "Daten enthalten Werte ≤ 0 — gerechnet wird mit Yeo-Johnson",
+  "tfEffective": "wirksam",
   "errLogPositive": "Logarithmus benötigt positive Daten",
   "errLog10Positive": "Log₁₀ benötigt positive Daten",
   "errSqrtNonNeg": "Quadratwurzel benötigt nicht-negative Daten",

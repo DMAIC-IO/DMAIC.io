@@ -134,6 +134,11 @@ export default createModule({
       tfDesc(id) { return this.t(transformOf(id)?.descKey ?? ''); },
       /** @param {string} id @returns {string} Klasse der Kachel; die gewählte ist hervorgehoben */
       tfOptClass(id) { return id === this.model.currentTF ? 'dt-tf-opt dt-tf-opt--active' : 'dt-tf-opt'; },
+      /**
+       * Markierung „wirksam“ auf der Kachel, mit der im Box-Cox-Rückfall gerechnet wird.
+       * @param {string} id @returns {boolean}
+       */
+      tfEffective(id) { return this.fallbackActive && id === this.effectiveTF; },
       /** @param {string} id @returns {boolean} ist `id` die wirksame Transformation? */
       isTF(id) { return this.effectiveTF === id; },
       /**

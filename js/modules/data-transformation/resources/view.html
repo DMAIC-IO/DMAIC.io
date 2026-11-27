@@ -12,6 +12,8 @@
             <span class="dt-tf-opt__name" x-text="tfName(tf.id)"></span>
             <span class="dt-tf-opt__desc" x-text="tfDesc(tf.id)"></span>
           </span>
+          <span class="badge badge--info dt-tf-opt__badge" data-ref="tf-effective" x-show="tfEffective(tf.id)"
+                data-help-key="modules.data-transformation.fields.currentTF.help" x-text="t('tfEffective')"></span>
         </button>
       </template>
     </div>

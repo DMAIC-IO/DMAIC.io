@@ -76,6 +76,11 @@
   font-family: var(--font-family-mono);
 }
 
+/* Markierung „wirksam“ rechts in der Kachel (Box-Cox-Rückfall) */
+.dt-tf-opt__badge {
+  margin-left: auto;
+}
+
 /* ── Parameter inputs ── */
 
 .dt-param-group {

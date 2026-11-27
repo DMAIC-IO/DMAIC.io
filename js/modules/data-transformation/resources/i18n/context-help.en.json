@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "currentTF": {
-      "help": "The chosen transformation, one of the nine tiles: Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB, Logarithm, Log₁₀, Square Root, Inverse or Square. The calculation follows every choice at once. Box-Cox stays chosen when the column contains values ≤ 0; the calculation then uses Yeo-Johnson."
+      "help": "The chosen transformation, one of the nine tiles: Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB, Logarithm, Log₁₀, Square Root, Inverse or Square. The calculation follows every choice at once. Box-Cox stays chosen when the column contains values ≤ 0; the calculation then uses Yeo-Johnson, whose tile carries the mark “in effect”."
     },
     "columnRef": {
       "help": "The data column that is transformed: a numeric column of a data collection with at least 3 values. The numbers of the column count, text such as 2.5 included; empty and non-numeric cells do not count. If the column is deleted, the choice stays and nothing is calculated."
