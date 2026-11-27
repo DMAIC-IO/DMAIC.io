@@ -27,12 +27,12 @@
 
     <div class="dmike-split__section-title"><span data-help-key="modules.glm-regression.fields.method.help" x-text="t('sectionMethod')"></span></div>
 
-    <div class="btn-group glm__methods" data-ref="method-group" role="radiogroup" data-help-key="" x-set="model.method">
-      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="auto" data-method="auto" :class="methodClass('auto')" x-text="t('methodAuto')"></button>
-      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="binomial" data-method="binomial" :class="methodClass('binomial')" x-text="t('methodBinomial')"></button>
-      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="poisson" data-method="poisson" :class="methodClass('poisson')" x-text="t('methodPoisson')"></button>
-      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="negbin" data-method="negbin" :class="methodClass('negbin')" x-text="t('methodNegbin')"></button>
-    </div>
+    <fieldset class="field-radios" data-ref="method-group" role="radiogroup" data-help-key="" x-set="model.method">
+      <label><input type="radio" value="auto" data-method="auto" :name="fieldId('method')"><span x-text="t('methodAuto')"></span></label>
+      <label><input type="radio" value="binomial" data-method="binomial" :name="fieldId('method')"><span x-text="t('methodBinomial')"></span></label>
+      <label><input type="radio" value="poisson" data-method="poisson" :name="fieldId('method')"><span x-text="t('methodPoisson')"></span></label>
+      <label><input type="radio" value="negbin" data-method="negbin" :name="fieldId('method')"><span x-text="t('methodNegbin')"></span></label>
+    </fieldset>
 
     <div class="glm__detect-info" data-ref="detect-info" x-show="detectText"><span data-help-key="modules.glm-regression.fields.detection.help" x-text="detectText"></span></div>
 

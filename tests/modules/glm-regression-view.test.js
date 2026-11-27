@@ -249,17 +249,18 @@ suite('glm-regression: Viewmodel im Browser', () => {
     assertDeepEqual(plain(vm.model.yRef), ref('share'));
   });
 
-  test('Verfahren als Knopfgruppe, automatische Wahl mit Hinweis, Fehlergrund', async () => {
+  test('Verfahren als Radiogruppe, automatische Wahl mit Hinweis, Fehlergrund', async () => {
     const h = await mount(saved({ colRefs: [ref('x')], yRef: ref('bin') }));
     const vm = h.vm();
     await until(() => text(h.q('[data-ref="detect-info"]')) !== '');
     assertEqual(text(h.q('[data-ref="detect-info"]')), tr('autoDetectBinary'));
-    assertEqual(h.qa('[data-ref="method-group"] [role="radio"]').length, 4);
-    assertTrue(h.q('[data-method="auto"]').classList.contains('btn--active'));
+    assertEqual(h.qa('[data-ref="method-group"] input[type="radio"]').length, 4);
+    assertTrue(h.q('[data-method="auto"]').checked);
     h.q('[data-method="poisson"]').click();
     await until(() => vm.model.method === 'poisson');
     await until(() => h.q('[data-ref="detect-info"]').style.display === 'none');
-    assertTrue(h.q('[data-method="poisson"]').classList.contains('btn--active'));
+    assertTrue(h.q('[data-method="poisson"]').checked);
+    assertTrue(!h.q('[data-method="auto"]').checked);
     setFields(vm.model, { yRef: ref('cnt'), method: 'binomial' });
     await until(() => text(h.q('[data-ref="error-box"]')) === tr('errorNotBinary'));
     assertEqual(text(h.q('[data-ref="error-box"]')), tr('errorNotBinary'));

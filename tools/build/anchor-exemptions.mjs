@@ -61,6 +61,9 @@ export const ANCHOR_EXEMPTIONS = {
   'transformed-imr-chart': [
     { match: "t('thLimit')", reason: 'Spalte der Zeilennamen UCL, CL, LCL; die Sätze stehen an den beiden Wertspalten', count: 1 },
   ],
+  'glm-regression': [
+    { match: ":name=\"fieldId('method')\"", reason: 'Wahlmöglichkeit der Verfahrensgruppe; der Satz steht am Abschnittstitel Verfahren', count: 4 },
+  ],
   'msa-typ4': [
     { match: 'class="msa-typ4__choice"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 4 },
   ],

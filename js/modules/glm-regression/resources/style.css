@@ -221,12 +221,6 @@
   font-style: italic;
 }
 
-/* ─── Verfahren als Knopfgruppe (role="radiogroup") ───────────── */
-
-.glm__methods { flex-direction: column; }
-
-.glm__method-btn { text-align: left; }
-
 /* ─── Diagramme ───────────────────────────────────────────────── */
 
 .glm__chart { height: 280px; }

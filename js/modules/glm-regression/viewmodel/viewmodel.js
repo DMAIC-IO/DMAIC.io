@@ -219,11 +219,8 @@ export default createModule({
       },
 
       // ── Verfahren ───────────────────────────────────────────
-      /**
-       * Klasse eines Verfahrensknopfs.
-       * @param {string} m @returns {string}
-       */
-      methodClass(m) { return this.model.method === m ? 'btn--active' : ''; },
+      /** @param {string} name @returns {string} Radio-Name je Instanz */
+      fieldId(name) { return `glm-regression-${name}-${ctx.instanceId}`; },
       /** Der Hinweis der automatischen Wahl; leer ohne. */
       get detectText() {
         const d = /** @type {any} */ (this.detection);
