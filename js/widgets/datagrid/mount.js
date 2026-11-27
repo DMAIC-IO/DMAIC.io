@@ -18,6 +18,12 @@
  * über `notify`; die Zelle zeigt weiter den Wert des unveränderten Models.
  * Sperrmeldungen der Bedienung (`cell:edit-blocked`, `column:edit-blocked`)
  * gehen ebenfalls über `notify`. Strg+Z/Y behandelt das Widget nicht (R8).
+ *
+ * Ausgang auf den Bus: jede Auswahländerung (DOM-Ereignis `datagrid-selection`
+ * der Bedienung) geht sofort als `datagrid:selection:changed` an
+ * `services.eventBus` — `{ range, activeCell, acceptsFormulas, moduleId,
+ * instanceId }`; `activeCell` (`{ value, formula }`) nur bei genau einer
+ * gewählten Zelle, sonst `null`. Abonnent: die Tip-Engine (`core/tips/tips.json`).
  */
 import Alpine from '@alpinejs/csp';
 import { TableData } from '../../core/table-data.js';
@@ -72,6 +78,33 @@ function checkViewEvents(config) {
 }
 
 /**
+ * Nutzlast von `datagrid:selection:changed`: Auswahl, aktive Zelle (nur bei
+ * genau einer Zelle) und ob das Raster Formeln annimmt.
+ * @param {any} range Auswahl der Bedienung oder `null`
+ * @param {{ table: any, columns: any[]|null, formulas: any }} shown Tabelle, Spaltenköpfe und Formeln des Rasters
+ * @param {any} config @param {any} services
+ * @returns {{ range: any, activeCell: { value: any, formula: string|null }|null, acceptsFormulas: boolean, moduleId: string|null, instanceId: string|null }}
+ */
+export function selectionPayload(range, shown, config, services) {
+  let activeCell = null;
+  if (range && range.startCol === range.endCol && range.startRow === range.endRow
+    && !(range.extraCols?.length) && shown.table) {
+    const col = shown.columns?.[range.startCol];
+    if (col) {
+      activeCell = {
+        value: shown.table.get(range.startCol, range.startRow) ?? null,
+        formula: shown.formulas?.[col.id]?.[range.startRow] ?? null,
+      };
+    }
+  }
+  return {
+    range, activeCell,
+    acceptsFormulas: config.readOnly !== true && config.features?.formulas === true,
+    moduleId: services.moduleId ?? null, instanceId: services.instanceId ?? null,
+  };
+}
+
+/**
  * Raster über `table()`.
  * @param {HTMLElement} root
  * @param {{ props: any, services: any, effect: Function, command: (name: string, args: object) => Promise<any> }} w
@@ -108,6 +141,12 @@ export function mount(root, { props, services, effect, command }) {
   const onBlocked = (e) => { if (e.detail?.message) notify(e.detail.message, 'warning'); };
   view.el.addEventListener('cell:edit-blocked', onBlocked);
   view.el.addEventListener('column:edit-blocked', onBlocked);
+  const onSelection = (e) => {
+    if (!services.eventBus || !cfg) return;
+    const shown = { table: Alpine.raw(props.table), columns: Alpine.raw(props.columns), formulas: Alpine.raw(props.formulas) };
+    services.eventBus.emit('datagrid:selection:changed', selectionPayload(e.detail?.selection ?? null, shown, cfg, services));
+  };
+  view.el.addEventListener('datagrid-selection', onSelection);
 
   /** @type {any} zuletzt gelesene config (roh) */
   let cfg = null;
@@ -177,6 +216,7 @@ export function mount(root, { props, services, effect, command }) {
       input = null;
       view.el.removeEventListener('cell:edit-blocked', onBlocked);
       view.el.removeEventListener('column:edit-blocked', onBlocked);
+      view.el.removeEventListener('datagrid-selection', onSelection);
       view.destroy();
       slot.remove();
       if (hostEl._datagrid) delete hostEl._datagrid;

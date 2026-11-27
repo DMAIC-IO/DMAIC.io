@@ -115,7 +115,7 @@ async function host(opts = {}) {
   registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
   const notes = [];
   const services = {
-    eventBus: null, stateManager: null, i18n, chartManager: null, instanceId: 'i1', moduleId: 'demo',
+    eventBus: opts.eventBus ?? null, stateManager: null, i18n, chartManager: null, instanceId: 'i1', moduleId: 'demo',
     notify: (message, type) => notes.push([message, type]), dialog: null,
   };
   const model = Sheet.fromJSON({ data: { rowCount: 3, columns: [[1, 2, 3], ['x', 'y', 'z'], [10, 20, 30]] } });
@@ -127,7 +127,7 @@ async function host(opts = {}) {
     const comp = {
       model,
       cols: COLS,
-      formulas: {},
+      formulas: opts.formulas ?? {},
       ro: false,
       get grid() {
         return {
@@ -312,6 +312,41 @@ suite('datagrid widget über table()', () => {
       sheetId: 's1', colWidths: {},
       selection: { startCol: 1, startRow: 2, endCol: 1, endRow: 2, activeCol: 1, activeRow: 2, extraCols: [] },
     }]]);
+  });
+
+  test('Auswahl → datagrid:selection:changed auf dem Bus, mit aktiver Zelle und Formel', async () => {
+    const seen = [];
+    const eventBus = { emit: (name, payload) => seen.push([name, payload]) };
+    const { root } = await host({
+      eventBus, formulas: { a: { 1: '=C1[1]*2' } },
+      config: { features: { formulas: true }, commands: { setCells: 'setCells', setFormula: 'setCells' } },
+    });
+    seen.length = 0;
+    clickCell(root, 0, 1);
+    assertEqual(seen.length, 1, 'sofort, ein Ereignis');
+    const [name, p] = seen[0];
+    assertEqual(name, 'datagrid:selection:changed');
+    assertDeepEqual(p.range, { startCol: 0, startRow: 1, endCol: 0, endRow: 1, activeCol: 0, activeRow: 1, extraCols: [] });
+    assertDeepEqual(p.activeCell, { value: 2, formula: '=C1[1]*2' });
+    assertEqual(p.acceptsFormulas, true, 'Raster nimmt Formeln an');
+    assertEqual(p.moduleId, 'demo');
+    assertEqual(p.instanceId, 'i1');
+    clickCell(root, 1, 2);
+    assertDeepEqual(seen.at(-1)[1].activeCell, { value: 'z', formula: null }, 'Zelle ohne Formel');
+  });
+
+  test('Auswahl über mehrere Zellen: keine aktive Zelle; nur lesend nimmt das Raster keine Formeln an', async () => {
+    const seen = [];
+    const eventBus = { emit: (name, payload) => seen.push([name, payload]) };
+    const { root, data } = await host({ eventBus, config: { features: { formulas: true } } });
+    data.ro = true;
+    await settle();
+    seen.length = 0;
+    clickCell(root, 0, 0);
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true, cancelable: true }));
+    const last = seen.at(-1)[1];
+    assertEqual(seen[0][1].acceptsFormulas, false, 'nur lesend');
+    assertEqual(last.activeCell, null, 'Bereich: keine aktive Zelle');
   });
 
   test('Test-Haken scrollToRow am Wirtselement', async () => {

@@ -11,9 +11,8 @@
  *   2. `settings.tipsDismissed` contains tip.id (lifetime dismiss)
  *   3. tip already shown this session
  *
- * Other engines stay agnostic — they just emit their own semantic events.
- * The optional `bridgeEmitter()` helper re-emits internal events from a
- * source (e.g. DataGrid) onto the global bus with a namespace prefix.
+ * Other engines stay agnostic — they just emit their own semantic events
+ * (e.g. the widget `datagrid` emits `datagrid:selection:changed`).
  */
 
 const AUTO_HIDE_MS = 12000;
@@ -27,8 +26,9 @@ const AUTO_HIDE_MS = 12000;
  * coupling tip-emitting engines to the tip system.
  */
 const BUILTIN_CONDITIONS = {
-  isFormulaCell:    (p) => p?.activeCell != null && p.activeCell.formula != null,
-  isNotFormulaCell: (p) => p?.activeCell != null && p.activeCell.formula == null,
+  // Nur Raster, die Formeln annehmen (Arbeitsblatt) — keine nur lesenden Vorschauen.
+  isFormulaCell:    (p) => p?.acceptsFormulas === true && p.activeCell != null && p.activeCell.formula != null,
+  isNotFormulaCell: (p) => p?.acceptsFormulas === true && p.activeCell != null && p.activeCell.formula == null,
 };
 
 export class TipEngine {
@@ -163,21 +163,4 @@ export class TipEngine {
     }
     this._hide();
   }
-}
-
-/**
- * Re-emit events from a local emitter (DataGrid, Chart, …) onto the
- * global EventBus with a namespace prefix. Called once per source
- * instance; the source itself stays unaware of the global bus.
- *
- * @param {{ emit: Function }} source  Object with a CommonJS-style emit(event, payload)
- * @param {{ emit: Function }} eventBus  Global EventBus
- * @param {string} prefix  Namespace prefix, e.g. 'datagrid'
- */
-export function bridgeEmitter(source, eventBus, prefix) {
-  const original = source.emit.bind(source);
-  source.emit = (event, payload) => {
-    original(event, payload);
-    eventBus.emit(`${prefix}:${event}`, payload);
-  };
 }
