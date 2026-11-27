@@ -18,7 +18,6 @@ import { readColumn } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State, MIN_DIM, showsDirection } from '../domain/model.js';
 import { analyze } from '../domain/analyze.js';
-import { effectiveEvent } from '../domain/event.js';
 import { present, hypotheses } from './present.js';
 
 /** @typedef {import('../domain/analyze.js').Analysis} Analysis */
@@ -164,11 +163,9 @@ export default createModule({
       get directionOptions() {
         return DIRECTIONS.map(([value, key]) => ({ value, label: this.t(key), selected: value === this.model.direction }));
       },
-      /** Der wirksame Ereigniswert. */
-      get effectiveEvent() { return effectiveEvent(this.model.eventValue, this.eventValueOptions); },
       /** Die Ereigniswerte für die Auswahl. */
       get eventOptions() {
-        const on = this.effectiveEvent;
+        const on = this.effectiveEventValue;
         return this.eventValueOptions.map((v) => ({ value: v, selected: v === on }));
       },
       /** @param {Event} event Ereigniswert gewählt */

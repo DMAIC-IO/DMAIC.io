@@ -18,6 +18,7 @@ import { requireForm } from '../../../core/validate.js';
 import { from0 } from './migrations.js';
 import { analyze, eventOptionsOf } from './analyze.js';
 import { toReadResult } from './format.js';
+import { effectiveEvent } from './event.js';
 
 /** @typedef {import('./report.js').Result} Result */
 
@@ -178,6 +179,18 @@ export class State extends defineModel({
      */
     eventValueOptions(src) {
       return eventOptionsOf(this, src);
+    },
+    /**
+     * Der Ereigniswert, mit dem die Rechnung rechnet: der gespeicherte, wenn
+     * er unter `eventValueOptions` ist, sonst deren letzter; ohne Optionen der
+     * gespeicherte. Weicht er vom gespeicherten ab, wirkt dieser nicht.
+     *
+     * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
+     * @this {import('./model.types.js').StateModel}
+     * @returns {string|null}
+     */
+    effectiveEventValue(src) {
+      return effectiveEvent(this.eventValue, eventOptionsOf(this, src));
     },
     /**
      * Der Testbericht mit `status: 'ok'`; ohne Ergebnis `status:

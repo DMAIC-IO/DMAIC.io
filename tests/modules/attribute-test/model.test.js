@@ -5,6 +5,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { State, MIN_DIM } from '../../../js/modules/attribute-test/domain/model.js';
+import { analyze } from '../../../js/modules/attribute-test/domain/analyze.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { setFields, setModelName } from '../../../js/core/model.js';
 import { sheetSource } from '../../helpers/sheet-source.js';
@@ -101,12 +102,27 @@ suite('attribute-test: Model — Ableitungen', () => {
     setFields(m, { testKind: 'one', inputMode: 'columns', colRefs: { ...plain(m.colRefs), response: ref('r') }, eventValue: 'gone' });
     const d = derived(m, src);
     assertDeepEqual(d.eventValueOptions, ['a', 'b']);
+    assertEqual(d.effectiveEventValue, 'b');
     assertEqual(d.result.stats.find((s) => s.key === 'counts').value, '3 / 5');
     assertEqual(m.eventValue, 'gone');
     setFields(m, { eventValue: 'a' });
+    assertEqual(derived(m, src).effectiveEventValue, 'a');
     assertEqual(derived(m, src).result.stats.find((s) => s.key === 'counts').value, '2 / 5');
     setFields(m, { inputMode: 'summary' });
     assertDeepEqual(derived(m, src).eventValueOptions, []);
+    assertEqual(derived(m, src).effectiveEventValue, 'a');
+  });
+  test('Merker je Model: zwei Instanzen verdrängen einander nicht', () => {
+    const a = new State(CTX);
+    const b = new State(CTX);
+    setFields(a, { summary: { ...plain(a.summary), x1: 46, n1: 1200, x2: 21, n2: 1150 } });
+    setFields(b, { summary: { ...plain(b.summary), x1: 5, n1: 50, x2: 9, n2: 60 } });
+    const first = analyze(a, NO_SRC);
+    const other = analyze(b, NO_SRC);
+    assertTrue(analyze(a, NO_SRC) === first, 'Treffer für a nach b');
+    assertTrue(analyze(b, NO_SRC) === other, 'Treffer für b nach a');
+    setFields(a, { summary: { ...plain(a.summary), x1: 47 } });
+    assertTrue(analyze(a, NO_SRC) !== first, 'geänderter Stand rechnet neu');
   });
   test('McNemar über Spalten: Bezeichnungen aus den Spaltennamen', () => {
     const src = sheetSource({ b: ['i', 'i', 'n', 'n', 'n'], a: ['n', 'i', 'i', 'i', 'n'] }, { names: { b: 'Vorher', a: 'Nachher' } });

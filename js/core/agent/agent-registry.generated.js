@@ -798,6 +798,12 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
+      "effectiveEventValue": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
       "result": {
         "type": "object|null",
         "help": "",

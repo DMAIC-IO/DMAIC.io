@@ -76,7 +76,7 @@ suite('attribute-test Texte in ui.<lang>.json', () => {
 
 suite('attribute-test Kontexthilfe in context-help.<lang>.json', () => {
   test('jedes Feld, jedes Unterfeld und jede Ableitung hat einen Hilfetext', async () => {
-    const top = [...Object.keys(State.schema.fields), 'exampleWorksheetId', 'activeParams', 'activeColumnSlots', 'eventValueOptions', 'result'];
+    const top = [...Object.keys(State.schema.fields), 'exampleWorksheetId', 'activeParams', 'activeColumnSlots', 'eventValueOptions', 'effectiveEventValue', 'result'];
     const nested = ['equiv', 'summary', 'colRefs'].flatMap((f) => shapePaths(State.schema.fields[f], `${f}.`));
     for (const lang of LANGS) {
       const { fields } = await contextHelp(lang);

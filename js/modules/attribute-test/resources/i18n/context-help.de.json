@@ -145,6 +145,9 @@
     "eventValueOptions": {
       "help": "Die Werte, die als Ereignis gewählt werden können: die verschiedenen Werte der gewählten Antwortspalte, bei McNemar beider gepaarter Spalten zusammen, natürlich sortiert; leer bei Eingabe als Zusammenfassung oder ohne Spalte."
     },
+    "effectiveEventValue": {
+      "help": "Der Ereigniswert, mit dem die Rechnung rechnet: der gespeicherte, wenn er unter den wählbaren Werten (eventValueOptions) ist, sonst deren letzter; ohne wählbare Werte der gespeicherte. Weicht er vom gespeicherten Ereigniswert ab, wirkt dieser nicht, weil er in den Daten nicht vorkommt."
+    },
     "result": {
       "help": "Der Testbericht: Kennzahlen, Hinweise, Entscheidung und beim Zusammenhangstest die Kreuztabelle; die Werte der Kennzahlen als Texte mit Punkt als Dezimalzeichen. Ohne Ergebnis nennt er stattdessen den Grund, einen Eingabehinweis oder eine Absage."
     }

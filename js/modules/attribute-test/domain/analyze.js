@@ -71,8 +71,12 @@ export function eventOptionsOf(m, src) {
 /** Die Einstellungen, die der Bericht braucht. @param {any} m */
 const settingsOf = (m) => ({ direction: m.direction, alpha: m.alpha, pooled: m.pooled, ratePooled: m.ratePooled });
 
-/** @type {{ key: string, value: Analysis }|null} */
-let memo = null;
+/**
+ * Letzte Rechnung je Model (Schlüssel: der normalisierte Stand), damit zwei
+ * Instanzen einander nicht verdrängen.
+ * @type {WeakMap<object, { key: string, value: Analysis }>}
+ */
+const memos = new WeakMap();
 
 /**
  * Die Rechnung zum Stand: der Bericht oder der Grund, warum es keinen gibt.
@@ -92,13 +96,14 @@ export function analyze(m, src) {
     norm = normalizeSummary(plainState(m));
   }
   const key = JSON.stringify([norm, settingsOf(m)]);
+  const memo = memos.get(m);
   if (memo && memo.key === key) return memo.value;
   const report = buildReport(settingsOf(m), norm);
   /** @type {Analysis} */
   const value = 'error' in report
     ? { status: 'insufficient', reason: report.error, hint: report.hint === true }
     : { status: 'ok', report };
-  memo = { key, value };
+  memos.set(m, { key, value });
   return value;
 }
 

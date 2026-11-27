@@ -145,6 +145,9 @@
     "eventValueOptions": {
       "help": "The values that can be chosen as the event: the distinct values of the chosen response column, for McNemar of both paired columns together, in natural sort order; empty with summarized input or without a column."
     },
+    "effectiveEventValue": {
+      "help": "The event value the calculation uses: the stored one if it is among the selectable values (eventValueOptions), otherwise the last of them; without selectable values the stored one. If it differs from the stored event value, the stored one has no effect because it does not occur in the data."
+    },
     "result": {
       "help": "The test report: figures, notes, decision and, for the association test, the cross table; the values of the figures as texts with a point as decimal separator. Without a result it names the reason instead, an input hint or a refusal."
     }

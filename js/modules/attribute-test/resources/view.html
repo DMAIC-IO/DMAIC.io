@@ -103,7 +103,7 @@
               <th></th>
               <template x-for="j in colIdx" :key="'h' + j">
                 <th>
-                  <input class="field attrtest__name" :data-col-name="j" :data-col="j" :value="colName(j)" @input="onColName($event)">
+                  <input class="field attrtest__name" :data-col-name="j" :data-col="j" :value="colName(j)" :title="colName(j)" @input="onColName($event)">
                   <button type="button" class="btn--icon attrtest__remove" data-help-key="modules.attribute-test.actions.removeCol.help" :title="t('removeCol')"
                     :disabled="!canRemoveCol" x-command="removeCol" :data-arg-col="j">
                     <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
@@ -116,7 +116,7 @@
             <template x-for="i in rowIdx" :key="'r' + i">
               <tr>
                 <th>
-                  <input class="field attrtest__name" :data-row-name="i" :data-row="i" :value="rowName(i)" @input="onRowName($event)">
+                  <input class="field attrtest__name" :data-row-name="i" :data-row="i" :value="rowName(i)" :title="rowName(i)" @input="onRowName($event)">
                   <button type="button" class="btn--icon attrtest__remove" data-help-key="modules.attribute-test.actions.removeRow.help" :title="t('removeRow')"
                     :disabled="!canRemoveRow" x-command="removeRow" :data-arg-row="i">
                     <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
