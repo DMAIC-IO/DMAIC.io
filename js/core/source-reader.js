@@ -41,6 +41,16 @@ function rawOf(obj) {
  */
 export function setTouchHook(fn) { const prev = touchHook; touchHook = fn; return prev; }
 
+/** @type {((instanceId: string) => void)|null} meldet eine Instanz, deren Modul `ensureLoaded` eben geladen hat */
+let loadedHook = null;
+
+/**
+ * Den Haken nach dem Laden setzen (nur `source.js`, beim Import).
+ * @param {((instanceId: string) => void)|null} fn
+ * @returns {((instanceId: string) => void)|null} der bisherige Haken
+ */
+export function setLoadedHook(fn) { const prev = loadedHook; loadedHook = fn; return prev; }
+
 /**
  * Den Leser für einen `stateManager` hinterlegen. Die App ruft das direkt nach
  * `createInstances` mit `instances.readSync` und `instances.load`.
@@ -79,7 +89,8 @@ function notLoaded(instanceId) {
  * wirft `read` kein `not_loaded` mehr; es liefert `true`, wenn das Modul erst
  * jetzt geladen wurde, und lehnt ab, wenn kein Lader registriert ist oder das
  * Laden scheitert. Mit dem Haken aus `source.js` hängt `read` zuerst an den Zähler
- * der Instanz und `list` an `'#list'`.
+ * der Instanz und `list` an `'#list'`; ein frisch geladenes Modul erhöht den Zähler
+ * der Instanz, damit Leser, die eben `not_loaded` bekamen, neu lesen.
  * @param {{ get: (path: string) => any }} stateManager  mit registriertem Leser
  * @returns {Source}
  * @throws {Error} `worksheet reader not registered` — Programmierfehler, soll laut sein
@@ -111,7 +122,9 @@ export function createSource(stateManager) {
     async ensureLoaded(instanceId) {
       const { load } = lookup();
       if (!load) throw notLoaded(instanceId);
-      return (await load(instanceId)) === true;
+      const fresh = (await load(instanceId)) === true;
+      if (fresh) loadedHook?.(instanceId);
+      return fresh;
     },
   });
 }

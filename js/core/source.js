@@ -8,7 +8,10 @@
  * `touch('#list')`. Ein `computed` oder Getter, der so liest, rechnet neu,
  * sobald sich das Blatt ändert, nachgeladen wird oder ein Blatt dazukommt.
  * Den Zähler erhöhen die Ereignisse (ein Abonnent je Bus,
- * `installWorksheetRevisions`) und, sofort beim Kommando, das Arbeitsblatt
+ * `installWorksheetRevisions`; der gespeicherte Stand einer Instanz, die kein
+ * Arbeitsblatt ist, über `data:changed` `module:<id>` nur ihren eigenen Zähler),
+ * ein frisch geladenes Modul den Zähler seiner Instanz (`ensureLoaded`) und,
+ * sofort beim Kommando, das Arbeitsblatt
  * selbst (`bumpWorksheetRevision`): das Ereignis kommt erst im nächsten Frame,
  * ein `read()` direkt nach dem Kommando läse sonst den alten Stand.
  *
@@ -16,7 +19,7 @@
  * und werden hier re-exportiert; dieser Import setzt den Zähler-Haken.
  */
 import Alpine from '@alpinejs/csp';
-import { setTouchHook } from './source-reader.js';
+import { setTouchHook, setLoadedHook } from './source-reader.js';
 
 export { registerReader, createSource, deferredSource, NO_SOURCE } from './source-reader.js';
 
@@ -38,6 +41,19 @@ setTouchHook(touch);
 /** @param {string} key */
 function bump(key) { rev[key] = (rev[key] ?? 0) + 1; if (key !== '#list') rev['#list'] += 1; }
 
+/** Arbeitsblatt-Instanzen: ihren Zähler erhöhen Kommando und Ereignis, nicht das Speichern. */
+const worksheetIds = new Set();
+
+/**
+ * Nur den Zähler einer Instanz erhöhen: Leser genau dieser Instanz lesen neu,
+ * Spaltenlisten (`'#list'`) bleiben.
+ * @param {string} id
+ */
+function bumpInstance(id) { rev[id] = (rev[id] ?? 0) + 1; }
+
+// Ein frisch geladenes Modul macht seine Instanzen lesbar: deren Leser lesen neu.
+setLoadedHook(bumpInstance);
+
 /**
  * Alle Leser neu rechnen lassen (`rev['*']`). Für das Vorladen: liefert der
  * Leser bis zum Laden des Arbeitsblatt-Moduls `null`, rechnen danach alle
@@ -56,7 +72,7 @@ export function bumpWorksheetRevisions() { bump('*'); }
  * @param {string} instanceId
  * @returns {void}
  */
-export function bumpWorksheetRevision(instanceId) { if (instanceId) bump(instanceId); }
+export function bumpWorksheetRevision(instanceId) { if (instanceId) { worksheetIds.add(instanceId); bump(instanceId); } }
 
 /**
  * Den Zähler an den Bus hängen; je Bus nur einmal wirksam.
@@ -66,9 +82,16 @@ export function bumpWorksheetRevision(instanceId) { if (instanceId) bump(instanc
 export function installWorksheetRevisions(eventBus) {
   if (installed.has(eventBus)) return;
   installed.add(eventBus);
-  eventBus.on('worksheet:dataChanged', (p) => { if (p?.instanceId) bump(p.instanceId); });
+  eventBus.on('worksheet:dataChanged', (p) => { if (p?.instanceId) { worksheetIds.add(p.instanceId); bump(p.instanceId); } });
+  // Gespeicherter Stand einer anderen Instanz (Speichern, Schreiben ohne Mount): ihre Leser lesen neu.
+  eventBus.on('data:changed', (path) => {
+    const id = typeof path === 'string' && /^module:[^:]+$/.test(path) ? path.slice(7) : null;
+    if (id && !worksheetIds.has(id)) bumpInstance(id);
+  });
   eventBus.on('module:removed', (p) => { if (p?.instanceId) bump(p.instanceId); });
   eventBus.on('state:remote-changed', (p) => { for (const id of p?.instanceIds ?? []) bump(id); });
-  eventBus.on('module:added', (p) => { if (p?.moduleId === 'worksheet') bump('#list'); });
+  eventBus.on('module:added', (p) => {
+    if (p?.moduleId === 'worksheet') { if (p.instanceId) worksheetIds.add(p.instanceId); bump('#list'); }
+  });
   for (const ev of ['project:imported', 'project:switched', 'project:rehydrated']) eventBus.on(ev, () => bump('*'));
 }

@@ -93,6 +93,63 @@ suite('Source', () => {
     Alpine.release(runner);
   });
 
+  test('data:changed module:<id>: Leser einer anderen Instanz lesen neu, Spaltenlisten nicht', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const states = { own1: { v: 1 } };
+    const sm = { get: (path) => (path === 'phases' ? { improve: [{ instanceId: 'own1', moduleId: 'regression' }] } : undefined) };
+    registerReader(sm, (id) => ({ ...states[id] }));
+    const src = createSource(sm);
+    let reads = 0;
+    let lists = 0;
+    const r1 = Alpine.effect(() => { src.read('own1'); reads++; });
+    const r2 = Alpine.effect(() => { src.list(); lists++; });
+    bus.emit('data:changed', 'module:own1');
+    await flush();
+    assertEqual(reads, 2);
+    assertEqual(lists, 1);
+    bus.emit('data:changed', 'module:own1:removed');
+    bus.emit('data:changed', 'chartEdits');
+    await flush();
+    assertEqual(reads, 2);
+    Alpine.release(r1);
+    Alpine.release(r2);
+  });
+
+  test('data:changed eines Arbeitsblatts erhöht den Zähler nicht ein zweites Mal', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const states = { wsSave: { sheets: [{ id: 's1', state: { rowCount: 1, columns: [{ id: 'c1', values: [1] }] } }] } };
+    const src = createSource(project(states));
+    let runs = 0;
+    const runner = Alpine.effect(() => { src.read('wsSave', { sheetId: 's1' }); runs++; });
+    bus.emit('worksheet:dataChanged', { instanceId: 'wsSave' });
+    await flush();
+    assertEqual(runs, 2);
+    bus.emit('data:changed', 'module:wsSave');
+    await flush();
+    assertEqual(runs, 2);
+    Alpine.release(runner);
+  });
+
+  test('ensureLoaded: ein frisch geladenes Modul lässt die Leser seiner Instanz neu lesen', async () => {
+    let loaded = false;
+    const sm = { get: (path) => (path === 'phases' ? { improve: [{ instanceId: 'lazy1', moduleId: 'regression' }] } : undefined) };
+    registerReader(sm, () => {
+      if (!loaded) throw Object.assign(new Error('not_loaded: lazy1'), { code: 'not_loaded' });
+      return { ok: true };
+    }, async () => { if (loaded) return false; loaded = true; return true; });
+    const src = createSource(sm);
+    let seen = null;
+    const runner = Alpine.effect(() => { try { seen = src.read('lazy1'); } catch (e) { seen = e.code; } });
+    assertEqual(seen, 'not_loaded');
+    assertEqual(await src.ensureLoaded('lazy1'), true);
+    await flush();
+    assertEqual(seen?.ok, true);
+    assertEqual(await src.ensureLoaded('lazy1'), false);
+    Alpine.release(runner);
+  });
+
   test('list nennt die Instanzen des Projekts', () => {
     const src = createSource(project({ ws1: null, ws2: null }));
     assertEqual(src.list().map((i) => i.instanceId).join(), 'ws1,ws2');
