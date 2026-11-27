@@ -23,6 +23,7 @@
   "response": "Response",
   "copyResponse": "Copy response",
   "copied": "Copied to clipboard",
+  "copyFailed": "Could not copy to clipboard",
   "loading": "Sending request…",
   "errorNoUrl": "Please enter a URL.",
   "schedule": "Schedule",

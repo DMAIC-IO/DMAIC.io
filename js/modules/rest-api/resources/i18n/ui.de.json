@@ -23,6 +23,7 @@
   "response": "Antwort",
   "copyResponse": "Antwort kopieren",
   "copied": "In Zwischenablage kopiert",
+  "copyFailed": "Kopieren in die Zwischenablage fehlgeschlagen",
   "loading": "Anfrage wird gesendet…",
   "errorNoUrl": "Bitte eine URL eingeben.",
   "schedule": "Zeitplan",

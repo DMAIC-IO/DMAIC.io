@@ -215,11 +215,21 @@ export default createModule({
       get responseStatus() { return this.activeResponse ? statusText(this.activeResponse) : ''; },
       get statusClass() { return `rest-api__status rest-api__status--${this.activeResponse?.ok ? 'ok' : 'err'}`; },
       get responseBody() { return this.activeResponse?.body ?? ''; },
-      /** Antwort in die Zwischenablage. @returns {void} */
-      copyResponse() {
+      /**
+       * Antwort in die Zwischenablage. Ohne Zwischenablage (unsicherer
+       * Kontext) oder abgelehnt: Fehler-Toast statt eines stillen Fehlers.
+       * @returns {Promise<void>}
+       */
+      async copyResponse() {
         const body = this.activeResponse?.body;
         if (body === undefined) return;
-        navigator.clipboard.writeText(body).then(() => ctx.notify(this.t('copied'), 'success'));
+        try {
+          if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+          await navigator.clipboard.writeText(body);
+          ctx.notify(this.t('copied'), 'success');
+        } catch {
+          ctx.notify(this.t('copyFailed'), 'error');
+        }
       },
     };
   },

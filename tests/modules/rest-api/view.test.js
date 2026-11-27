@@ -252,6 +252,34 @@ suite('rest-api: Viewmodel im Browser', () => {
     await until(() => h.q('.rest-api__response-body') === null);
   });
 
+  test('Kopieren: Erfolg meldet copied; ohne oder mit abgelehnter Zwischenablage copyFailed', async () => {
+    const h = await mount({ ...V, endpoints: [endpoint('e1', { url: 'stub/a' })], activeId: 'e1' });
+    const vm = h.vm();
+    await until(() => h.q('[data-action="send"]') !== null);
+    h.q('[data-action="send"]').click();
+    await until(() => calls.length === 1);
+    calls[0].json({ a: 1 });
+    await until(() => h.q('[data-action="copy-response"]') !== null);
+    const desc = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    const written = [];
+    const use = (clipboard) => Object.defineProperty(navigator, 'clipboard', { configurable: true, get: () => clipboard });
+    try {
+      use({ writeText: async (s) => { written.push(s); } });
+      await vm.copyResponse();
+      assertDeepEqual(written, [JSON.stringify({ a: 1 }, null, 2)]);
+      assertDeepEqual(h.notes.at(-1), [UI.copied, 'success']);
+      use({ writeText: async () => { throw new Error('NotAllowedError'); } });
+      await vm.copyResponse();
+      assertDeepEqual(h.notes.at(-1), [UI.copyFailed, 'error']);
+      use(undefined);
+      await vm.copyResponse();
+      assertDeepEqual(h.notes.at(-1), [UI.copyFailed, 'error']);
+    } finally {
+      if (desc) Object.defineProperty(navigator, 'clipboard', desc);
+      else delete /** @type {any} */ (navigator).clipboard;
+    }
+  });
+
   test('Abbrechen: Antwort bleibt leer, runningId null; Endpunkt im Lauf entfernt bricht ab', async () => {
     const h = await mount({ ...V, endpoints: [endpoint('e1', { url: 'stub/a' }), endpoint('e2', { url: 'stub/b' })], activeId: 'e1' });
     const vm = h.vm();

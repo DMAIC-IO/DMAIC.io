@@ -75,7 +75,7 @@ export const State = defineModel({
       writeMode: oneOf(['replace', 'append', 'prepend'], { default: 'replace' }),
       schedule: object({
         enabled: boolean(),
-        intervalValue: number({ integer: true, min: 1, max: 999, default: 5 }),
+        intervalValue: number({ integer: true, min: INTERVAL_MIN, max: INTERVAL_MAX, default: 5 }),
         intervalUnit: oneOf(['minutes', 'hours'], { default: 'minutes' }),
       }),
     })),
