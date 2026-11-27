@@ -7,4 +7,5 @@ export default {
   group: 'collect',
   uses: ['worksheet'],
   load: () => import('./viewmodel/viewmodel.js'),
+  redact: () => import('./domain/redact.js'),
 };
