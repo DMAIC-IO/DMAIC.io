@@ -181,7 +181,7 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     await settle();
     assertEqual(sheet.data.columns[1][0], 42);
     assertTrue(h.vm().canUndo, 'Rückgängig möglich');
-    h.vm().undo();
+    h.vm().stepHistory('undo');
     await settle();
     assertEqual(h.vm().model.sheets[0].data.columns[1][0], null);
     assertTrue(h.vm().canRedo, 'Wiederholen möglich');
@@ -355,23 +355,21 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
 
   // ─── Fix-Runde 1 ─────────────────────────────────────────────
 
-  test('undo/redo sind Viewmodel-Kommandos der Agentenfläche: false bei leerem Verlauf, sonst true', async () => {
+  test('Rückgängig/Wiederholen sind keine Agentenaktionen; der Verlaufsschritt liefert false bei leerem Verlauf, sonst true', async () => {
     const h = await mount(twoSheets());
     const { actions } = h.inst.agentEntry;
-    assertTrue(Boolean(actions.undo) && Boolean(actions.redo), 'undo und redo für Agenten');
-    assertEqual(h.vm().undo({}), false, 'leerer Verlauf');
-    assertEqual(h.vm().redo({}), false, 'nichts zu wiederholen');
+    assertEqual(Boolean(actions.undo) || Boolean(actions.redo), false, 'kein undo/redo auf der Agentenfläche');
+    assertEqual(h.vm().stepHistory('undo'), false, 'leerer Verlauf');
+    assertEqual(h.vm().stepHistory('redo'), false, 'nichts zu wiederholen');
     const sheet = h.vm().model.sheets[0];
     h.vm().model.setCells({ sheetId: sheet.id, columnId: sheet.columns[1].id, startRow: 0, values: [42] });
     await settle();
-    const before = h.events.length;
-    assertEqual(h.vm().undo({}), true);
+    assertEqual(h.vm().stepHistory('undo'), true);
     await settle();
     assertEqual(h.vm().model.sheets[0].data.columns[1][0], null, 'zurückgenommen');
-    assertTrue(h.events.slice(before).some(([n, p]) => n === 'command:executed' && p.command === 'undo'), 'command:executed für undo');
     assertEqual(h.vm().canUndo, false, 'undo legt selbst keinen Schritt an');
     assertEqual(h.vm().canRedo, true);
-    assertEqual(h.vm().redo({}), true);
+    assertEqual(h.vm().stepHistory('redo'), true);
     await settle();
     assertEqual(h.vm().model.sheets[0].data.columns[1][0], 42, 'wiederholt');
     assertEqual(h.vm().canUndo, true);
@@ -392,20 +390,20 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     h.inst.historyEnd();
     await settle();
     assertEqual(h.vm().model.sheets[0].columns.length, cols + 2);
-    assertEqual(h.vm().undo({}), true);
+    assertEqual(h.vm().stepHistory('undo'), true);
     await settle();
     assertEqual(h.vm().model.sheets[0].columns.length, cols, 'Spalten zurück');
     assertEqual(h.vm().model.sheets[0].data.columns[1][0], null, 'Zellwert zurück');
     assertEqual(h.vm().canUndo, false, 'genau ein Schritt');
   });
 
-  test('undo/redo ohne Schritt senden kein worksheet:dataChanged, mit Schritt genau eines', async () => {
+  test('Verlaufsschritte ohne Schritt senden kein worksheet:dataChanged, mit Schritt genau eines', async () => {
     const h = await mount(twoSheets());
     await frame();
     await flush();
     const before = h.changed();
-    assertEqual(h.vm().undo({}), false);
-    assertEqual(h.vm().redo({}), false);
+    assertEqual(h.vm().stepHistory('undo'), false);
+    assertEqual(h.vm().stepHistory('redo'), false);
     await frame();
     await flush();
     assertEqual(h.changed(), before, 'leerer Verlauf: kein Ereignis');
@@ -414,7 +412,7 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     await frame();
     await flush();
     const afterSet = h.changed();
-    assertEqual(h.vm().undo({}), true);
+    assertEqual(h.vm().stepHistory('undo'), true);
     await frame();
     await flush();
     assertEqual(h.changed(), afterSet + 1, 'Rückgängig meldet über die Umkehr-Kommandos');
@@ -426,11 +424,11 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     h.vm().model.setCells({ sheetId: sheet.id, columnId: sheet.columns[1].id, startRow: 0, values: [7] });
     await settle();
     h.project.completed = true;
-    assertEqual(h.vm().undo({}), false);
+    assertEqual(h.vm().stepHistory('undo'), false);
     assertEqual(h.vm().model.sheets[0].data.columns[1][0], 7);
   });
 
-  test('Knöpfe Rückgängig/Wiederholen der Werkzeugleiste rufen die Kommandos', async () => {
+  test('Knöpfe Rückgängig/Wiederholen der Werkzeugleiste gehen einen Schritt im Verlauf', async () => {
     const h = await mount(twoSheets());
     const sheet = h.vm().model.sheets[0];
     h.vm().model.setCells({ sheetId: sheet.id, columnId: sheet.columns[1].id, startRow: 0, values: [5] });
@@ -541,7 +539,7 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     h.vm().confirmRoles({ sheetId: sheet.id, roles: [{ columnId: a.id, role: 'categorical' }, { columnId: b.id, role: 'ordinal' }] });
     await settle();
     assertDeepEqual(h.vm().model.sheets[0].columns.slice(0, 2).map((c) => c.role), ['categorical', 'ordinal']);
-    assertEqual(h.vm().undo({}), true);
+    assertEqual(h.vm().stepHistory('undo'), true);
     await settle();
     assertDeepEqual(h.vm().model.sheets[0].columns.slice(0, 2).map((c) => c.role), roles0, 'ein Rückgängig nimmt beide zurück');
     assertEqual(h.vm().canUndo, false);
@@ -639,7 +637,7 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(sheet.columns[0].name, 'A');
     assertEqual(sheet.data.columns[1][1], 4);
     assertEqual(h.notes.at(-1)[1], 'success');
-    assertEqual(h.vm().undo({}), true);
+    assertEqual(h.vm().stepHistory('undo'), true);
     await settle();
     assertEqual(h.vm().model.sheets[0].data.columns[0].slice(0, 3).join(), '1,2,3', 'ein Rückgängig stellt das Blatt wieder her');
   });

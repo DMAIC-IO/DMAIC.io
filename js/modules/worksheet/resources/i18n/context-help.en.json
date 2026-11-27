@@ -381,18 +381,6 @@
       "params": {
         "options": "Optional: sheetId chooses the sheet (the first if omitted; reading does not switch), fields: ['rows'] returns the rows, rows: { from, to } trims them."
       }
-    },
-    "undo": {
-      "help": "Undoes the last change to the workbook, also on another sheet (Ctrl+Z). Returns false when there is nothing to undo or the project is completed; undoing is not a new step itself.",
-      "params": {
-        "command": "An empty object; the command takes no arguments."
-      }
-    },
-    "redo": {
-      "help": "Restores the change undone last (Ctrl+Y). Returns false when there is nothing to redo or the project is completed.",
-      "params": {
-        "command": "An empty object; the command takes no arguments."
-      }
     }
   }
 }

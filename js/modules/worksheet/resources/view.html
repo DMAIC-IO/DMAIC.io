@@ -4,13 +4,13 @@
   <!-- ═══ Werkzeugleiste ═══ -->
   <div class="worksheet-toolbar">
     <button type="button" class="btn btn--ghost toolbar__btn" data-action="undo"
-            data-help-key="modules.worksheet.actions.undo.help"
-            :title="t('undo')" :disabled="!canUndo" @click="undo()">
+            data-help-key="history.undoHelp"
+            :title="t('undo')" :disabled="!canUndo" @click="stepHistory('undo')">
       <span class="icon icon--sm" data-icon="action.undo" aria-hidden="true"></span>
     </button>
     <button type="button" class="btn btn--ghost toolbar__btn" data-action="redo"
-            data-help-key="modules.worksheet.actions.redo.help"
-            :title="t('redo')" :disabled="!canRedo" @click="redo()">
+            data-help-key="history.redoHelp"
+            :title="t('redo')" :disabled="!canRedo" @click="stepHistory('redo')">
       <span class="icon icon--sm" data-icon="action.redo" aria-hidden="true"></span>
     </button>
     <div class="toolbar__sep"></div>

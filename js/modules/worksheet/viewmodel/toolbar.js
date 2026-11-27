@@ -3,7 +3,7 @@
  *
  * Teil des view-Blocks: Konfiguration des Widgets `datagrid` für das aktive
  * Blatt (nur lesend im abgeschlossenen Projekt), Rückgängig/Wiederholen über
- * den Verlauf des Kerns (`ctx.history`, Kommandos `undo`/`redo`),
+ * den Verlauf des Kerns (`ctx.history`),
  * Auswahl leeren, Exportmenü, Datei-Eingabe (Auswahl und Ablegen), die
  * Statuszeile und der Diagrammvorschlag (öffnet `chart-suggestion` in der
  * eigenen Phase, wie die Altform). Die Auswahl des Rasters steht als
@@ -143,8 +143,8 @@ export function toolbarView(ctx) {
     /** @noagent Kann wiederholt werden? Sperrt den Knopf. */
     get canRedo() { return ctx.history?.can('redo') ?? false; },
     /**
-     * @noagent Rumpf der Viewmodel-Kommandos `undo`/`redo` (die Agenten rufen
-     * diese): ein Schritt im Verlauf des Kerns.
+     * @noagent Knöpfe Rückgängig/Wiederholen der eigenen Leiste: ein Schritt
+     * im Verlauf des Kerns (wie Strg+Z/Strg+Y).
      * @param {'undo'|'redo'} dir
      * @returns {boolean} `false` bei leerem Verlauf oder abgeschlossenem Projekt
      */

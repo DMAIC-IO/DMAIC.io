@@ -12,11 +12,11 @@
 import { bumpWorksheetRevision } from '../../../core/source.js';
 
 /**
- * Kommandos ohne eigenes `worksheet:dataChanged`: die Ansichtskommandos und
- * `undo`/`redo`. Ein Verlaufsschritt führt Umkehr-Kommandos aus, die selbst
- * melden; ein leerer Schritt (`false`) ändert nichts und meldet darum nichts.
+ * Kommandos ohne eigenes `worksheet:dataChanged`: die Ansichtskommandos. Ein
+ * Verlaufsschritt des Kerns ist kein Kommando; er führt Umkehr-Kommandos aus,
+ * die selbst melden.
  */
-const VIEW_ONLY = new Set(['switchSheet', 'gridView', 'exportAs', 'openFormulaEditor', 'suggestChart', 'undo', 'redo']);
+const VIEW_ONLY = new Set(['switchSheet', 'gridView', 'exportAs', 'openFormulaEditor', 'suggestChart']);
 
 /** Instanzen mit Änderung im laufenden Frame → ihr Bus. */
 const pending = new Map();

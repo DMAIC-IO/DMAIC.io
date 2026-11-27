@@ -23487,38 +23487,6 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "undo": {
-        "target": "viewmodel",
-        "params": [
-          {
-            "name": "command",
-            "type": "object",
-            "optional": false,
-            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
-          }
-        ],
-        "returns": "void",
-        "help": "",
-        "keysOf": "undo",
-        "keysHelp": "actions.undo.params",
-        "keys": {}
-      },
-      "redo": {
-        "target": "viewmodel",
-        "params": [
-          {
-            "name": "command",
-            "type": "object",
-            "optional": false,
-            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
-          }
-        ],
-        "returns": "void",
-        "help": "",
-        "keysOf": "redo",
-        "keysHelp": "actions.redo.params",
-        "keys": {}
-      },
       "switchSheet": {
         "target": "viewmodel",
         "params": [

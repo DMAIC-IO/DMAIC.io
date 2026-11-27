@@ -381,18 +381,6 @@
       "params": {
         "options": "Optional: sheetId wählt das Blatt (ohne Angabe das erste; Lesen schaltet nicht um), fields: ['rows'] liefert die Zeilen, rows: { from, to } schneidet sie zu."
       }
-    },
-    "undo": {
-      "help": "Nimmt die letzte Änderung der Arbeitsmappe zurück, auch auf einem anderen Blatt (Strg+Z). Liefert false, wenn nichts zurückzunehmen ist oder das Projekt abgeschlossen ist; das Zurücknehmen selbst ist kein neuer Schritt.",
-      "params": {
-        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
-      }
-    },
-    "redo": {
-      "help": "Stellt die zuletzt zurückgenommene Änderung wieder her (Strg+Y). Liefert false, wenn nichts wiederherzustellen ist oder das Projekt abgeschlossen ist.",
-      "params": {
-        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
-      }
     }
   }
 }

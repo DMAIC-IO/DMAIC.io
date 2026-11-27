@@ -5,11 +5,9 @@
  * die Agentenfläche entsteht aus dessen Schema. Rückgängig/Wiederholen ist
  * der Verlauf des Kerns mit Umkehrung (`history: { mode: 'inverse' }`).
  *
- * Viewmodel-Kommandos betreffen die Ansicht, Dateien oder den Verlauf, andere
- * Module erreichen sie nicht:
- * - `undo`, `redo` — einen Schritt des Verlaufs ausführen (`historyStep`:
- *   die Umkehr-Kommandos sammeln selbst, es entsteht kein neuer Schritt);
- *   `false` bei leerem Verlauf oder abgeschlossenem Projekt;
+ * Viewmodel-Kommandos betreffen die Ansicht oder Dateien, andere Module
+ * erreichen sie nicht (Rückgängig/Wiederholen ist kein Kommando: der Verlauf
+ * gehört dem Kern, die Agentenfläche hat ihn nicht):
  * - `switchSheet` — welches Blatt gezeigt wird (Ansichtsfeld `activeSheetId`);
  * - `gridView` — Spaltenbreiten und Auswahl, wie das Raster sie meldet;
  * - `exportAs` — eine Datei aus dem aktiven Blatt: CSV wie die Altform
@@ -33,7 +31,7 @@
  * Tabelle.
  */
 import { createModule } from '../../../core/template-module.js';
-import { command, text, number, oneOf, list, object, boolean } from '../../../core/model.js';
+import { command, text, number, oneOf, list, object } from '../../../core/model.js';
 import { runExport } from '../../../core/exporter.js';
 import { downloadFile } from '../../../core/export-utils.js';
 import descriptor from '../module.js';
@@ -83,18 +81,6 @@ export default createModule({
   readFields: READ_FIELDS,
   beforeLoadExample: registerInPool,
   commands: {
-    undo: command({
-      params: {},
-      returns: boolean(),
-      historyStep: true,
-      run() { return this.stepHistory('undo'); },
-    }),
-    redo: command({
-      params: {},
-      returns: boolean(),
-      historyStep: true,
-      run() { return this.stepHistory('redo'); },
-    }),
     switchSheet: command({
       params: { id: text() },
       run({ id }) { return showSheet(this.model, id); },
