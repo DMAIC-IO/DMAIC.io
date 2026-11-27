@@ -437,8 +437,7 @@ function baseDoc() {
   return {
     projectMeta: { name: 'WB', cycle: 'dmaic' },
     phases: { define: [{ instanceId: 'i1', moduleId: 'sipoc' }] },
-    phaseAchievement: {}, phaseAchievementHistory: [], models: [],
-    optimizations: [], dashboard: {}, version: '1.0.0',
+    phaseAchievement: {}, phaseAchievementHistory: [], dashboard: {}, version: '1.0.0',
     moduleStates: { i1: { columns: [['a']] } },
   };
 }

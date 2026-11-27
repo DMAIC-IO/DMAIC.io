@@ -5,7 +5,6 @@
 
 import { suite, test, assertEqual } from '../test-utils.js';
 import { computeDataHash, buildDataSnapshot } from '../../js/core/model-record.js';
-import * as store from '../../js/core/models-store.js';
 
 suite('ModelRecord — computeDataHash', () => {
   test('produces 8-char hex hash', () => {
@@ -63,12 +62,5 @@ suite('ModelRecord — buildDataSnapshot', () => {
     y[0] = 99;
     assertEqual(snap.X[0][0], 1);
     assertEqual(snap.y[0], 5);
-  });
-});
-
-suite('ModelRecord — models-store re-exports', () => {
-  test('models-store hands out the same functions until K2 removes it', () => {
-    assertEqual(store.computeDataHash, computeDataHash);
-    assertEqual(store.buildDataSnapshot, buildDataSnapshot);
   });
 });

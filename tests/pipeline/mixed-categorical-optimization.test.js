@@ -2,7 +2,7 @@
  * Pipeline test — mixed-model optimisation (V0.4 Phase 4).
  *
  * Trains a regression model with one continuous + one 3-level categorical
- * predictor, persists it via `saveModel` *with the ModelSpec attached*, and
+ * predictor, builds its saved model record *with the ModelSpec attached*, and
  * runs the response optimiser. The optimiser must:
  *
  *   1. Detect categorical predictors via `model.spec`.
@@ -19,22 +19,8 @@ import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import {
   fitFromSpec, generatePolynomialTerms,
 } from '../../js/engines/regression-engine.js';
-import {
-  saveModel, getModel, computeDataHash, buildDataSnapshot,
-} from '../../js/core/models-store.js';
+import { modelRecord } from '../helpers/model-record.js';
 import { optimizeResponses, predictFromModel } from '../../js/engines/response-optimization-engine.js';
-
-function makeStateManager() {
-  const state = {};
-  return {
-    get(p) { return p.split('.').reduce((o, k) => o?.[k], state); },
-    set(p, v) {
-      const k = p.split('.'); let o = state;
-      for (let i = 0; i < k.length - 1; i++) { o[k[i]] ??= {}; o = o[k[i]]; }
-      o[k[k.length - 1]] = v;
-    },
-  };
-}
 
 suite('Pipeline — mixed continuous + 3-level categorical optimisation', () => {
   // 2 continuous levels × 3 categorical levels × 2 reps = 12 runs.
@@ -64,43 +50,37 @@ suite('Pipeline — mixed continuous + 3-level categorical optimisation', () => 
   });
 
   // Persist with spec attached — this is what the regression module's
-  // _saveAsModel will do at runtime.
-  const sm = makeStateManager();
+  // saveAsModel does at runtime.
   const factorSpec = [
     { name: 'X',    low: -1, high: 1 },
     { name: 'Tool', low: -1, high: 1 },          // nominal — categorical bounds are derived from spec.levels
   ];
-  const modelId = saveModel(sm, {
+  const model = modelRecord({
     name: 'Mixed model',
-    experimentId: null,
-    responseSpec: { sourceColumn: 'col_y', transform: 'identity', aggregateOver: null },
+    responseColumn: 'col_y',
+    X: Xs.map(v => [v]), y: ys, factorSpec,
     termSet: ['Intercept', ...spec.terms.map(t => t.id)],
     coef: fit.ols.beta,
     rSqAdj: fit.diagnostics.adjR2,
-    factorSpec,
     spec,                     // ← Phase-4 contract
-    dataSnapshot: buildDataSnapshot({
-      X: Xs.map(v => [v]), y: ys, factorSpec, termSet: spec.terms.map(t => t.id),
-    }),
-    dataHash: computeDataHash(Xs.map(v => [v]), ys),
   });
 
   test('predictFromModel handles label-style categorical input', () => {
-    const m = getModel(sm, modelId);
+    const m = model;
     const yHat = predictFromModel(m, { X: 1, Tool: 'B' });
     // True y at (X=1, Tool=B): 1 + 2 − 3 + 5 = 5
     assertAlmostEqual(yHat, 5, 1e-6);
   });
 
   test('predictFromModel handles positional input with categorical label', () => {
-    const m = getModel(sm, modelId);
+    const m = model;
     const yHat = predictFromModel(m, [0, 'C']);
     // True y at (X=0, Tool=C): 1 + 0 − 0 − 3 = -2
     assertAlmostEqual(yHat, -2, 1e-6);
   });
 
   test('hybrid optimiser lands at Tool=B and X ≈ 1/3', () => {
-    const m = getModel(sm, modelId);
+    const m = model;
     const opt = optimizeResponses(
       [m],
       [{ kind: 'max', lower: -10, upper: 10, weight: 1 }],
@@ -116,7 +96,7 @@ suite('Pipeline — mixed continuous + 3-level categorical optimisation', () => 
   });
 
   test('xOptByName mirrors the positional xOpt with named keys', () => {
-    const m = getModel(sm, modelId);
+    const m = model;
     const opt = optimizeResponses(
       [m],
       [{ kind: 'max', lower: -10, upper: 10, weight: 1 }],
@@ -141,28 +121,23 @@ suite('Pipeline — pure-continuous fallback still works', () => {
   const spec = { predictors, terms: generatePolynomialTerms(predictors, 1) };
   const fit  = fitFromSpec(spec, { columns: { X1: Xs1, X2: Xs2 }, y: ys });
 
-  const sm = makeStateManager();
   const factorSpec = [
     { name: 'X1', low: -1, high: 1 },
     { name: 'X2', low: -1, high: 1 },
   ];
-  const modelId = saveModel(sm, {
+  const model = modelRecord({
     name: 'Cont',
+    responseColumn: 'col_y',
+    X: Xs1.map((v, i) => [v, Xs2[i]]), y: ys, factorSpec,
     termSet: ['Intercept', ...spec.terms.map(t => t.id)],
     coef: fit.ols.beta,
     rSqAdj: fit.diagnostics.adjR2,
-    factorSpec,
     spec,
-    dataSnapshot: buildDataSnapshot({
-      X: Xs1.map((v, i) => [v, Xs2[i]]), y: ys, factorSpec, termSet: spec.terms.map(t => t.id),
-    }),
-    dataHash: computeDataHash(Xs1.map((v, i) => [v, Xs2[i]]), ys),
-    responseSpec: { sourceColumn: 'col_y', transform: 'identity', aggregateOver: null },
   });
 
   test('all-continuous spec uses the non-hybrid path', () => {
     const opt = optimizeResponses(
-      [getModel(sm, modelId)],
+      [model],
       [{ kind: 'max', lower: 40, upper: 60, weight: 1 }],
       [[-1, 1], [-1, 1]],
       { nStarts: 6, seed: 1 },

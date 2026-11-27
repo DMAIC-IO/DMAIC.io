@@ -67,13 +67,29 @@ suite('LocalAdapter', () => {
       phases: {},
       phaseAchievement: {},
       phaseAchievementHistory: {},
-      models: {},
-      optimizations: {},
       dashboard: null,
       version: VERSION,
     });
     const doc = await a.loadProjectDoc(id);
     assertEqual(doc.dashboard, null);
+  });
+
+  test('Altschlüssel models/optimizations: gelesen, solange sie stehen; saveProjectMeta löscht sie', async () => {
+    localStorage.removeItem(`${PREFIX}projects`);
+    const a = new LocalAdapter();
+    const id = a.createProject('Alt', 'dmaic');
+    const p = `${PREFIX}p_${id}_`;
+    localStorage.setItem(`${p}models`, JSON.stringify({ m1: { id: 'm1' } }));
+    localStorage.setItem(`${p}optimizations`, JSON.stringify({}));
+    const before = await a.loadProjectDoc(id);
+    assertEqual(before.models.m1.id, 'm1');
+    assertEqual(JSON.stringify(before.optimizations), '{}');
+    a.saveProjectMeta(id, { projectMeta: { name: 'Alt' }, phases: {}, phaseAchievement: {}, phaseAchievementHistory: {}, dashboard: null, version: VERSION });
+    assertEqual(localStorage.getItem(`${p}models`), null);
+    assertEqual(localStorage.getItem(`${p}optimizations`), null);
+    const after = await a.loadProjectDoc(id);
+    assertEqual('models' in after, false);
+    assertEqual('optimizations' in after, false);
   });
 
   test('deleteProject drains pending writes', async () => {

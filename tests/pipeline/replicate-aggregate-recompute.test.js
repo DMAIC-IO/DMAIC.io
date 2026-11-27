@@ -7,26 +7,18 @@
  *
  * This test exercises the *math* contract of that recompute: aggregating y
  * over `replicateGroups` is what the worksheet formulas deliver, and
- * `computeDataHash` is what flips the freshness state. The formula engine's
+ * `computeDataHash` against the record's `dataHash` is what tells a stale model. The formula engine's
  * own correctness (AVERAGEIF / VARIF) is covered by the datagrid tests.
  */
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import { runMultiRegression } from '../../js/engines/regression-engine.js';
-import {
-  saveModel, getModel, getModelFreshness, computeDataHash, buildDataSnapshot,
-} from '../../js/core/models-store.js';
+import { computeDataHash } from '../../js/core/model-record.js';
+import { modelRecord } from '../helpers/model-record.js';
 
-function makeStateManager() {
-  const state = {};
-  return {
-    get(p) { return p.split('.').reduce((o, k) => o?.[k], state); },
-    set(p, v) {
-      const k = p.split('.'); let o = state;
-      for (let i = 0; i < k.length - 1; i++) { o[k[i]] ??= {}; o = o[k[i]]; }
-      o[k[k.length - 1]] = v;
-    },
-  };
+/** Gleicher Hash der aktuellen Daten wie beim Training: das Modell ist frisch. */
+function isFresh(model, current) {
+  return computeDataHash(current.X, current.y) === model.dataHash;
 }
 
 /** Aggregate y over replicate groups — mirrors what AVERAGEIF / VARIF produce
@@ -54,26 +46,20 @@ suite('Pipeline — replicate-aggregate recompute → model goes stale', () => {
   const xCols  = [X.map(r => r[0]), X.map(r => r[1])];
   const fit1   = runMultiRegression(xCols, yMean1, 1, 0.95, ['X1', 'X2']);
 
-  const sm = makeStateManager();
   const factorSpec = [{ name: 'X1', low: -1, high: 1 }, { name: 'X2', low: -1, high: 1 }];
-  const modelId = saveModel(sm, {
+  const model = modelRecord({
     name: 'Y_mean',
     experimentId: 'exp-1',
-    responseSpec: { sourceColumn: 'col_y_mean', transform: 'mean', aggregateOver: replicateGroups },
+    responseColumn: 'col_y_mean',
+    transform: 'mean',
+    X, y: yMean1, factorSpec,
     termSet: fit1.reg.terms,
     coef: fit1.reg.coeffs,
     rSqAdj: fit1.adjR2,
-    factorSpec,
-    dataSnapshot: buildDataSnapshot({
-      X, y: yMean1, factorSpec, termSet: fit1.reg.terms,
-      experimentId: 'exp-1', responseColumn: 'col_y_mean',
-    }),
-    dataHash: computeDataHash(X, yMean1),
   });
 
   test('fresh state: source data identical to training snapshot', () => {
-    const probe = () => ({ X, y: yMean1 });
-    assertEqual(getModelFreshness(getModel(sm, modelId), probe), 'fresh');
+    assertEqual(isFresh(model, { X, y: yMean1 }), true);
   });
 
   test('aggregate changes when one replicate cell changes', () => {
@@ -89,12 +75,11 @@ suite('Pipeline — replicate-aggregate recompute → model goes stale', () => {
   test('model becomes stale when the aggregated y differs', () => {
     const yEdited = [...yRaw]; yEdited[1] = 11.5;
     const yMean2  = aggregate(yEdited, replicateGroups);
-    const probe   = () => ({ X, y: yMean2 });
-    assertEqual(getModelFreshness(getModel(sm, modelId), probe), 'stale');
+    assertEqual(isFresh(model, { X, y: yMean2 }), false);
   });
 
   test('snapshot stays untouched — old prediction still reproducible', () => {
-    const m = getModel(sm, modelId);
+    const m = model;
     // The snapshot's y is exactly the y that flowed into training.
     assertEqual(m.dataSnapshot.y.length, yMean1.length);
     for (let i = 0; i < yMean1.length; i++) {

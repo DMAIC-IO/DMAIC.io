@@ -36,6 +36,16 @@ const LEGACY_KEYS = ['models', 'optimizations', 'experiments'];
  */
 
 /**
+ * True when the document still carries one of the legacy project keys
+ * (`models`, `optimizations`, `experiments`).
+ * @param {unknown} doc
+ * @returns {boolean}
+ */
+export function hasLegacyProjectModels(doc) {
+  return !!doc && typeof doc === 'object' && LEGACY_KEYS.some(k => k in /** @type {object} */ (doc));
+}
+
+/**
  * Move legacy project models and optimizations into their owner instances.
  *
  * @param {ProjectDocLike} doc  Project document (`phases`, `moduleStates`, legacy keys).
@@ -47,7 +57,7 @@ const LEGACY_KEYS = ['models', 'optimizations', 'experiments'];
  *   `phases` gained an entry.
  */
 export function adoptProjectModels(doc, { phaseFor } = {}) {
-  if (!doc || typeof doc !== 'object' || !LEGACY_KEYS.some(k => k in doc)) {
+  if (!hasLegacyProjectModels(doc)) {
     return { doc, changed: [], phasesChanged: false };
   }
 

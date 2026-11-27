@@ -18,7 +18,6 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { listModels, getModel, saveModel } from '../../core/models-store.js';
 import {
   optimizeResponses, buildResponseSurface,
 } from '../../engines/response-optimization-engine.js';
@@ -26,6 +25,29 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireBoolean, requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { State, VALID_KINDS } from './response-optimization-model.js';
 import { uid } from '../../core/uid.js';
+
+// ─── Übergang bis 2b-O ─────────────────────────────────────────
+// `core/models-store.js` ist entfallen (Regel D5: das Modell liegt bei der
+// Regressions-Instanz). Die Altform liest bis zu ihrer Umstellung nur noch,
+// was in dieser Sitzung unter `models` im Speicher steht (Beispiele); der Kern
+// speichert den Schlüssel nicht mehr.
+
+/** @param {any} sm @returns {object[]} */
+function listModels(sm) {
+  return Object.values(sm.get('models') ?? {});
+}
+
+/** @param {any} sm @param {string} id @returns {object|null} */
+function getModel(sm, id) {
+  return (sm.get('models') ?? {})[id] ?? null;
+}
+
+/** @param {any} sm @param {any} record @returns {string} */
+function saveModel(sm, record) {
+  const id = record.id ?? uid();
+  sm.set('models', { ...(sm.get('models') ?? {}), [id]: { ...record, id } });
+  return id;
+}
 
 const SPEC_KEYS = ['selected', 'kind', 'lower', 'upper', 'target', 'weight'];
 

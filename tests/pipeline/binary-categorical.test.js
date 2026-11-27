@@ -22,23 +22,8 @@
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import { generateDesign } from '../../js/engines/doe-planner-engine.js';
 import { runMultiRegression } from '../../js/engines/regression-engine.js';
-import {
-  saveModel, getModel, computeDataHash, buildDataSnapshot,
-} from '../../js/core/models-store.js';
+import { modelRecord } from '../helpers/model-record.js';
 import { optimizeResponses } from '../../js/engines/response-optimization-engine.js';
-
-function makeStateManager() {
-  const state = {};
-  return {
-    get(p) { return p.split('.').reduce((o, k) => o?.[k], state); },
-    set(p, v) {
-      const k = p.split('.'); let o = state;
-      for (let i = 0; i < k.length - 1; i++) { o[k[i]] ??= {}; o = o[k[i]]; }
-      o[k[k.length - 1]] = v;
-    },
-    _state: state,
-  };
-}
 
 suite('Pipeline — binary categorical factor in RSM', () => {
   // 2² full factorial × 3 replicates: X1 continuous in [-1, +1] (e.g. coded
@@ -90,30 +75,24 @@ suite('Pipeline — binary categorical factor in RSM', () => {
 
   // Persist as a model and run the optimiser. Box bounds: continuous on its
   // observed range, categorical on [-1, +1] (the coded representation).
-  const sm = makeStateManager();
   const factorSpec = [
     { name: 'Temperature', low: -1, high: 1 },
     { name: 'Tool',        low: -1, high: 1 },
   ];
   const X = design.codedMatrix.map(r => [...r]);
-  const modelId = saveModel(sm, {
+  const model = modelRecord({
     name: 'Yield (T, Tool)',
     experimentId: 'exp-binary',
-    responseSpec: { sourceColumn: 'col_y', transform: 'identity', aggregateOver: null },
+    responseColumn: 'col_y',
+    X, y: ys, factorSpec,
     termSet: fit.reg.terms,
     coef: fit.reg.coeffs,
     rSqAdj: fit.adjR2,
-    factorSpec,
-    dataSnapshot: buildDataSnapshot({
-      X, y: ys, factorSpec, termSet: fit.reg.terms,
-      experimentId: 'exp-binary', responseColumn: 'col_y',
-    }),
-    dataHash: computeDataHash(X, ys),
   });
 
   test('optimiser picks the correct categorical level (HSS, +1)', () => {
     const opt = optimizeResponses(
-      [getModel(sm, modelId)],
+      [model],
       [{ kind: 'max', lower: 40, upper: 60, weight: 1 }],
       [[-1, 1], [-1, 1]],
       { nStarts: 8, seed: 17, maxIter: 400 },

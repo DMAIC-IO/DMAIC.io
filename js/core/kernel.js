@@ -42,6 +42,11 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   // reloaded at once races the still-opening store, and the unload flush
   // falls back to the async path the browser may drop (Bug 012).
   await adapter.ready?.();
+  // Vor dem Laden: die Übernahme alter Projektmodelle (Regel D5) legt Waisen
+  // in der Vorgabephase ihres Moduls an und liest sie aus dem Register.
+  const moduleRegistry = new ModuleRegistry();
+  MODULES.forEach(def => moduleRegistry.register(def));
+  stateManager.setModuleRegistry(moduleRegistry);
   await stateManager.load();
 
   const i18n = new I18n('de');
@@ -60,10 +65,7 @@ export async function bootKernel(adapter = new LocalAdapter()) {
 
   shortcutRegistry.init(stateManager, eventBus);
 
-  const moduleRegistry = new ModuleRegistry();
-  MODULES.forEach(def => moduleRegistry.register(def));
   moduleRegistry.setActiveCycle(stateManager.getProjectCycle());
-  stateManager.setModuleRegistry(moduleRegistry);
   // Die Haken `redact` (core/redact.js) vorab: der Projekt-Export ist synchron.
   await moduleRegistry.loadRedactors();
 

@@ -1,6 +1,9 @@
 /**
  * @typedef {{ id: string, name: string, cycle?: string, created: string, modified: string, status: string }} ProjectEntry
- * @typedef {{ projectMeta: object, phases: object, phaseAchievement: object, phaseAchievementHistory: object, models: object, optimizations: object, chartEdits: object, dashboard: object|null, version: string, moduleStates: Object<string,object> }} ProjectDoc
+ * @typedef {{ projectMeta: object, phases: object, phaseAchievement: object, phaseAchievementHistory: object, chartEdits: object, dashboard: object|null, version: string, moduleStates: Object<string,object> }} ProjectDoc
+ * @typedef {ProjectDoc & { models?: object, optimizations?: object }} LoadedProjectDoc
+ *   Gelesenes Dokument: trägt die Altschlüssel `models`/`optimizations`, solange
+ *   ein Altstand sie im Speicher hat (Eingabe von `core/project-models.js`).
  */
 
 const NI = (name) => { throw new Error(`StorageAdapter.${name}() not implemented`); };

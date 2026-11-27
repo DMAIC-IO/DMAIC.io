@@ -31,6 +31,7 @@ import { VERSION } from './version.js';
 import { parseVersion, stripPatch } from './version-utils.js';
 import { migrateToLatest } from './migrations.js';
 import { redactModuleStates } from './redact.js';
+import { adoptProjectModels, hasLegacyProjectModels } from './project-models.js';
 import { idbDeleteAllForProject } from './idb-store.js';
 import { LocalAdapter } from './storage/local-adapter.js';
 import {
@@ -189,8 +190,6 @@ export class StateManager {
       phases: Object.fromEntries(tileIds.map(id => [id, []])),
       phaseAchievement: Object.fromEntries(methodologyIds.map(id => [id, 0])),
       phaseAchievementHistory: {},
-      models: {},
-      optimizations: {},
       chartEdits: {},
       projectMeta: {
         name: 'Neues Projekt',
@@ -444,8 +443,6 @@ export class StateManager {
         phases: this._state.phases,
         phaseAchievement: this._state.phaseAchievement,
         phaseAchievementHistory: this._state.phaseAchievementHistory || {},
-        models: this._state.models || {},
-        optimizations: this._state.optimizations || {},
         chartEdits: this._state.chartEdits || {},
         dashboard: this._state.dashboard,
         version: this._state.version,
@@ -474,7 +471,12 @@ export class StateManager {
       if (settings) this._state.settings = JSON.parse(settings);
 
       // Per-project doc (top-level state + module states) via the adapter.
-      const doc = await this._adapter.loadProjectDoc(this._projectId);
+      // Altstände tragen noch die Projektschlüssel `models`/`optimizations`:
+      // sie ziehen in ihre Besitzer-Instanzen (Regel D5), bevor der Zustand
+      // übernommen wird.
+      const loaded = await this._adapter.loadProjectDoc(this._projectId);
+      const adopted = loaded && hasLegacyProjectModels(loaded) ? this._adoptModels(loaded) : null;
+      const doc = adopted ? adopted.doc : loaded;
       if (doc) {
         const meta = doc.projectMeta || {};
         // Legacy 0.2 data has no cycle field — assume DMAIC. The full
@@ -487,8 +489,6 @@ export class StateManager {
         if (doc.phases && Object.keys(doc.phases).length > 0) this._state.phases = doc.phases;
         if (doc.phaseAchievement && Object.keys(doc.phaseAchievement).length > 0) this._state.phaseAchievement = doc.phaseAchievement;
         if (doc.phaseAchievementHistory) this._state.phaseAchievementHistory = doc.phaseAchievementHistory;
-        if (doc.models) this._state.models = doc.models;
-        if (doc.optimizations) this._state.optimizations = doc.optimizations;
         if (doc.chartEdits) this._state.chartEdits = doc.chartEdits;
         if (doc.dashboard) this._state.dashboard = doc.dashboard;
         if (doc.version) this._state.version = doc.version;
@@ -498,6 +498,7 @@ export class StateManager {
       } else {
         this._moduleCache.clear();
       }
+      if (adopted) await this._persistAdoptedModels(adopted);
     } catch (err) {
       console.error('[StateManager] Failed to load state:', err);
     }
@@ -521,16 +522,17 @@ export class StateManager {
     if (this._applyingRemote) return;      // reentrancy guard
     this._applyingRemote = true;
     try {
-      const doc = await this._adapter.loadProjectDoc(this._projectId);
-      if (!doc) return;
+      const loaded = await this._adapter.loadProjectDoc(this._projectId);
+      if (!loaded) return;
+      // Ein Altclient eines Mitautors schreibt noch die Projektschlüssel:
+      // dieselbe Übernahme, ohne Zurückschreiben (_applyingRemote).
+      const doc = hasLegacyProjectModels(loaded) ? this._adoptModels(loaded).doc : loaded;
       const { instanceIds, metaChanged } = this._diffRemote(doc);
       if (metaChanged) {
         this._state.projectMeta = doc.projectMeta;
         this._state.phases = doc.phases;
         this._state.phaseAchievement = doc.phaseAchievement;
         this._state.phaseAchievementHistory = doc.phaseAchievementHistory;
-        this._state.models = doc.models;
-        this._state.optimizations = doc.optimizations;
         this._state.chartEdits = doc.chartEdits || {};
         this._state.dashboard = doc.dashboard;
         this._state.version = doc.version;
@@ -559,12 +561,57 @@ export class StateManager {
     for (const id of this._moduleCache.keys()) if (!(id in next)) changed.add(id);
 
     const metaFields = ['projectMeta', 'phases', 'phaseAchievement', 'phaseAchievementHistory',
-      'models', 'optimizations', 'chartEdits', 'dashboard', 'version'];
+      'chartEdits', 'dashboard', 'version'];
     let metaChanged = false;
     for (const f of metaFields) {
       if (JSON.stringify(this._state[f]) !== JSON.stringify(doc[f])) { metaChanged = true; break; }
     }
     return { instanceIds: [...changed], metaChanged };
+  }
+
+  // ─── Projektmodelle (Regel D5) ───────────────────────────────
+
+  /**
+   * Zieht die Altschlüssel `models`/`optimizations`/`experiments` eines
+   * Projektdokuments in ihre Besitzer-Instanzen (`core/project-models.js`).
+   * @param {object} doc Projektdokument mit mindestens einem Altschlüssel
+   * @returns {import('./project-models.js').AdoptResult}
+   * @private
+   */
+  _adoptModels(doc) {
+    const cycle = /** @type {any} */ (doc).projectMeta?.cycle;
+    return adoptProjectModels(doc, { phaseFor: (moduleId) => this._phaseFor(moduleId, cycle) });
+  }
+
+  /**
+   * Die Vorgabephase eines Moduls im Zyklus (Manifest), sonst die erste
+   * Methodenphase. Für Waisen-Modelle ohne verweisende Optimierung.
+   * @param {string} moduleId
+   * @param {string} [cycleId]
+   * @returns {string|null}
+   * @private
+   */
+  _phaseFor(moduleId, cycleId) {
+    const cycle = cycleId || this._state?.projectMeta?.cycle || DEFAULT_CYCLE;
+    const def = this._moduleRegistry?.get(moduleId);
+    return def?.cycles?.[cycle]?.phase ?? getPhaseIds(cycle)[0] ?? null;
+  }
+
+  /**
+   * Schreibt das Ergebnis der Übernahme beim Laden fort: erst die geänderten
+   * Modulzustände in IndexedDB, danach die Projektdaten ohne die
+   * Altschlüssel (der Adapter löscht sie). In dieser Reihenfolge bleibt bei
+   * einem Abbruch dazwischen der Altstand erhalten, und der nächste Lauf ist
+   * idempotent; umgekehrt ginge ein Modell verloren.
+   * @param {import('./project-models.js').AdoptResult} adopted
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _persistAdoptedModels(adopted) {
+    const states = /** @type {any} */ (adopted.doc).moduleStates || {};
+    for (const id of adopted.changed) this._adapter.putModule(this._projectId, id, states[id]);
+    await this.flushNow();
+    this.save({ quiet: true });
   }
 
   // ─── Multi-Project API ────────────────────────────────────────
@@ -785,7 +832,10 @@ export class StateManager {
     const docById = new Map(docs.map(d => [d.id, d]));
 
     for (const proj of projects) {
-      const doc = docById.get(proj.id) || {};
+      // Ein nie geöffnetes Projekt trägt noch die Altschlüssel der Modelle:
+      // sie ziehen hier wie beim Laden in ihre Besitzer.
+      const stored = docById.get(proj.id) || {};
+      const doc = hasLegacyProjectModels(stored) ? this._adoptModels(stored).doc : stored;
       const meta = doc.projectMeta && Object.keys(doc.projectMeta).length > 0
         ? doc.projectMeta
         : { name: proj.name };
@@ -797,8 +847,6 @@ export class StateManager {
         phases: doc.phases || {},
         phaseAchievement: doc.phaseAchievement || {},
         phaseAchievementHistory: doc.phaseAchievementHistory || {},
-        models: doc.models || {},
-        optimizations: doc.optimizations || {},
         chartEdits: doc.chartEdits || {},
         dashboard: doc.dashboard ?? null,
         version: doc.version || VERSION,
@@ -830,8 +878,12 @@ export class StateManager {
       localStorage.setItem(`${GLOBAL_PREFIX}settings`, JSON.stringify(data.settings));
     }
 
-    for (const proj of data.projects) {
+    for (const raw of data.projects) {
       const id = genId();
+      // Modelle und Optimierungen ziehen in ihre Besitzer (Regel D5).
+      const proj = hasLegacyProjectModels(raw)
+        ? adoptProjectModels(raw, { phaseFor: (m) => this._phaseFor(m, raw.projectMeta?.cycle) }).doc
+        : raw;
 
       // Persist the per-project doc (top-level state + module states) via the
       // adapter. Does NOT activate the project or stamp its own timestamps.
@@ -840,8 +892,6 @@ export class StateManager {
         phases: proj.phases || {},
         phaseAchievement: proj.phaseAchievement || {},
         phaseAchievementHistory: proj.phaseAchievementHistory || {},
-        models: proj.models || {},
-        optimizations: proj.optimizations || {},
         chartEdits: proj.chartEdits || {},
         dashboard: proj.dashboard ?? null,
         version: proj.version || VERSION,
@@ -945,6 +995,11 @@ export class StateManager {
     let data = JSON.parse(jsonString);
     _assertNotFutureMajor(data.appVersion);
     data = migrateToLatest(data, VERSION);
+    // Modelle und Optimierungen ziehen in ihre Besitzer (Regel D5); ohne das
+    // gingen die Modelle eines Einzelexports verloren (Altfehler K3).
+    if (hasLegacyProjectModels(data)) {
+      data = adoptProjectModels(data, { phaseFor: (m) => this._phaseFor(m, data.projectMeta?.cycle) }).doc;
+    }
     // Ab hier ist der Speicher neuer als die eingehängten Instanzen: sie
     // verwerfen ihre ausstehende Speicherung und werden nicht mehr
     // zurückgeschrieben (Unload, Projektwechsel) — sonst überdeckte ihr alter

@@ -7,6 +7,13 @@ import { openDB, idbGetAllForProject, idbBatch, idbBatchSync, idbDeleteAllForPro
 
 const genId = () => uid();
 
+/**
+ * Projektschlüssel der Altform (`<projekt>models`, `<projekt>optimizations`).
+ * Gelesen nur als Eingabe der Übernahme in die Besitzer-Instanzen
+ * (`core/project-models.js`), nie mehr geschrieben.
+ */
+const LEGACY_MODEL_KEYS = /** @type {const} */ (['models', 'optimizations']);
+
 export class LocalAdapter extends StorageAdapter {
   supportsMultiProject = true;
 
@@ -92,18 +99,23 @@ export class LocalAdapter extends StorageAdapter {
     try {
       for (const [instanceId, state] of await idbGetAllForProject(id)) moduleStates[instanceId] = state;
     } catch (err) { console.error('[LocalAdapter] IDB read failed', id, err); }
-    return {
+    /** @type {import('./storage-adapter.js').LoadedProjectDoc} */
+    const doc = {
       projectMeta: j('projectMeta') || {},
       phases: j('phases') || {},
       phaseAchievement: j('phaseAchievement') || {},
       phaseAchievementHistory: j('phaseAchievementHistory') || {},
-      models: j('models') || {},
-      optimizations: j('optimizations') || {},
       chartEdits: j('chartEdits') || {},
       dashboard: j('dashboard'),
       version: localStorage.getItem(`${p}version`) || VERSION,
       moduleStates,
     };
+    // Altschlüssel nur als Eingabe der Übernahme in die Besitzer (Regel D5),
+    // solange sie noch im Speicher stehen; saveProjectMeta löscht sie.
+    for (const k of LEGACY_MODEL_KEYS) {
+      if (localStorage.getItem(`${p}${k}`) != null) doc[k] = j(k) || {};
+    }
+    return doc;
   }
 
   saveProjectMeta(id, doc) {
@@ -113,8 +125,7 @@ export class LocalAdapter extends StorageAdapter {
     set('phases', doc.phases || {});
     set('phaseAchievement', doc.phaseAchievement || {});
     set('phaseAchievementHistory', doc.phaseAchievementHistory || {});
-    set('models', doc.models || {});
-    set('optimizations', doc.optimizations || {});
+    for (const k of LEGACY_MODEL_KEYS) localStorage.removeItem(`${p}${k}`);
     set('chartEdits', doc.chartEdits || {});
     set('dashboard', doc.dashboard ?? null);
     localStorage.setItem(`${p}version`, doc.version || VERSION);

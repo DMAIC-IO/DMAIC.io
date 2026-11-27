@@ -18,7 +18,7 @@ suite('LocalAdapter — IndexedDB', () => {
     const id = a.createProject('P', 'dmaic');
     a.saveProjectMeta(id, {
       projectMeta: { name: 'P', cycle: 'dmaic' }, phases: {}, phaseAchievement: {},
-      phaseAchievementHistory: {}, models: {}, optimizations: {}, dashboard: null, version: VERSION,
+      phaseAchievementHistory: {}, dashboard: null, version: VERSION,
     });
     a.putModule(id, 'inst-1', { value: 42 });
     await a.flush();
