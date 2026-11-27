@@ -291,6 +291,8 @@
 }
 
 .doe-advisor__result-meta-value {
+  /* schrumpfbreit: das Alt-„?“ sitzt am Textende, nicht an der Spalte daneben */
+  align-self: flex-start;
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   font-weight: 500;
