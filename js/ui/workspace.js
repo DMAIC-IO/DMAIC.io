@@ -100,12 +100,12 @@ function describeAction(el, vm, i18nKey) {
   if (!vm.help) return '';
   // Ein Knopf OHNE Inhalt hat keinen Namen aus dem Inhalt — dann wird sein
   // `title` zum Namen, und der Hilfesatz nähme die Stelle der Beschriftung
-  // ein (der Fehler, den Task 8 an den Symbolknöpfen undo/redo behob). Das
-  // kann `dynamicText` jederzeit herbeiführen, indem es '' liefert. Solche
-  // Knöpfe bekommen vorab ihre eigene kurze Beschriftung als Titel;
+  // ein. Das kann `dynamicText` jederzeit herbeiführen, indem es '' liefert.
+  // Solche Knöpfe bekommen vorab ihre eigene kurze Beschriftung als Titel;
   // `describeElement` lässt einen fremden Titel stehen und hängt den Satz
-  // dann nur noch an `aria-describedby`. Kein zweiter Mechanismus: es ist
-  // dieselbe Titelregel, die undo/redo schützt.
+  // dann nur noch an `aria-describedby` (die Titelregel aus
+  // `context-help.js`). Rückgängig/Wiederholen tragen sichtbaren Text und
+  // brauchen diesen Rückfall nicht.
   if (!el.textContent.trim() && vm.text) el.title = vm.text;
   return describeElement(el, `${i18nKey}.actions.${vm.agentAction}.help`);
 }
@@ -429,9 +429,10 @@ export class Workspace {
   }
 
   /**
-   * Knopf für Rückgängig/Wiederholen: nur das Symbol, Name und Hilfe über
-   * `title` und `aria-describedby`; gesperrt, solange der Verlauf der
-   * Instanz in dieser Richtung leer ist.
+   * Knopf für Rückgängig/Wiederholen: Symbol und sichtbarer Text wie die
+   * übrigen Aktionen; der Name kommt aus dem Text, der Hilfesatz
+   * (`history.undoHelp`/`redoHelp`) über `title` und `aria-describedby`.
+   * Gesperrt, solange der Verlauf der Instanz in dieser Richtung leer ist.
    * @param {{history: 'undo'|'redo', iconId: string, text: string, variant: string}} vm
    * @param {object} inst
    * @returns {HTMLButtonElement}
@@ -442,9 +443,7 @@ export class Workspace {
     btn.type = 'button';
     btn.className = `workspace__action workspace__action--${vm.variant} workspace__action--history`;
     btn.dataset.history = dir;
-    btn.title = vm.text;
-    btn.setAttribute('aria-label', vm.text);
-    btn.append(icon(vm.iconId, { size: 'sm' }));
+    btn.append(icon(vm.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, vm.text));
     describeElement(btn, `history.${dir}Help`);
     btn.addEventListener('click', () => { inst.historyStep?.(dir); });
     if (typeof inst.bindEffect === 'function') {

@@ -88,12 +88,16 @@ suite('Workspace — Verlaufsknöpfe', () => {
     assertEqual(inst.steps.join(','), 'undo');
   });
 
-  test('Knopf trägt title und aria-describedby, kein data-help-key', () => {
+  test('Knopf trägt sichtbaren Text, den Hilfesatz als title und aria-describedby, kein data-help-key', () => {
     const inst = makeInstance();
     const ws = makeWorkspace(inst);
     ws._renderActions();
-    const [undo] = historyButtons(ws);
-    assertEqual(undo.getAttribute('title'), 'Rückgängig');
+    const [undo, redo] = historyButtons(ws);
+    assertEqual(undo.querySelector('.workspace__action-text')?.textContent, 'Rückgängig');
+    assertEqual(redo.querySelector('.workspace__action-text')?.textContent, 'Wiederholen');
+    assertEqual(undo.hasAttribute('aria-label'), false, 'Name kommt aus dem sichtbaren Text');
+    assertEqual(undo.getAttribute('title'), TABLE['history.undoHelp']);
+    assertEqual(redo.getAttribute('title'), TABLE['history.redoHelp']);
     const ref = undo.getAttribute('aria-describedby');
     assertTrue(Boolean(ref), 'aria-describedby fehlt');
     assertEqual(document.getElementById(ref).textContent, TABLE['history.undoHelp']);
