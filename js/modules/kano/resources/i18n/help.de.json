@@ -1,0 +1,124 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das {{term:kano|Kano-Modell}} beantwortet eine Frage, die eine reine Bedürfnisliste offenlässt: Wirkt eine Anforderung überhaupt gleich stark, egal ob sie erfüllt ist oder nicht? Die Antwort ist meist nein. Manche Merkmale verärgern nur bei Fehlen, ohne bei Erfüllung zusätzlich zu begeistern; andere tun genau das Gegenteil. Das Modul ordnet jede erhobene Anforderung nach diesem Muster ein und liefert damit eine Priorisierung, die reine Wichtigkeitsskalen nicht leisten."
+        },
+        {
+          "type": "paragraph",
+          "content": "Im DMAIC-Ablauf setzt Kano an, nachdem der {{term:voc|VoC}}→{{term:ctq|CTx}}-Baum Bedürfnisse, Treiber und Anforderungen sauber herausgearbeitet hat, und bevor daraus verbindlich entschieden wird, woran zuerst gearbeitet wird. Ohne diesen Zwischenschritt bekommt jede Anforderung dasselbe Gewicht — mit ihm zeigt sich, welche Merkmale den Unterschied zwischen „funktioniert“ und „begeistert“ machen."
+        },
+        {
+          "type": "definition",
+          "term": "Basismerkmal (M)",
+          "content": "Wird vorausgesetzt. Ist es erfüllt, fällt das kaum auf; fehlt es, entsteht deutliche Unzufriedenheit. Investitionen hier verhindern Ärger, sie erzeugen keine Begeisterung."
+        },
+        {
+          "type": "definition",
+          "term": "Leistungsmerkmal (O)",
+          "content": "Zufriedenheit steigt proportional zum Erfüllungsgrad, Unzufriedenheit sinkt entsprechend. Klassisches „mehr ist besser“ — hier wirkt jede Verbesserung direkt messbar."
+        },
+        {
+          "type": "definition",
+          "term": "Begeisterungsmerkmal (A)",
+          "content": "Wird nicht erwartet. Fehlt es, stört das kaum; ist es da, überrascht es positiv. Begeisterungsmerkmale wandern mit der Zeit oft zu Leistungs- oder sogar Basismerkmalen, sobald der Markt sich daran gewöhnt hat."
+        },
+        {
+          "type": "definition",
+          "term": "Indifferent (I)",
+          "content": "Weder Erfüllung noch Fehlen verändert die Zufriedenheit spürbar. Aufwand hier lohnt sich in der Regel nicht."
+        },
+        {
+          "type": "definition",
+          "term": "Umgekehrt (R)",
+          "content": "Die Reaktion läuft entgegengesetzt zur Erwartung — Befragte wären eher zufrieden, wenn das Merkmal fehlt. Häufig ein Hinweis darauf, dass die Anforderung falsch formuliert oder aus der falschen Perspektive gestellt wurde."
+        },
+        {
+          "type": "definition",
+          "term": "Widersprüchlich (Q)",
+          "content": "Die beiden Antworten zu einem Item widersprechen sich logisch. Kein inhaltliches Ergebnis, sondern ein Hinweis auf ein Datenproblem — siehe unten."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Items kommen aus dem {{term:ctx-baum|VoC→CTx-Baum}}: wahlweise auf Ebene der Bedürfnisse, der Treiber oder der Requirements. Eine Kano-Instanz arbeitet immer auf genau einer dieser drei Ebenen; wer sowohl Bedürfnisse als auch Treiber bewerten will, legt zwei getrennte Instanzen an."
+        },
+        {
+          "type": "paragraph",
+          "content": "Der Abgleich mit dem Baum läuft nie automatisch im Hintergrund. Eine Statuszeile zeigt an, wie viele Knoten neu hinzugekommen, umbenannt oder aus dem Baum verschwunden sind — erst ein Klick auf „Aus Baum übernehmen“ setzt das um. Verschwundene Knoten werden dabei nicht gelöscht, sondern nur als verwaist markiert; ihre bereits erfassten Antworten bleiben erhalten, falls der Knoten nur vorübergehend umgebaut wurde oder die Auswertung trotzdem noch gebraucht wird. Die Datenrichtung ist grundsätzlich einseitig: Das Kano-Modul liest aus dem Baum, schreibt aber nie in ihn zurück."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Erfassung ist nach Befragten organisiert: eine Reiterleiste erlaubt es, zwischen mehreren Personen zu wechseln, ohne dass sich die Item-Liste ändert. Zu jedem Item werden zwei Fragen auf derselben fünfstufigen Reaktionsskala gestellt — von „das würde mich sehr freuen“ bis „das würde mich sehr stören“: einmal, wie die Reaktion ausfällt, wenn die Anforderung erfüllt ist (funktionale Frage), einmal, wie sie ausfällt, wenn sie nicht erfüllt ist (dysfunktionale Frage)."
+        },
+        {
+          "type": "paragraph",
+          "content": "Beide Fragen sind nötig, weil erst ihre Kombination die Kategorie ergibt. Eine einzelne Frage kann nicht unterscheiden, ob Zustimmung zu „das ist mir wichtig“ auf ein Basis-, Leistungs- oder Begeisterungsmerkmal zurückgeht — dieselbe hohe Wichtigkeit sieht bei allen dreien gleich aus. Erst das Antwortpaar, nachgeschlagen in der klassischen Kano-Auswertungstabelle, trennt die sechs Kategorien."
+        },
+        {
+          "type": "paragraph",
+          "content": "Optional lässt sich eine dritte Frage nach der Wichtigkeit zuschalten, auf einer Skala von 1 (völlig unwichtig) bis 9 (außerordentlich wichtig). Sie verändert die Kategorie eines Items nicht — dafür bleiben allein die beiden Kano-Fragen maßgeblich —, fließt aber als Blasengröße ins Better/Worse-Diagramm und hilft, innerhalb einer Kategorie zu priorisieren. Wo die Befragung kurz bleiben muss oder die relative Rangfolge innerhalb einer Kategorie ohnehin nicht gebraucht wird, lässt sie sich weglassen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Kategorie eines Items ist der Modalwert über alle Befragten: welche der sechs Kategorien am häufigsten vorkommt. Bei einem Gleichstand entscheidet die Reihenfolge M > O > A > I > R > Q — die stärkere, eindeutigere Kategorie gewinnt —, und die Zeile wird zusätzlich als Gleichstand markiert, damit das nicht unbemerkt bleibt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Aus denselben Zähldaten entstehen zwei Kennzahlen: CS = (A+O)/(A+O+M+I) beschreibt das Zufriedenheitspotenzial, wenn die Anforderung erfüllt wird — je näher an 1, desto mehr Zufriedenheit lässt sich gewinnen. DS = −(O+M)/(A+O+M+I) beschreibt das Unzufriedenheitsrisiko, wenn sie nicht erfüllt wird — je näher an −1, desto größer der Schaden bei Nichterfüllung. R und Q stehen bewusst nicht im Nenner: Sie drücken keine Präferenz für oder gegen die Anforderung aus, sondern eine Umkehrung der erwarteten Reaktion (R) beziehungsweise einen Widerspruch in den Antworten (Q). Sie in die Kennzahl einzurechnen würde CS und DS verwässern, statt sie zu schärfen. Bestehen die Antworten zu einem Item ausschließlich aus R und Q, wird der Nenner 0 — dann gibt es keine Kennzahl, die Anzeige zeigt „—“."
+        },
+        {
+          "type": "paragraph",
+          "content": "Das Better/Worse-Diagramm trägt CS und DS gegeneinander auf: x = |DS|, y = CS, mit Hilfslinien bei jeweils 0,5. Ist die dritte Frage aktiv, wächst die Blasengröße mit der mittleren Wichtigkeit des Items. Unter dem Diagramm stehen die vier Quadranten als Legende: oben links Begeisterung, oben rechts Leistung, unten links Indifferent, unten rechts Basis."
+        },
+        {
+          "type": "paragraph",
+          "content": "Ein hoher Anteil widersprüchlicher (Q-)Antworten ist so gut wie nie ein inhaltlicher Befund, sondern fast immer ein Zeichen, dass eine Frage missverstanden oder mit vertauschter Polung beantwortet wurde. Das Modul warnt, sobald der Q-Anteil 10 % übersteigt — sowohl insgesamt als auch pro Item. In diesem Fall lohnt es sich, die betroffene Formulierung zu prüfen und im Zweifel bei der befragten Person nachzufragen, statt die Kategorie unbesehen zu übernehmen."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Eine Ebene für alles nutzen wollen",
+          "content": "Eine Kano-Instanz bewertet immer nur eine Baumebene. Wer Bedürfnisse und Treiber getrennt einordnen will, braucht zwei Instanzen — nicht eine Ebene wechseln und hoffen, dass die alten Antworten passen."
+        },
+        {
+          "type": "definition",
+          "term": "Den Sync-Hinweis ignorieren",
+          "content": "Ändert sich der Baum, bleibt die Item-Liste so lange auf altem Stand, bis „Aus Baum übernehmen“ geklickt wird. Wer die Statuszeile übergeht, wertet unbemerkt veraltete oder umbenannte Items aus."
+        },
+        {
+          "type": "definition",
+          "term": "Verwaiste Items sofort löschen",
+          "content": "Ein aus dem Baum verschwundener Knoten wird markiert, nicht gelöscht — die Antworten bleiben erhalten. Vor dem manuellen Löschen lohnt sich ein Blick, ob der Knoten nur umbenannt oder verschoben wurde und die Antworten weiterhin gültig sind."
+        },
+        {
+          "type": "definition",
+          "term": "Die dritte Frage bei knapper Zeit erzwingen",
+          "content": "Wichtigkeit verändert keine Kategorie, nur die Priorisierung innerhalb einer Kategorie. Wo dafür keine Zeit ist, liefert die Auswertung ohne dritte Frage trotzdem vollständige M/O/A/I/R/Q-Kategorien."
+        },
+        {
+          "type": "definition",
+          "term": "Hohen Q-Anteil als Ergebnis akzeptieren",
+          "content": "Ein Item mit vielen widersprüchlichen Antworten ist kein „Kano-Q-Merkmal“ im fachlichen Sinn, sondern ein Hinweis auf eine missverständliche Frage. Erst die Formulierung klären, dann die Kategorie ernst nehmen."
+        },
+        {
+          "type": "definition",
+          "term": "Basismerkmale nach CS abwerten",
+          "content": "Ein niedriger CS-Wert bei hohem DS bedeutet nicht „unwichtig“ — im Gegenteil, ein Fehlen dieser Anforderung kostet stark. Basismerkmale gehören trotzdem sichergestellt, auch wenn sie im Diagramm nicht durch hohes CS auffallen."
+        }
+      ]
+    }
+  }
+}

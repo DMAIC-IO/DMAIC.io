@@ -1,0 +1,157 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "source": {
+      "help": "Where the features come from: the VoC→CTx tree of this project they are read from — so they come from another module instance — and its level: needs, drivers or requirements. Without a tree the features stand on their own. The source is set by choosing the tree, choosing the level and taking over from the tree."
+    },
+    "options": {
+      "help": "The capture options: whether the third question about importance is asked (importance). When on, the importance column appears; the mean importance then sets the order within a category and the bubble size in the diagram."
+    },
+    "items": {
+      "help": "The features to be rated, in capture order, each with its identifier, the node in the tree (empty for a feature without a tree link), name, origin in the tree and the mark whether the node is gone from the tree. They come from the linked tree with “Pull from tree”; a feature is only deleted by hand, together with its answers. Bulk data: without an explicit field choice reading returns only the extent."
+    },
+    "respondents": {
+      "help": "The respondents in creation order, each with identifier and name; one tab per respondent above the capture grid."
+    },
+    "answers": {
+      "help": "The answers, by respondent and within that by feature: per pair the functional and the dysfunctional answer on the 1 to 5 scale and the importance on the 1 to 9 scale; empty means unanswered. Each answer is written on its own; answers on deleted features or respondents go with them."
+    },
+    "activeRespondentId": {
+      "help": "Which respondent the capture grid shows; a click on the tab selects them, a double click renames them. The answers stay untouched."
+    },
+    "scatterEdits": {
+      "help": "The settings from the chart editor of the Better/Worse diagram (title, axis titles, font sizes, export size); empty while nothing has been changed."
+    },
+    "evaluation": {
+      "help": "The evaluation per feature and overall: count per category, most frequent category, satisfaction and dissatisfaction coefficient, mean importance and the key figures across all features."
+    },
+    "sourceHint": {
+      "help": "A note when the linked VoC→CTx tree no longer exists in the project; otherwise empty. The features stay until another source is chosen."
+    }
+  },
+  "actions": {
+    "setSourceTree": {
+      "help": "Links the features to a VoC→CTx tree of the project or removes the link. Features and answers stay; “Pull from tree” aligns them afterwards.",
+      "params": {
+        "instanceId": "The instance of the tree module the features come from; empty removes the link. An instance that does not exist in the project is accepted; reading then shows a note.",
+        "command": "The command as one object with instanceId."
+      }
+    },
+    "setSourceLevel": {
+      "help": "Sets the tree level the features come from. Features and all captured answers are discarded, because they belong to the old level; with captured answers the interface asks first.",
+      "params": {
+        "level": "The tree level: need for needs, driver for drivers, req for requirements. Any other value is rejected.",
+        "command": "The command as one object with level."
+      }
+    },
+    "syncItems": {
+      "help": "Aligns the features with the nodes of one tree level and links the tree: new nodes are added as features, renamed ones are updated, vanished ones are marked as missing, returning ones unmarked. Nothing is ever deleted. Returns the number of features. The interface reads the tree with “Pull from tree” and then calls it.",
+      "params": {
+        "instanceId": "The instance of the tree module the nodes come from.",
+        "candidates": "The nodes of the configured level in tree order, each with node identifier, name and origin in the tree.",
+        "command": "The command as one object with instanceId and candidates."
+      }
+    },
+    "setItems": {
+      "help": "Replaces the list of features to be rated. Answers on features that are gone afterwards are dropped. Returns the number of features.",
+      "params": {
+        "items": "The features as a list. Per feature the identifier is required and must be unique; node in the tree, name, origin and the mark “gone from the tree” are optional. A missing or duplicate identifier, an unknown field and a wrong type are rejected.",
+        "command": "The command as one object with items."
+      }
+    },
+    "removeItem": {
+      "help": "Removes a feature with all answers for it.",
+      "params": {
+        "id": "The identifier of the feature. An unknown identifier is rejected.",
+        "command": "The command as one object with id."
+      }
+    },
+    "addRespondent": {
+      "help": "Adds a respondent and returns their identifier. The first respondent is selected in the process. The interface assigns the running name “Respondent n”.",
+      "params": {
+        "name": "The name of the new respondent. An empty name is rejected.",
+        "command": "The command as one object with name."
+      }
+    },
+    "renameRespondent": {
+      "help": "Renames a respondent; on the tab by double click.",
+      "params": {
+        "id": "The identifier of the respondent. An unknown identifier is rejected.",
+        "name": "The new name. An empty name is rejected, the old one stays.",
+        "command": "The command as one object with id and name."
+      }
+    },
+    "removeRespondent": {
+      "help": "Removes a respondent with all of their answers. If they were selected, the first remaining one takes over. In the interface the module asks first.",
+      "params": {
+        "id": "The identifier of the respondent. An unknown identifier is rejected.",
+        "command": "The command as one object with id."
+      }
+    },
+    "setAnswer": {
+      "help": "Sets a single answer of one respondent for one feature.",
+      "params": {
+        "respondentId": "The identifier of the respondent. An unknown identifier is rejected.",
+        "itemId": "The identifier of the feature. An unknown identifier is rejected.",
+        "field": "Which question: f the functional, d the dysfunctional, w the importance. Any other value is rejected.",
+        "value": "The answer as a whole number, also as numeric text: f and d from 1 to 5, w from 1 to 9; empty resets the answer. A value off the scale is rejected.",
+        "command": "The command as one object with respondentId, itemId, field and value."
+      }
+    }
+  },
+  "asyncTasks": {
+    "applySync": {
+      "help": "Pull from tree: reads the nodes of the configured level from the linked tree and aligns the features — new ones are added, renamed ones are updated, vanished ones are marked as missing. Nothing is ever deleted. Without a tree or without a change the button is disabled.",
+      "cancel": {
+        "help": "Cancels the takeover; the features stay as they were."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "showChart": {
+        "help": "Shows or hides the Better/Worse diagram of the tile; bar and key figures stay."
+      }
+    }
+  },
+  "types": {
+    "AnswerField": {
+      "f": "The functional question: how would you feel if the feature is present? Five levels: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Together with the dysfunctional answer it gives the category of this answer by Kano's evaluation table: happy when present and annoyed when absent is a performance feature; happy when present and neutral when absent is an attractive feature; neutral when present and annoyed when absent is a must-be feature; neutral both ways is indifferent. A pair is questionable only for 1 and 1 or 5 and 5. It is reverse when the absence would make you very happy (1) while the presence is only expected, neutral or acceptable (2 to 4), or when the presence would annoy you a lot (5) but the absence would not (1 to 4); other pairs such as 3 and 2 are indifferent. If either answer is missing, the pair is not classified.",
+      "d": "The dysfunctional question: how would you feel if the feature is absent? The same five levels as the functional question: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Only the pair of functional and dysfunctional answer gives the category by Kano's evaluation table; if either is missing, the pair is not classified.",
+      "w": "How important the feature is to the respondent, from 1 not at all important to 9 extremely important; empty means unanswered. It is only captured and evaluated when the option \"Capture importance\" is on; it then sets the order within a category and the bubble size in the chart."
+    },
+    "KanoEvaluation": {
+      "rows": "One row of the result table per feature. Sorted by category strength (must-be, performance, attractive, indifferent, reverse, questionable, features without a category last), within a category by mean importance descending, then by CS descending.",
+      "totals": "The figures across all features and respondents: number of features, number of respondents, completeness and Q share."
+    },
+    "KanoRow": {
+      "itemId": "The id of the feature, which the actions use to address it.",
+      "label": "The name of the feature as the result table shows it.",
+      "path": "Where the feature sits in the VoC→CTx tree, as a path from top to bottom.",
+      "missing": "Whether the feature no longer exists in the linked tree. Its answers are kept; the row is marked as missing.",
+      "counts": "How many respondents put the feature into which category; one number per category.",
+      "n": "The number of answers for this feature that could be classified, that is a pair of functional and dysfunctional answer. It is the sum of all six categories, including questionable and reverse.",
+      "unanswered": "The number of answers for this feature that cannot be assigned to any category: because the functional or the dysfunctional answer is missing or because a value lies outside the scale of 1 to 5. They count in no category.",
+      "category": "The most frequent category among the answers for this feature: must-be, performance, attractive, indifferent, reverse or questionable; empty if no answer could be classified. If two or more categories are equally frequent, the stronger one wins in the order must-be, performance, attractive, indifferent, reverse, questionable.",
+      "tie": "Whether two or more categories are equally frequent at the top. The stronger one by the category order then applies, and the result table marks the tie.",
+      "cs": "The satisfaction coefficient (Better): (attractive + performance) divided by (attractive + performance + must-be + indifferent), a value from 0 to 1. Near 1, fulfilling the feature raises satisfaction strongly. Reverse and questionable answers are not in the denominator; empty if no answer falls into these four categories.",
+      "ds": "The dissatisfaction coefficient (Worse): −(performance + must-be) divided by (attractive + performance + must-be + indifferent), a value from −1 to 0. Near −1, lacking the feature annoys strongly. Reverse and questionable answers are not in the denominator; empty if no answer falls into these four categories.",
+      "importanceMean": "The mean of the importance ratings from 1 to 9 for this feature. Empty if the option \"Capture importance\" is off or there is no rating.",
+      "importanceN": "The number of importance ratings the mean importance is built from; 0 without the option \"Capture importance\"."
+    },
+    "KanoCounts": {
+      "M": "Must-be: presence is expected or neutral, absence annoys strongly. The number of respondents who classify the feature this way.",
+      "O": "Performance: presence pleases, absence annoys; the better fulfilled, the more satisfied. The number of respondents who classify the feature this way.",
+      "A": "Attractive: presence delights, absence is neutral and not missed. The number of respondents who classify the feature this way.",
+      "I": "Indifferent: presence and absence are both neutral, the feature hardly affects satisfaction. The number of respondents who classify the feature this way.",
+      "R": "Reverse: the answers run against the expected direction, namely when the absence would make you very happy (1) while the presence is only expected, neutral or acceptable (2 to 4), or when the presence would annoy you a lot (5) but the absence would not (1 to 4). The number of respondents who classify the feature this way.",
+      "Q": "Questionable: both answers are equally extreme (1 and 1 or 5 and 5) and contradict each other, the question was probably misunderstood. The number of respondents who classify the feature this way."
+    },
+    "KanoTotals": {
+      "items": "The number of features being rated.",
+      "respondents": "The number of respondents.",
+      "completeness": "The share of classified answers among all possible ones: classified answers divided by (number of features times number of respondents), a value from 0 to 1; 0 if there are no features or respondents. The interface shows it as a percentage.",
+      "qShare": "The share of questionable answers among the classified ones: number of questionable answers divided by number of classified ones, a value from 0 to 1; 0 without classified answers. Above 10 %, the interface warns that the questions were probably misunderstood."
+    }
+  }
+}

@@ -1,0 +1,727 @@
+{
+  "$comment": "read() der Altform (Sprache en, ohne treeList; source.instanceId ersetzt) je Beispiel und für die Instanz aus legacy-project.json; Task 0 der F2-Umstellung.",
+  "kano-lieferservice": {
+    "source": {
+      "instanceId": "<tree>",
+      "level": "need"
+    },
+    "options": {
+      "importance": true
+    },
+    "items": [
+      {
+        "id": "k1",
+        "nodeId": "need-schnell",
+        "label": "Schnelle Lieferung",
+        "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+        "missing": false
+      },
+      {
+        "id": "k2",
+        "nodeId": "need-transparenz",
+        "label": "Nachvollziehbarer Lieferstatus",
+        "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+        "missing": false
+      },
+      {
+        "id": "k3",
+        "nodeId": "need-preis",
+        "label": "Transparente Versandkosten",
+        "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+        "missing": false
+      },
+      {
+        "id": "k4",
+        "nodeId": "need-kontakt",
+        "label": "Persönlicher Ansprechpartner",
+        "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+        "missing": false
+      },
+      {
+        "id": "k5",
+        "nodeId": "need-verpackung",
+        "label": "Nachhaltige Verpackung",
+        "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+        "missing": false
+      },
+      {
+        "id": "k6",
+        "nodeId": "need-retoure",
+        "label": "Unkomplizierte Retoure",
+        "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+        "missing": false
+      }
+    ],
+    "items$range": {
+      "from": 0,
+      "to": 6,
+      "rowCount": 6
+    },
+    "respondents": [
+      {
+        "id": "r1",
+        "name": "Kunde A"
+      },
+      {
+        "id": "r2",
+        "name": "Kunde B"
+      },
+      {
+        "id": "r3",
+        "name": "Kunde C"
+      }
+    ],
+    "answers": {
+      "r1": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 8
+        },
+        "k2": {
+          "f": 2,
+          "d": 5,
+          "w": 7
+        },
+        "k3": {
+          "f": 2,
+          "d": 5,
+          "w": 6
+        },
+        "k4": {
+          "f": 1,
+          "d": 3,
+          "w": 4
+        },
+        "k5": {
+          "f": 1,
+          "d": 3,
+          "w": 5
+        },
+        "k6": {
+          "f": 3,
+          "d": 3,
+          "w": 3
+        }
+      },
+      "r2": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 9
+        },
+        "k2": {
+          "f": 2,
+          "d": 5,
+          "w": 6
+        },
+        "k3": {
+          "f": 1,
+          "d": 5,
+          "w": 5
+        },
+        "k4": {
+          "f": 1,
+          "d": 3,
+          "w": 3
+        },
+        "k5": {
+          "f": 3,
+          "d": 3,
+          "w": 4
+        },
+        "k6": {
+          "f": 3,
+          "d": 3,
+          "w": 2
+        }
+      },
+      "r3": {
+        "k1": {
+          "f": 2,
+          "d": 5,
+          "w": 8
+        },
+        "k2": {
+          "f": 2,
+          "d": 5,
+          "w": 7
+        },
+        "k3": {
+          "f": 2,
+          "d": 3,
+          "w": 3
+        },
+        "k4": {
+          "f": 1,
+          "d": 3,
+          "w": 5
+        },
+        "k5": {
+          "f": 1,
+          "d": 3,
+          "w": 6
+        },
+        "k6": {
+          "f": 3,
+          "d": 3,
+          "w": 2
+        }
+      }
+    },
+    "evaluation": {
+      "rows": [
+        {
+          "itemId": "k2",
+          "label": "Nachvollziehbarer Lieferstatus",
+          "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+          "missing": false,
+          "counts": {
+            "M": 3,
+            "O": 0,
+            "A": 0,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "M",
+          "tie": false,
+          "cs": 0,
+          "ds": -1,
+          "importanceMean": 6.666666666666667,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k3",
+          "label": "Transparente Versandkosten",
+          "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+          "missing": false,
+          "counts": {
+            "M": 1,
+            "O": 1,
+            "A": 0,
+            "I": 1,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "M",
+          "tie": true,
+          "cs": 0.3333333333333333,
+          "ds": -0.6666666666666666,
+          "importanceMean": 4.666666666666667,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k1",
+          "label": "Schnelle Lieferung",
+          "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+          "missing": false,
+          "counts": {
+            "M": 1,
+            "O": 2,
+            "A": 0,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "O",
+          "tie": false,
+          "cs": 0.6666666666666666,
+          "ds": -1,
+          "importanceMean": 8.333333333333334,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k5",
+          "label": "Nachhaltige Verpackung",
+          "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 0,
+            "A": 2,
+            "I": 1,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "A",
+          "tie": false,
+          "cs": 0.6666666666666666,
+          "ds": 0,
+          "importanceMean": 5,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k4",
+          "label": "Persönlicher Ansprechpartner",
+          "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 0,
+            "A": 3,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "A",
+          "tie": false,
+          "cs": 1,
+          "ds": 0,
+          "importanceMean": 4,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k6",
+          "label": "Unkomplizierte Retoure",
+          "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 0,
+            "A": 0,
+            "I": 3,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "I",
+          "tie": false,
+          "cs": 0,
+          "ds": 0,
+          "importanceMean": 2.3333333333333335,
+          "importanceN": 3
+        }
+      ],
+      "totals": {
+        "items": 6,
+        "respondents": 3,
+        "completeness": 1,
+        "qShare": 0
+      }
+    }
+  },
+  "kano-hubschrauber-flyer": {
+    "source": {
+      "instanceId": "<tree>",
+      "level": "driver"
+    },
+    "options": {
+      "importance": true
+    },
+    "items": [
+      {
+        "id": "k1",
+        "nodeId": null,
+        "label": "Fliegt überhaupt (unbeschädigter Start, keine Bruchlandung)",
+        "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+        "missing": false
+      },
+      {
+        "id": "k2",
+        "nodeId": "d1",
+        "label": "Flugzeit",
+        "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+        "missing": false
+      },
+      {
+        "id": "k3",
+        "nodeId": "d3",
+        "label": "Autorotation (eleganter Trudel, weiche Landung)",
+        "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+        "missing": false
+      }
+    ],
+    "items$range": {
+      "from": 0,
+      "to": 3,
+      "rowCount": 3
+    },
+    "respondents": [
+      {
+        "id": "r1",
+        "name": "Messestand-Besucher A"
+      },
+      {
+        "id": "r2",
+        "name": "Messestand-Besucher B"
+      },
+      {
+        "id": "r3",
+        "name": "Messestand-Besucher C"
+      }
+    ],
+    "answers": {
+      "r1": {
+        "k1": {
+          "f": 3,
+          "d": 5,
+          "w": 4
+        },
+        "k2": {
+          "f": 1,
+          "d": 5,
+          "w": 9
+        },
+        "k3": {
+          "f": 1,
+          "d": 3,
+          "w": 6
+        }
+      },
+      "r2": {
+        "k1": {
+          "f": 2,
+          "d": 5,
+          "w": 3
+        },
+        "k2": {
+          "f": 1,
+          "d": 5,
+          "w": 8
+        },
+        "k3": {
+          "f": 1,
+          "d": 2,
+          "w": 5
+        }
+      },
+      "r3": {
+        "k1": {
+          "f": 4,
+          "d": 5,
+          "w": 5
+        },
+        "k2": {
+          "f": 1,
+          "d": 5,
+          "w": 9
+        },
+        "k3": {
+          "f": 1,
+          "d": 3,
+          "w": 6
+        }
+      }
+    },
+    "evaluation": {
+      "rows": [
+        {
+          "itemId": "k1",
+          "label": "Fliegt überhaupt (unbeschädigter Start, keine Bruchlandung)",
+          "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+          "missing": false,
+          "counts": {
+            "M": 3,
+            "O": 0,
+            "A": 0,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "M",
+          "tie": false,
+          "cs": 0,
+          "ds": -1,
+          "importanceMean": 4,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k2",
+          "label": "Flugzeit",
+          "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 3,
+            "A": 0,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "O",
+          "tie": false,
+          "cs": 1,
+          "ds": -1,
+          "importanceMean": 8.666666666666666,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k3",
+          "label": "Autorotation (eleganter Trudel, weiche Landung)",
+          "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 0,
+            "A": 3,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "A",
+          "tie": false,
+          "cs": 1,
+          "ds": 0,
+          "importanceMean": 5.666666666666667,
+          "importanceN": 3
+        }
+      ],
+      "totals": {
+        "items": 3,
+        "respondents": 3,
+        "completeness": 1,
+        "qShare": 0
+      }
+    }
+  },
+  "legacy-project": {
+    "source": {
+      "instanceId": "<tree>",
+      "level": "need"
+    },
+    "options": {
+      "importance": true
+    },
+    "items": [
+      {
+        "id": "k1",
+        "nodeId": "need-schnell",
+        "label": "Schnelle Lieferung",
+        "path": "Lieferung dauert zu lange",
+        "missing": false
+      },
+      {
+        "id": "k2",
+        "nodeId": "need-status",
+        "label": "Lieferstatus",
+        "path": "Lieferung dauert zu lange",
+        "missing": false,
+        "origin": {
+          "surveyInstanceId": "survey-alt",
+          "questionId": "q1"
+        }
+      },
+      {
+        "id": "k3",
+        "nodeId": "need-weg",
+        "label": "Gratis Versand",
+        "path": "Lieferung dauert zu lange",
+        "missing": true
+      },
+      {
+        "id": "k4",
+        "nodeId": null,
+        "label": "Freies Merkmal",
+        "path": "",
+        "missing": false
+      }
+    ],
+    "items$range": {
+      "from": 0,
+      "to": 4,
+      "rowCount": 4
+    },
+    "respondents": [
+      {
+        "id": "r1",
+        "name": "Anna"
+      },
+      {
+        "id": "r2",
+        "name": "Ben",
+        "origin": {
+          "surveyInstanceId": "survey-alt",
+          "questionId": "q1"
+        }
+      },
+      {
+        "id": "r3",
+        "name": "Cem"
+      }
+    ],
+    "answers": {
+      "r1": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 9
+        },
+        "k2": {
+          "f": 1,
+          "d": 3,
+          "w": 5
+        },
+        "k3": {
+          "f": 3,
+          "d": 5,
+          "w": 7
+        },
+        "k4": {
+          "f": 3,
+          "d": 3,
+          "w": 12
+        }
+      },
+      "r2": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 8
+        },
+        "k2": {
+          "f": 1,
+          "d": 4,
+          "w": 6
+        },
+        "k3": {
+          "f": 2,
+          "d": 5,
+          "w": 8
+        },
+        "k4": {
+          "f": 5,
+          "d": 1,
+          "w": 2
+        }
+      },
+      "r3": {
+        "k1": {
+          "f": 2,
+          "d": 5,
+          "w": 9
+        },
+        "k2": {
+          "f": 1,
+          "d": 1,
+          "w": null
+        },
+        "k3": {
+          "f": 3,
+          "d": 5,
+          "w": 7
+        },
+        "k4": {
+          "f": 7,
+          "d": 3,
+          "w": null
+        }
+      }
+    },
+    "evaluation": {
+      "rows": [
+        {
+          "itemId": "k3",
+          "label": "Gratis Versand",
+          "path": "Lieferung dauert zu lange",
+          "missing": true,
+          "counts": {
+            "M": 3,
+            "O": 0,
+            "A": 0,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "M",
+          "tie": false,
+          "cs": 0,
+          "ds": -1,
+          "importanceMean": 7.333333333333333,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k1",
+          "label": "Schnelle Lieferung",
+          "path": "Lieferung dauert zu lange",
+          "missing": false,
+          "counts": {
+            "M": 1,
+            "O": 2,
+            "A": 0,
+            "I": 0,
+            "R": 0,
+            "Q": 0
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "O",
+          "tie": false,
+          "cs": 0.6666666666666666,
+          "ds": -1,
+          "importanceMean": 8.666666666666666,
+          "importanceN": 3
+        },
+        {
+          "itemId": "k2",
+          "label": "Lieferstatus",
+          "path": "Lieferung dauert zu lange",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 0,
+            "A": 2,
+            "I": 0,
+            "R": 0,
+            "Q": 1
+          },
+          "n": 3,
+          "unanswered": 0,
+          "category": "A",
+          "tie": false,
+          "cs": 1,
+          "ds": 0,
+          "importanceMean": 5.5,
+          "importanceN": 2
+        },
+        {
+          "itemId": "k4",
+          "label": "Freies Merkmal",
+          "path": "",
+          "missing": false,
+          "counts": {
+            "M": 0,
+            "O": 0,
+            "A": 0,
+            "I": 1,
+            "R": 1,
+            "Q": 0
+          },
+          "n": 2,
+          "unanswered": 1,
+          "category": "I",
+          "tie": true,
+          "cs": 0,
+          "ds": 0,
+          "importanceMean": 2,
+          "importanceN": 1
+        }
+      ],
+      "totals": {
+        "items": 4,
+        "respondents": 3,
+        "completeness": 0.9166666666666666,
+        "qShare": 0.09090909090909091
+      }
+    }
+  }
+}

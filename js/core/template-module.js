@@ -1372,7 +1372,16 @@ export function createModule(base) {
       };
       try {
         if (typeof beforeLoadExample === 'function') {
-          exampleData = beforeLoadExample.call(this, payload.data);
+          // Der Hook darf ein Promise liefern (er schreibt etwa über
+          // `ctx.instances.interact` in eine fremde Instanz). Wirft oder
+          // verwirft er, bricht das Laden ohne `setState` ab.
+          try {
+            exampleData = await beforeLoadExample.call(this, payload.data);
+          } catch (err) {
+            console.warn(`[createModule] ${id}: beforeLoadExample failed`, err);
+            this._context?.notify?.(this._context.i18n.t('moduleHelp.exampleLoadError'), 'error');
+            return;
+          }
         }
         if (loadWorksheetExample) {
           // Der Lader wartet vor setState, bis das neue Arbeitsblatt lesbar

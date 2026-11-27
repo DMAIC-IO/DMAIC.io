@@ -1,0 +1,140 @@
+{
+  "$comment": "Kano-Instanz aus dem Altprojekt von Task 0 der F2-Umstellung, gespeicherter Stand ohne _schema.",
+  "kano": {
+    "source": {
+      "instanceId": "7f3a9c10-4b2e-4d61-9a8f-1c0e5b7d2a01",
+      "level": "need"
+    },
+    "options": {
+      "importance": true
+    },
+    "items": [
+      {
+        "id": "k1",
+        "nodeId": "need-schnell",
+        "label": "Schnelle Lieferung",
+        "path": "Lieferung dauert zu lange",
+        "missing": false
+      },
+      {
+        "id": "k2",
+        "nodeId": "need-status",
+        "label": "Lieferstatus",
+        "path": "Lieferung dauert zu lange",
+        "missing": false,
+        "origin": {
+          "surveyInstanceId": "survey-alt",
+          "questionId": "q1"
+        }
+      },
+      {
+        "id": "k3",
+        "nodeId": "need-weg",
+        "label": "Gratis Versand",
+        "path": "Lieferung dauert zu lange",
+        "missing": true
+      },
+      {
+        "id": "k4",
+        "nodeId": null,
+        "label": "Freies Merkmal",
+        "path": "",
+        "missing": false
+      }
+    ],
+    "respondents": [
+      {
+        "id": "r1",
+        "name": "Anna"
+      },
+      {
+        "id": "r2",
+        "name": "Ben",
+        "origin": {
+          "surveyInstanceId": "survey-alt",
+          "questionId": "q1"
+        }
+      },
+      {
+        "id": "r3",
+        "name": "Cem"
+      }
+    ],
+    "answers": {
+      "r1": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 9
+        },
+        "k2": {
+          "f": 1,
+          "d": 3,
+          "w": 5
+        },
+        "k3": {
+          "f": 3,
+          "d": 5,
+          "w": 7
+        },
+        "k4": {
+          "f": 3,
+          "d": 3,
+          "w": 12
+        }
+      },
+      "r2": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 8
+        },
+        "k2": {
+          "f": 1,
+          "d": 4,
+          "w": 6
+        },
+        "k3": {
+          "f": 2,
+          "d": 5,
+          "w": 8
+        },
+        "k4": {
+          "f": 5,
+          "d": 1,
+          "w": 2
+        }
+      },
+      "r3": {
+        "k1": {
+          "f": 2,
+          "d": 5,
+          "w": 9
+        },
+        "k2": {
+          "f": 1,
+          "d": 1,
+          "w": null
+        },
+        "k3": {
+          "f": 3,
+          "d": 5,
+          "w": 7
+        },
+        "k4": {
+          "f": 7,
+          "d": 3,
+          "w": null
+        }
+      },
+      "r-unbekannt": {
+        "k1": {
+          "f": 1,
+          "d": 5,
+          "w": 1
+        }
+      }
+    },
+    "activeRespondentId": "r2"
+  }
+}

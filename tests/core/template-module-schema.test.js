@@ -292,6 +292,72 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
   });
 });
 
+// ─── beforeLoadExample mit Promise ─────────────────────────
+
+/**
+ * Modul mit einem Hook `beforeLoadExample` und einem Model ohne Arbeitsblatt;
+ * Kontext wie bei `sourcedModule` (Rückfrage ja).
+ * @param {(data: any) => any} hook
+ */
+function hookModule(hook) {
+  const log = { notes: [], warns: 0 };
+  const Plain = defineModel({ fields: { title: text() } });
+  const mod = createModule({
+    config: { id: 'schema-hook', engine: 'alpine', phase: 'analyze' },
+    Model: Plain,
+    data: () => ({}),
+    beforeLoadExample: hook,
+  });
+  mod._context = {
+    instanceId: 'me',
+    i18n: { t: (k) => k, getLanguage: () => 'de' },
+    notify: (msg, kind) => log.notes.push([msg, kind]),
+    dialog: { confirm: async () => true },
+    eventBus: { emit() {}, on() {}, off() {} },
+    stateManager: { get: () => undefined, set() {}, setModuleState() {}, getModuleState: () => null },
+  };
+  mod.setState({ title: 'alt' });
+  return { mod, log };
+}
+
+suite('createModule: beforeLoadExample darf ein Promise liefern', () => {
+  test('das Promise wird abgewartet: der Stand danach ist sein Ergebnis', async () => {
+    let release;
+    const { mod, log } = hookModule((data) => new Promise((r) => { release = () => r({ title: `neu ${data.n}` }); }));
+    const done = mod.loadExample({ meta: { id: 'ex' }, data: { n: 2 } });
+    await until(() => release !== undefined);
+    assertEqual(mod.getState().title, 'alt', 'vor dem Erfüllen');
+    release();
+    await done;
+    assertEqual(mod.getState().title, 'neu 2');
+    assertDeepEqual(log.notes.map((n) => n[1]), ['success']);
+    assertEqual(mod._loadingExample, false);
+  });
+
+  test('verwirft der Hook, bleibt der Stand und es kommt eine Fehlermeldung', async () => {
+    const warn = console.warn;
+    let warned = 0;
+    console.warn = () => { warned++; };
+    try {
+      const { mod, log } = hookModule(async () => { throw new Error('boom'); });
+      await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
+      assertEqual(mod.getState().title, 'alt');
+      assertDeepEqual(log.notes, [['moduleHelp.exampleLoadError', 'error']]);
+      assertEqual(warned, 1);
+      assertEqual(mod._loadingExample, false, 'Ladefenster geschlossen');
+    } finally {
+      console.warn = warn;
+    }
+  });
+
+  test('ein synchroner Hook wirkt wie bisher', async () => {
+    const { mod, log } = hookModule((data) => ({ title: `sync ${data.n}` }));
+    await mod.loadExample({ meta: { id: 'ex' }, data: { n: 3 } });
+    assertEqual(mod.getState().title, 'sync 3');
+    assertDeepEqual(log.notes.map((n) => n[1]), ['success']);
+  });
+});
+
 // ─── fromExample: fremde Beispielformen vor dem Arbeitsblatt-Zweig ─────
 
 /** Wie `sourcedModule`, aber mit `fromExample` statt `beforeLoadExample`. */
