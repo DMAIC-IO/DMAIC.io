@@ -17,7 +17,7 @@
  * geändert. Ohne Wirkung passiert nichts. Spaltenmerkmale und Umbenennen
  * schreiben über `commit` (Zellkommandos), Umkehrung `restoreCells`.
  * Umkehr-Kommandos, die nur der Verlauf ruft: `restoreColumn`,
- * `restoreRows`, `applyRowPermutation` (`@noagent`, Parameter mit
+ * `restoreRows`, `applyRowPermutation` (Parameter mit
  * `agentWrite: false`).
  *
  * Rein: kein DOM, kein i18n.
@@ -220,7 +220,6 @@ export const structureCommands = {
   /**
    * Eine leere Zahlenspalte einfügen, ohne Position am Ende. Die Kurznamen
    * (C1, …) folgen der Reihenfolge, Formelbezüge auf Spalten dahinter rücken mit. Liefert die id der neuen Spalte.
-   * @agent
    */
   addColumn: command({
     params: { sheetId: text(), position: number({ optional: true }) },
@@ -249,7 +248,6 @@ export const structureCommands = {
    * Eine Spalte samt Werten und Formeln entfernen; Formelbezüge auf spätere
    * Spalten rücken nach, Bezüge auf die entfernte werden `#REF!`. Eine harte Sperre lehnt
    * ab, eine weiche nicht (wie das Kopfmenü).
-   * @agent
    */
   removeColumn: command({
     params: { sheetId: text(), columnId: text() },
@@ -279,7 +277,6 @@ export const structureCommands = {
    * bekommt einen Zusatz (" (2)"); "" löscht den Namen, Formeln nennen dann
    * den Kurznamen. Jede Sperre lehnt ab. Liefert den Namen, den die Spalte
    * danach trägt.
-   * @agent
    */
   renameColumn: command({
     params: { sheetId: text(), columnId: text(), name: text() },
@@ -320,7 +317,6 @@ export const structureCommands = {
    * Eine Spalte verschieben, wie das Ziehen ihres Kopfs; `toIndex` ist ihre
    * Position danach. Die Kurznamen und die Formelbezüge folgen. Liefert false, wenn die Spalte
    * schon dort steht.
-   * @agent
    */
   moveColumn: command({
     params: { sheetId: text(), columnId: text(), toIndex: number() },
@@ -350,7 +346,6 @@ export const structureCommands = {
    * kategoriale Kodierung; `null` entfernt es. Auch auf gesperrten Spalten,
    * damit eine Sperre um einen Schreibzugriff aufgehoben und wieder gesetzt
    * werden kann. Ein `null`-Wert in `meta` wird abgelehnt.
-   * @agent
    */
   setColumnMeta: command({
     params: {
@@ -370,7 +365,6 @@ export const structureCommands = {
    * Die Rolle einer Spalte setzen oder die erkannte bestätigen (dieselbe
    * Rolle noch einmal); danach gilt sie als von Hand gesetzt. Die Rolle muss
    * zum Spaltentyp passen; jede Sperre lehnt ab.
-   * @agent
    */
   setColumnRole: command({
     params: { sheetId: text(), columnId: text(), role: oneOf(['continuous', 'categorical', 'ordinal', 'date', 'identifier', 'freeText']) },
@@ -395,7 +389,6 @@ export const structureCommands = {
    * der neue Typ nicht zulässt, wird neu erkannt und verliert die
    * Bestätigung. Währung bringt zwei, Prozent eine Nachkommastelle. Liefert
    * false, wenn die Spalte den Typ schon hat; jede Sperre lehnt ab.
-   * @agent
    */
   setColumnType: command({
     params: { sheetId: text(), columnId: text(), columnType: oneOf(['numeric', 'text', 'date', 'time', 'currency', 'percent', 'binary']) },
@@ -425,7 +418,6 @@ export const structureCommands = {
    * Typauswahl: numeric, currency, percent → decimals (0..6); date →
    * dateFormat; time → timeFormat; text und binary haben keins. `null`
    * stellt die Vorgabe des Typs her. Die Werte bleiben; jede Sperre lehnt ab.
-   * @agent
    */
   setColumnFormat: command({
     params: {
@@ -458,7 +450,6 @@ export const structureCommands = {
   /**
    * Leere Zeilen einfügen, ohne Position am Ende; ohne `count` zehn (wie
    * der Knopf der Leiste). Formeln darunter rücken mit ihrer Zeile.
-   * @agent
    */
   addRows: command({
     params: {
@@ -483,7 +474,6 @@ export const structureCommands = {
    * Einen zusammenhängenden Zeilenbereich samt Werten und Formeln
    * entfernen; Formeln darunter rücken nach. Liefert die Zahl entfernter
    * Zeilen. Sperren gelten hier nicht (wie das Zeilenmenü).
-   * @agent
    */
   removeRows: command({
     params: { sheetId: text(), startRow: number(), count: number() },
@@ -506,7 +496,6 @@ export const structureCommands = {
    * Eine Zeile verschieben, wie das Ziehen ihres Zeilenkopfs; `toRow` ist
    * ihre Position danach. Ihre Formeln wandern mit. Liefert false, wenn
    * `fromRow` gleich `toRow` ist.
-   * @agent
    */
   moveRow: command({
     params: { sheetId: text(), fromRow: number(), toRow: number() },
@@ -530,7 +519,6 @@ export const structureCommands = {
    * sortieren“ im Kopfmenü. Die Zeilen werden umgeordnet, Formeln wandern
    * mit ihrer Zeile. Die Richtung gilt absolut; leere Zellen kommen ans
    * Ende. Liefert false, wenn die Zeilen schon so standen.
-   * @agent
    */
   sortRows: command({
     params: { sheetId: text(), columnId: text(), direction: oneOf(['asc', 'desc']) },
@@ -548,7 +536,7 @@ export const structureCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: ordnet die Zeilen nach `perm` (`neu[i] =
+   * Nur Umkehrung: ordnet die Zeilen nach `perm` (`neu[i] =
    * alt[perm[i]]`), Formeln wandern mit (Umkehrung von `sortRows`).
    */
   applyRowPermutation: command({
@@ -571,7 +559,7 @@ export const structureCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: setzt eine entfernte Spalte samt Kopf, Werten
+   * Nur Umkehrung: setzt eine entfernte Spalte samt Kopf, Werten
    * und Formeln wieder ein (Umkehrung von `removeColumn`); `otherFormulas` sind
    * die Texte der anderen Spalten vor dem Entfernen, wörtlich zurückgesetzt.
    */
@@ -607,7 +595,7 @@ export const structureCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: setzt entfernte Zeilen samt Werten (`cols`,
+   * Nur Umkehrung: setzt entfernte Zeilen samt Werten (`cols`,
    * spaltenweise) und Formeln (absolute Zeilen) wieder ein (Umkehrung von
    * `removeRows`).
    */

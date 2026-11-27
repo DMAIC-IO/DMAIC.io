@@ -29,75 +29,8 @@ export const RELEASED_MODULES = Object.freeze([
 ]);
 
 /**
- * Abhilfe je Verstoßart (der Teil vor dem ersten `:`), Wortlaut für den
- * Modulautor, je Code ein Satz. Die Codes entstehen in `agent-data.mjs`;
- * was die Fläche einem Agenten zusagt, steht in
- * `reference/agent-interface.md`. Vollständig gegen die Codes in
- * `agent-data.mjs` — das prüft
- * `agent-release.test.mjs`.
- * @type {Readonly<Record<string, string>>}
- */
-export const VIOLATION_REMEDIES = Object.freeze({
-  setter_bypass_binding: 'x-model durch :value/:checked plus @change auf den @agent-Setter ersetzen — sonst umgeht die Oberfläche dessen Prüfung',
-  hardcoded_param_bounds: 'Zahlenfeld mit onParamInput (gemeinsame Spec): min/max über :min="paramMin(key)" / :max="paramMax(key)" aus PARAM_SPEC binden',
-  unmarked_method: '@agent oder @noagent setzen',
-  missing_param: '@param mit Typ ergänzen',
-  missing_returns: '@returns mit Typ ergänzen',
-  unresolvable_data_literal: 'data() muss ein statisch lesbares Objektliteral zurückgeben',
-  unresolved_spread: 'Spread-Form vereinfachen (kein Default-Export, kein export * from)',
-  unresolved_key_typedef: 'die Typedef aus keyof … an einer Anweisung der Moduldatei anlegen',
-  unverified_key_set: "zusätzlich requireEnum('key', key, PARAM_KEYS) mit einer Konstanten des Moduls",
-  key_set_mismatch: 'Typedef-Schlüssel und requireEnum-Menge angleichen',
-  key_value_mismatch: 'Prüffunktion des Schlüssels an den Typedef-Typ angleichen (requireText ↔ string, requireNumber ↔ number, requireEnum ↔ Literalvereinigung)',
-  module_tag_without_actions: 'mindestens eine schreibende @agent-Aktion anbieten oder das Modul-Tag entfernen',
-  no_read_action: 'read() anbieten (Zielform: createModule mit Model; Altform: eigenes read() über readAgentState)',
-  unresolvable_model_class: 'Model: im createModule({…})-Literal auf eine importierte Klasse setzen',
-  unresolved_model_class: 'Model-Klasse statisch auflösbar importieren',
-  ambiguous_model_class: 'Model-Klasse eindeutig benennen (nur eine Deklaration)',
-  unresolved_base_class: 'Basisklasse des Models statisch auflösbar importieren',
-  self_inheriting_class: 'Vererbungskreis der Model-Klasse auflösen',
-  unresolvable_tojson: 'toJSON() muss ein Objektliteral ohne Spread zurückgeben, oder @typedef AgentRead erklären',
-  unresolved_view_fields: 'static VIEW_FIELDS als Array-Literal aus Zeichenketten schreiben, Pfade nach a.b, a[].b oder a[]**.b',
-  view_field_not_persisted: 'Pfad korrigieren oder das Feld in toJSON() aufnehmen: ein Ansichtsfeld muss gespeichert sein',
-  view_field_declared: 'Feld aus der @typedef AgentRead nehmen: ein Ansichtsfeld gehört nicht zur Lesefläche',
-  view_field_agent_write: 'Setter auf @noagent setzen, oder das Feld ist Inhalt und gehört aus VIEW_FIELDS',
-  unreadable_state_key: 'Feldnamen zwischen toJSON() und Model-Deklaration angleichen oder das Feld annotieren',
-  declared_not_returned: 'den Schlüssel in read() an readAgentState übergeben oder aus @typedef AgentRead streichen',
-  missing_bulk_columns: 'read() liefert zu jedem Tabellen-Massenfeld ein Schwesterfeld <feld>Columns',
-  unresolved_read_return: 'read() auf readAgentState(id, {…}) mit Literal, Spread von this.model.toJSON() / module.model.toJSON() (oder einer const darauf; ein Hilfsparameter als Empfänger wird abgelehnt), lokaler const, this.<hilfe>() oder importierter Funktion mit genau einem return umstellen',
-  invalid_bulk_kind: 'Massendaten-Art auf table oder tree setzen',
-  invalid_omit_path: 'Auslassungspfad aus Schlüsseln und [] bilden, mit einem Schlüssel am Ende (inScope[].dataUrl, [][].image)',
-  omit_path_mismatch: 'Auslassungspfad an den erklärten Typ des Feldes angleichen',
-  dom_detour: 'über das Model gehen, nicht am DOM vorbei (innerHTML/outerHTML/dataset)',
-  unreachable_write: 'ein Model-Feld, das die Fläche liest, hat keinen @agent-Weg, der es aus einem Parameter schreibt: Setter mit Parameter anlegen (direkt, über Model-Methode, Sammlung oder Element), oder [via: aktion] am Feld, oder VIEW_FIELDS; eingefrorene Altlasten stehen in agent-write-baseline.txt und wachsen nicht',
-  template_model_call: 'die Vorlage auf den Viewmodel-Sink umlegen',
-  undeclared_option_source: 'die Menge als Lesefeld in @typedef AgentRead und einem eigenen read() ergänzen',
-  module_state_option_source: 'Wertemenge über eine this.…-Kette prüfen, deren erstes Segment ein Lesefeld ist (z. B. eine @noagent-Methode gleichen Namens wie das Feld) — eine Modul-let-Menge ist für den Agenten unsichtbar',
-  unresolved_sub_viewmodel: 'das Teil-Viewmodel als importierte Klasse ohne extends anlegen (name: new Klasse(…))',
-  nested_sub_viewmodel: 'eine Ebene: das innere Objekt als eigenes Teil-Viewmodel an die Wurzel heben',
-  sub_viewmodel_model_binding: 'die Vorlage über model.… oder über eine Methode des Teil-Viewmodels schreiben lassen',
-  void_creating_action: 'die id des Angelegten zurückgeben (@returns {string}) — nur positions- oder anzahlbasierte Aktionen in CREATING_VOID_EXEMPT (agent-data.mjs) mit Begründung',
-  invalid_via: 'das Sentinel als [via: aktion, aktion2] schreiben — Aktionsnamen durch Komma getrennt, mindestens einer',
-  unknown_via_action: 'im [via: …]-Sentinel nur Namen von @agent-Aktionen desselben Moduls nennen',
-  delete_verb_action: 'Aktion remove… nennen — das Löschverb der Agentenfläche ist remove (clear… leert Inhalt, reset… stellt Vorgaben her)',
-  sub_viewmodel_key_collision: 'Methode umbenennen: help und params sind Abschnitte des Hilfeschlüssels',
-});
-
-/**
- * Ein Verstoßcode als Zeile mit Abhilfe, z. B.
- * `worksheet: unmarked_method:onRoleDraftChange → @agent oder @noagent setzen`.
- * @param {string} moduleId
- * @param {string} code  z. B. `unmarked_method:onRoleDraftChange`
- * @returns {string}
- */
-export function explainViolation(moduleId, code) {
-  const remedy = VIOLATION_REMEDIES[code.split(':')[0]] ?? 'Befundart in tools/build/agent-data.mjs nachschlagen';
-  return `${moduleId}: ${code} → ${remedy}`;
-}
-
-/**
- * Abweichungen der Freigaben von `RELEASED_MODULES`, je Zeile begründet.
- * @param {Record<string, { tagged?: boolean, available?: boolean, reported?: string[] }>} modules
+ * Abweichungen der Freigaben von `RELEASED_MODULES`, je Zeile mit Abhilfe.
+ * @param {Record<string, { available?: boolean }>} modules
  *   Registry-Einträge aus `collectAgentData`
  * @param {readonly string[]} [released]
  * @returns {string[]} leer, wenn die Freigaben genau der Liste entsprechen
@@ -105,11 +38,9 @@ export function explainViolation(moduleId, code) {
 export function releaseDiff(modules, released = RELEASED_MODULES) {
   const out = [];
   for (const id of released) {
-    const entry = modules[id];
-    if (!entry) { out.push(`${id}: Modul nicht gefunden → aus RELEASED_MODULES streichen`); continue; }
-    if (entry.available === true) continue;
-    if (!entry.tagged) { out.push(`${id}: Modul-Tag fehlt → @agent in den Dateikopf setzen`); continue; }
-    for (const code of entry.reported ?? []) out.push(explainViolation(id, code));
+    if (modules[id]?.available !== true) {
+      out.push(`${id}: nicht freigegeben → in CONVERTED_MODULES aufnehmen (tools/build/converted-modules.mjs) oder aus RELEASED_MODULES streichen`);
+    }
   }
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available === true && !released.includes(id)) {

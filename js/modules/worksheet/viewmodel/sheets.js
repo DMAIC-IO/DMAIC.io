@@ -145,7 +145,7 @@ export function sheetsView(ctx) {
     },
 
     /**
-     * @noagent Legt das offene Reitermenü in den sichtbaren Bereich des
+     * Legt das offene Reitermenü in den sichtbaren Bereich des
      * Moduls. Die Reiter sitzen unten: ragt das Menü unter den Rand, klappt es
      * über den Mauspunkt. `position: fixed` bezieht sich hier nicht auf das
      * Fenster (der Arbeitsbereich hat `contain: layout paint` und schneidet ab),

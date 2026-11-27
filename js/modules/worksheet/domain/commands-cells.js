@@ -491,7 +491,6 @@ export const cellCommands = {
    * Werte in eine Spalte ab `startRow` schreiben, mit Typerkennung wie die
    * Zelleingabe. Ein einfacher Wert über einer Formelzelle löscht die Formel.
    * Über das Blattende hinaus wächst das Blatt.
-   * @agent
    */
   setCells: command({
     params: { sheetId: text(), columnId: text(), startRow: number({ integer: true, min: 0 }), values: list(cell()) },
@@ -530,7 +529,6 @@ export const cellCommands = {
    * Eine Formel in eine Zelle schreiben, wie der Formel-Editor; `row` gleich
    * der Zeilenzahl hängt eine Zeile an. Liefert den berechneten Wert und den
    * Fehlercode (sonst `null`).
-   * @agent
    */
   setFormula: command({
     params: { sheetId: text(), columnId: text(), row: number(), formula: text() },
@@ -558,7 +556,6 @@ export const cellCommands = {
    * Mehrere Spalten in einem Schritt schreiben: anhängen, leere Startspalten
    * (C1–C5) füllen oder bestehende überschreiben (Formeln fallen weg, der
    * Name bleibt). Alles wird zuerst geprüft.
-   * @agent
    */
   writeColumns: command({
     params: {
@@ -634,7 +631,6 @@ export const cellCommands = {
   /**
    * Den Inhalt des Blatts durch CSV-Daten ersetzen (Kopfzeile erkannt, Typen
    * je Spalte). Formeln des Blatts fallen weg; die Spalten bekommen neue ids.
-   * @agent
    */
   importCsv: command({
     params: { sheetId: text(), csvText: text() },
@@ -681,7 +677,6 @@ export const cellCommands = {
    * `header`: fehlt es, wird geraten (erste Zeile Kopf, wenn jede Zelle nicht
    * leer und keine Zahl ist und die zweite Zeile eine Zahl enthält); `false`
    * nimmt alle Zeilen als Daten, `true` die erste Zeile als Kopf.
-   * @agent
    */
   pasteBlock: command({
     params: {
@@ -751,7 +746,6 @@ export const cellCommands = {
    * und verlängert ihn in eine Richtung. Reihen, Kopien (mit `ctrl` die
    * andere Art) und Formeln mit verschobenen Bezügen; gesperrte Spalten
    * bleiben unverändert. Liefert die Zahl geschriebener Zellen.
-   * @agent
    */
   fillRange: command({
     params: {
@@ -842,7 +836,6 @@ export const cellCommands = {
    * geklemmt (das Blatt wächst nicht); ist es gleich der Quelle, passiert
    * nichts. Eine gesperrte Spalte in Quelle oder Ziel verweigert alles.
    * Liefert den Zielblock (nullbasiert) oder `null`, wenn nichts geschah.
-   * @agent
    */
   moveCells: command({
     params: {
@@ -958,7 +951,6 @@ export const cellCommands = {
   /**
    * Werte und Formeln eines Bereichs leeren, wie Entf im Raster. Gesperrte
    * Spalten bleiben unverändert. Liefert die Zahl geleerter Zellen.
-   * @agent
    */
   clearRange: command({
     params: {
@@ -988,7 +980,7 @@ export const cellCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: schreibt eine Änderung (`Change`) zurück, die ein
+   * Nur Umkehrung: schreibt eine Änderung (`Change`) zurück, die ein
    * Zellkommando als Gegenänderung gesammelt hat. Die Parameter tragen
    * `agentWrite: false`, darum steht das Kommando nicht in der Agentenfläche.
    */

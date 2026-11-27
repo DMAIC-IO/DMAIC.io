@@ -30,7 +30,7 @@ export default createModule({
   view(ctx) {
     return {
       /**
-       * @noagent Lebenszyklus: wird b anders gesetzt (Agent, Rückgängig),
+       * Lebenszyklus: wird b anders gesetzt (Agent, Rückgängig),
        * verlieren die Koeffizientenfelder ihre Abweisungsmarke.
        */
       init() {
@@ -65,13 +65,13 @@ export default createModule({
         return legendView(this.surfaceGrid, this.model.chartEdits, this.t, ctx.context.language);
       },
       /**
-       * @noagent Bezeichnung eines Koeffizienten.
+       * Bezeichnung eines Koeffizienten.
        * @param {number} i 0 bis 5
        * @returns {string}
        */
       betaLabel(i) { return betaLabel(i); },
       /**
-       * @noagent Ein Koeffizient im Eingabefeld, in der App-Sprache ohne Gruppierung.
+       * Ein Koeffizient im Eingabefeld, in der App-Sprache ohne Gruppierung.
        * @param {number} i 0 bis 5
        * @returns {string}
        */
@@ -79,7 +79,7 @@ export default createModule({
         return formatNumber(this.model.b[i], ctx.context.language, { profile: 'input' });
       },
       /**
-       * @noagent Übernimmt einen getippten Koeffizienten; der Agent setzt b mit
+       * Übernimmt einen getippten Koeffizienten; der Agent setzt b mit
        * instance.set. Eine Eingabe, die keine Zahl ist, wird abgewiesen; das
        * Feld zeigt wieder den alten Wert.
        * @param {number} i 0 bis 5

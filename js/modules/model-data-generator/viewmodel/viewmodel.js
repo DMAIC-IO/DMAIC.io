@@ -52,7 +52,7 @@ export default createModule({
      * Der Exportknopf in der Ecke des Rasters (Rolle `exportAs`): die
      * Vorschau mit Kopf als `data.csv` (zeichengleich zur Altform), `data.xlsx`
      * (Blatt `Data`) oder `data.json`. Ändert nichts.
-     * @noagent grid only (role of the datagrid widget)
+     * Grid only (role of the datagrid widget)
      */
     gridExport: command({
       params: { format: oneOf(['xlsx', 'csv', 'json'], { agentWrite: false }) },
@@ -77,7 +77,7 @@ export default createModule({
      * Der Knopf „In Datensammlung öffnen“ in der Ecke des Rasters (Rolle
      * `openInWorksheet`): startet den Lauf `toWorksheet` über die
      * view-Methode, ohne auf ihn zu warten. Der Agent nimmt den Lauf selbst.
-     * @noagent grid only (role of the datagrid widget)
+     * Grid only (role of the datagrid widget)
      */
     gridOpenInWorksheet: command({
       run() { void this.sendToWorksheet(); },
@@ -106,7 +106,7 @@ export default createModule({
     let rev = 0;
     return {
       /**
-       * @noagent Lebenszyklus: werden die Koeffizienten anders gesetzt (Agent,
+       * Lebenszyklus: werden die Koeffizienten anders gesetzt (Agent,
        * Rückgängig), verlieren ihre Felder die Abweisungsmarke.
        */
       init() {
@@ -170,11 +170,11 @@ export default createModule({
       /** @param {string} name @returns {string} DOM-id je Instanz */
       fieldId(name) { return `mdg-${name}-${ctx.instanceId}`; },
 
-      /** @noagent Zeigt Kennzahlen und Vorschau (Knopf „Daten generieren“). */
+      /** Zeigt Kennzahlen und Vorschau (Knopf „Daten generieren“). */
       showResults() { this.state.shown = true; },
 
       /**
-       * @noagent Übernimmt einen getippten Koeffizienten über `setBeta`; der
+       * Übernimmt einen getippten Koeffizienten über `setBeta`; der
        * Agent ruft `setBeta` selbst. Eine Eingabe, die keine Zahl ist, wird
        * abgewiesen; das Feld zeigt wieder den alten Wert.
        * @param {number} idx Termindex

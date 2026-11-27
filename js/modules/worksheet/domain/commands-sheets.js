@@ -8,7 +8,7 @@
  * wird aktiv, wie heute; `removeSheet` hält `activeSheetId` selbst gültig
  * (die Invariante `activeSheet` greift nur bei einem Schreiben dieses Felds).
  *
- * Umkehrungen, nur für den Verlauf (`@noagent`, Parameter mit
+ * Umkehrungen, nur für den Verlauf (Parameter mit
  * `agentWrite: false`):
  * - `restoreSheet({ index, sheet, activeSheetId, view? })` setzt ein Blatt
  *   wieder ein, samt seiner Ansicht (`gridView`). Es trägt das Blatt als
@@ -137,7 +137,6 @@ export const sheetCommands = {
   /**
    * Ein neues Blatt am Ende anlegen und aktiv machen: fünf leere
    * Zahlenspalten C1–C5. Ohne Namen heißt es „Sheet <n>“. Liefert die id.
-   * @agent
    */
   addSheet: command({
     params: { name: text({ optional: true }) },
@@ -151,7 +150,6 @@ export const sheetCommands = {
   /**
    * Ein Blatt umbenennen; der Name wird getrimmt. Ein leerer Name (oder nur
    * Leerzeichen) ist ein Fehler.
-   * @agent
    */
   renameSheet: command({
     params: { id: text(), name: text() },
@@ -171,7 +169,6 @@ export const sheetCommands = {
    * Ein Blatt mit Zellen, Formeln und Spalteneinstellungen kopieren. Die
    * Kopie kommt ans Ende, heißt ohne Namen „<Name> (Copy)“ und wird aktiv.
    * Liefert ihre id.
-   * @agent
    */
   duplicateSheet: command({
     params: { id: text(), name: text({ optional: true }) },
@@ -193,7 +190,6 @@ export const sheetCommands = {
   /**
    * Ein leeres Blatt direkt vor einem anderen anlegen und aktiv machen.
    * Ohne Namen heißt es „Sheet <n>“. Liefert die id.
-   * @agent
    */
   insertSheetBefore: command({
     params: { id: text(), name: text({ optional: true }) },
@@ -209,7 +205,6 @@ export const sheetCommands = {
   /**
    * Ein Blatt samt Inhalt entfernen. War es aktiv, wird das benachbarte
    * Blatt aktiv. Das letzte Blatt lässt sich nicht entfernen.
-   * @agent
    */
   removeSheet: command({
     params: { id: text() },
@@ -226,7 +221,7 @@ export const sheetCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: setzt ein entferntes Blatt (JSON) an `index`
+   * Nur Umkehrung: setzt ein entferntes Blatt (JSON) an `index`
    * wieder ein, mit seiner Ansicht und dem aktiven Blatt des Stands davor.
    * Der Zähler sinkt nicht.
    */
@@ -251,7 +246,7 @@ export const sheetCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: nimmt ein angelegtes Blatt samt Ansicht wieder
+   * Nur Umkehrung: nimmt ein angelegtes Blatt samt Ansicht wieder
    * heraus, mit dem aktiven Blatt des Stands davor. Der Zähler sinkt nicht.
    */
   dropSheet: command({
@@ -269,7 +264,7 @@ export const sheetCommands = {
   }),
 
   /**
-   * @noagent Nur Umkehrung: setzt den Namen eines Blatts wörtlich, auch leer
+   * Nur Umkehrung: setzt den Namen eines Blatts wörtlich, auch leer
    * (Umkehrung von `renameSheet`).
    */
   restoreSheetName: command({

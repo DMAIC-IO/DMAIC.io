@@ -2,22 +2,21 @@
 /**
  * agent-report — Abdeckung der Agentenfläche als Zahl.
  *
- * „n von 72 Modulen agentenfähig, pro Release messbar" — dazu die Kontexthilfen
+ * „n von m Modulen freigegeben, pro Release messbar" — dazu die Kontexthilfen,
  * die Beschriftungen mit Anker (`anchor-coverage.mjs`) und die Hilfetexte mit Anker
  * (`help-anchor-coverage.mjs`). Berichtend: Exit
  * immer 0. Das Gate ist der Build (`npm run build:check`), der die generierte
  * Registry stale-prüft, dazu `test:build` mit der Freigabeliste
  * (`agent-release.test.mjs`) und der Anker-Abdeckung — nicht dieses Skript.
  *
- *   node tools/build/agent-report.mjs            # Abdeckung + Verstoßübersicht
- *   node tools/build/agent-report.mjs --verbose  # jeden Verstoß einzeln
+ *   node tools/build/agent-report.mjs            # Abdeckung
+ *   node tools/build/agent-report.mjs --verbose  # jede Lücke einzeln
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectAgentData } from './agent-data.mjs';
 import { countAnchorCoverage } from './anchor-coverage.mjs';
-import { explainViolation } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { withoutSchema, mergeTree } from '../../js/core/json-file.js';
@@ -240,86 +239,12 @@ export function countHelpCoverage(appDir, modules, converted = CONVERTED_MODULES
   return out;
 }
 
-/** @param {string} s @returns {string} */
-function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-/**
- * Felder mit `[via: …]` müssen ihre Senken in der Feldhilfe nennen — sonst
- * sieht der Agent im Hilfetext nicht, womit er das Feld bewegt.
- * @param {string} appDir
- * @param {Record<string, object>} modules  Ergebnis von collectAgentData
- * @param {readonly string[]} [converted]
- * @returns {string[]} je Lücke `<lang>: modules.<id>.fields.<f>.help nennt <aktion> nicht`
- */
-export function viaHelpGaps(appDir, modules, converted = CONVERTED_MODULES) {
-  const tables = readHelpTables(appDir, converted);
-  const out = [];
-  for (const [id, entry] of Object.entries(modules)) {
-    if (entry.available !== true) continue;
-    for (const [field, spec] of Object.entries(entry.fields ?? {})) {
-      for (const action of spec.via ?? []) {
-        for (const lang of LANGS) {
-          const key = `modules.${id}.fields.${field}.help`;
-          const help = lookup(tables[lang], key);
-          if (typeof help !== 'string' || !new RegExp(`(?<![\\w$.])${escapeRegExp(action)}\\s*\\(`).test(help)) out.push(`${lang}: ${key} nennt ${action} nicht`);
-        }
-      }
-    }
-  }
-  return out;
-}
-
-/**
- * Felder der Lesefläche ohne Schreibweg: weder weist eine `@agent`-Aktion sie
- * zu, noch nennt `[via: …]` die Aktionen, die sie bewegen.
- * @param {Record<string, object>} modules  Ergebnis von collectAgentData
- * @param {Record<string, string[]>} writtenFields  `writtenFields` von collectAgentData
- * @returns {{ model: string[], derived: string[] }} `<modul>.<feld>`; `derived` sind
- *   die über `@typedef AgentRead` erklärten Felder, `model` die aus dem Model abgeleiteten
- */
-export function fieldsWithoutWritePath(modules, writtenFields) {
-  const out = { model: [], derived: [] };
-  for (const [id, entry] of Object.entries(modules)) {
-    if (entry.available !== true) continue;
-    const written = new Set(writtenFields[id] ?? []);
-    for (const [field, spec] of Object.entries(entry.fields ?? {})) {
-      if (!written.has(field) && !(spec.via ?? []).length) out[spec.derived ? 'derived' : 'model'].push(`${id}.${field}`);
-    }
-  }
-  return out;
-}
-
 /** Der CLI-Teil. Berichtend: Exit immer 0. */
 async function main() {
   const verbose = process.argv.includes('--verbose');
-  const { modules, coverage, writtenFields, frozen } = await collectAgentData(APP_DIR);
+  const { modules, coverage } = await collectAgentData(APP_DIR);
 
   console.log(`Agentenfläche: ${coverage.available} von ${coverage.total} Modulen freigegeben`);
-
-  const byCode = new Map();
-  for (const [id, entry] of Object.entries(modules)) {
-    for (const code of entry.reported) {
-      const kind = code.split(':')[0];
-      if (!byCode.has(kind)) byCode.set(kind, []);
-      byCode.get(kind).push(explainViolation(id, code));
-    }
-  }
-
-  if (byCode.size === 0) {
-    console.log('Keine Befunde.');
-  } else {
-    console.log('\nBefunde (berichtend — hart erst bei gesetztem Modul-Tag):');
-    for (const kind of [...byCode.keys()].sort()) {
-      const rows = byCode.get(kind);
-      const moduleCount = new Set(rows.map(r => r.split(':')[0])).size;
-      console.log(`  ${kind}: ${rows.length} in ${moduleCount} Modulen`);
-      if (verbose) for (const row of rows.sort()) console.log(`    ${row}`);
-    }
-  }
-
-  const frozenCount = Object.values(frozen).reduce((n, codes) => n + codes.length, 0);
-  console.log(`\nEingefroren (agent-write-baseline.txt): ${frozenCount}`);
-  if (verbose) for (const [id, codes] of Object.entries(frozen)) for (const c of codes) console.log(`    ${id} ${c}`);
 
   const help = countHelpCoverage(APP_DIR, modules);
   const pct = (c) => (c.total === 0 ? '—' : `${Math.round((c.covered / c.total) * 100)} %`);
@@ -344,14 +269,6 @@ async function main() {
       + `(${help.missing.length} Sprachfälle) — mit --verbose einzeln benannt.`);
   }
   if (verbose) for (const row of [...help.missing].sort()) console.log(`    fehlt — ${row}`);
-  const viaGaps = viaHelpGaps(APP_DIR, modules);
-  if (viaGaps.length) {
-    console.log(`\n[via]-Senken fehlen in der Feldhilfe: ${viaGaps.length}`);
-    if (verbose) for (const g of viaGaps) console.log(`  ${g}`);
-  }
-  const noWrite = fieldsWithoutWritePath(modules, writtenFields);
-  console.log(`\nFelder ohne Schreibweg (weder @agent-Zuweisung noch [via]): ${noWrite.model.length} Model-Felder, ${noWrite.derived.length} erklärte Felder`);
-  if (verbose) for (const f of [...noWrite.model, ...noWrite.derived]) console.log(`  ${f}`);
   if (verbose) {
     for (const row of anchors.missing) console.log(`    ohne Anker — ${row}`);
     for (const row of anchors.staleExemptions) console.log(`    Ausnahme ohne Treffer — ${row}`);

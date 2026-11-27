@@ -25,7 +25,7 @@ export default createModule({
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     return {
-      /** @noagent Lebenszyklus: andere Datensätze verwerfen die Einstellungen alter Stände. */
+      /** Lebenszyklus: andere Datensätze verwerfen die Einstellungen alter Stände. */
       init() {
         this.$watch(() => JSON.stringify(this.model.datasets), () => {
           if (this.model.legacySeries.length > 0) this.model.clearLegacySeries({});
@@ -67,7 +67,7 @@ export default createModule({
         };
       },
       /**
-       * @noagent Wechselt die Klasseneinteilung über das Kommando des Models.
+       * Wechselt die Klasseneinteilung über das Kommando des Models.
        * @param {Event} event
        */
       binModeChanged(event) {

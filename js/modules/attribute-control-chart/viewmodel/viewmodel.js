@@ -36,7 +36,7 @@ export default createModule({
           return { defectsRef: columnOptions(ctx.source, filterOf(f.defectsRef)), sizeRef: columnOptions(ctx.source, filterOf(f.sizeRef)) };
         },
       },
-      /** @noagent Optionen der Kartentyp-Auswahl, eine Quelle mit der Engine. */
+      /** Optionen der Kartentyp-Auswahl, eine Quelle mit der Engine. */
       get chartTypes() {
         return ATTRIBUTE_CHART_TYPES.map((c) => ({ value: c.id, label: this.t(`type_${c.id}`), selected: c.id === this.model.chartTypeId }));
       },
@@ -60,15 +60,15 @@ export default createModule({
       get nelsonToggleClass() { return this.state.nelsonCollapsed ? 'attr-cc__collapsible--collapsed' : ''; },
       get nelsonPanelClass() { return this.state.nelsonCollapsed ? 'field-checks--collapsed' : ''; },
       get nelsonChevron() { return this.state.nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'; },
-      /** @noagent Kurztext einer Regel. */
+      /** Kurztext einer Regel. */
       ruleShort(rule) { return gt(`common.nelsonAttr.${rule.id}.short`); },
-      /** @noagent Beschreibung einer Regel. */
+      /** Beschreibung einer Regel. */
       ruleDesc(rule) { return gt(`common.nelsonAttr.${rule.id}.desc`); },
-      /** @noagent Ist die Regel angehakt? */
+      /** Ist die Regel angehakt? */
       ruleOn(rule) { return this.model.enabledRules.includes(rule.id); },
-      /** @noagent Klappt die Regelliste; kein Zustand der Rechnung. */
+      /** Klappt die Regelliste; kein Zustand der Rechnung. */
       toggleNelson() { this.state.nelsonCollapsed = !this.state.nelsonCollapsed; },
-      /** @noagent Kästchen einer Regel; der Agent nutzt das Kommando toggleRule. */
+      /** Kästchen einer Regel; der Agent nutzt das Kommando toggleRule. */
       ruleChanged(rule, event) { this.model.toggleRule({ ruleId: rule.id, on: event.target.checked }); },
     };
   },

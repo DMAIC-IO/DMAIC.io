@@ -55,7 +55,7 @@ export default createModule({
     /** @param {number} v @returns {string} n̄ und ν mit höchstens zwei Nachkommastellen */
     const fmtDec = (v) => fmtDecIn(v, ctx.i18n.getLanguage());
     return {
-      /** @noagent Lebenszyklus: eine andere Messspalte verwirft eine ID-Spalte, die nicht mehr passt. */
+      /** Lebenszyklus: eine andere Messspalte verwirft eine ID-Spalte, die nicht mehr passt. */
       init() {
         // Geleert wird nur, wenn sich Messspalte oder Modus ändern, die ID-Spalte aber nicht.
         // Ändert sich auch sie (Rückgängig, Wiederholen, Laden eines Stands), bleibt alles.

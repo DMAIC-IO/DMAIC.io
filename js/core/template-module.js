@@ -245,7 +245,7 @@ function derivedCells(vm, defs, src, t) {
 function schemaMembers(moduleId, entry, vmCommands, readNames = [], bulk = [], ownRead = undefined) {
   const members = {
     moduleId,
-    /** @noagent Lesefläche aus dem Schema (agent-schema.js) oder aus `base.read` */
+    /** Lesefläche aus dem Schema (agent-schema.js) oder aus `base.read` */
     read(options) {
       // Rohes Model: Lesen in einem Effekt legt keine Abhängigkeit je Kopf, Formel oder Zelle an.
       if (ownRead) return ownRead(Alpine.raw(this.model), options);

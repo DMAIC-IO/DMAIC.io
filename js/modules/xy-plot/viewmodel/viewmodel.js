@@ -22,7 +22,7 @@ export default createModule({
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     return {
-      /** @noagent Lebenszyklus: andere Spalten der Datensätze verwerfen die Einstellungen alter Stände. */
+      /** Lebenszyklus: andere Spalten der Datensätze verwerfen die Einstellungen alter Stände. */
       init() {
         // Geleert wird nur, wenn sich die Datensätze allein ändern. Ändern sich beide
         // zugleich (Rückgängig, Wiederholen, Laden eines Stands), gehören die

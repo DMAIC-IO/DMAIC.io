@@ -205,7 +205,7 @@ export const runsView = (ctx) => {
     },
 
     /**
-     * @noagent Makes the design current for the automatic run `generate`.
+     * Makes the design current for the automatic run `generate`.
      * With the module history the new design belongs to the step of the
      * change that called for it: one undo takes back both, and nothing is
      * made anew afterwards.
@@ -357,7 +357,7 @@ export const previewCommands = {
   /**
    * Typed values from a cell down (role `setCells`): one value goes out as
    * `setPreviewCell`, several as `setPreviewCells`.
-   * @noagent grid only (role of the datagrid widget)
+   * Grid only (role of the datagrid widget)
    */
   previewSetCells: command({
     params: { columnId: text({ agentWrite: false }), startRow: row0(), values: list(text({ nullable: true })) },
@@ -372,7 +372,7 @@ export const previewCommands = {
   /**
    * A pasted block from a cell (role `pasteBlock`) as `setPreviewCells`,
    * cut to the rows and columns of the preview; locked columns stay.
-   * @noagent grid only (role of the datagrid widget)
+   * Grid only (role of the datagrid widget)
    */
   previewPasteBlock: command({
     params: { columnId: text({ agentWrite: false }), startRow: row0(), rows: list(list(text({ nullable: true }))) },
@@ -389,7 +389,7 @@ export const previewCommands = {
   /**
    * Clears a range (role `clearRange`, Delete and cut) as `setPreviewCells`
    * with null; locked columns stay.
-   * @noagent grid only (role of the datagrid widget)
+   * Grid only (role of the datagrid widget)
    */
   previewClearRange: command({
     params: { c0: number({ integer: true, min: 0, agentWrite: false }), r0: row0(), c1: row0(), r1: row0() },
@@ -406,7 +406,7 @@ export const previewCommands = {
    * Continues a range with the fill handle (role `fillRange`): series or
    * copies as the grid fills them, inside the preview, as `setPreviewCells`;
    * locked columns stay.
-   * @noagent grid only (role of the datagrid widget)
+   * Grid only (role of the datagrid widget)
    */
   previewFillRange: command({
     params: { source: rect({ agentWrite: false }), target: rect(), ctrl: boolean({ optional: true }) },
@@ -420,7 +420,7 @@ export const previewCommands = {
   /**
    * An entry of the row menu (role `contextMenu`): `forbidRun` forbids the
    * run of this row (optimal design only).
-   * @noagent grid only (role of the datagrid widget)
+   * Grid only (role of the datagrid widget)
    */
   previewContextMenu: command({
     params: { id: text({ agentWrite: false }), columnId: text(), row: row0() },
@@ -434,7 +434,7 @@ export const previewCommands = {
    * preview with its head as a file, like the legacy grid (`data.csv` with
    * BOM and no message; `data.xlsx`, sheet `Data`, and `data.json` through
    * the core exporter, with a message). Changes nothing.
-   * @noagent grid only (role of the datagrid widget)
+   * Grid only (role of the datagrid widget)
    */
   previewExport: command({
     params: { format: oneOf(['xlsx', 'csv', 'json'], { agentWrite: false }) },

@@ -29,7 +29,6 @@ export function draggablePopout(options = {}) {
 
     /**
      * Inline style for the popout window — centred until the user drags it.
-     * @noagent
      */
     popoutStyle() {
       if (this._popLeft == null || this._popTop == null) {
@@ -40,7 +39,6 @@ export function draggablePopout(options = {}) {
 
     /**
      * Restore the centred default position (call on open).
-     * @noagent
      */
     popoutResetPosition() {
       this._popLeft = null;
@@ -50,7 +48,6 @@ export function draggablePopout(options = {}) {
 
     /**
      * @param {MouseEvent} $event mousedown on the title bar
-     * @noagent
      */
     popoutDragStart($event) {
       if (closeSelector && $event.target.closest(closeSelector)) return;
@@ -65,7 +62,6 @@ export function draggablePopout(options = {}) {
 
     /**
      * @param {MouseEvent} $event window mousemove
-     * @noagent
      */
     popoutDragMove($event) {
       if (!this._popDragging) return;
@@ -73,7 +69,6 @@ export function draggablePopout(options = {}) {
       this._popTop = $event.clientY - this._popOffY;
     },
 
-    /** @noagent */
     popoutDragEnd() {
       this._popDragging = false;
     },

@@ -192,7 +192,7 @@ const tasksView = (ctx) => {
       setFields(this.model, { projectPhases: phases });
     },
     /**
-     * @noagent Writes the binding as a follow-up of the change that called
+     * Writes the binding as a follow-up of the change that called
      * for it (the automatic run `syncResponses`): with the module history it
      * belongs to that change's step, so one undo takes back both and the run
      * does not start anew.

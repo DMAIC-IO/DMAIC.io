@@ -102,7 +102,7 @@ export function toolbarView(ctx) {
     get activeView() { return this.model.gridView[activeSheetOf(this).id] ?? null; },
 
     /**
-     * @noagent Das Raster meldet seine Auswahl entprellt (300 ms): eine Aktion,
+     * Das Raster meldet seine Auswahl entprellt (300 ms): eine Aktion,
      * die sie liest (Löschen, Formel-Editor, Diagrammvorschlag), lässt sie
      * vorher sofort melden — sonst träfe sie die zuletzt gemeldete, alte Auswahl.
      */
@@ -111,7 +111,7 @@ export function toolbarView(ctx) {
     },
 
     /**
-     * @noagent Vor einem Agentenstapel (agent-host `settle`): eine offene
+     * Vor einem Agentenstapel (agent-host `settle`): eine offene
      * Zellbearbeitung als eigenen Schritt übernehmen, wie Enter, und die
      * Ansicht melden — sonst verwürfe der Stapel die Eingabe (Zeilen
      * verschoben) oder sie überschriebe danach seinen Wert.
@@ -138,12 +138,12 @@ export function toolbarView(ctx) {
     },
 
     // ─── Verlauf (Kern) ──────────────────────────────────────
-    /** @noagent Kann zurückgenommen werden? Sperrt den Knopf. */
+    /** Kann zurückgenommen werden? Sperrt den Knopf. */
     get canUndo() { return ctx.history?.can('undo') ?? false; },
-    /** @noagent Kann wiederholt werden? Sperrt den Knopf. */
+    /** Kann wiederholt werden? Sperrt den Knopf. */
     get canRedo() { return ctx.history?.can('redo') ?? false; },
     /**
-     * @noagent Knöpfe Rückgängig/Wiederholen der eigenen Leiste: ein Schritt
+     * Knöpfe Rückgängig/Wiederholen der eigenen Leiste: ein Schritt
      * im Verlauf des Kerns (wie Strg+Z/Strg+Y).
      * @param {'undo'|'redo'} dir
      * @returns {boolean} `false` bei leerem Verlauf oder abgeschlossenem Projekt
@@ -213,7 +213,7 @@ export function toolbarView(ctx) {
     },
 
     /**
-     * @noagent Ereignis `datagrid-selection` des Rasters: die gezeigte Auswahl
+     * Ereignis `datagrid-selection` des Rasters: die gezeigte Auswahl
      * für die Statuszeile (R19 c), ohne auf `gridView` zu warten.
      * @param {CustomEvent} event
      */

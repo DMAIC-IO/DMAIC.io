@@ -98,8 +98,8 @@ Modul hat sie eigens erklärt".
 
 **`keys` steht immer da.** An jeder Aktion, jedem Feld und jedem Schlüssel —
 ohne erklärte Struktur als leere Liste, nie abwesend. Ein Eintrag ist
-`{ name, type, help, optional, keys }`: bei einem generischen Setter wie
-`setParam(key, value)` je zulässigem Schlüssel, bei einem Ergebnisfeld wie
+`{ name, type, help, optional, keys }`: bei einem Kommando je Schlüssel
+seines Arguments, bei einem Ergebnisfeld wie
 `result` je Kennzahl, verschachtelt in `keys` der nächsten Ebene. Eine
 Ebene tiefer ist die Ergebnisform `any` (die Grammatik kennt keine
 Rekursion). `optional: true` heißt, der Schlüssel fehlt in manchen
@@ -108,12 +108,9 @@ Zuständen (je Kartentyp, bei einseitiger Toleranz). Ein `type` der Form
 `keys` beschreibt dann **einen** Eintrag. Derselbe `help`-Text erscheint in
 der Oberfläche an der Beschriftung, wenn der Mensch Alt hält.
 
-**Aktionsnamen mit Punkt.** Ein Modul kann Teil-Viewmodels haben; ihre
-Methoden heißen `<teil>.<methode>` (`draft.addQuestion`) und werden wie
-jede andere über `instance.call` mit `method: 'draft.addQuestion'` gerufen.
-Das gilt nur für Module in der Altform; Module mit deklarativem Model gliedern
-ihren `view`-Block in Teile (`view: [teilA, teilB]`), deren Kommandos und
-Methoden flach unter ihrem Namen stehen, ohne Punkt.
+**Flache Aktionsnamen.** Ein Modul gliedert seinen `view`-Block in Teile
+(`view: [teilA, teilB]`); deren Kommandos stehen flach unter ihrem Namen,
+ohne Punkt.
 
 ### Module mit deklarativem Model: Kommandos und `instance.set`
 

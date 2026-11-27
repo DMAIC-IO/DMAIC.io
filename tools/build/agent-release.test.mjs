@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
-import { collectAgentData, loadWriteBaseline } from './agent-data.mjs';
-import { RELEASED_MODULES, VIOLATION_REMEDIES, explainViolation, releaseDiff } from './agent-release.mjs';
+import { collectAgentData } from './agent-data.mjs';
+import { RELEASED_MODULES, releaseDiff } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
 
 test('Freigabe: genau die Module aus RELEASED_MODULES sind agentenfähig', async () => {
@@ -18,52 +18,20 @@ test('RELEASED_MODULES ist sortiert und ohne Doppel', async () => {
   assert.deepEqual([...RELEASED_MODULES], [...new Set(RELEASED_MODULES)].sort());
 });
 
-test('jede Verstoßart aus agent-data.mjs hat eine Abhilfe', async () => {
-  const source = readFileSync(join(APP_DIR, 'tools', 'build', 'agent-data.mjs'), 'utf8')
-    .split('\n').filter(line => !/^\s*(\*|\/\/)/.test(line)).join('\n');
-  const kinds = new Set([...source.matchAll(/[`']([a-z]+(?:_[a-z]+)+)[:`']/g)].map(m => m[1]));
-  const missing = [...kinds].filter(k => !Object.hasOwn(VIOLATION_REMEDIES, k)).sort();
-  assert.deepEqual(missing, [], 'Abhilfe in VIOLATION_REMEDIES (agent-release.mjs) ergänzen');
-  const unused = Object.keys(VIOLATION_REMEDIES).filter(k => !kinds.has(k)).sort();
-  assert.deepEqual(unused, [], 'Verstoßart gibt es in agent-data.mjs nicht mehr — Abhilfe streichen');
-});
-
-test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes und neues Modul', async () => {
+test('releaseDiff: nicht freigegebenes, unbekanntes und neues Modul', async () => {
   const modules = {
-    a: { tagged: true, available: false, reported: ['unmarked_method:onX', 'dom_detour:innerHTML'] },
-    b: { tagged: false, available: false, reported: [] },
-    c: { tagged: true, available: true, reported: [] },
-    d: { tagged: true, available: true, reported: [] },
+    a: { available: false },
+    c: { available: true },
+    d: { available: true },
   };
-  assert.deepEqual(releaseDiff(modules, ['a', 'b', 'c', 'gone']), [
-    'a: unmarked_method:onX → @agent oder @noagent setzen',
-    `a: dom_detour:innerHTML → ${VIOLATION_REMEDIES.dom_detour}`,
-    'b: Modul-Tag fehlt → @agent in den Dateikopf setzen',
-    'gone: Modul nicht gefunden → aus RELEASED_MODULES streichen',
+  assert.deepEqual(releaseDiff(modules, ['a', 'c', 'gone']), [
+    'a: nicht freigegeben → in CONVERTED_MODULES aufnehmen (tools/build/converted-modules.mjs) oder aus RELEASED_MODULES streichen',
+    'gone: nicht freigegeben → in CONVERTED_MODULES aufnehmen (tools/build/converted-modules.mjs) oder aus RELEASED_MODULES streichen',
     'd: neu freigegeben → in RELEASED_MODULES aufnehmen',
   ]);
 });
 
-test('explainViolation: unbekannte Verstoßart verweist auf den Generator', async () => {
-  assert.equal(explainViolation('x', 'brand_new:y'), 'x: brand_new:y → Befundart in tools/build/agent-data.mjs nachschlagen');
-});
-
-test('jede Baseline-Zeile entspricht einem echten Befund', async () => {
-  const { frozen } = await collectAgentData(APP_DIR);
-  const live = new Set(Object.entries(frozen).flatMap(([id, codes]) => codes.map(c => `${id} ${c}`)));
-  const stale = [...loadWriteBaseline()].filter(l => !live.has(l));
-  assert.deepEqual(stale, [], 'erledigte Zeilen aus agent-write-baseline.txt streichen');
-});
-
-test('kein freigegebenes Modul meldet unreachable_write außerhalb der Baseline', async () => {
-  const { modules } = await collectAgentData(APP_DIR);
-  const open = Object.entries(modules)
-    .filter(([id]) => RELEASED_MODULES.includes(id))
-    .flatMap(([id, entry]) => entry.reported.filter(c => c.startsWith('unreachable_write:')).map(c => `${id} ${c}`));
-  assert.deepEqual(open, [], 'Schreibweg bauen oder [via: …] setzen; die Baseline wächst nicht');
-});
-
-test('releaseDiff: ein umgestelltes Modul wird wie ein Altmodul geprüft', async () => {
+test('releaseDiff: ein Modul mit Schema ist freigegeben', async () => {
   const modelUrl = pathToFileURL(join(APP_DIR, 'js', 'core', 'model.js')).href;
   const root = mkdtempSync(join(tmpdir(), 'agent-release-'));
   const dir = join(root, 'js', 'modules', 'demo');
@@ -72,9 +40,7 @@ test('releaseDiff: ein umgestelltes Modul wird wie ein Altmodul geprüft', async
   writeFileSync(join(dir, 'domain', 'model.js'),
     `import { defineModel, text } from '${modelUrl}';\nexport const State = defineModel({ fields: { title: text() } });\n`);
   writeFileSync(join(dir, 'viewmodel', 'viewmodel.js'), 'export default createModule({});\n');
-  const { modules } = await collectAgentData(root, { baseline: new Set(), converted: ['demo'] });
+  const { modules } = await collectAgentData(root, { converted: ['demo'] });
   assert.deepEqual(releaseDiff(modules, ['demo']), []);
   assert.deepEqual(releaseDiff(modules, []), ['demo: neu freigegeben → in RELEASED_MODULES aufnehmen']);
-  assert.deepEqual(releaseDiff({ demo: { ...modules.demo, available: false, reported: ['unmarked_method:x'] } }, ['demo']),
-    ['demo: unmarked_method:x → @agent oder @noagent setzen']);
 });
