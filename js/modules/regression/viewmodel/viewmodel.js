@@ -467,7 +467,7 @@ export default createModule({
        * Klasse eines X-Knopfs.
        * @param {string} key @returns {string}
        */
-      xButtonClass(key) { return this.activeX === key ? 'reg__x-btn--active' : ''; },
+      xButtonClass(key) { return this.activeX === key ? 'chip--active reg__x-btn--active' : ''; },
       /** Die Kennzahlen. */
       get kpis() { return this.fit ? kpisOf(this.fit, this.model.alpha, this.t, lang()) : null; },
       /**
@@ -564,7 +564,7 @@ export default createModule({
       /** Die Koeffiziententabelle. */
       get coefs() { return coefView(this.fit, this.model.alpha, this.model.coefSortByP, lang()); },
       /** Klasse des Sortierschalters. */
-      get sortClass() { return this.model.coefSortByP ? 'reg__sort-btn--active' : ''; },
+      get sortClass() { return this.model.coefSortByP ? 'btn--active reg__sort-btn--active' : ''; },
       /**
        * Einen Term über sein Kästchen ein- oder ausschließen.
        * @param {string} term @param {Event} event

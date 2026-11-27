@@ -90,7 +90,7 @@
   --color-accent-hover: #05a;
   --color-accent-light: #e5f0ff;
 
-  /* Knöpfe und Chips — Rollen statt Farben (docs/THEMING.md „Knöpfe und Chips“).
+  /* Knöpfe und Chips — Rollen statt Farben (css/components.css „Buttons“).
      Sekundärfläche ist eine feste Stufe über der Karte; Gefahrknopf hat einen
      eigenen Token (AA mit Weiß), --color-error bleibt für Meldungen. */
   --btn-secondary-bg: var(--color-bg-primary);

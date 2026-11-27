@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCtxDataReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths, checkHistoryOption } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCtxDataReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths, checkHistoryOption, checkButtonColorCss, cssRules } from './module-gates.mjs';
 import { viewMemberNamesOf } from './view-names.mjs';
 import { VIEW_READ_EXEMPTIONS } from './view-read-exemptions.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -1855,4 +1855,58 @@ test('Knöpfe: `btn` in Modulvorlagen trägt eine Variante (sonst hell im Dunkel
     }
   }
   assert.deepEqual(found, [], 'btn--secondary ergänzen (kein eigenes Flächen-CSS)');
+});
+
+/**
+ * Begründete Ausnahmen des Knopf-/Chip-Farb-Gates: `modul: selektor — Begründung`.
+ * Einträge mit `doc: true` liegen außerhalb des Modul-CSS und dokumentieren nur die Absicht.
+ */
+const BUTTON_COLOR_EXEMPTIONS = [
+  { module: 'survey-builder', selector: '.sv-save', doc: true, why: 'Stil des exportierten Fragebogens (io/runner.js), läuft ohne App-CSS' },
+  { module: 'doe-planner', selector: '.doe__level-chip', why: 'kein Chip: Eingabegruppe aus Stufennummer und Feld' },
+  { module: 'dmaic-calendar', selector: '.module-calendar__phase-select.context-help-anchor > .context-help__btn', why: 'Kontexthilfe-Kreis liegt innen auf der Chipzeile, deckende Fläche wie .dmike-tabs' },
+  { module: 'dmaic-calendar', selector: '.module-calendar__event-form.context-help-anchor > .context-help__btn', why: 'Kontexthilfe-Kreis liegt innen in der Titelzeile, deckende Fläche' },
+  { module: 'lessons-learned', selector: '.ll__filters.context-help-anchor > .context-help__btn', why: 'Kontexthilfe-Kreis liegt innen auf der Filterzeile, deckende Fläche' },
+  { module: 'sipoc', selector: '.sipoc__grip.context-help-anchor > .context-help__btn', why: 'Kontexthilfe-Kreis liegt auf dem Griff, deckende Fläche' },
+  { module: 'stakeholder-analysis', selector: '.sha__chip--alert', why: 'Warnzustand (Kritiker unter „eng einbinden“) — Bewertung wie ein Status-Badge, kein Chip-Zustand' },
+];
+
+test('cssRules: Nesting mit und ohne &, @media durchlässig, @keyframes übersprungen', () => {
+  const rules = cssRules('.a { color: red; &:hover { color: blue; } .b { background: x; } }\n@media (x) { .c-btn { color: y; } }\n@keyframes k { from { color: z; } }');
+  assert.deepEqual(rules.map((r) => r.selectors), [['.a:hover'], ['.a .b'], ['.a'], ['.c-btn']]);
+});
+
+test('Knöpfe/Chips: Gate rot-grün an Fixtures', () => {
+  const css = (text) => ({ path: 'resources/style.css', text });
+  // Verboten: Fläche/Farbe am Knopf, am Chip, an `button`, gefärbter Rahmen.
+  assert.equal(checkButtonColorCss(css('.x__add-btn:hover { background: var(--color-accent); }')).length, 1);
+  assert.equal(checkButtonColorCss(css('.x__chip--on { color: var(--color-accent); }')).length, 1);
+  assert.equal(checkButtonColorCss(css('.x__menu button { color: inherit; }')).length, 1);
+  assert.equal(checkButtonColorCss(css('.x__btn { border: 1px dashed var(--color-border-primary); }')).length, 1);
+  assert.equal(checkButtonColorCss(css('.x { .y-btn { border-color: red; } }')).length, 1);
+  // Erlaubt: Lage und Maß, Rahmen ohne Farbe, Inhalte im Knopf, Datenfarbe des Punkts.
+  assert.deepEqual(checkButtonColorCss(css('.x__add-btn { margin-top: 4px; width: 22px; border: none; border-radius: 50%; }')), []);
+  assert.deepEqual(checkButtonColorCss(css('.x__chip .chip__dot { background: var(--color-role-date-fg); }')), []);
+  assert.deepEqual(checkButtonColorCss(css('.x__btn .icon { color: var(--color-accent); } .x__chip-code { color: var(--color-text-tertiary); }')), []);
+  assert.deepEqual(checkButtonColorCss(css('.btn-group { background: var(--color-bg-tertiary); }')), []);
+  // Ausnahme greift nur auf den genannten Selektor.
+  assert.deepEqual(checkButtonColorCss(css('.a > .context-help__btn { background: var(--color-bg-primary); }'), ['.a > .context-help__btn']), []);
+});
+
+test('Knöpfe/Chips: Modul-CSS setzt keine Knopf-/Chip-Farben', () => {
+  const modules = join(APP_DIR, 'js/modules');
+  const found = [];
+  const used = new Set();
+  for (const id of readdirSync(modules, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
+    const allowed = BUTTON_COLOR_EXEMPTIONS.filter((e) => e.module === id && !e.doc);
+    for (const rel of listModuleFiles(APP_DIR, id).filter((p) => p.endsWith('.css'))) {
+      const text = readFileSync(join(modules, id, rel), 'utf8');
+      const hits = checkButtonColorCss({ path: rel, text });
+      for (const e of allowed) if (hits.some((h) => h.includes(`: ${e.selector} {`))) used.add(e);
+      found.push(...hits.filter((h) => !allowed.some((e) => h.includes(`: ${e.selector} {`))).map((h) => `${id}/${h}`));
+    }
+  }
+  assert.deepEqual(found, [], 'Rolle wählen (btn--primary/secondary/ghost/icon-sm/danger, chip/chip--active) statt eigener Farben');
+  const stale = BUTTON_COLOR_EXEMPTIONS.filter((e) => !e.doc && !used.has(e)).map((e) => `${e.module}: ${e.selector}`);
+  assert.deepEqual(stale, [], 'Ausnahme trifft nichts mehr — aus BUTTON_COLOR_EXEMPTIONS entfernen');
 });

@@ -128,7 +128,7 @@ export default createModule({
       /** @param {Step} step @param {Role} role @returns {string} */
       roleClass(step, role) { return this.hasRole(step, role) ? 'makigami__dot--active' : ''; },
       /** @param {Step} step @param {Role} role @returns {string} */
-      roleChipClass(step, role) { return this.hasRole(step, role) ? 'makigami__chip--active' : ''; },
+      roleChipClass(step, role) { return this.hasRole(step, role) ? 'chip--active makigami__chip--active' : ''; },
       /** @param {Step} step @param {Role} role @returns {string} */
       rolePressed(step, role) { return this.hasRole(step, role) ? 'true' : 'false'; },
       /** Name einer Rolle, ersatzweise der Platzhalter. @param {Role} role @returns {string} */
@@ -223,7 +223,7 @@ export default createModule({
       /** Wert für `marked` beim nächsten Klick. @param {Step} step @param {MudaCategory} cat @returns {string} */
       nextMarked(step, cat) { return this.hasMuda(step, cat) ? 'false' : 'true'; },
       /** @param {Step} step @param {MudaCategory} cat @returns {string} */
-      mudaChipClass(step, cat) { return this.hasMuda(step, cat) ? 'makigami__chip--active' : ''; },
+      mudaChipClass(step, cat) { return this.hasMuda(step, cat) ? 'chip--active makigami__chip--active' : ''; },
       /** @param {Step} step @param {MudaCategory} cat @returns {string} */
       mudaPressed(step, cat) { return this.hasMuda(step, cat) ? 'true' : 'false'; },
 

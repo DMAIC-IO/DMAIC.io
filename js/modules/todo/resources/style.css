@@ -116,16 +116,7 @@
 /* ─── Calendar toggle ────────────────────────────────── */
 
 .todo__cal-btn {
-  display: inline-flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-2xs) var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-text-tertiary);
   opacity: 0.4;
-  transition: opacity var(--transition-speed), color var(--transition-speed);
 }
 
 .todo__table tr:hover .todo__cal-btn {
@@ -138,10 +129,6 @@
 .todo__table tr .todo__cal-btn--active,
 .todo__table tr:hover .todo__cal-btn--active {
   opacity: 1;
-}
-
-.todo__cal-btn--active {
-  color: var(--color-accent);
 }
 
 /* ─── Empty state ─────────────────────────────────────── */

@@ -3,7 +3,7 @@
   <div class="module-unit-converter__categories" data-ref="categories" data-help-key="modules.unit-converter.actions.selectCategory.help">
     <template x-for="(cat, catKey) in categories" :key="catKey">
       <button type="button"
-        class="module-unit-converter__cat-btn"
+        class="chip module-unit-converter__cat-btn"
         :class="catActiveClass(catKey)"
         :data-cat="catKey"
         data-help-key=""
@@ -20,7 +20,7 @@
         <span class="icon" data-ref="catIcon" :data-icon="catIcon(model.activeCat)" aria-hidden="true"></span>
         <span data-ref="catTitle" x-text="catName(model.activeCat)"></span>
       </div>
-      <button class="module-unit-converter__swap-btn" type="button" data-action="swap" data-help-key="modules.unit-converter.actions.swapUnits.help" x-command="swapUnits">
+      <button class="btn btn--secondary module-unit-converter__swap-btn" type="button" data-action="swap" data-help-key="modules.unit-converter.actions.swapUnits.help" x-command="swapUnits">
         <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
         <span x-text="t('swap')"></span>
       </button>
@@ -94,7 +94,7 @@
         <div class="module-unit-converter__panel-title">
           <span class="icon" data-icon="unit.timezone" aria-hidden="true"></span> <span x-text="t('timezone')"></span>
         </div>
-        <button class="module-unit-converter__swap-btn" type="button" data-action="tz-swap" data-help-key="modules.unit-converter.actions.swapTimezones.help" x-command="swapTimezones">
+        <button class="btn btn--secondary module-unit-converter__swap-btn" type="button" data-action="tz-swap" data-help-key="modules.unit-converter.actions.swapTimezones.help" x-command="swapTimezones">
           <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
           <span x-text="t('swap')"></span>
         </button>
@@ -131,7 +131,7 @@
           <span class="module-unit-converter__formula-label" x-text="t('difference')"></span>
           <span data-ref="tzDiff" data-help-key="modules.unit-converter.types.TimezoneResult.diffHours" x-text="tzDiffText"></span>
         </div>
-        <button class="module-unit-converter__tz-now-btn" type="button" data-action="tz-now" data-help-key="modules.unit-converter.actions.tzSetNow.help" x-command="tzSetNow">
+        <button class="btn btn--secondary module-unit-converter__tz-now-btn" type="button" data-action="tz-now" data-help-key="modules.unit-converter.actions.tzSetNow.help" x-command="tzSetNow">
           <span class="icon icon--sm icon--text" data-icon="status.time" aria-hidden="true"></span>
           <span x-text="t('now')"></span>
         </button>

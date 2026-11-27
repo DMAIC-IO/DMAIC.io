@@ -323,7 +323,7 @@ export const causesView = (ctx) => {
 
     /** Klassen des Verknüpfungsknopfs. @param {{ stableId: string }} row @returns {string} */
     linkExpClass(row) {
-      return this.linkedExpCount(row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked' : 'ishikawa__icon-btn--exp';
+      return this.linkedExpCount(row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked btn--active' : 'ishikawa__icon-btn--exp';
     },
 
     // ── Zusammenfassung ───────────────────────────────────────

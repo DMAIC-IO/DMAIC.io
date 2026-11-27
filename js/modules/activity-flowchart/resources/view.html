@@ -65,12 +65,12 @@
               <span class="af__connector-arrow fc-connector__arrow" :class="arrowClass(i)">&raquo;</span>
               <template x-if="isInsertMenuOpen(step)">
                 <div class="af__insert-menu" @click.stop="closeInsertMenu()">
-                  <button type="button" data-insert="activity" data-help-key=""
+                  <button type="button" class="btn btn--ghost btn--xs" data-insert="activity" data-help-key=""
                           x-command="addStep" :data-arg-index="i" :data-arg-band-id="step.branchId" data-arg-kind="activity">
                     <span class="icon" data-icon="action.add" aria-hidden="true"></span>
                     <span x-text="t('addStep')"></span>
                   </button>
-                  <button type="button" data-insert="decision" data-help-key=""
+                  <button type="button" class="btn btn--ghost btn--xs" data-insert="decision" data-help-key=""
                           x-command="addStep" :data-arg-index="i" :data-arg-band-id="step.branchId" data-arg-kind="decision">
                     <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
                     <span x-text="t('addDecision')"></span>
@@ -169,14 +169,14 @@
         <template x-if="!isMainBand(band)">
           <div class="af__tail" :class="tailClass(band)" :data-band-id="band.id" :style="tailStyle(band)">
             <div class="af__band-add">
-              <button type="button" class="context-help-anchor--overlay" data-add="activity"
+              <button type="button" class="btn btn--ghost btn--xs context-help-anchor--overlay" data-add="activity"
                       data-help-key="modules.activity-flowchart.actions.addStep.help"
                       x-command="addStep" :data-arg-band-id="band.id" data-arg-kind="activity"
                       :title="t('addStepToBand')">
                 <span class="icon" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addStep')"></span>
               </button>
-              <button type="button" data-add="decision" data-help-key=""
+              <button type="button" class="btn btn--ghost btn--xs" data-add="decision" data-help-key=""
                       x-command="addStep" :data-arg-band-id="band.id" data-arg-kind="decision"
                       :title="t('addDecisionToBand')">
                 <span class="icon" data-icon="action.branch" aria-hidden="true"></span>

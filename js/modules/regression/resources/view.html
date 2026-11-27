@@ -149,7 +149,7 @@
             <div class="reg__x-selector" data-ref="x-selector" role="radiogroup"
               data-help-key="modules.regression.fields.activeXKey.help" x-set="model.activeXKey">
               <template x-for="b in xButtons" :key="b.key">
-                <button type="button" role="radio" class="reg__x-btn" data-help-key="" :value="b.key" :data-x-key="b.key"
+                <button type="button" role="radio" class="chip reg__x-btn" data-help-key="" :value="b.key" :data-x-key="b.key"
                   :class="xButtonClass(b.key)" x-text="b.label"></button>
               </template>
             </div>
@@ -356,7 +356,7 @@
                   <th>
                     <span data-help-key="modules.regression.types.Coefficient.pval" x-text="t('pValue')"></span>
                     <span x-widget="algo-lab-link" x-widget-algo-id="'regression-coefficients'"></span>
-                    <label class="reg__sort-btn" data-action="sort-coef-p" data-help-key="modules.regression.fields.coefSortByP.help"
+                    <label class="btn btn--icon-sm reg__sort-btn" data-action="sort-coef-p" data-help-key="modules.regression.fields.coefSortByP.help"
                       :class="sortClass" :title="t('sortByPValue')"><input type="checkbox" role="switch" class="reg__sort-input" data-ref="sort-coef-p" data-help-key=""
                       :aria-label="t('sortByPValue')" x-model="model.coefSortByP"><span class="icon icon--sm" data-icon="action.sort" aria-hidden="true"></span></label>
                   </th>

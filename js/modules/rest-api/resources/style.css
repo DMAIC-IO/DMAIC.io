@@ -69,24 +69,6 @@
   border-radius: 10px;
 }
 
-.rest-api__add-btn {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: background .15s, color .15s;
-}
-
-.rest-api__add-btn:hover {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-
 /* ── Endpoint list ── */
 .rest-api__list {
   flex: 1;
@@ -277,23 +259,6 @@
   color: var(--color-error);
 }
 
-.rest-api__add-header-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  padding: var(--spacing-2xs) 0;
-}
-
-.rest-api__add-header-btn:hover {
-  text-decoration: underline;
-}
-
-
 /* Write mode toggle */
 .rest-api__write-mode {
   display: flex;
@@ -357,22 +322,6 @@
   color: var(--color-error);
 }
 
-.rest-api__add-mapping-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  padding: var(--spacing-2xs) 0;
-}
-
-.rest-api__add-mapping-btn:hover {
-  text-decoration: underline;
-}
-
 /* Response */
 .rest-api__status {
   font-family: var(--font-family-mono);
@@ -383,18 +332,6 @@
 }
 .rest-api__status--ok  { background: var(--rest-api-ok-bg); color: var(--rest-api-ok); }
 .rest-api__status--err { background: var(--rest-api-err-bg); color: var(--rest-api-err); }
-
-.rest-api__copy-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  padding: var(--spacing-2xs);
-}
-
-.rest-api__copy-btn:hover {
-  color: var(--color-accent);
-}
 
 .rest-api__response {
   border: var(--border-width) solid var(--color-border-secondary);

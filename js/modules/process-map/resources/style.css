@@ -823,21 +823,18 @@
   margin-top: var(--spacing-xs);
 }
 
+/* Vorschau der Prozessschritte als Kern-Chips ohne Klick. */
 .pmap__sipoc-option-chip {
-  font-size: var(--font-size-xs);
-  padding: var(--spacing-2xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
+  cursor: default;
+  display: inline-block;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
 }
 
+/* „+N“ ist Text, kein Chip. */
 .pmap__sipoc-option-chip--more {
-  background: transparent;
-  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
   padding: var(--spacing-2xs) 0;
 }
 

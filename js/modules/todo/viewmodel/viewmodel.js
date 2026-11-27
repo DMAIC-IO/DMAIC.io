@@ -118,7 +118,7 @@ export default createModule({
       /** @param {Item} item @returns {string} `true`/`false` für `aria-pressed` */
       calPressed(item) { return item.cal ? 'true' : 'false'; },
       /** @param {Item} item @returns {string} */
-      calClass(item) { return item.cal ? 'todo__cal-btn--active' : ''; },
+      calClass(item) { return item.cal ? 'btn--active todo__cal-btn--active' : ''; },
 
       // ─── Kästchen ─────────────────────────────────────────
       /**

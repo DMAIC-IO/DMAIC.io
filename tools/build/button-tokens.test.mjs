@@ -1,6 +1,5 @@
 /**
  * Kern-Knöpfe und -Chips: Tokens je Theme, Kontrast der Rollen, Kernregeln.
- * Spec: docs/superpowers/specs/2026-11-27-knoepfe-chips-einheitlich-design.md §4, §8.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

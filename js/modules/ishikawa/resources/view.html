@@ -161,17 +161,17 @@
         <button type="button" class="btn btn--sm btn--secondary" data-ref="collapseAllBtn" @click="collapseAll()" x-text="t('collapseAll')"></button>
         <div class="ishikawa__toolbar-spacer"></div>
         <div class="ishikawa__filter-group" role="radiogroup" x-set="state.filter" data-help-key="">
-          <button type="button" role="radio" value="" data-help-key="modules.ishikawa.actions.setFilter.help" class="ishikawa__filter-chip" :class="state.filter === '' ? 'ishikawa__filter-chip--active' : ''"
+          <button type="button" role="radio" value="" data-help-key="modules.ishikawa.actions.setFilter.help" class="chip ishikawa__filter-chip" :class="state.filter === '' ? 'chip--active ishikawa__filter-chip--active' : ''"
                   data-filter="all">
-            <span x-text="t('filterAll')"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + model.rows.length + ')'"></span>
+            <span x-text="t('filterAll')"></span> <span class="chip__count ishikawa__filter-chip-count" x-text="'(' + model.rows.length + ')'"></span>
           </button>
           <template x-for="c in cats" :key="c">
-            <button type="button" role="radio" :value="c" class="ishikawa__filter-chip" :class="state.filter === c ? 'ishikawa__filter-chip--active' : ''"
+            <button type="button" role="radio" :value="c" class="chip ishikawa__filter-chip" :class="state.filter === c ? 'chip--active ishikawa__filter-chip--active' : ''"
                     :data-filter="c" :style="catStripe(c)">
-              <span x-text="catLabel(c)"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + catCount(c) + ')'"></span>
+              <span x-text="catLabel(c)"></span> <span class="chip__count ishikawa__filter-chip-count" x-text="'(' + catCount(c) + ')'"></span>
             </button>
           </template>
-          <button type="button" data-help-key="modules.ishikawa.actions.setCategoryLabels.help" class="ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
+          <button type="button" data-help-key="modules.ishikawa.actions.setCategoryLabels.help" class="btn btn--icon-sm ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
                   :title="t('renameCatsTitle')" :aria-label="t('renameCatsTitle')" x-dialog="catRename" :data-dialog-title="t('renameCatsTitle')">
             <span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span>
           </button>

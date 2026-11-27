@@ -85,24 +85,20 @@
   margin-bottom: var(--spacing-xs);
 }
 
+/* Spalte als Kern-Chip ohne Klick. Die Spaltenrolle ist Datenfarbe (kodiert
+   den Datentyp, nicht den Chip-Zustand) und sitzt nur im Punkt. */
 .chart-suggestion__col-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-s);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  background: var(--color-role-continuous-bg);
-  color: var(--color-role-continuous-fg);
+  cursor: default;
 }
-.chart-suggestion__col-chip.col-role-continuous  { background: var(--color-role-continuous-bg);  color: var(--color-role-continuous-fg);  }
-.chart-suggestion__col-chip.col-role-categorical { background: var(--color-role-categorical-bg); color: var(--color-role-categorical-fg); }
-.chart-suggestion__col-chip.col-role-ordinal     { background: var(--color-role-ordinal-bg);     color: var(--color-role-ordinal-fg);     }
-.chart-suggestion__col-chip.col-role-date        { background: var(--color-role-date-bg);        color: var(--color-role-date-fg);        }
-.chart-suggestion__col-chip.col-role-identifier  { background: var(--color-role-identifier-bg);  color: var(--color-role-identifier-fg);  }
+
+.chart-suggestion__col-chip .chip__dot,
+.chart-suggestion__col-chip.col-role-continuous .chip__dot { background: var(--color-role-continuous-fg); }
+.chart-suggestion__col-chip.col-role-categorical .chip__dot { background: var(--color-role-categorical-fg); }
+.chart-suggestion__col-chip.col-role-ordinal .chip__dot { background: var(--color-role-ordinal-fg); }
+.chart-suggestion__col-chip.col-role-date .chip__dot { background: var(--color-role-date-fg); }
+.chart-suggestion__col-chip.col-role-identifier .chip__dot { background: var(--color-role-identifier-fg); }
 /* stylelint-disable-next-line selector-class-pattern -- class derives from the camelCase column-role id 'freeText' (persisted enum), not free to rename */
-.chart-suggestion__col-chip.col-role-freeText    { background: var(--color-role-freeText-bg);    color: var(--color-role-freeText-fg);    }
+.chart-suggestion__col-chip.col-role-freeText .chip__dot { background: var(--color-role-freeText-fg); }
 
 .chart-suggestion__col-chip em {
   font-style: normal;
@@ -213,29 +209,6 @@
   color: var(--color-text-secondary);
   font-style: italic;
   flex: 1;
-}
-
-.chart-suggestion__open-btn {
-  padding: var(--spacing-xs) var(--spacing-m);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition: background-color 120ms, border-color 120ms;
-}
-
-.chart-suggestion__open-btn:hover {
-  background: var(--color-bg-tertiary);
-  border-color: var(--color-accent);
-}
-
-.chart-suggestion__open-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
 }
 
 .chart-suggestion__plot {

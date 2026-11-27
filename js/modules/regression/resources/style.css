@@ -63,22 +63,6 @@
   margin-bottom: var(--spacing-md);
 }
 
-.reg__x-btn {
-  padding: var(--spacing-2xs) var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  background: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius);
-  cursor: pointer;
-}
-
-.reg__x-btn--active {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-}
-
 /* Modellgleichung */
 .reg__equation {
   background: var(--color-bg-secondary);
@@ -247,20 +231,12 @@
   font-size: var(--font-size-sm);
 }
 
-/* Sortierung nach p-Wert */
+/* Sortierung nach p-Wert: Kern-Rolle icon-sm (aktiv: btn--active), hier nur Lage. */
 .reg__sort-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--color-border-primary);
-  border-radius: 4px;
-  padding: 1px var(--spacing-xs);
+  width: 18px;
+  height: 18px;
   margin-left: var(--spacing-2xs);
-  cursor: pointer;
-  color: var(--color-text-tertiary);
   opacity: 0.5;
-  transition: opacity 0.15s, color 0.15s;
   vertical-align: middle;
 }
 
@@ -282,17 +258,9 @@
   outline-offset: 1px;
 }
 
-.reg__sort-btn:hover {
-  opacity: 1;
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
+.reg__sort-btn:hover,
 .reg__sort-btn--active {
   opacity: 1;
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 /* Prognose */

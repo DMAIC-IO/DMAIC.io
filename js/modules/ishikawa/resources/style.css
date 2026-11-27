@@ -198,53 +198,13 @@
   flex-wrap: wrap;
 }
 
-.ishikawa__filter-chip {
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  padding: var(--spacing-xs) var(--spacing-m);
-  border-radius: 99px;
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-speed);
-}
-
-.ishikawa__filter-chip:hover {
-  border-color: var(--color-text-tertiary);
-}
-
-.ishikawa__filter-chip--active {
-  background: var(--color-text-primary);
-  color: var(--color-bg-primary);
-  border-color: var(--color-text-primary);
-}
-
+/* Filter als Kern-Chip; der linke Streifen (Kategoriefarbe, inline) ist Datenfarbe. */
 .ishikawa__filter-chip-count {
-  opacity: 0.65;
   margin-left: var(--spacing-2xs);
 }
 
 .ishikawa__cat-rename-btn {
-  width: 22px;
-  height: 22px;
-  padding: 0;
   margin-left: var(--spacing-xs);
-  border-radius: 50%;
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-speed);
-}
-
-.ishikawa__cat-rename-btn:hover {
-  border-color: var(--color-text-tertiary);
-  color: var(--color-text-primary);
-  background: var(--color-bg-tertiary);
 }
 
 /* ===== Experts row (hypotheses tab) ===== */
@@ -1046,10 +1006,6 @@
    anchor and its "linked" tint are Ishikawa-specific. */
 .ishikawa__icon-btn--exp {
   position: relative;
-}
-
-.ishikawa__icon-btn--linked {
-  color: var(--color-accent);
 }
 
 .ishikawa__exp-link-badge {

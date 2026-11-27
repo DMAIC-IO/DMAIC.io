@@ -4,8 +4,10 @@
    ============================================================ */
 
 /* ===== Buttons =====
-   Rollen statt Farben (docs/THEMING.md „Knöpfe und Chips“): Fläche, Rahmen und
-   Schrift kommen nur von hier. `.btn` allein trägt die Sekundärrolle.
+   Rollen statt Farben: Fläche, Rahmen und Schrift kommen nur von hier, Module
+   wählen eine Rolle (primary, secondary, ghost, icon-sm, danger, segment) und
+   setzen nur Lage und Maß. `.btn` allein trägt die Sekundärrolle. Wächter:
+   tools/build/module-gates.test.mjs („Knöpfe/Chips“).
    Hover-Regeln hängen `:where(:not(:disabled, .btn--disabled))` an — gesperrte
    Knöpfe reagieren nicht, die Spezifität bleibt die der reinen `:hover`-Regel. */
 .btn {
@@ -117,6 +119,11 @@
 .btn--icon-sm:hover:where(:not(:disabled, .btn--disabled)) {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
+}
+
+/* Umschalter mit Icon (an/aus): aktiv in Akzentfarbe. */
+.btn--icon-sm.btn--active {
+  color: var(--color-accent);
 }
 
 /* Löschen in Zeilen/Karten: grau, rot erst beim Hover. */

@@ -113,7 +113,7 @@ export default createModule({
       /** Leertext: ohne Erfahrungen leer, sonst „keine Treffer“. */
       get emptyText() { return this.model.lessons.length === 0 ? '' : this.t('noResults'); },
       /** @param {string} v Filterwert @returns {string} Klasse des Chips */
-      chipClass(v) { return this.state.filter === v ? 'll__filter-chip--active' : ''; },
+      chipClass(v) { return this.state.filter === v ? 'chip--active ll__filter-chip--active' : ''; },
 
       // ─── Karte ─────────────────────────────────────────────
       /** @param {Lesson} l @returns {boolean} */

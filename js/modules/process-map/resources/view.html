@@ -262,7 +262,7 @@
             </div>
             <div class="pmap__sipoc-option-chips" x-show="opt.processPreview.length">
               <template x-for="(chip, ci) in opt.processPreview" :key="ci">
-                <span class="pmap__sipoc-option-chip" x-text="chip"></span>
+                <span class="chip pmap__sipoc-option-chip" x-text="chip"></span>
               </template>
               <span class="pmap__sipoc-option-chip pmap__sipoc-option-chip--more" x-show="hasMoreChips(opt)"
                     x-text="moreChipText(opt)"></span>

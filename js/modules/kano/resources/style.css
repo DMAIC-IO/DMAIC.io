@@ -123,12 +123,6 @@
   color: var(--color-text-primary);
 }
 
-/* Flächen kommen aus `btn--secondary`; nur der gesperrte Zustand ist eigen. */
-.kano__sync-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
 /* ===== Kachel ===== */
 .dashboard-kano {
   display: flex;

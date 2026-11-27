@@ -521,50 +521,16 @@
   gap: var(--spacing-xs);
 }
 
-.makigami__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-m);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  transition: background-color var(--transition-speed) ease,
-              border-color var(--transition-speed) ease,
-              color var(--transition-speed) ease;
-}
-
-.makigami__chip:hover {
-  border-color: var(--color-accent);
-}
-
-.makigami__chip:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.makigami__chip--active {
-  background: var(--color-accent-light);
-  border-color: var(--color-accent);
-  color: var(--color-text-primary);
-}
-
+/* Rollen und Verschwendungsarten als Kern-Chips (aktiv: chip--active). Der
+   Punkt folgt der Chip-Schrift; bei Verschwendungsarten trägt er die
+   Kategoriefarbe (Datenfarbe). */
 .makigami__chip-dot {
-  display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  background: var(--chip-color, var(--color-border-primary));
-  border: 1px solid var(--color-border-primary);
-  flex: 0 0 auto;
 }
 
-.makigami__chip--active .makigami__chip-dot {
-  background: var(--chip-color, var(--color-accent));
-  border-color: var(--chip-color, var(--color-accent));
+.makigami__chip--muda .makigami__chip-dot {
+  background: var(--chip-color, currentcolor);
 }
 
 .makigami__chip-code {

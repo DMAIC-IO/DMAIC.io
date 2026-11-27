@@ -18,8 +18,8 @@
         <div class="chart-suggestion__selection-info" data-ref="selection-info" data-help-key="modules.chart-suggestion.fields.selection.help">
           <div class="chart-suggestion__selection-label" x-text="selectionLabel"></div>
           <template x-for="c in selectionColumns" :key="c.id">
-            <span class="chart-suggestion__col-chip" :class="'col-role-' + c.role">
-              <span x-text="c.name || '?'"></span> <em x-text="roleName(c.role)"></em>
+            <span class="chip chart-suggestion__col-chip" :class="'col-role-' + c.role">
+              <span class="chip__dot"></span><span x-text="c.name || '?'"></span> <em x-text="roleName(c.role)"></em>
             </span>
           </template>
         </div>
@@ -47,7 +47,7 @@
         <header class="chart-suggestion__preview-header">
           <span class="chart-suggestion__preview-title" data-ref="preview-title" data-help-key="modules.chart-suggestion.fields.selectedChartType.help" x-text="previewTitle"></span>
           <span class="chart-suggestion__preview-notes" data-ref="preview-notes" x-text="previewNotes"></span>
-          <button type="button" class="chart-suggestion__open-btn context-help-anchor--overlay" data-ref="open-btn" data-help-key="modules.chart-suggestion.actions.openInModule.help"
+          <button type="button" class="btn btn--secondary btn--sm chart-suggestion__open-btn context-help-anchor--overlay" data-ref="open-btn" data-help-key="modules.chart-suggestion.actions.openInModule.help"
                   data-action="open-in-module" x-show="openTarget" x-command="openInModule"
                   x-text="t('openInModule')"></button>
         </header>

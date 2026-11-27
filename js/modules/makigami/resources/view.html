@@ -367,7 +367,7 @@
                 </template>
                 <template x-for="role in model.roles" :key="role.id">
                   <button
-                    class="makigami__chip"
+                    class="chip makigami__chip"
                     :class="roleChipClass(step, role)"
                     data-action="toggle-role-chip"
                     :data-role-id="role.id"
@@ -379,7 +379,7 @@
                     :data-arg-step-id="step.id"
                     :data-arg-role-id="role.id"
                     :data-arg-participates="nextParticipation(step, role)">
-                    <span class="makigami__chip-dot"></span>
+                    <span class="chip__dot makigami__chip-dot"></span>
                     <span class="makigami__chip-label" x-text="roleChipLabel(role)"></span>
                   </button>
                 </template>
@@ -424,7 +424,7 @@
               <div class="makigami__chips makigami__chips--muda">
                 <template x-for="cat in model.mudaCategories" :key="cat.id">
                   <button
-                    class="makigami__chip makigami__chip--muda"
+                    class="chip makigami__chip makigami__chip--muda"
                     :class="mudaChipClass(step, cat)"
                     data-action="toggle-muda"
                     :data-muda-id="cat.id"
@@ -438,7 +438,7 @@
                     :data-arg-step-id="step.id"
                     :data-arg-muda-id="cat.id"
                     :data-arg-marked="nextMarked(step, cat)">
-                    <span class="makigami__chip-dot"></span>
+                    <span class="chip__dot makigami__chip-dot"></span>
                     <template x-if="cat.code">
                       <span class="makigami__chip-code" x-text="cat.code"></span>
                     </template>

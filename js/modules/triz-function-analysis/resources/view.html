@@ -79,10 +79,10 @@
                 <th scope="row" :class="headClass(r)" x-text="r.name"></th>
                 <template x-for="(c, ci) in matrixComponents" :key="c.id">
                   <td :class="cellClass(ri, ci)">
-                    <button type="button" class="tfa__cell-btn" data-role="cell" :data-a="r.id" :data-b="c.id"
+                    <button type="button" class="btn btn--ghost tfa__cell-btn" data-role="cell" :data-a="r.id" :data-b="c.id"
                       :data-state="cellState(r, c)" x-show="ci > ri" :aria-pressed="cellPressed(r, c)"
                       :title="cellTitle(r, c)" @click="toggleCell(r, c)">
-                      <span class="icon icon--sm" data-icon="action.confirm" x-show="isTicked(r, c)"></span>
+                      <span class="icon icon--sm tfa__cell-tick" data-icon="action.confirm" x-show="isTicked(r, c)"></span>
                       <span class="icon icon--sm tfa__cell-excluded" data-icon="action.close" x-show="isExcluded(r, c)"></span>
                     </button>
                   </td>
@@ -102,7 +102,7 @@
           <div class="dmike-split__section-title"><span data-help-key="modules.triz-function-analysis.actions.addFunction.help" x-text="t('openPairs')"></span></div>
           <div class="tfa__chips">
             <template x-for="p in openPairChips" :key="p.key">
-              <button type="button" class="tfa__chip" data-role="open-pair" @click="createFromPair(p)" x-text="p.label"></button>
+              <button type="button" class="chip tfa__chip" data-role="open-pair" @click="createFromPair(p)" x-text="p.label"></button>
             </template>
           </div>
           <p class="tfa__hint" x-show="openPairChips.length === 0" x-text="t('noOpenPairs')"></p>

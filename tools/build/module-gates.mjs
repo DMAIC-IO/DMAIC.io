@@ -1078,6 +1078,107 @@ export function checkViewReads(files, base, exemptions = []) {
   return out;
 }
 
+/** Teilt an Kommas bzw. Kombinatoren der obersten Ebene (nicht in `()`/`[]`). */
+function splitTop(text, sep) {
+  const out = [];
+  let depth = 0;
+  let buf = '';
+  for (const ch of text) {
+    if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') depth--;
+    if (depth === 0 && sep.test(ch)) { if (buf.trim()) out.push(buf.trim()); buf = ''; continue; }
+    buf += ch;
+  }
+  if (buf.trim()) out.push(buf.trim());
+  return out;
+}
+
+/**
+ * Regeln eines Stylesheets mit voll aufgelösten Selektoren (CSS-Nesting mit
+ * und ohne `&`; `@media`/`@supports`/`@layer`/`@container` durchlässig,
+ * `@keyframes`/`@font-face` übersprungen).
+ * @param {string} text
+ * @returns {{ selectors: string[], decls: [string, string][] }[]}
+ */
+export function cssRules(text) {
+  const src = text.replace(/\/\*[\s\S]*?\*\//g, '');
+  const rules = [];
+  /** @type {{ selectors: string[]|null, skip: boolean, decls: [string, string][] }[]} */
+  const stack = [];
+  const current = () => [...stack].reverse().find((s) => s.selectors)?.selectors ?? null;
+  let buf = '';
+  const decl = () => {
+    const top = stack.at(-1);
+    const i = buf.indexOf(':');
+    if (top && i > 0 && buf.trim()) top.decls.push([buf.slice(0, i).trim().toLowerCase(), buf.slice(i + 1).trim()]);
+    buf = '';
+  };
+  for (const ch of src) {
+    if (ch === '{') {
+      const head = buf.trim();
+      buf = '';
+      const parentSkip = stack.some((s) => s.skip);
+      if (head.startsWith('@')) {
+        stack.push({ selectors: null, skip: parentSkip || /^@(keyframes|font-face|-webkit-keyframes|property|page)/.test(head), decls: [] });
+        continue;
+      }
+      const parents = current();
+      const own = splitTop(head, /,/);
+      const selectors = parents
+        ? parents.flatMap((p) => own.map((s) => (s.includes('&') ? s.replaceAll('&', p) : `${p} ${s}`)))
+        : own;
+      stack.push({ selectors, skip: parentSkip, decls: [] });
+    } else if (ch === ';') {
+      decl();
+    } else if (ch === '}') {
+      decl();
+      const top = stack.pop();
+      if (top?.selectors && !top.skip && top.decls.length) rules.push({ selectors: top.selectors, decls: top.decls });
+    } else {
+      buf += ch;
+    }
+  }
+  return rules;
+}
+
+/** Klasse eines Knopfs oder Chips: endet auf btn/button/chip, optional mit Modifikator. */
+const BUTTON_CLASS = /(^|[-_])(btn|button|chip)(--[\w-]+)?$/;
+const COLOR_PROP = /^(background|background-color|color|border-color|border(-(top|right|bottom|left|block|inline)(-(start|end))?)?(-color)?)$/;
+const COLOR_VALUE = /var\(--|#[0-9a-f]{3}|\b(rgb|hsl|color-mix|oklch|lab)\(|currentcolor/i;
+
+/** Das gestylte Element eines Selektors (letzte Verbindung) ist ein Knopf oder Chip. */
+function targetsButton(selector) {
+  const last = splitTop(selector, /[\s>+~]/).at(-1) ?? '';
+  const bare = last.replace(/:{1,2}[\w-]+\([^)]*\)/g, '').replace(/\[[^\]]*\]/g, '');
+  if (/^button\b/i.test(bare)) return true;
+  return [...bare.matchAll(/\.([\w-]+)/g)].some((m) => BUTTON_CLASS.test(m[1]));
+}
+
+/**
+ * Gate Knöpfe/Chips: Modul-CSS setzt an Knöpfen und Chips nur Lage und Maß.
+ * Befund ist jede Regel, deren gestyltes Element (letzte Verbindung des
+ * Selektors) eine Knopf-/Chip-Klasse (`…btn`, `…button`, `…chip`, je mit
+ * Modifikator) oder `button` ist und die `background`, `background-color`,
+ * `color`, `border-color` oder einen Rahmen mit Farbwert setzt. Inhalte im
+ * Knopf (`.chip__dot`, `.x__chip-code`, `.icon`) sind keine Knopffarbe.
+ * @param {{ path: string, text: string }} css
+ * @param {string[]} [allowed] Selektoren mit begründeter Ausnahme
+ * @returns {string[]}
+ */
+export function checkButtonColorCss(css, allowed = []) {
+  const out = [];
+  for (const { selectors, decls } of cssRules(css.text)) {
+    const props = decls.filter(([k, v]) => COLOR_PROP.test(k) && (!k.startsWith('border') || k === 'border-color' || COLOR_VALUE.test(v)));
+    if (!props.length) continue;
+    for (const sel of selectors) {
+      const norm = sel.replace(/\s+/g, ' ');
+      if (!targetsButton(norm) || allowed.includes(norm)) continue;
+      out.push(`css: ${css.path}: ${norm} { ${props.map(([k]) => k).join(', ')} } — Knopf-/Chip-Farben kommen aus der Rolle (css/components.css „Buttons“, „Chips“)`);
+    }
+  }
+  return out;
+}
+
 // Nur der Text vor `{` (Selektoren und At-Regel-Köpfe) zählt; Kommentare und Deklarationen nicht.
 const PICKER_CLASS = /\.(col-picker[\w-]*)/g;
 

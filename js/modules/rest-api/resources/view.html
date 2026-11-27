@@ -5,7 +5,7 @@
       <div class="rest-api__sidebar-header">
         <span class="rest-api__sidebar-title" data-help-key="modules.rest-api.fields.endpoints.help" x-text="t('name')"></span>
         <span class="rest-api__count" x-text="model.endpoints.length"></span>
-        <button class="rest-api__add-btn" type="button" :title="t('addEndpoint')" :aria-label="t('addEndpoint')" x-command="addEndpoint">
+        <button class="btn btn--icon-sm rest-api__add-btn" type="button" :title="t('addEndpoint')" :aria-label="t('addEndpoint')" x-command="addEndpoint">
           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
         </button>
       </div>
@@ -53,7 +53,7 @@
           <div class="rest-api__section">
             <div class="rest-api__section-header">
               <span class="rest-api__section-label" data-help-key="modules.rest-api.fields.endpoints.headers.help" x-text="t('headers')"></span>
-              <button class="rest-api__add-header-btn" type="button" x-command="addHeader" :data-arg-endpoint-id="model.activeId">
+              <button class="btn btn--ghost btn--xs rest-api__add-header-btn" type="button" x-command="addHeader" :data-arg-endpoint-id="model.activeId">
                 <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addHeader')"></span>
               </button>
@@ -76,7 +76,7 @@
           <div class="rest-api__section">
             <div class="rest-api__section-header">
               <span class="rest-api__section-label" data-help-key="modules.rest-api.fields.endpoints.mappings.help" x-text="t('columnMappings')"></span>
-              <button class="rest-api__add-mapping-btn" type="button" x-command="addMapping" :data-arg-endpoint-id="model.activeId">
+              <button class="btn btn--ghost btn--xs rest-api__add-mapping-btn" type="button" x-command="addMapping" :data-arg-endpoint-id="model.activeId">
                 <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addMapping')"></span>
               </button>
@@ -158,7 +158,7 @@
                 <span :class="statusClass" data-help-key="modules.rest-api.types.Response.status" x-text="responseStatus"></span>
               </template>
               <template x-if="hasResponse">
-                <button class="rest-api__copy-btn" type="button" data-action="copy-response" data-help-key="" :title="t('copyResponse')" :aria-label="t('copyResponse')" @click="copyResponse()">
+                <button class="btn btn--icon-sm rest-api__copy-btn" type="button" data-action="copy-response" data-help-key="" :title="t('copyResponse')" :aria-label="t('copyResponse')" @click="copyResponse()">
                   <span class="icon icon--sm" data-icon="action.copy" aria-hidden="true"></span>
                 </button>
               </template>

@@ -86,7 +86,7 @@
             </td>
             <template x-if="state.hasCalendar">
               <td class="todo__col-cal">
-                <button class="todo__cal-btn" :class="calClass(item)" type="button" data-help-key=""
+                <button class="btn btn--icon-sm todo__cal-btn" :class="calClass(item)" type="button" data-help-key=""
                         data-action="cal" :title="t('showInCalendar')" :aria-label="t('showInCalendar')"
                         :aria-pressed="calPressed(item)"
                         @click="calendarToggled(item)"><span class="icon icon--sm" data-icon="module.dmaic-calendar" aria-hidden="true"></span></button>

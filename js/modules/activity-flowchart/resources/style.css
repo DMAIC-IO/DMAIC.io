@@ -100,22 +100,11 @@
   border-radius: var(--border-radius-sm);
 }
 
-.af__band-add button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
+.af__band-add .btn,
+.af__insert-menu .btn {
+  justify-content: flex-start;
   padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
-}
-
-.af__band-add button:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
 }
 
 /* The exit at the end of a no-band: where the detour rejoins the main path.
@@ -218,25 +207,6 @@
   border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-md);
   z-index: 10;
-}
-
-.af__insert-menu button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
-  cursor: pointer;
-  padding: var(--spacing-2xs) var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-}
-
-.af__insert-menu button:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
 }
 
 /* Cards all sit at z-index 1, so the one after this arrow would paint over

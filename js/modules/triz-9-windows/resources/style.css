@@ -157,34 +157,11 @@
   flex: 0 0 auto;
 }
 
-.triz-9w__upload-btn {
-  font: inherit;
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2xs);
-  padding: var(--spacing-2xs) var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  white-space: nowrap;
-  flex: 0 0 auto;
-}
-
-.triz-9w__upload-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  border-color: var(--color-accent);
-}
-
-/* Datei über dem Bildknopf (x-file-drop setzt data-file-drop-over am Wirt). */
-.triz-9w__upload[data-file-drop-over] .triz-9w__upload-btn {
-  background: var(--color-accent-light);
-  color: var(--color-text-primary);
-  border-color: var(--color-accent);
+/* Datei über dem Bildknopf (x-file-drop setzt data-file-drop-over am Wirt):
+   der Wirt bekommt den Ring, der Knopf bleibt in seiner Rolle. */
+.triz-9w__upload[data-file-drop-over] {
+  border-radius: var(--border-radius);
+  box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .triz-9w__cell-text {

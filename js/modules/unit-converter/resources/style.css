@@ -26,39 +26,6 @@
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 
-.module-unit-converter__cat-btn {
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  padding: var(--spacing-sm) var(--spacing-m);
-  border-radius: var(--border-radius);
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-speed);
-  white-space: nowrap;
-
-  /* Icon + label are sibling spans (batch 8 restructured this from x-text
-     to icon-plus-label); as plain inline content the icon's own
-     vertical-align docked it near the button's top instead of centering on
-     the label text. Flex centers both on the button's cross-axis. */
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-s);
-}
-
-.module-unit-converter__cat-btn:hover {
-  border-color: var(--color-border-primary);
-  color: var(--color-text-primary);
-}
-
-.module-unit-converter__cat-btn--active {
-  background: var(--color-accent-light);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
 /* ── Converter Panel ── */
 .module-unit-converter__panel {
   background: var(--color-bg-secondary);
@@ -82,27 +49,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-}
-
-.module-unit-converter__swap-btn {
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  padding: var(--spacing-s) var(--spacing-m);
-  border-radius: var(--border-radius);
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-speed);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-s);
-}
-
-.module-unit-converter__swap-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
 }
 
 .module-unit-converter__panel-body {
@@ -305,20 +251,6 @@
 }
 
 .module-unit-converter__tz-now-btn {
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
   margin-top: var(--spacing-m);
-  padding: var(--spacing-sm) var(--spacing-m);
-  border-radius: var(--border-radius);
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-speed);
 }
 
-.module-unit-converter__tz-now-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}

@@ -50,10 +50,10 @@
       <!-- Optionsfelder: Pfeiltasten wählen den Nachbarn, die Beschriftung sieht aus wie bisher der Chip. -->
       <div class="ll__filters" role="radiogroup" x-set="state.filter" :aria-label="t('fieldCategory')"
         data-help-key="modules.lessons-learned.state.filter.help">
-        <label class="ll__filter-chip" data-help-key="" :class="chipClass('all')" data-filter="all"><input type="radio" class="dmike-sr-only" value="all"><span x-text="t('filterAll')"></span></label>
-        <label class="ll__filter-chip" data-help-key="" :class="chipClass('success')" data-filter="success"><input type="radio" class="dmike-sr-only" value="success"><span x-text="t('filterSuccess')"></span></label>
-        <label class="ll__filter-chip" data-help-key="" :class="chipClass('problem')" data-filter="problem"><input type="radio" class="dmike-sr-only" value="problem"><span x-text="t('filterProblem')"></span></label>
-        <label class="ll__filter-chip" data-help-key="" :class="chipClass('improve')" data-filter="improve"><input type="radio" class="dmike-sr-only" value="improve"><span x-text="t('filterImprove')"></span></label>
+        <label class="chip ll__filter-chip" data-help-key="" :class="chipClass('all')" data-filter="all"><input type="radio" class="dmike-sr-only" value="all"><span x-text="t('filterAll')"></span></label>
+        <label class="chip ll__filter-chip" data-help-key="" :class="chipClass('success')" data-filter="success"><input type="radio" class="dmike-sr-only" value="success"><span x-text="t('filterSuccess')"></span></label>
+        <label class="chip ll__filter-chip" data-help-key="" :class="chipClass('problem')" data-filter="problem"><input type="radio" class="dmike-sr-only" value="problem"><span x-text="t('filterProblem')"></span></label>
+        <label class="chip ll__filter-chip" data-help-key="" :class="chipClass('improve')" data-filter="improve"><input type="radio" class="dmike-sr-only" value="improve"><span x-text="t('filterImprove')"></span></label>
       </div>
     </div>
 
@@ -122,9 +122,10 @@
               <button type="button" class="btn btn--sm btn--ghost" data-action="edit"
                 x-dialog="lessonForm" data-dialog-command="updateLesson" :data-arg-lesson-id="lesson.id" :data-dialog-title="t('editTitle')"
                 data-help-key="modules.lessons-learned.actions.updateLesson.help" x-text="t('edit')"></button>
-              <button type="button" class="btn btn--sm btn--ghost btn--danger" data-action="delete"
+              <button type="button" class="btn btn--icon-sm btn--danger" data-action="delete"
                 data-confirm-delete x-command="removeLesson" :data-arg-lesson-id="lesson.id"
-                data-help-key="modules.lessons-learned.actions.removeLesson.help" x-text="t('delete')"></button>
+                :title="t('delete')" :aria-label="t('delete')"
+                data-help-key="modules.lessons-learned.actions.removeLesson.help"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
             </div>
           </div>
         </div>

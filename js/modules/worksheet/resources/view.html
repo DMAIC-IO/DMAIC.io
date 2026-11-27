@@ -3,35 +3,35 @@
 
   <!-- ═══ Werkzeugleiste ═══ -->
   <div class="worksheet-toolbar">
-    <button type="button" class="toolbar__btn" data-action="undo"
+    <button type="button" class="btn btn--ghost toolbar__btn" data-action="undo"
             data-help-key="modules.worksheet.actions.undo.help"
             :title="t('undo')" :disabled="!canUndo" @click="undo()">
       <span class="icon icon--sm" data-icon="action.undo" aria-hidden="true"></span>
     </button>
-    <button type="button" class="toolbar__btn" data-action="redo"
+    <button type="button" class="btn btn--ghost toolbar__btn" data-action="redo"
             data-help-key="modules.worksheet.actions.redo.help"
             :title="t('redo')" :disabled="!canRedo" @click="redo()">
       <span class="icon icon--sm" data-icon="action.redo" aria-hidden="true"></span>
     </button>
     <div class="toolbar__sep"></div>
-    <button type="button" class="toolbar__btn" data-action="add-col"
+    <button type="button" class="btn btn--ghost toolbar__btn" data-action="add-col"
             x-command="addColumn" :data-arg-sheet-id="model.activeSheetId" :title="t('addColumn')">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('column')"></span>
     </button>
-    <button type="button" class="toolbar__btn" data-action="add-rows"
+    <button type="button" class="btn btn--ghost toolbar__btn" data-action="add-rows"
             x-command="addRows" :data-arg-sheet-id="model.activeSheetId" :title="t('addRows')">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('rows')"></span>
     </button>
     <div class="toolbar__sep"></div>
-    <button type="button" class="toolbar__btn toolbar__btn--accent" data-action="import" data-file-drop-open
+    <button type="button" class="btn btn--ghost toolbar__btn toolbar__btn--accent" data-action="import" data-file-drop-open
             data-help-key="modules.worksheet.actions.importFile.help" :title="t('importFile')">
       <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span>
       <span x-text="t('import')"></span>
     </button>
     <div class="toolbar__dropdown" data-action="export-dropdown">
-      <button type="button" class="toolbar__btn" data-help-key="modules.worksheet.actions.exportAs.help"
+      <button type="button" class="btn btn--ghost toolbar__btn" data-help-key="modules.worksheet.actions.exportAs.help"
               :title="t('export')" :aria-expanded="exportExpanded" @click="toggleExport($event)">
         <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
         <span x-text="t('export')"></span>
@@ -48,19 +48,19 @@
       </div>
     </div>
     <div class="toolbar__sep"></div>
-    <button type="button" class="toolbar__btn" data-action="delete"
+    <button type="button" class="btn btn--ghost toolbar__btn" data-action="delete"
             data-help-key="modules.worksheet.actions.deleteSelection.help"
             :title="t('deleteSelection')" @click="deleteSelection()">
       <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
     </button>
     <div class="toolbar__sep"></div>
-    <button type="button" class="toolbar__btn toolbar__btn--accent" data-action="formula-editor"
+    <button type="button" class="btn btn--ghost toolbar__btn toolbar__btn--accent" data-action="formula-editor"
             x-command="openFormulaEditor" :title="formulaBtnTitle">
       <span class="icon icon--sm" data-icon="module.model-data-generator" aria-hidden="true"></span>
       <span x-text="t('formula')"></span>
     </button>
     <div class="toolbar__sep"></div>
-    <button type="button" class="toolbar__btn" data-action="suggest-chart"
+    <button type="button" class="btn btn--ghost toolbar__btn" data-action="suggest-chart"
             x-command="suggestChart" :title="suggestTitle" :disabled="!canSuggest">
       <span class="icon icon--sm" data-icon="module.chart-suggestion" aria-hidden="true"></span>
       <span x-text="t('suggestChart')"></span>

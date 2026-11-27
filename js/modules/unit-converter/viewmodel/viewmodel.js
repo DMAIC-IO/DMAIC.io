@@ -47,7 +47,7 @@ export default createModule({
       catIcon(catKey) { return CATEGORIES[catKey]?.icon || ''; },
       /** @param {string} catKey @returns {string} */
       catActiveClass(catKey) {
-        return this.model.activeCat === catKey ? 'module-unit-converter__cat-btn--active' : '';
+        return this.model.activeCat === catKey ? 'chip--active module-unit-converter__cat-btn--active' : '';
       },
 
       /** @param {string} unitKey @returns {string} */

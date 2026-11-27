@@ -146,23 +146,10 @@
   margin-top: var(--spacing-xs);
 }
 
+/* Gefundene Werte als Kern-Chips ohne Klick. */
 .outliertest__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.08);
-  color: var(--color-error);
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
-  padding: var(--spacing-2xs) var(--spacing-sm);
-  border-radius: var(--border-radius);
-  border: 1px solid rgb(var(--color-error-rgb, 239, 68, 68), 0.2);
-}
-
-.outliertest__chip--more {
-  background: var(--color-bg-primary);
-  color: var(--color-text-tertiary);
-  border-color: var(--color-border-primary);
+  cursor: default;
 }
 
 .outliertest__chip-stat {
