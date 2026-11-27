@@ -1,0 +1,2 @@
+# Byte-Fixtures der Altform: Zeilenenden (CRLF im CSV) bleiben unverändert.
+legacy-export.* -text

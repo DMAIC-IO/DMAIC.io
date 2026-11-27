@@ -1,0 +1,484 @@
+{
+  "$comment": "read({ fields: ['steps'] }) der Altform (Sprache en) je Beispiel, dazu `kpi` = computeKPI() der Altform in Sekunden; Task 0 der F2-Umstellung.",
+  "makigami-auftragsabwicklung": {
+    "title": "Auftragsabwicklung Innendienst",
+    "roles": [
+      {
+        "id": "r-kunde",
+        "label": "Kunde"
+      },
+      {
+        "id": "r-vertrieb",
+        "label": "Vertriebsinnendienst"
+      },
+      {
+        "id": "r-disp",
+        "label": "Disposition"
+      },
+      {
+        "id": "r-lager",
+        "label": "Lager"
+      },
+      {
+        "id": "r-buha",
+        "label": "Buchhaltung"
+      }
+    ],
+    "steps": [
+      {
+        "id": "s-1",
+        "title": "Anfrage absenden",
+        "description": "Kunde sendet Anfrage per E-Mail oder über Webformular.",
+        "roleIds": [
+          "r-kunde"
+        ],
+        "processTime": "3min",
+        "waitTime": "",
+        "mudaIds": [],
+        "notes": "",
+        "expanded": true
+      },
+      {
+        "id": "s-2",
+        "title": "Anfrage erfassen",
+        "description": "Vertrieb übernimmt die Anfrage aus dem zentralen Postfach, legt einen Vorgang im CRM an.",
+        "roleIds": [
+          "r-vertrieb"
+        ],
+        "processTime": "8min",
+        "waitTime": "1h",
+        "mudaIds": [
+          "muda-inventory",
+          "muda-waiting"
+        ],
+        "notes": "Anfragen sammeln sich im Postfach; vereinzelt Liegezeiten über Stunden.",
+        "expanded": true
+      },
+      {
+        "id": "s-3",
+        "title": "Verfügbarkeit prüfen",
+        "description": "Vertrieb fragt beim Lager nach Bestand und Liefertermin.",
+        "roleIds": [
+          "r-vertrieb",
+          "r-lager"
+        ],
+        "processTime": "5min",
+        "waitTime": "2h",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-motion"
+        ],
+        "notes": "Übergabe Vertrieb → Lager per E-Mail; Rückmeldung nicht zugesichert.",
+        "expanded": true
+      },
+      {
+        "id": "s-4",
+        "title": "Angebot erstellen",
+        "description": "Angebot im Word-Template erstellen, Preise aus Kalkulationstabelle ziehen.",
+        "roleIds": [
+          "r-vertrieb"
+        ],
+        "processTime": "15min",
+        "waitTime": "30min",
+        "mudaIds": [
+          "muda-overprocessing"
+        ],
+        "notes": "Template wird manuell befüllt — Über-Bearbeitung bei Standard-Anfragen.",
+        "expanded": true
+      },
+      {
+        "id": "s-5",
+        "title": "Angebot prüfen",
+        "description": "Kunde prüft, holt ggf. interne Freigaben ein.",
+        "roleIds": [
+          "r-kunde"
+        ],
+        "processTime": "5min",
+        "waitTime": "1d",
+        "mudaIds": [
+          "muda-waiting"
+        ],
+        "notes": "Kunde-seitige Wartezeit — größter Hebel auf Lead Time.",
+        "expanded": true
+      },
+      {
+        "id": "s-6",
+        "title": "Auftragsbestätigung",
+        "description": "Vertrieb bestätigt den Auftrag, sendet AB an Kunde und intern an Disposition.",
+        "roleIds": [
+          "r-vertrieb"
+        ],
+        "processTime": "4min",
+        "waitTime": "4h",
+        "mudaIds": [
+          "muda-waiting"
+        ],
+        "notes": "",
+        "expanded": true
+      },
+      {
+        "id": "s-7",
+        "title": "Disposition",
+        "description": "Disposition plant Kommissionierung und Versandtermin ein.",
+        "roleIds": [
+          "r-disp"
+        ],
+        "processTime": "8min",
+        "waitTime": "6h",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-transport"
+        ],
+        "notes": "Wartezeit hängt am Versandfenster (täglich 14:00 Uhr).",
+        "expanded": true
+      },
+      {
+        "id": "s-8",
+        "title": "Rechnung erstellen",
+        "description": "Buchhaltung erstellt Rechnung nach Lieferschein-Eingang.",
+        "roleIds": [
+          "r-buha"
+        ],
+        "processTime": "5min",
+        "waitTime": "1d",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-defects"
+        ],
+        "notes": "Rückläufer bei fehlenden Steuernummern oder Adressabweichungen.",
+        "expanded": true
+      }
+    ],
+    "mudaCategories": [
+      {
+        "id": "muda-transport",
+        "code": "T",
+        "label": "",
+        "color": "#4a90e2",
+        "labelKey": "muda.transport"
+      },
+      {
+        "id": "muda-inventory",
+        "code": "I",
+        "label": "",
+        "color": "#f5a623",
+        "labelKey": "muda.inventory"
+      },
+      {
+        "id": "muda-motion",
+        "code": "M",
+        "label": "",
+        "color": "#9b59b6",
+        "labelKey": "muda.motion"
+      },
+      {
+        "id": "muda-waiting",
+        "code": "W",
+        "label": "",
+        "color": "#d0021b",
+        "labelKey": "muda.waiting"
+      },
+      {
+        "id": "muda-overproduction",
+        "code": "O",
+        "label": "",
+        "color": "#50e3c2",
+        "labelKey": "muda.overproduction"
+      },
+      {
+        "id": "muda-overprocessing",
+        "code": "O+",
+        "label": "",
+        "color": "#f8a01c",
+        "labelKey": "muda.overprocessing"
+      },
+      {
+        "id": "muda-defects",
+        "code": "D",
+        "label": "",
+        "color": "#bd10e0",
+        "labelKey": "muda.defects"
+      },
+      {
+        "id": "muda-skills",
+        "code": "S",
+        "label": "",
+        "color": "#7ed321",
+        "labelKey": "muda.skills"
+      }
+    ],
+    "timeUnits": [
+      {
+        "id": "unit-s",
+        "label": "s",
+        "factorSeconds": 1
+      },
+      {
+        "id": "unit-min",
+        "label": "min",
+        "factorSeconds": 60
+      },
+      {
+        "id": "unit-h",
+        "label": "h",
+        "factorSeconds": 3600
+      },
+      {
+        "id": "unit-d",
+        "label": "d",
+        "factorSeconds": 28800
+      }
+    ],
+    "kpi": {
+      "process": 3180,
+      "wait": 106200,
+      "lead": 109380,
+      "pce": 0.029072956664838178
+    }
+  },
+  "makigami-urlaubsantrag": {
+    "title": "Urlaubsantrag (klassisches Genehmigungsverfahren)",
+    "roles": [
+      {
+        "id": "r-ma",
+        "label": "Mitarbeiter:in"
+      },
+      {
+        "id": "r-vg",
+        "label": "Vorgesetzte/r"
+      },
+      {
+        "id": "r-hr",
+        "label": "Personalabteilung"
+      },
+      {
+        "id": "r-sys",
+        "label": "Urlaubsdatenbank (IT)"
+      }
+    ],
+    "steps": [
+      {
+        "id": "s-1",
+        "title": "Antrag ausfüllen",
+        "description": "Mitarbeiter:in füllt das PDF-Formular aus, druckt es aus.",
+        "roleIds": [
+          "r-ma"
+        ],
+        "processTime": "5min",
+        "waitTime": "",
+        "mudaIds": [
+          "muda-overprocessing"
+        ],
+        "notes": "PDF-Formular existiert nur als Druckvorlage — keine elektronische Erfassung.",
+        "expanded": true
+      },
+      {
+        "id": "s-2",
+        "title": "Antrag einreichen",
+        "description": "Mitarbeiter:in legt den Antrag in den Postkorb der Vorgesetzten.",
+        "roleIds": [
+          "r-ma"
+        ],
+        "processTime": "2min",
+        "waitTime": "",
+        "mudaIds": [
+          "muda-motion",
+          "muda-transport"
+        ],
+        "notes": "Wegezeit zum Büro der Vorgesetzten — bei mehreren Standorten erheblich.",
+        "expanded": true
+      },
+      {
+        "id": "s-3",
+        "title": "Im Postkorb liegen",
+        "description": "Antrag wartet im physischen Postkorb auf Bearbeitung.",
+        "roleIds": [],
+        "processTime": "",
+        "waitTime": "2d",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-inventory"
+        ],
+        "notes": "Größter Anteil der Lead Time — typischer Hebelpunkt.",
+        "expanded": true
+      },
+      {
+        "id": "s-4",
+        "title": "Antrag prüfen",
+        "description": "Vorgesetzte:r prüft Antrag gegen Teamkalender und Vertretungsregelung.",
+        "roleIds": [
+          "r-vg"
+        ],
+        "processTime": "3min",
+        "waitTime": "",
+        "mudaIds": [],
+        "notes": "",
+        "expanded": true
+      },
+      {
+        "id": "s-5",
+        "title": "Rückfragen klären",
+        "description": "Bei Konflikten: Rückfrage an Mitarbeiter:in (E-Mail oder persönlich).",
+        "roleIds": [
+          "r-vg",
+          "r-ma"
+        ],
+        "processTime": "5min",
+        "waitTime": "1d",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-defects"
+        ],
+        "notes": "Häufig bei Doppelbelegung im Team — wäre durch einsehbaren Kalender vermeidbar.",
+        "expanded": true
+      },
+      {
+        "id": "s-6",
+        "title": "Genehmigung erteilen",
+        "description": "Vorgesetzte:r unterschreibt und legt Antrag in den HR-Postkorb.",
+        "roleIds": [
+          "r-vg"
+        ],
+        "processTime": "1min",
+        "waitTime": "",
+        "mudaIds": [
+          "muda-motion"
+        ],
+        "notes": "",
+        "expanded": true
+      },
+      {
+        "id": "s-7",
+        "title": "Übergabe HR",
+        "description": "HR holt Anträge aus dem Postkorb (täglich 1×).",
+        "roleIds": [
+          "r-hr"
+        ],
+        "processTime": "2min",
+        "waitTime": "1d",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-transport"
+        ],
+        "notes": "Festes Abholfenster verlängert Wartezeit um bis zu einem Arbeitstag.",
+        "expanded": true
+      },
+      {
+        "id": "s-8",
+        "title": "Buchung im System",
+        "description": "HR überträgt den Urlaub in die Urlaubsdatenbank.",
+        "roleIds": [
+          "r-hr",
+          "r-sys"
+        ],
+        "processTime": "3min",
+        "waitTime": "4h",
+        "mudaIds": [
+          "muda-waiting",
+          "muda-overprocessing"
+        ],
+        "notes": "Doppelte Erfassung: einmal Papier, einmal System.",
+        "expanded": true
+      },
+      {
+        "id": "s-9",
+        "title": "Bestätigung an Mitarbeiter:in",
+        "description": "Automatische E-Mail aus dem System nach Buchung.",
+        "roleIds": [
+          "r-sys"
+        ],
+        "processTime": "1min",
+        "waitTime": "",
+        "mudaIds": [],
+        "notes": "",
+        "expanded": true
+      }
+    ],
+    "mudaCategories": [
+      {
+        "id": "muda-transport",
+        "code": "T",
+        "label": "",
+        "color": "#4a90e2",
+        "labelKey": "muda.transport"
+      },
+      {
+        "id": "muda-inventory",
+        "code": "I",
+        "label": "",
+        "color": "#f5a623",
+        "labelKey": "muda.inventory"
+      },
+      {
+        "id": "muda-motion",
+        "code": "M",
+        "label": "",
+        "color": "#9b59b6",
+        "labelKey": "muda.motion"
+      },
+      {
+        "id": "muda-waiting",
+        "code": "W",
+        "label": "",
+        "color": "#d0021b",
+        "labelKey": "muda.waiting"
+      },
+      {
+        "id": "muda-overproduction",
+        "code": "O",
+        "label": "",
+        "color": "#50e3c2",
+        "labelKey": "muda.overproduction"
+      },
+      {
+        "id": "muda-overprocessing",
+        "code": "O+",
+        "label": "",
+        "color": "#f8a01c",
+        "labelKey": "muda.overprocessing"
+      },
+      {
+        "id": "muda-defects",
+        "code": "D",
+        "label": "",
+        "color": "#bd10e0",
+        "labelKey": "muda.defects"
+      },
+      {
+        "id": "muda-skills",
+        "code": "S",
+        "label": "",
+        "color": "#7ed321",
+        "labelKey": "muda.skills"
+      }
+    ],
+    "timeUnits": [
+      {
+        "id": "unit-s",
+        "label": "s",
+        "factorSeconds": 1
+      },
+      {
+        "id": "unit-min",
+        "label": "min",
+        "factorSeconds": 60
+      },
+      {
+        "id": "unit-h",
+        "label": "h",
+        "factorSeconds": 3600
+      },
+      {
+        "id": "unit-d",
+        "label": "d",
+        "factorSeconds": 28800
+      }
+    ],
+    "kpi": {
+      "process": 1320,
+      "wait": 129600,
+      "lead": 130920,
+      "pce": 0.01008249312557287
+    }
+  }
+}

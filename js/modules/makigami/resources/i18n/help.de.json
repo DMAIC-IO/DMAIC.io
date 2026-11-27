@@ -1,0 +1,221 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Was ist Makigami?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "{{term:makigami|Makigami}} (jap. „aufgerolltes Papier\") ist ein Lean-Werkzeug zur Aufnahme administrativer und dienstleistungsorientierter Prozesse. Während eine klassische {{term:process-map|Prozesskarte}} den Materialfluss zeigt, macht Makigami sichtbar, wer wann an einem Vorgang arbeitet und wie viel Zeit zwischen den Schritten verloren geht."
+        },
+        {
+          "type": "paragraph",
+          "content": "Aufbau: Zeilen sind beteiligte Rollen (Personen, Abteilungen, Systeme), Spalten sind Prozessschritte in chronologischer Reihenfolge. In jeder Zelle wird markiert, ob eine Rolle an einem Schritt mitwirkt. Pro Schritt wird zusätzlich erfasst: Aktivität, {{term:durchlaufzeit|Bearbeitungszeit}}, Wartezeit, Verschwendungsart und Notizen."
+        },
+        {
+          "type": "definition",
+          "term": "Rolle (Swim-Lane)",
+          "content": "Eine handelnde Stelle im Prozess: Kunde, Sachbearbeitung, Vorgesetzte, ein IT-System. Eine Rolle muss nicht eine Person sein, sondern eine Funktion. Übergaben zwischen Rollen sind die größten Verschwendungsquellen in Büro-Prozessen."
+        },
+        {
+          "type": "definition",
+          "term": "Schritt",
+          "content": "Eine in sich abgeschlossene Aktivität im Prozess — z.B. „Anfrage erfassen\", „Freigabe einholen\". Ein Schritt kann mehrere Rollen gleichzeitig betreffen (gemeinsame Bearbeitung, Übergabe)."
+        },
+        {
+          "type": "definition",
+          "term": "Bearbeitungszeit vs. Wartezeit",
+          "content": "Bearbeitungszeit ist die Zeit, in der tatsächlich gearbeitet wird ({{term:wertschoepfung|wertschöpfend}}). Wartezeit ist die Liegezeit zwischen Aktivitäten — die Vorgang ruht in der Ablage, im Postkorb, in der Mail-Queue. In Büro-Prozessen sind 95 %+ Wartezeit nicht ungewöhnlich."
+        },
+        {
+          "type": "definition",
+          "term": "Muda (Verschwendung)",
+          "content": "Japanischer Begriff für jede Tätigkeit, die Ressourcen verbraucht, ohne Wert für den Kunden zu schaffen. Die acht klassischen Muda-Arten („TIMWOODS+S\"): Transport, Bestand, Bewegung, Warten, Überproduktion, Über-Bearbeitung, Defekte, ungenutztes Potenzial."
+        }
+      ]
+    },
+    "workflow": {
+      "title": "Vorgehen Schritt für Schritt",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Empfohlene Reihenfolge"
+        },
+        {
+          "type": "list",
+          "items": [
+            "1. Prozess-Titel oben links eintragen — z.B. „Auftragsabwicklung Innendienst\".",
+            "2. Rollen anlegen über „+ Rolle\" am unteren Rand der Matrix. Mit den Hauptakteuren beginnen, weitere kommen erfahrungsgemäß im Gespräch dazu.",
+            "3. Schritte chronologisch anlegen über „+ Schritt\" am rechten Rand. Jede Tätigkeit, die einen Statuswechsel auslöst, ist ein eigener Schritt — auch reine Warte-/Liege-Schritte sind erlaubt.",
+            "4. In der Matrix Beteiligungen setzen: pro Zelle den Punkt anklicken, wenn die Rolle an diesem Schritt mitwirkt. Mehrfach-Markierungen sind erlaubt (Übergabe, gemeinsame Bearbeitung).",
+            "5. Pro Schritt die Karte ausfüllen: Aktivitätstext, Bearbeitungszeit, Wartezeit, eine oder mehrere Muda-Kategorien, optional Notizen zu Übergaben oder Engpässen.",
+            "6. KPI-Streifen prüfen: Lead Time und PCE zeigen den Hebel — kleine PCE bedeutet viel Verbesserungspotenzial.",
+            "7. Workshop-Ergebnis exportieren: XLSX zum Teilen, JSON zum Wiederladen, PNG/SVG für Präsentation."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Workshop-Tipps"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mit Beteiligten gemeinsam erstellen — Außenstehende übersehen meist Schatten-Schritte und informelle Übergaben.",
+            "Realistische, nicht Soll-Zeiten erfassen. Auch ehrliche Schätzwerte sind besser als Schönrechnerei.",
+            "Wartezeiten zuerst grob schätzen, danach mit Beispielfällen kalibrieren.",
+            "Drag & Drop nutzen, um Rollen/Schritte umzuordnen, wenn der Workshop neue Reihenfolge ergibt."
+          ]
+        }
+      ]
+    },
+    "fields": {
+      "title": "Felder und Eingaben",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Matrix"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Spaltenkopf: editierbarer Schritt-Titel. Der Index Sx ist fest, der Titel optional.",
+            "Zeilenkopf: editierbares Rollen-Label.",
+            "Zelle: Klick auf den Punkt schaltet die Beteiligung an/aus. Aktive Punkte sind gefüllt.",
+            "Grip-Symbol (⋮⋮): Drag-Anker zum Umordnen von Schritten oder Rollen. Erscheint beim Überfahren des Kopfes.",
+            "X-Symbol: Spalte/Zeile löschen — mit Bestätigungsdialog."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Karte pro Schritt"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Aktivität: Was passiert konkret? Auch zwei Sätze sind völlig in Ordnung.",
+            "Beteiligte Rollen: gleicher Inhalt wie die Punkte in der Matrix — Chips lassen sich genauso umschalten.",
+            "Bearbeitungszeit / Wartezeit: Freitext-Eingabe (siehe unten). Auf Tab/Blur wird kanonisch normalisiert.",
+            "{{term:muda|Verschwendung}} (Muda): mehrere Kategorien pro Schritt möglich. Farben und Bezeichnungen sind in den Einstellungen anpassbar.",
+            "Notizen: alles, was nicht in andere Felder passt — Übergabewege, Engpässe, IT-Brüche."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Zeit-Freitext"
+        },
+        {
+          "type": "paragraph",
+          "content": "Zeiten werden als freie Texte erfasst und intern in Sekunden umgerechnet. Mehrere Einheiten dürfen kombiniert werden, ein Komma oder Punkt ist als Dezimaltrennzeichen erlaubt."
+        },
+        {
+          "type": "list",
+          "items": [
+            "„45min\" → 45 Minuten",
+            "„4h 30min\" → 4 Stunden 30 Minuten",
+            "„1d 5h\" → 1 Arbeitstag (8 h) + 5 Stunden",
+            "„1,5h\" → 1 Stunde 30 Minuten",
+            "Leer = 0; ungültige Eingabe wird rot markiert und im KPI als 0 gerechnet."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Voreingestellt sind s, min, h, d (= 28800 s, also 8-Stunden-Arbeitstag). Eigene Einheiten lassen sich in den Einstellungen ergänzen — z.B. „wk\" = 144000 s für eine Arbeitswoche."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Kennzahlen interpretieren",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "KPI-Streifen"
+        },
+        {
+          "type": "definition",
+          "term": "Σ Bearbeitung",
+          "content": "Summe aller Bearbeitungszeiten — die tatsächlich wertschöpfende Zeit im Prozess. Reichweite typischerweise Minuten bis wenige Stunden."
+        },
+        {
+          "type": "definition",
+          "term": "Σ Wartezeit",
+          "content": "Summe aller Wartezeiten — Liegezeiten zwischen Aktivitäten. In Büro-Prozessen meist der größte Anteil der Lead Time."
+        },
+        {
+          "type": "definition",
+          "term": "Lead Time",
+          "content": "Σ Bearbeitung + Σ Wartezeit. Die durchgehende Dauer vom Auslöser des Prozesses bis zum Ergebnis. Aus Kundensicht das einzig relevante Maß."
+        },
+        {
+          "type": "definition",
+          "term": "PCE (Process Cycle Efficiency)",
+          "content": "Σ Bearbeitung / Lead Time, in Prozent. Anteil der Lead Time, der wertschöpfend ist. Eine PCE von 5 % bedeutet: für jede Minute Wert werden 19 Minuten verschwendet."
+        },
+        {
+          "type": "heading",
+          "content": "Daumenregeln"
+        },
+        {
+          "type": "list",
+          "items": [
+            "PCE > 25 %: für Büro-Prozesse exzellent.",
+            "PCE 5–25 %: typischer Industrie-/Service-Wert mit klarem Optimierungspotenzial.",
+            "PCE < 5 %: massives Hebelpotenzial — Wartezeiten dominieren.",
+            "Verbesserung beginnt immer beim größten Wartezeit-Block, nicht bei der schnellsten Bearbeitungszeit."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Muda-Verteilung"
+        },
+        {
+          "type": "paragraph",
+          "content": "Welche Muda-Kategorien tauchen am häufigsten auf? Häufige Markierungen für „Warten\" zeigen Kapazitätsprobleme oder unklare Verantwortlichkeiten. „Über-Bearbeitung\" deutet auf unklare Qualitätsanforderungen, „Defekte\" auf Probleme in vorgelagerten Schritten."
+        }
+      ]
+    },
+    "tips": {
+      "title": "Tipps & Stolpersteine",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Gute Praxis"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Lieber zu fein als zu grob: Schritte mit mehr als einer Stunde Bearbeitungszeit lassen sich meist sinnvoll aufteilen.",
+            "Übergaben sichtbar machen: Wo zwei Rollen denselben Schritt teilen, lohnt eine Notiz über das Medium (E-Mail, Postkorb, System).",
+            "Wartezeit ehrlich messen: lieber „1d\" eintragen, als die unangenehme Wahrheit zu verstecken — das ist das eigentliche Ziel der Methode.",
+            "Mehrere Muda-Kategorien pro Schritt erlaubt — bei tatsächlich gemischten Problemen lieber alle markieren."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Typische Fehler"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Soll-Prozess statt Ist-Prozess aufnehmen: Makigami zeigt die Realität, nicht das Ideal.",
+            "Nur Bearbeitungszeit erfassen, Wartezeit überspringen: Damit fällt das wichtigste Werkzeug der Methode weg.",
+            "Zu wenige Rollen: Wenn eine „Sachbearbeitung\" mehrere Personen kapselt, gehen Übergaben innerhalb verloren.",
+            "Status-/Liege-Schritte vergessen: „Wartet auf Freigabe\" ist ein eigenständiger Schritt — auch wenn niemand aktiv arbeitet.",
+            "PCE als alleinige Zielmetrik: Eine PCE-Steigerung ohne Reduktion der absoluten Lead Time hilft dem Kunden nicht."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Wann NICHT einsetzen?"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Reine Produktionsprozesse mit Material- und Maschinenfluss — dafür ist eine Value Stream Map präziser.",
+            "Sehr kurze Prozesse (< 5 Schritte): SIPOC oder eine einfache Prozesskarte reichen oft.",
+            "Wenn keine zeitlichen Daten vorliegen und auch keine geschätzt werden können — die Methode lebt von Zeitwerten."
+          ]
+        }
+      ]
+    }
+  }
+}

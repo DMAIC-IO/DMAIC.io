@@ -1,0 +1,267 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "title": {
+      "help": "The name of the process under review."
+    },
+    "roles": {
+      "help": "The participating roles, the rows of the matrix: people, departments or systems that take part in the process. Every step card shows each role as a selectable button.",
+      "id": {
+        "help": "The identifier of the role; value for roleId and entry in the roleIds of the steps."
+      },
+      "label": {
+        "help": "The name of the role as shown at the start of its matrix row; empty, the matrix shows a placeholder."
+      }
+    },
+    "steps": {
+      "help": "The process steps in flow order, the columns of the matrix. Each step has a card below with activity, roles, times, waste and notes.",
+      "id": {
+        "help": "The identifier of the step; value for stepId."
+      },
+      "title": {
+        "help": "The title of the step in the matrix column header and on the card; empty, the card shows its number S1, S2 …"
+      },
+      "description": {
+        "help": "What happens in this step: the activity in your own words."
+      },
+      "roleIds": {
+        "help": "The identifiers of the roles that take part in this step; a filled dot in the matrix."
+      },
+      "processTime": {
+        "help": "The processing time: how long the case is actually worked on. The duration is a number with a unit, such as 4h 30min, 1d or 45min, and adds to the processing total. Leaving the field brings a readable entry into its normal form; an unreadable one stays, is marked red and does not count."
+      },
+      "waitTime": {
+        "help": "The waiting time: how long the case lies idle between activities, in the inbox, on file, in a queue. The duration is a number with a unit, such as 2d or 3h, and adds to the waiting total. An unreadable entry stays, is marked red and does not count."
+      },
+      "mudaIds": {
+        "help": "The identifiers of the waste categories that mark this step."
+      },
+      "notes": {
+        "help": "Free notes on the step: observations, hand-offs, bottlenecks."
+      }
+    },
+    "mudaCategories": {
+      "help": "The waste categories (Muda) that can mark a step. The eight classic types of TIMWOODS+S are preset; you can rename, recolour, add or remove them. At least one category always remains.",
+      "id": {
+        "help": "The identifier of the waste category; value for mudaId and entry in the mudaIds of the steps."
+      },
+      "code": {
+        "help": "The short code of the waste category, at most four characters; it appears on the step card button before the name."
+      },
+      "labelKey": {
+        "help": "For a preset category the key of its translated name; it applies as long as no own name is set. Own categories have none."
+      },
+      "label": {
+        "help": "An own name for the waste category. Left empty, a preset category keeps its translated name, shown as the placeholder."
+      },
+      "color": {
+        "help": "The colour of the waste category; it marks the button on the step card when the category is set."
+      }
+    },
+    "timeUnits": {
+      "help": "The time units recognised in the step durations, each with a short code and its length in seconds. By default a workday counts 8 hours. When a unit changes, all durations are read again. At least one unit always remains.",
+      "id": {
+        "help": "The identifier of the time unit; value for unitId."
+      },
+      "label": {
+        "help": "The code of the unit as it follows the number in a duration, such as min or h; case does not matter."
+      },
+      "factorSeconds": {
+        "help": "The length of the unit in seconds, a number greater than 0; an 8-hour workday is 28800 seconds."
+      }
+    },
+    "collapsed": {
+      "help": "The identifiers of the collapsed step cards. The state is stored but does not change the content."
+    },
+    "settingsOpen": {
+      "help": "Opens or closes the area with the waste categories and time units. The state is stored but does not change the data."
+    },
+    "kpi": {
+      "help": "The KPIs as the bar below the matrix shows them: processing total, waiting total, lead time and process cycle efficiency, all times in seconds. Unreadable durations do not count."
+    },
+    "invalidTimes": {
+      "help": "The durations that cannot be read with the time units, each with step and field; they are marked red on the card and count towards no KPI."
+    }
+  },
+  "types": {
+    "MakigamiKpi": {
+      "process": "The sum of all processing times: how long the case is actually worked on.",
+      "wait": "The sum of all waiting times: how long the case lies idle between activities.",
+      "lead": "The lead time: processing and waiting together, the total throughput time of the case.",
+      "pce": "The process cycle efficiency: the share of processing in the lead time. Without lead time there is no value."
+    },
+    "TimeIssue": {
+      "stepId": "The identifier of the step with the unreadable duration.",
+      "field": "Which entry cannot be read: processTime (processing) or waitTime (waiting)."
+    }
+  },
+  "actions": {
+    "addRole": {
+      "help": "Adds a role without a name, as a new row at the bottom of the matrix.",
+      "params": {
+        "command": "An empty object; the command takes no input and returns the identifier of the new role."
+      }
+    },
+    "addStep": {
+      "help": "Adds a process step without a title at the end of the chain, as a new column on the right of the matrix.",
+      "params": {
+        "command": "An empty object; the command takes no input and returns the identifier of the new step."
+      }
+    },
+    "addMudaCategory": {
+      "help": "Adds a grey waste category without code and name.",
+      "params": {
+        "command": "An empty object; the command takes no input and returns the identifier of the new category."
+      }
+    },
+    "addTimeUnit": {
+      "help": "Adds a time unit without a code and a length of one second.",
+      "params": {
+        "command": "An empty object; the command takes no input and returns the identifier of the new unit."
+      }
+    },
+    "setParticipation": {
+      "help": "Decides whether a role takes part in a process step. On the step card each role is a button that a click marks or releases; in the matrix a click on the dot of role and step toggles the same.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "roleId": "The identifier of the role as read() lists it under roles. An unknown identifier is an error.",
+        "participates": "true makes the role take part, false removes its participation.",
+        "command": "The command as an object with stepId, roleId and participates."
+      }
+    },
+    "setMuda": {
+      "help": "Decides whether a waste category (Muda) marks a process step. On the step card each category is a button that a click sets or releases. The eight classic types (TIMWOODS+S) are preset; they can be adjusted in the settings.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "mudaId": "The identifier of the waste category as read() lists it under mudaCategories. An unknown identifier is an error.",
+        "marked": "true marks the step, false removes the mark.",
+        "command": "The command as an object with stepId, mudaId and marked."
+      }
+    },
+    "setRoleLabel": {
+      "help": "Sets the name of a role.",
+      "params": {
+        "roleId": "The identifier of the role as read() lists it under roles. An unknown identifier is an error.",
+        "label": "The name of the role; an empty text clears it.",
+        "command": "The command as an object with roleId and label."
+      }
+    },
+    "setStepTitle": {
+      "help": "Sets the title of a process step.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "text": "The title of the step; an empty text clears it.",
+        "command": "The command as an object with stepId and text."
+      }
+    },
+    "setStepDescription": {
+      "help": "Sets the description of the activity of a process step, i.e. what happens in it.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "text": "The description of the activity; an empty text clears it.",
+        "command": "The command as an object with stepId and text."
+      }
+    },
+    "setStepNotes": {
+      "help": "Sets the note of a process step, such as observations, hand-offs or bottlenecks.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "text": "The note on the step; an empty text clears it.",
+        "command": "The command as an object with stepId and text."
+      }
+    },
+    "setStepProcessTime": {
+      "help": "Sets the processing time of a process step — the time the case is worked on — and returns whether it is readable.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "text": "The duration as text of number and unit, such as 30 min or 1 d 2 h; the recognised units are listed in timeUnits. An empty text clears it; an unreadable text is stored but does not count towards the KPIs, appears in invalidTimes and returns false.",
+        "command": "The command as an object with stepId and text."
+      }
+    },
+    "setStepWaitTime": {
+      "help": "Sets the waiting time of a process step — the time the case lies idle — and returns whether it is readable.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "text": "The duration as text of number and unit, such as 30 min or 1 d 2 h; the recognised units are listed in timeUnits. An empty text clears it; an unreadable text is stored but does not count towards the KPIs, appears in invalidTimes and returns false.",
+        "command": "The command as an object with stepId and text."
+      }
+    },
+    "normalizeStepTime": {
+      "help": "Brings a readable duration of a step into its normal form, such as 90min into 1h 30min, as leaving the field does. An empty, unreadable or already normal entry stays unchanged.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "field": "Which entry: processTime (processing) or waitTime (waiting).",
+        "command": "The command as an object with stepId and field."
+      }
+    },
+    "setMudaCategory": {
+      "help": "Changes the given details of a waste category; all others stay. At least one detail is required.",
+      "params": {
+        "mudaId": "The identifier of the waste category as read() lists it under mudaCategories. An unknown identifier is an error.",
+        "code": "The code of the category in the matrix and on the card; optional.",
+        "label": "The own name of the category; an empty text keeps the preset one. Optional.",
+        "color": "The colour as a hex value such as #4a90e2; optional.",
+        "command": "The command as an object with mudaId and at least one of code, label, color."
+      }
+    },
+    "setTimeUnit": {
+      "help": "Changes the given details of a time unit; all others stay. At least one detail is required. All durations are then read with the new units.",
+      "params": {
+        "unitId": "The identifier of the time unit as read() lists it under timeUnits. An unknown identifier is an error.",
+        "label": "The code recognised in a duration; optional.",
+        "factorSeconds": "The length of the unit in seconds, a number greater than 0; optional.",
+        "command": "The command as an object with unitId and at least one of label, factorSeconds."
+      }
+    },
+    "removeStep": {
+      "help": "Removes a process step together with its card. The interface asks first.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "command": "The command as an object with stepId."
+      }
+    },
+    "removeRole": {
+      "help": "Removes a role together with its participation in all steps. The interface asks first.",
+      "params": {
+        "roleId": "The identifier of the role as read() lists it under roles. An unknown identifier is an error.",
+        "command": "The command as an object with roleId."
+      }
+    },
+    "removeMudaCategory": {
+      "help": "Removes a waste category together with its marks on all steps. The last category cannot be removed.",
+      "params": {
+        "mudaId": "The identifier of the waste category as read() lists it under mudaCategories. An unknown identifier is an error.",
+        "command": "The command as an object with mudaId."
+      }
+    },
+    "removeTimeUnit": {
+      "help": "Removes a time unit. Durations that use only this unit can no longer be read and do not count. The last unit cannot be removed.",
+      "params": {
+        "unitId": "The identifier of the time unit as read() lists it under timeUnits. An unknown identifier is an error.",
+        "command": "The command as an object with unitId."
+      }
+    },
+    "moveStep": {
+      "help": "Moves a process step to another position in the chain; the others close up. In the matrix you drag the grip in the column header or use the arrow keys.",
+      "params": {
+        "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
+        "to": "The position the step takes afterwards, counted from 0; the last position is the number of steps minus 1. The same position changes nothing.",
+        "command": "The command as an object with stepId and to."
+      }
+    },
+    "moveRole": {
+      "help": "Moves a role to another position; the others close up. In the matrix you drag the grip at the start of the row or use the arrow keys.",
+      "params": {
+        "roleId": "The identifier of the role as read() lists it under roles. An unknown identifier is an error.",
+        "to": "The position the role takes afterwards, counted from 0; the last position is the number of roles minus 1. The same position changes nothing.",
+        "command": "The command as an object with roleId and to."
+      }
+    },
+    "resetSettingsToDefaults": {
+      "help": "Restores the eight preset waste categories and the four preset time units; marks with removed categories are dropped. The interface asks first.",
+      "params": {
+        "command": "An empty object; the command takes no input."
+      }
+    }
+  }
+}

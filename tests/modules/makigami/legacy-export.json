@@ -1,0 +1,170 @@
+{
+  "title": "Reklamation & Gutschrift <Q4>",
+  "roles": [
+    {
+      "id": "r-kd",
+      "label": "Kunde"
+    },
+    {
+      "id": "r-sb",
+      "label": "Sachbearbeitung Reklamationsmanagement"
+    },
+    {
+      "id": "r-lb",
+      "label": ""
+    }
+  ],
+  "steps": [
+    {
+      "id": "s-1",
+      "title": "Reklamation erfassen",
+      "description": "Anruf, E-Mail oder \"Formular\"; Daten prüfen",
+      "roleIds": [
+        "r-kd",
+        "r-sb"
+      ],
+      "processTime": "15min",
+      "waitTime": "1h",
+      "mudaIds": [
+        "muda-motion",
+        "muda-medien"
+      ],
+      "notes": "Zeile 1\nZeile 2",
+      "expanded": true
+    },
+    {
+      "id": "s-2",
+      "title": "Ware prüfen und Gutachten vom Labor anfordern",
+      "description": "",
+      "roleIds": [
+        "r-lb"
+      ],
+      "processTime": "1,5h",
+      "waitTime": "2d",
+      "mudaIds": [
+        "muda-waiting"
+      ],
+      "notes": "",
+      "expanded": false
+    },
+    {
+      "id": "s-3",
+      "title": "",
+      "description": "Rückfrage beim Kunden",
+      "roleIds": [],
+      "processTime": "20 Minuten",
+      "waitTime": "4h",
+      "mudaIds": [],
+      "notes": "Dauer unlesbar",
+      "expanded": true
+    },
+    {
+      "id": "s-4",
+      "title": "Gutschrift buchen",
+      "description": "Buchung im ERP",
+      "roleIds": [
+        "r-sb"
+      ],
+      "processTime": "10min",
+      "waitTime": "1wk",
+      "mudaIds": [
+        "muda-defects",
+        "muda-overprocessing"
+      ],
+      "notes": "",
+      "expanded": true
+    }
+  ],
+  "mudaCategories": [
+    {
+      "id": "muda-transport",
+      "code": "T",
+      "label": "Botengang",
+      "color": "#4a90e2",
+      "labelKey": "muda.transport"
+    },
+    {
+      "id": "muda-inventory",
+      "code": "I",
+      "label": "",
+      "color": "#f5a623",
+      "labelKey": "muda.inventory"
+    },
+    {
+      "id": "muda-motion",
+      "code": "M",
+      "label": "",
+      "color": "#9b59b6",
+      "labelKey": "muda.motion"
+    },
+    {
+      "id": "muda-waiting",
+      "code": "W",
+      "label": "",
+      "color": "#d0021b",
+      "labelKey": "muda.waiting"
+    },
+    {
+      "id": "muda-overproduction",
+      "code": "O",
+      "label": "",
+      "color": "#50e3c2",
+      "labelKey": "muda.overproduction"
+    },
+    {
+      "id": "muda-overprocessing",
+      "code": "O+",
+      "label": "",
+      "color": "#f8a01c",
+      "labelKey": "muda.overprocessing"
+    },
+    {
+      "id": "muda-defects",
+      "code": "D",
+      "label": "",
+      "color": "#bd10e0",
+      "labelKey": "muda.defects"
+    },
+    {
+      "id": "muda-skills",
+      "code": "S",
+      "label": "",
+      "color": "#7ed321",
+      "labelKey": "muda.skills"
+    },
+    {
+      "id": "muda-medien",
+      "code": "B",
+      "label": "Medienbruch",
+      "color": "#336699"
+    }
+  ],
+  "timeUnits": [
+    {
+      "id": "unit-s",
+      "label": "s",
+      "factorSeconds": 1
+    },
+    {
+      "id": "unit-min",
+      "label": "min",
+      "factorSeconds": 60
+    },
+    {
+      "id": "unit-h",
+      "label": "h",
+      "factorSeconds": 3600
+    },
+    {
+      "id": "unit-d",
+      "label": "d",
+      "factorSeconds": 28800
+    },
+    {
+      "id": "unit-wk",
+      "label": "wk",
+      "factorSeconds": 144000
+    }
+  ],
+  "settingsOpen": true
+}

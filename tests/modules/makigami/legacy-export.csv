@@ -1,0 +1,6 @@
+﻿Schritt,Aktivität,Rollen,Bearbeitung,Warten,Muda,Notizen
+S1: Reklamation erfassen,"Anruf, E-Mail oder ""Formular""; Daten prüfen","Kunde; Sachbearbeitung Reklamationsmanagement",15min,1h,"Bewegung; Medienbruch","Zeile 1
+Zeile 2"
+S2: Ware prüfen und Gutachten vom Labor anfordern,,Rollenbezeichnung…,"1,5h",2d,Warten,
+S3,Rückfrage beim Kunden,,20 Minuten,4h,,Dauer unlesbar
+S4: Gutschrift buchen,Buchung im ERP,Sachbearbeitung Reklamationsmanagement,10min,1wk,"Defekte / Nacharbeit; Über-Bearbeitung",

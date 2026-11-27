@@ -1,0 +1,267 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "title": {
+      "help": "Der Name des betrachteten Prozesses."
+    },
+    "roles": {
+      "help": "Die beteiligten Rollen, die Zeilen der Matrix: Personen, Abteilungen oder Systeme, die am Prozess mitwirken. Auf jeder Schrittkarte steht jede Rolle als wählbare Schaltfläche.",
+      "id": {
+        "help": "Die Kennung der Rolle; Wert für roleId und Eintrag in roleIds der Schritte."
+      },
+      "label": {
+        "help": "Der Name der Rolle, so wie er am Zeilenanfang der Matrix steht; leer zeigt die Matrix einen Platzhalter."
+      }
+    },
+    "steps": {
+      "help": "Die Prozessschritte in Ablaufreihenfolge, die Spalten der Matrix. Zu jedem Schritt gehört unten eine Karte mit Tätigkeit, Rollen, Zeiten, Verschwendung und Notizen.",
+      "id": {
+        "help": "Die Kennung des Schritts; Wert für stepId."
+      },
+      "title": {
+        "help": "Der Titel des Schritts im Spaltenkopf der Matrix und auf der Karte; leer zeigt die Karte die Nummer S1, S2 …"
+      },
+      "description": {
+        "help": "Was in diesem Schritt passiert: die Tätigkeit in eigenen Worten."
+      },
+      "roleIds": {
+        "help": "Die Kennungen der Rollen, die an diesem Schritt mitwirken; in der Matrix ein gefüllter Punkt."
+      },
+      "processTime": {
+        "help": "Die Bearbeitungszeit: wie lange am Vorgang tatsächlich gearbeitet wird. Die Dauer steht als Zahl mit Einheit, etwa 4h 30min, 1d oder 45min, und geht in die Summe der Bearbeitung ein. Beim Verlassen des Feldes wird eine lesbare Angabe in die Normalform gebracht; eine nicht lesbare bleibt stehen, ist rot markiert und zählt nicht mit."
+      },
+      "waitTime": {
+        "help": "Die Wartezeit: wie lange der Vorgang zwischen den Tätigkeiten liegt, im Postkorb, in der Ablage, in der Warteschlange. Die Dauer steht als Zahl mit Einheit, etwa 2d oder 3h, und geht in die Summe der Wartezeit ein. Eine nicht lesbare Angabe bleibt stehen, ist rot markiert und zählt nicht mit."
+      },
+      "mudaIds": {
+        "help": "Die Kennungen der Verschwendungsarten, die diesen Schritt kennzeichnen."
+      },
+      "notes": {
+        "help": "Freie Notizen zum Schritt: Auffälligkeiten, Übergaben, Engpässe."
+      }
+    },
+    "mudaCategories": {
+      "help": "Die Verschwendungsarten (Muda), mit denen sich Schritte kennzeichnen lassen. Vorbelegt sind die acht klassischen Arten nach TIMWOODS+S; Sie können sie umbenennen, umfärben, ergänzen oder entfernen. Mindestens eine Art bleibt immer bestehen.",
+      "id": {
+        "help": "Die Kennung der Verschwendungsart; Wert für mudaId und Eintrag in mudaIds der Schritte."
+      },
+      "code": {
+        "help": "Das Kürzel der Verschwendungsart, höchstens vier Zeichen; es steht auf der Schaltfläche der Schrittkarte vor dem Namen."
+      },
+      "labelKey": {
+        "help": "Bei einer mitgelieferten Art der Schlüssel ihres übersetzten Namens; er gilt, solange kein eigener Name gesetzt ist. Eigene Arten haben keinen."
+      },
+      "label": {
+        "help": "Ein eigener Name der Verschwendungsart. Bleibt das Feld leer, gilt bei den mitgelieferten Arten deren übersetzter Name, der als Platzhalter zu sehen ist."
+      },
+      "color": {
+        "help": "Die Farbe der Verschwendungsart; sie markiert die Schaltfläche auf der Schrittkarte, wenn die Art gesetzt ist."
+      }
+    },
+    "timeUnits": {
+      "help": "Die Zeiteinheiten, die in den Dauerangaben der Schritte erkannt werden, jede mit Kürzel und Länge in Sekunden. Ein Arbeitstag zählt in der Vorgabe 8 Stunden. Ändert sich eine Einheit, werden alle Dauerangaben neu gelesen. Mindestens eine Einheit bleibt immer bestehen.",
+      "id": {
+        "help": "Die Kennung der Zeiteinheit; Wert für unitId."
+      },
+      "label": {
+        "help": "Das Kürzel der Einheit, wie es in einer Dauerangabe hinter der Zahl steht, etwa min oder h; Groß- und Kleinschreibung zählen nicht."
+      },
+      "factorSeconds": {
+        "help": "Die Länge der Einheit in Sekunden, eine Zahl größer als 0; ein Arbeitstag mit 8 Stunden sind 28800 Sekunden."
+      }
+    },
+    "collapsed": {
+      "help": "Die Kennungen der zugeklappten Schrittkarten. Der Zustand ist gespeichert, am Inhalt ändert er nichts."
+    },
+    "settingsOpen": {
+      "help": "Öffnet oder schließt den Bereich mit den Verschwendungsarten und Zeiteinheiten. Der Zustand bleibt gespeichert, an den Daten ändert er nichts."
+    },
+    "kpi": {
+      "help": "Die Kennzahlen, wie die Leiste unter der Matrix sie zeigt: Summe der Bearbeitung, Summe der Wartezeit, Lead Time und Prozess-Zykluseffizienz, alle Zeiten in Sekunden. Nicht lesbare Dauerangaben zählen nicht mit."
+    },
+    "invalidTimes": {
+      "help": "Die Dauerangaben, die sich mit den Zeiteinheiten nicht lesen lassen, je mit Schritt und Feld; sie sind auf der Karte rot markiert und zählen in keiner Kennzahl mit."
+    }
+  },
+  "types": {
+    "MakigamiKpi": {
+      "process": "Die Summe aller Bearbeitungszeiten: wie lange am Vorgang tatsächlich gearbeitet wird.",
+      "wait": "Die Summe aller Wartezeiten: wie lange der Vorgang zwischen den Tätigkeiten liegt.",
+      "lead": "Die Lead Time: Bearbeitung und Warten zusammen, die gesamte Durchlaufzeit des Vorgangs.",
+      "pce": "Die Prozess-Zykluseffizienz: der Anteil der Bearbeitung an der Lead Time. Ohne Lead Time gibt es keinen Wert."
+    },
+    "TimeIssue": {
+      "stepId": "Die Kennung des Schritts mit der nicht lesbaren Dauerangabe.",
+      "field": "Welche Angabe nicht lesbar ist: processTime (Bearbeitung) oder waitTime (Warten)."
+    }
+  },
+  "actions": {
+    "addRole": {
+      "help": "Legt eine Rolle ohne Namen an, in der Matrix als neue Zeile ganz unten.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben und liefert die Kennung der neuen Rolle."
+      }
+    },
+    "addStep": {
+      "help": "Legt einen Prozessschritt ohne Titel am Ende der Kette an, in der Matrix als neue Spalte ganz rechts.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben und liefert die Kennung des neuen Schritts."
+      }
+    },
+    "addMudaCategory": {
+      "help": "Legt eine Verschwendungsart ohne Kürzel und Namen in Grau an.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben und liefert die Kennung der neuen Art."
+      }
+    },
+    "addTimeUnit": {
+      "help": "Legt eine Zeiteinheit ohne Kürzel mit der Länge einer Sekunde an.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben und liefert die Kennung der neuen Einheit."
+      }
+    },
+    "setParticipation": {
+      "help": "Bestimmt, ob eine Rolle an einem Prozessschritt mitwirkt. Auf der Schrittkarte ist jede Rolle eine Schaltfläche, die ein Klick markiert oder wieder löst; in der Matrix schaltet ein Klick auf den Punkt von Rolle und Schritt dasselbe um.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "roleId": "Die Kennung der Rolle, wie read() sie unter roles führt. Eine unbekannte Kennung ist ein Fehler.",
+        "participates": "true lässt die Rolle mitwirken, false nimmt die Mitwirkung zurück.",
+        "command": "Das Kommando als ein Objekt mit stepId, roleId und participates."
+      }
+    },
+    "setMuda": {
+      "help": "Bestimmt, ob eine Verschwendungsart (Muda) einen Prozessschritt kennzeichnet. Auf der Schrittkarte ist jede Art eine Schaltfläche, die ein Klick setzt oder wieder löst. Vorbelegt sind die acht klassischen Arten (TIMWOODS+S); in den Einstellungen lassen sie sich anpassen.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "mudaId": "Die Kennung der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte Kennung ist ein Fehler.",
+        "marked": "true kennzeichnet den Schritt, false nimmt die Kennzeichnung zurück.",
+        "command": "Das Kommando als ein Objekt mit stepId, mudaId und marked."
+      }
+    },
+    "setRoleLabel": {
+      "help": "Setzt den Namen einer Rolle.",
+      "params": {
+        "roleId": "Die Kennung der Rolle, wie read() sie unter roles führt. Eine unbekannte Kennung ist ein Fehler.",
+        "label": "Der Name der Rolle; ein leerer Text löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit roleId und label."
+      }
+    },
+    "setStepTitle": {
+      "help": "Setzt den Titel eines Prozessschritts.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Der Titel des Schritts; ein leerer Text löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit stepId und text."
+      }
+    },
+    "setStepDescription": {
+      "help": "Setzt die Beschreibung der Tätigkeit eines Prozessschritts, also was in diesem Schritt passiert.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Die Beschreibung der Tätigkeit; ein leerer Text löscht sie.",
+        "command": "Das Kommando als ein Objekt mit stepId und text."
+      }
+    },
+    "setStepNotes": {
+      "help": "Setzt die Notiz eines Prozessschritts, etwa Auffälligkeiten, Übergaben oder Engpässe.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Die Notiz zum Schritt; ein leerer Text löscht sie.",
+        "command": "Das Kommando als ein Objekt mit stepId und text."
+      }
+    },
+    "setStepProcessTime": {
+      "help": "Setzt die Bearbeitungszeit eines Prozessschritts — die Zeit, in der am Vorgang gearbeitet wird — und liefert, ob sie lesbar ist.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Die Dauer als Text aus Zahl und Einheit, etwa 30 min oder 1 d 2 h; die erkannten Einheiten stehen in timeUnits. Ein leerer Text löscht die Angabe; ein nicht lesbarer Text wird gespeichert, geht aber nicht in die Kennzahlen ein, steht in invalidTimes und liefert false zurück.",
+        "command": "Das Kommando als ein Objekt mit stepId und text."
+      }
+    },
+    "setStepWaitTime": {
+      "help": "Setzt die Wartezeit eines Prozessschritts — die Zeit, in der der Vorgang liegt — und liefert, ob sie lesbar ist.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "text": "Die Dauer als Text aus Zahl und Einheit, etwa 30 min oder 1 d 2 h; die erkannten Einheiten stehen in timeUnits. Ein leerer Text löscht die Angabe; ein nicht lesbarer Text wird gespeichert, geht aber nicht in die Kennzahlen ein, steht in invalidTimes und liefert false zurück.",
+        "command": "Das Kommando als ein Objekt mit stepId und text."
+      }
+    },
+    "normalizeStepTime": {
+      "help": "Bringt eine lesbare Dauerangabe eines Schritts in die Normalform, etwa 90min in 1h 30min; so wie beim Verlassen des Feldes. Eine leere, nicht lesbare oder schon normale Angabe bleibt unverändert.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "field": "Welche Angabe: processTime (Bearbeitung) oder waitTime (Warten).",
+        "command": "Das Kommando als ein Objekt mit stepId und field."
+      }
+    },
+    "setMudaCategory": {
+      "help": "Ändert die genannten Angaben einer Verschwendungsart; alle übrigen bleiben stehen. Mindestens eine Angabe ist nötig.",
+      "params": {
+        "mudaId": "Die Kennung der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte Kennung ist ein Fehler.",
+        "code": "Das Kürzel der Art in der Matrix und auf der Karte; optional.",
+        "label": "Der eigene Name der Art; ein leerer Text lässt den mitgelieferten gelten. Optional.",
+        "color": "Die Farbe als Hexwert wie #4a90e2; optional.",
+        "command": "Das Kommando als ein Objekt mit mudaId und mindestens einem von code, label, color."
+      }
+    },
+    "setTimeUnit": {
+      "help": "Ändert die genannten Angaben einer Zeiteinheit; alle übrigen bleiben stehen. Mindestens eine Angabe ist nötig. Alle Dauerangaben werden danach mit den neuen Einheiten gelesen.",
+      "params": {
+        "unitId": "Die Kennung der Zeiteinheit, wie read() sie unter timeUnits führt. Eine unbekannte Kennung ist ein Fehler.",
+        "label": "Das Kürzel, das in einer Dauerangabe erkannt wird; optional.",
+        "factorSeconds": "Die Länge der Einheit in Sekunden, eine Zahl größer als 0; optional.",
+        "command": "Das Kommando als ein Objekt mit unitId und mindestens einem von label, factorSeconds."
+      }
+    },
+    "removeStep": {
+      "help": "Entfernt einen Prozessschritt samt seiner Karte. Die Oberfläche fragt vorher nach.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit stepId."
+      }
+    },
+    "removeRole": {
+      "help": "Entfernt eine Rolle samt ihren Mitwirkungen an allen Schritten. Die Oberfläche fragt vorher nach.",
+      "params": {
+        "roleId": "Die Kennung der Rolle, wie read() sie unter roles führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit roleId."
+      }
+    },
+    "removeMudaCategory": {
+      "help": "Entfernt eine Verschwendungsart samt ihren Kennzeichnungen an allen Schritten. Die letzte Art lässt sich nicht entfernen.",
+      "params": {
+        "mudaId": "Die Kennung der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit mudaId."
+      }
+    },
+    "removeTimeUnit": {
+      "help": "Entfernt eine Zeiteinheit. Dauerangaben, die nur sie benutzen, sind danach nicht mehr lesbar und zählen nicht mit. Die letzte Einheit lässt sich nicht entfernen.",
+      "params": {
+        "unitId": "Die Kennung der Zeiteinheit, wie read() sie unter timeUnits führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit unitId."
+      }
+    },
+    "moveStep": {
+      "help": "Verschiebt einen Prozessschritt an eine andere Stelle der Kette; die übrigen rücken nach. In der Matrix zieht man dazu den Griff im Spaltenkopf oder nimmt die Pfeiltasten.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
+        "to": "Die Stelle, an der der Schritt danach steht, ab 0 gezählt; die letzte Stelle ist die Zahl der Schritte minus 1. Dieselbe Stelle lässt alles unverändert.",
+        "command": "Das Kommando als ein Objekt mit stepId und to."
+      }
+    },
+    "moveRole": {
+      "help": "Verschiebt eine Rolle an eine andere Stelle; die übrigen rücken nach. In der Matrix zieht man dazu den Griff am Zeilenanfang oder nimmt die Pfeiltasten.",
+      "params": {
+        "roleId": "Die Kennung der Rolle, wie read() sie unter roles führt. Eine unbekannte Kennung ist ein Fehler.",
+        "to": "Die Stelle, an der die Rolle danach steht, ab 0 gezählt; die letzte Stelle ist die Zahl der Rollen minus 1. Dieselbe Stelle lässt alles unverändert.",
+        "command": "Das Kommando als ein Objekt mit roleId und to."
+      }
+    },
+    "resetSettingsToDefaults": {
+      "help": "Stellt die acht mitgelieferten Verschwendungsarten und die vier mitgelieferten Zeiteinheiten wieder her; Kennzeichnungen mit entfallenen Arten fallen weg. Die Oberfläche fragt vorher nach.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    }
+  }
+}
