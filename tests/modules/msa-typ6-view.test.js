@@ -377,7 +377,7 @@ suite('msa-typ6: Viewmodel im Browser', () => {
     assertEqual(va.model.sourceTyp1InstanceId, 't1');
     assertEqual(va.res, null);
     await until(() => !!a.q('[data-ref="error-box"]'));
-    assertEqual(a.q('[data-ref="error-box"]').textContent.trim(), tr('errors.E_GIVEN_LIMITS_INVALID'));
+    assertEqual(a.q('[data-ref="error-box"]').textContent.trim(), tr('errors.E_SIGMA0_MISSING'));
     assertEqual(a.inst.historyCan('undo'), false);
 
     const b = await mount('t6-b', plain(LEGACY_B), {

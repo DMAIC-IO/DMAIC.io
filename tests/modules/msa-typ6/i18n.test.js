@@ -9,7 +9,7 @@ import { State } from '../../../js/modules/msa-typ6/domain/model.js';
 const MOD = '../../../js/modules/msa-typ6/';
 const LANGS = ['de', 'en'];
 const ERROR_CODES = ['E_NO_VALUES', 'E_TOO_FEW_POINTS', 'E_INVALID_CHART_TYPE', 'E_SUBGROUP_MISMATCH',
-  'E_UNEQUAL_SUBGROUP_SIZES', 'E_SUBGROUP_SIZE_OUT_OF_RANGE', 'E_GIVEN_LIMITS_INVALID', 'E_BASELINE_TOO_SMALL',
+  'E_UNEQUAL_SUBGROUP_SIZES', 'E_SUBGROUP_SIZE_OUT_OF_RANGE', 'E_GIVEN_LIMITS_INVALID', 'E_SIGMA0_MISSING', 'E_BASELINE_TOO_SMALL',
   'E_BASELINE_EXCEEDS_DATA', 'E_INVALID_ALPHA', 'E_INVALID_LIMITS_MODE'];
 
 /** @param {string} path @returns {Promise<any>} */
