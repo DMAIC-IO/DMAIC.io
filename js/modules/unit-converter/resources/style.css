@@ -16,8 +16,8 @@
   margin: 0 auto;
 }
 
-/* ── Category Tabs ── */
-/* Größenart = Moduswahl: Kern-Segmentgruppe, hier umbrechend. */
+/* ── Category Tabs ──
+   Größenart = Moduswahl: Kern-Segmentgruppe, hier umbrechend. */
 .module-unit-converter__categories {
   flex-wrap: wrap;
   margin-bottom: var(--spacing-lg);
