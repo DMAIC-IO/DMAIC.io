@@ -15,9 +15,12 @@ import { uid } from '../../../core/uid.js';
 import { from0 } from './migrations.js';
 import { PARAMS_SHAPE, ATTRIBUTIVE_KEY, isNumericDist } from './distributions.js';
 import { samplesOf, summaryOf } from './sample.js';
-import { targetList } from './targets.js';
+import { targetList } from '../../../core/worksheet-targets.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import paretoChart from '../../../widgets/pareto-chart/schema.js';
+
+/** Ziele zum Senden: nur leere Spalten nehmen Werte auf. */
+export const TARGET_FILTER = Object.freeze({ maxCount: 0 });
 
 /** Größter Umfang einer Stichprobe. */
 export const MAX_COUNT = 100000;
@@ -195,7 +198,7 @@ export class State extends defineModel({
      * @returns {TargetColumn[]}
      */
     targetColumns(src) {
-      return targetList(src);
+      return targetList(src, TARGET_FILTER);
     },
   },
 }) {

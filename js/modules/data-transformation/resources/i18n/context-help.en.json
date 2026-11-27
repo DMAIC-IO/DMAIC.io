@@ -1,0 +1,138 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "currentTF": {
+      "help": "The chosen transformation, one of the nine tiles: Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB, Logarithm, Log₁₀, Square Root, Inverse or Square. The calculation follows every choice at once. Box-Cox stays chosen when the column contains values ≤ 0; the calculation then uses Yeo-Johnson."
+    },
+    "columnRef": {
+      "help": "The data column that is transformed: a numeric column of a data collection with at least 3 values. The numbers of the column count, text such as 2.5 included; empty and non-numeric cells do not count. If the column is deleted, the choice stays and nothing is calculated."
+    },
+    "params": {
+      "help": "The parameters per transformation with parameters (Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB); each keeps its own values, also when the transformation changes.",
+      "boxcox": {
+        "help": "The parameters of Box-Cox.",
+        "lambda": {
+          "help": "The exponent λ, label Lambda (λ), range −5 to 5. Box-Cox computes (x^λ − 1)/λ, and ln x at λ = 0, for values > 0 only. Empty: λ is estimated for the values of the column — the grid from −3 to 3 in steps of 0.05 is searched and the λ with the smallest corrected Anderson-Darling A² is chosen, rounded to 0.01; the field shows the estimate greyed out and the slider sits on it. An entered value stays, even for a new column and after reloading; clearing the field returns to the estimate. If the column contains a value ≤ 0, Box-Cox calculates with Yeo-Johnson and its λ; a notice appears above the results."
+        }
+      },
+      "yeojohnson": {
+        "help": "The parameters of Yeo-Johnson.",
+        "lambda": {
+          "help": "The exponent λ, label Lambda (λ), range −5 to 5. Yeo-Johnson computes ((x + 1)^λ − 1)/λ for x ≥ 0 (ln(x + 1) at λ = 0) and −((1 − x)^(2 − λ) − 1)/(2 − λ) for x < 0 (−ln(1 − x) at λ = 2). Empty: λ is estimated for the values of the column — the grid from −3 to 3 in steps of 0.05 is searched and the λ with the smallest corrected Anderson-Darling A² is chosen, rounded to 0.01; the field shows the estimate greyed out and the slider sits on it. An entered value stays, even for a new column and after reloading; clearing the field returns to the estimate."
+        }
+      },
+      "johnson_su": {
+        "help": "The parameters of Johnson SU (unbounded).",
+        "gamma": {
+          "help": "The shift γ of the Johnson transformation, label γ, range −5 to 5, default 0. Johnson SU (unbounded) computes γ + δ·asinh((x − ξ)/λ), Johnson SB (bounded) γ + δ·ln(z/(1 − z)) with z = (x − ξ)/λ. γ is not estimated but set by hand."
+        },
+        "delta": {
+          "help": "The shape factor δ of the Johnson transformation, label δ, range 0.1 to 10, default 1; it multiplies the asinh term (SU, unbounded) or the ln term (SB, bounded) in γ + δ·asinh((x − ξ)/λ) or γ + δ·ln(z/(1 − z)). δ is not estimated but set by hand."
+        },
+        "xi": {
+          "help": "The location ξ of the Johnson transformation, label ξ, range −100 to 100, default 0; it is subtracted from every value before scaling, z = (x − ξ)/λ. Johnson SU (unbounded) accepts any values. For Johnson SB (bounded) all values must lie strictly between ξ and ξ + λ, a value exactly on a limit does not suffice; otherwise the calculation fails with “Johnson SB: data must lie within (ξ, ξ+λ)”. ξ is not estimated but set by hand."
+        },
+        "lambdaJ": {
+          "help": "The scale λ of the Johnson transformation, label λ, range 0.1 to 100, default 1; values are divided by it, z = (x − ξ)/λ. For Johnson SB (bounded), ξ + λ is the upper limit that no value may reach; Johnson SU (unbounded) has no limit. λ is not estimated but set by hand; not to be confused with the λ of Box-Cox and Yeo-Johnson."
+        }
+      },
+      "johnson_sb": {
+        "help": "The parameters of Johnson SB (bounded).",
+        "gamma": {
+          "help": "The shift γ of the Johnson transformation, label γ, range −5 to 5, default 0. Johnson SU (unbounded) computes γ + δ·asinh((x − ξ)/λ), Johnson SB (bounded) γ + δ·ln(z/(1 − z)) with z = (x − ξ)/λ. γ is not estimated but set by hand."
+        },
+        "delta": {
+          "help": "The shape factor δ of the Johnson transformation, label δ, range 0.1 to 10, default 1; it multiplies the asinh term (SU, unbounded) or the ln term (SB, bounded) in γ + δ·asinh((x − ξ)/λ) or γ + δ·ln(z/(1 − z)). δ is not estimated but set by hand."
+        },
+        "xi": {
+          "help": "The location ξ of the Johnson transformation, label ξ, range −100 to 100, default 0; it is subtracted from every value before scaling, z = (x − ξ)/λ. Johnson SU (unbounded) accepts any values. For Johnson SB (bounded) all values must lie strictly between ξ and ξ + λ, a value exactly on a limit does not suffice; otherwise the calculation fails with “Johnson SB: data must lie within (ξ, ξ+λ)”. ξ is not estimated but set by hand."
+        },
+        "lambdaJ": {
+          "help": "The scale λ of the Johnson transformation, label λ, range 0.1 to 100, default 1; values are divided by it, z = (x − ξ)/λ. For Johnson SB (bounded), ξ + λ is the upper limit that no value may reach; Johnson SU (unbounded) has no limit. λ is not estimated but set by hand; not to be confused with the λ of Box-Cox and Yeo-Johnson."
+        }
+      }
+    },
+    "exampleWorksheetId": {
+      "help": "The worksheet a loaded example created; a new example removes it."
+    },
+    "histOrigEdits": {
+      "help": "The settings of the histogram of the original values from the chart editor."
+    },
+    "histTransEdits": {
+      "help": "The settings of the histogram of the transformed values from the chart editor."
+    },
+    "ppOrigEdits": {
+      "help": "The settings of the probability plot of the original values from the chart editor."
+    },
+    "ppTransEdits": {
+      "help": "The settings of the probability plot of the transformed values from the chart editor."
+    },
+    "effectiveTF": {
+      "help": "The transformation the calculation uses: the chosen one, except Box-Cox on a column with at least 3 values of which one is ≤ 0 — then Yeo-Johnson."
+    },
+    "activeParams": {
+      "help": "The paths that take effect in the current state: params.<transformation>.<key> of the effective transformation; empty for transformations without parameters. instance.set writes the whole field params."
+    },
+    "activeColumnSlots": {
+      "help": "The column fields that take effect in the current state (always columnRef)."
+    },
+    "targetColumns": {
+      "help": "The targets toWorksheet accepts, each { key, name }: per sheet all its columns (their values are overwritten), followed by an entry with columnId __new__ that appends a new column (name is the sheet name); a null target creates a new worksheet."
+    }
+  },
+  "actions": {
+    "toWorksheet": {
+      "params": {
+        "command": "The run as an object with target."
+      }
+    },
+    "copyExport": {
+      "help": "Copies the transformed values to the clipboard, one value per line with six decimals and a point, as the box shows them. Rejected without values or without access to the clipboard.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    }
+  },
+  "asyncTasks": {
+    "analysis": {
+      "help": "Calculates the transformation with the chosen column and the effective parameters; runs by itself after every change of column, transformation, parameters or cells (combined, 80 ms delay). The value is the result, each figure described individually under keys; without a column or with fewer than 3 values it is null without an error. If the data do not fit the transformation (logarithm with values ≤ 0, Johnson SB outside (ξ, ξ+λ) …), the value is null and the error gives the reason.",
+      "cancel": {
+        "help": "Cancels the running calculation; it starts again with the next change."
+      }
+    },
+    "toWorksheet": {
+      "help": "Sends the transformed series to a new worksheet, into an existing column (overwrites the values of a chosen column) or as a new column to an existing sheet and returns the receiving worksheet. It first waits until the calculation is finished and sends its result; a start right after a parameter change therefore already sends the new values. The column name is “<source column> (<effective transformation>)”. Without a result nothing is sent and nothing is returned.",
+      "params": {
+        "target": "The target: a new worksheet, a column of a sheet (its values are overwritten) or a new column on a sheet; the target picker offers all columns per sheet."
+      },
+      "cancel": {
+        "help": "Cancels sending while nothing has been written yet."
+      }
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Number of values, row n of the Descriptive Statistics: the finite numbers of the source column; empty and non-numeric cells do not count. With fewer than 3 values there is no result. The transformation keeps the number of values.",
+      "transform": "The transformation the result was computed with, one of the ids of currentTF: the chosen one, except Box-Cox on values ≤ 0 — then yeojohnson (like effectiveTF).",
+      "params": "The effective parameters of this calculation, keyed as described under params: lambda for Box-Cox and Yeo-Johnson (for an empty λ the estimate as a number); gamma, delta, xi and lambdaJ for Johnson SU and Johnson SB; an empty object for Logarithm, Log₁₀, Square Root, Inverse and Square.",
+      "original": "The statistics of the source column before the transformation, column Original of the Descriptive Statistics and row Original of the normality test.",
+      "transformed": "The statistics of the series after the transformation with the current parameters, column Transformed of the Descriptive Statistics and row Transformed of the normality test."
+    },
+    "Descriptives": {
+      "mean": "The arithmetic mean x̄ = Σx/n, row Mean; the table shows 4 decimal places.",
+      "std": "The sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), row Std. Dev.; empty when it cannot be computed, the table then shows a dash.",
+      "median": "The median, the middle value of the sorted series or the mean of the two middle values for an even count, row Median.",
+      "skewness": "The sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, row Skewness; 0 for symmetric data, positive for right-skewed data. Empty when all values are equal (s = 0).",
+      "kurtosis": "The sample excess kurtosis, row Kurtosis (Excess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 corresponds to the normal distribution. Empty with exactly 3 values or when all values are equal; the table then shows a dash.",
+      "min": "The smallest value of the series, row Min.",
+      "max": "The largest value of the series, row Max.",
+      "adStatAdj": "The corrected Anderson-Darling A²* = A²·(1 + 0.75/n + 2.25/n²), shown in the normality test row as A² = … with 4 decimals. The larger the value, the further the series departs from the normal distribution. Empty when all values are equal; the verdict is then missing as well.",
+      "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². The A² shown is already the corrected A²* = A²·(1 + 0.75/n + 2.25/n²); p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well.",
+      "normal": "The verdict of the normality test: yes (Normal) when the p-value is at least α = 0.05, no (Not normal) when it is below. It is the badge after p ≈ in the normality test row. Empty when all values are equal."
+    },
+    "TargetColumn": {
+      "key": "The target as instanceId|sheetId|columnId; columnId __new__ appends a new column to the sheet.",
+      "name": "The name of the column, for the “new column” entry the name of the sheet."
+    }
+  }
+}

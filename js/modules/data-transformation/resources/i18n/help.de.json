@@ -1,0 +1,166 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Datentransformation rechnet Messwerte mit einer mathematischen Funktion (z. B. ln, √, Box-Cox) um, sodass die transformierten Werte einer Normalverteilung näher kommen. Sinn der Sache ist nicht, „bessere Daten“ zu erzeugen, sondern Methoden anwendbar zu machen, die Normalverteilung voraussetzen — etwa Cp/Cpk, I-MR-Karten, {{term:t-test|t-Test}} oder lineare {{term:regression|Regression}}."
+        },
+        {
+          "type": "paragraph",
+          "content": "Eine Transformation ist ein Werkzeug, kein Allheilmittel. Sie hilft bei einer bestimmten Klasse von Verteilungsproblemen — und richtet bei einer anderen mehr Schaden als Nutzen an. Die wichtigste Frage lautet daher immer: warum sind die Daten nicht normalverteilt?"
+        }
+      ]
+    },
+    "whenToUse": {
+      "title": "Wann ist eine Transformation sinnvoll?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Transformiere, wenn alle drei Bedingungen erfüllt sind: (1) das nachfolgende Verfahren setzt Normalverteilung voraus, (2) deine Daten sind nachweislich nicht normalverteilt, und (3) die Abweichung erklärt sich aus der Form der Verteilung — nicht aus Ausreißern, Mischungen oder Stratifizierung."
+        },
+        {
+          "type": "heading",
+          "content": "Typische Anwendungsfälle"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Prozessfähigkeit (Cp, Cpk, Pp, Ppk) für rechtsschiefe Größen wie Zykluszeiten, Wartezeiten, Rauheit oder Lebensdauern.",
+            "I-MR- oder X̄-S-Karten, wenn die Schiefe systematisch zu falschen Eingriffsgrenzen oder vielen falschen Alarmen führt.",
+            "{{term:lineare-regression|Lineare Regression}}, wenn die Residuenanalyse Trichterform ({{term:heteroskedastizitaet|Heteroskedastizität}}) oder Schiefe zeigt — eine Transformation der {{term:zielgroesse|Zielgröße}} stabilisiert oft die {{term:varianz|Varianz}}.",
+            "t-Test oder ANOVA bei stark schiefen Daten und kleinen Stichproben, wo das Konfidenzintervall sonst unsymmetrisch verzerrt ist.",
+            "Daten mit physikalisch erzwungener unterer Grenze bei null (Konzentrationen, Partikelgrößen, Fehleranzahlen pro Einheit), die auf einer log- oder Wurzelskala natürlich symmetrisch werden."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Faustregel: Wenn der Anderson-Darling- oder Shapiro-Wilk-Test die Normalitätshypothese verwirft UND das {{term:histogramm|Histogramm}}/{{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} eine klare, einseitige {{term:schiefe|Schiefe}} zeigt, ist eine Transformation einen Versuch wert."
+        }
+      ]
+    },
+    "whenNotToUse": {
+      "title": "Wann solltest du NICHT transformieren?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Eine Transformation behebt das Symptom, nicht die Ursache. In den folgenden Situationen verschleiert sie das eigentliche Problem oder löst gar keines:"
+        },
+        {
+          "type": "definition",
+          "term": "Daten sind bereits normalverteilt",
+          "content": "Dann gibt es nichts zu tun. Eine unnötige Transformation macht die Ergebnisse schwerer interpretierbar, ohne irgendetwas zu verbessern."
+        },
+        {
+          "type": "definition",
+          "term": "Mischverteilung / Stratifizierung",
+          "content": "Mehrere Maschinen, Schichten, Chargen oder Materialien in einem Datensatz erzeugen Bimodalität oder Knicke im Wahrscheinlichkeitsnetz. Hier hilft kein λ, sondern das Trennen der Gruppen und die getrennte Auswertung."
+        },
+        {
+          "type": "definition",
+          "term": "Ausreißer und besondere Ursachen",
+          "content": "Wenige extreme Werte machen die Verteilung schief, aber sie sind ein Hinweis auf einen gestörten Prozess. Ursache untersuchen und beheben — nicht über eine Transformation „glätten“."
+        },
+        {
+          "type": "definition",
+          "term": "Diskrete oder gezählte Daten",
+          "content": "Anzahlen, Klassen, Bewertungen oder ja/nein-Daten gehören in attributive Verfahren (p-, np-, c-, {{term:c-chart|u-Karte}}, Poisson-/Binomial-Verteilung). Eine Box-Cox-Transformation darauf ist methodisch falsch."
+        },
+        {
+          "type": "definition",
+          "term": "Sehr kleine Stichproben (n < 20–30)",
+          "content": "Bei wenigen Messwerten ist der Normalitätstest selbst unsicher. Eine Transformation passt sich dann oft an Zufallsrauschen an und überträgt sich nicht auf neue Daten."
+        },
+        {
+          "type": "definition",
+          "term": "Existierende, nicht-parametrische Alternative",
+          "content": "Wilcoxon, Mann-Whitney, Kruskal-Wallis, Levene-Test oder eine Kapazitätsanalyse mit der tatsächlich passenden Verteilung (Weibull, Lognormal) liefern meist ehrlichere Ergebnisse als eine erzwungene Normalisierung."
+        },
+        {
+          "type": "definition",
+          "term": "Kommunikation mit Stakeholdern",
+          "content": "{{term:spezifikationsgrenzen|Spezifikationsgrenzen}}, Toleranzen und Prozessziele sind in Originaleinheiten definiert. Wenn das Ergebnis von Kunden, Auditoren oder der Produktion verstanden werden muss, wiegt die Verständlichkeit oft schwerer als ein paar Zehntel im Cpk."
+        },
+        {
+          "type": "paragraph",
+          "content": "Kurzregel: Transformiere nie, ohne vorher das Histogramm angeschaut zu haben. Wenn du dort zwei Berge, einen langen Schwanz aus drei Punkten oder eine Treppe aus diskreten Werten siehst, ist die Transformation die falsche Antwort."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Verfügbare Transformationen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Box-Cox",
+          "content": "(x^λ − 1) / λ mit automatisch optimiertem λ. Funktioniert nur für strikt positive Daten. Sehr universell für rechtsschiefe Größen — die häufigste Wahl in der Praxis."
+        },
+        {
+          "type": "definition",
+          "term": "Yeo-Johnson",
+          "content": "Erweiterung von Box-Cox, die auch null und negative Werte zulässt. Die richtige Wahl, wenn die Daten Vorzeichen wechseln können."
+        },
+        {
+          "type": "definition",
+          "term": "Logarithmus (ln, log₁₀)",
+          "content": "Spezialfall von Box-Cox mit λ = 0. Klassisch für Lebensdauern, Konzentrationen und Größen, die sich multiplikativ verhalten. Erfordert positive Werte."
+        },
+        {
+          "type": "definition",
+          "term": "Quadratwurzel",
+          "content": "Mildere Korrektur für leicht rechtsschiefe Daten oder Zähldaten (Poisson-ähnlich). Werte ≥ 0 nötig."
+        },
+        {
+          "type": "definition",
+          "term": "Inverse (1/x)",
+          "content": "Sehr starke Stauchung, geeignet für extrem rechtsschiefe Daten. Werte dürfen nicht null sein und das Vorzeichen kehrt sich um — die Interpretation wird unhandlich."
+        },
+        {
+          "type": "definition",
+          "term": "Quadrat (x²)",
+          "content": "Streckt rechte und staucht linke Seite — nützlich für linksschiefe Verteilungen, in der Praxis aber selten benötigt."
+        },
+        {
+          "type": "definition",
+          "term": "Johnson-System (SU, SB, SL)",
+          "content": "Familie sehr flexibler Transformationen, die nahezu jede stetige Verteilung normal machen kann. Stark, aber komplex und schwer zu kommunizieren — sinnvoll, wenn Box-Cox/Yeo-Johnson nicht ausreichen."
+        }
+      ]
+    },
+    "workflow": {
+      "title": "Vorgehen Schritt für Schritt",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Histogramm und Wahrscheinlichkeitsnetz der Originaldaten anschauen — Form, Schiefe und mögliche Mischungen erkennen.",
+            "Stratifizierung, Ausreißer und Datenfehler ausschließen, bevor irgendetwas transformiert wird.",
+            "Passende Transformation wählen: positive Daten und Schiefe → Box-Cox; Vorzeichenwechsel → Yeo-Johnson; theoretisch begründet (z. B. Lebensdauern) → Logarithmus.",
+            "Bei Box-Cox/Yeo-Johnson die automatische λ-Optimierung verwenden: das Feld λ leer lassen, dann wird λ für die gewählte Spalte geschätzt; ein eingetragener Wert bleibt, auch bei einer neuen Spalte.",
+            "Transformierte Daten erneut prüfen: Histogramm, Wahrscheinlichkeitsnetz, Anderson-Darling/Shapiro-Wilk.",
+            "Folgeauswertung (Cpk, Regelkarte, Test) mit den transformierten Werten durchführen.",
+            "Ergebnisse für die Kommunikation in die Originaleinheit zurücktransformieren — Spezifikationsgrenzen mitführen."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Negative oder null-Werte mit Logarithmus: kein Ergebnis; Box-Cox rechnet dann mit Yeo-Johnson und zeigt einen Hinweis. Yeo-Johnson direkt wählen oder eine Verschiebung explizit dokumentieren.",
+            "λ manuell setzen: führt fast immer zu schlechteren Ergebnissen als die automatische Optimierung — und überdeckt oft, dass die Daten gar nicht transformierbar sind.",
+            "Spezifikationsgrenzen vergessen mitzutransformieren: Cpk auf transformierten Daten ist sinnlos, wenn USL/LSL noch in der Originaleinheit stehen.",
+            "Erfolgsmeldung „p > 0,05“ überschätzen: Ein bestandener {{term:normalitaetstest|Normalitätstest}} auf transformierten Daten heißt nicht, dass die Modellannahmen für das Folgeverfahren wirklich erfüllt sind. {{term:residuen|Residuen}} weiterhin prüfen.",
+            "Eine Transformation als „Datenkorrektur“ verkaufen: Transformation ändert nicht die Werte, sondern die Skala. Das muss bei Auditierung, Reporting und Rückverfolgbarkeit klar kommuniziert werden.",
+            "Auf jede neue Charge dasselbe λ anwenden: Wenn sich der Prozess ändert, ändert sich auch die optimale Transformation. Regelmäßig nachkalibrieren."
+          ]
+        }
+      ]
+    }
+  }
+}

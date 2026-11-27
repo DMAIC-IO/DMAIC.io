@@ -16,10 +16,10 @@ import { text } from '../../../core/model.js';
 import { formatNumber } from '../../../core/number-format.js';
 import { worksheetWrite, commitWorksheetWrite } from '../../../core/worksheet-write.js';
 import descriptor from '../module.js';
-import { State } from '../domain/model.js';
+import { State, TARGET_FILTER } from '../domain/model.js';
 import { ATTRIBUTIVE_KEY, categories, distOf, isNumericDist } from '../domain/distributions.js';
 import { samplesOf, summaryOf, frequency } from '../domain/sample.js';
-import { targetGroups, targetList, requireTarget, parseTarget, NEW_COLUMN_ID } from '../domain/targets.js';
+import { targetGroups, targetList, requireTarget, parseTarget, NEW_COLUMN_ID } from '../../../core/worksheet-targets.js';
 import { toRows, fileNameOf } from '../io/export.js';
 import { UiState } from './state.js';
 import {
@@ -132,7 +132,7 @@ export default createModule({
         },
         /** Zielwähler: je Blatt mit leerer Spalte seine leeren Spalten und „neue Spalte“. */
         targetGroups() {
-          return targetGroups(ctx.source).map((g) => ({
+          return targetGroups(ctx.source, TARGET_FILTER).map((g) => ({
             key: g.newColumnKey,
             label: g.sheetName,
             options: [
@@ -182,7 +182,7 @@ export default createModule({
       get targetPlaceholder() { return ctx.i18n.t('ui.columnPicker.placeholder'); },
       get newWorksheetLabel() { return `+ ${ctx.i18n.t('ui.columnPicker.newWorksheet')}`; },
       /** Die Ziele, die der Lauf annimmt (wie `read().targetColumns`). */
-      targetOptions() { return targetList(ctx.source); },
+      targetOptions() { return targetList(ctx.source, TARGET_FILTER); },
 
       /**
        * Sendet die Werte an das gewählte Ziel und holt das Arbeitsblatt nach

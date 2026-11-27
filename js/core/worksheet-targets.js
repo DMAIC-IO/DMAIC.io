@@ -1,37 +1,36 @@
 /**
- * D.Mike — Zufallsgenerator: Ziele für das Senden ans Arbeitsblatt.
+ * D.Mike — Ziele für das Senden einer Spalte ans Arbeitsblatt.
  *
- * Ein Ziel ist ein Schlüssel `instanceId|sheetId|columnId`: eine leere Spalte
- * eines Blatts oder `instanceId|sheetId|__new__` für eine neue Spalte an
- * diesem Blatt. Angeboten werden nur Blätter mit mindestens einer leeren
- * Spalte, in der Reihenfolge, in der der Leser sie findet. `null` heißt
- * „neues Arbeitsblatt“.
+ * Ein Ziel ist ein Schlüssel `instanceId|sheetId|columnId`: eine Spalte eines
+ * Blatts, die der Filter zulässt, oder `instanceId|sheetId|__new__` für eine
+ * neue Spalte an diesem Blatt. Angeboten werden nur Blätter mit mindestens
+ * einer zulässigen Spalte, in der Reihenfolge, in der der Leser sie findet.
+ * `null` heißt „neues Arbeitsblatt“. Der Filter ist der von `listColumns`
+ * (`{ maxCount: 0 }` nur leere Spalten, `{}` alle Spalten).
  */
-import { listColumns, columnOption } from '../../../core/source-columns.js';
-import { requireForm } from '../../../core/validate.js';
+import { listColumns, columnOption } from './source-columns.js';
+import { requireForm } from './validate.js';
 
 /** Spalten-id eines Ziels „neue Spalte an diesem Blatt“. */
 export const NEW_COLUMN_ID = '__new__';
 
-/** Nur leere Spalten nehmen Werte auf. */
-const TARGET_FILTER = Object.freeze({ maxCount: 0 });
-
 /**
  * @typedef {object} TargetGroup
  * @property {string} sheetName  Name des Blatts
- * @property {{ key: string, name: string, shortName: string, valueCount: number }[]} columns  die leeren Spalten
+ * @property {{ key: string, name: string, shortName: string, valueCount: number }[]} columns  die zulässigen Spalten
  * @property {string} newColumnKey  Schlüssel des Ziels „neue Spalte“
  */
 
 /**
- * Die leeren Spalten je Blatt.
- * @param {import('../../../core/source-reader.js').Source} src
+ * Die zulässigen Spalten je Blatt.
+ * @param {import('./source-reader.js').Source} src
+ * @param {Parameters<typeof listColumns>[1]} filter Filter wie bei `listColumns`
  * @returns {TargetGroup[]}
  */
-export function targetGroups(src) {
+export function targetGroups(src, filter) {
   /** @type {Map<string, TargetGroup>} */
   const groups = new Map();
-  for (const c of listColumns(src, TARGET_FILTER)) {
+  for (const c of listColumns(src, filter)) {
     const gk = `${c.instanceId}|${c.sheetId}`;
     if (!groups.has(gk)) groups.set(gk, { sheetName: c.sheetName, columns: [], newColumnKey: `${gk}|${NEW_COLUMN_ID}` });
     groups.get(gk)?.columns.push({ ...columnOption(c), shortName: c.shortName, valueCount: c.valueCount });
@@ -40,13 +39,14 @@ export function targetGroups(src) {
 }
 
 /**
- * Die Ziele als `{ key, name }`: je Blatt seine leeren Spalten, danach der
- * Eintrag „neue Spalte“ mit dem Blattnamen.
- * @param {import('../../../core/source-reader.js').Source} src
+ * Die Ziele als `{ key, name }`: je Blatt seine zulässigen Spalten, danach
+ * der Eintrag „neue Spalte“ mit dem Blattnamen.
+ * @param {import('./source-reader.js').Source} src
+ * @param {Parameters<typeof listColumns>[1]} filter Filter wie bei `listColumns`
  * @returns {{ key: string, name: string }[]}
  */
-export function targetList(src) {
-  return targetGroups(src).flatMap((g) => [
+export function targetList(src, filter) {
+  return targetGroups(src, filter).flatMap((g) => [
     ...g.columns.map(({ key, name }) => ({ key, name })),
     { key: g.newColumnKey, name: g.sheetName || g.newColumnKey },
   ]);

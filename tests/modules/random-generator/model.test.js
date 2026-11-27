@@ -7,7 +7,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { State, MAX_COUNT } from '../../../js/modules/random-generator/domain/model.js';
-import { requireTarget, parseTarget } from '../../../js/modules/random-generator/domain/targets.js';
+import { requireTarget, parseTarget } from '../../../js/core/worksheet-targets.js';
 import { setModelName, setFields } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { schemaAgentEntry, readSchemaModel } from '../../../js/core/agent/agent-schema.js';

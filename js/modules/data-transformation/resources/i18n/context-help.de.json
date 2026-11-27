@@ -1,0 +1,138 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "currentTF": {
+      "help": "Die gewählte Transformation, eine der neun Kacheln: Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB, Logarithmus, Log₁₀, Quadratwurzel, Inverse oder Quadrat. Die Rechnung folgt jeder Wahl sofort. Box-Cox bleibt gewählt, wenn die Spalte Werte ≤ 0 enthält; gerechnet wird dann mit Yeo-Johnson."
+    },
+    "columnRef": {
+      "help": "Die Datenspalte, die transformiert wird: eine numerische Spalte einer Datensammlung mit mindestens 3 Werten. Gezählt werden die Zahlen der Spalte, auch Text wie 2,5; leere und nicht numerische Zellen zählen nicht. Wird die Spalte gelöscht, bleibt die Wahl stehen und es wird nichts gerechnet."
+    },
+    "params": {
+      "help": "Die Parameter je Transformation mit Parametern (Box-Cox, Yeo-Johnson, Johnson SU, Johnson SB); jede behält ihre eigenen Werte, auch beim Wechsel der Transformation.",
+      "boxcox": {
+        "help": "Die Parameter von Box-Cox.",
+        "lambda": {
+          "help": "Der Exponent λ, Beschriftung Lambda (λ), Bereich −5 bis 5. Box-Cox rechnet (x^λ − 1)/λ und bei λ = 0 ln x, nur für Werte > 0. Leer: λ wird für die Werte der Spalte geschätzt — das Raster von −3 bis 3 in Schritten von 0,05 wird durchsucht, gewählt wird das λ mit dem kleinsten korrigierten Anderson-Darling-A², gerundet auf 0,01; das Feld zeigt die Schätzung grau, der Schieber steht auf ihr. Ein eingetragener Wert bleibt, auch bei einer neuen Spalte und nach dem Neuladen; Leeren kehrt zur Schätzung zurück. Enthält die Spalte einen Wert ≤ 0, rechnet Box-Cox mit Yeo-Johnson und dessen λ; ein Hinweis steht über den Ergebnissen."
+        }
+      },
+      "yeojohnson": {
+        "help": "Die Parameter von Yeo-Johnson.",
+        "lambda": {
+          "help": "Der Exponent λ, Beschriftung Lambda (λ), Bereich −5 bis 5. Yeo-Johnson rechnet für x ≥ 0 ((x + 1)^λ − 1)/λ (bei λ = 0 ln(x + 1)) und für x < 0 −((1 − x)^(2 − λ) − 1)/(2 − λ) (bei λ = 2 −ln(1 − x)). Leer: λ wird für die Werte der Spalte geschätzt — das Raster von −3 bis 3 in Schritten von 0,05 wird durchsucht, gewählt wird das λ mit dem kleinsten korrigierten Anderson-Darling-A², gerundet auf 0,01; das Feld zeigt die Schätzung grau, der Schieber steht auf ihr. Ein eingetragener Wert bleibt, auch bei einer neuen Spalte und nach dem Neuladen; Leeren kehrt zur Schätzung zurück."
+        }
+      },
+      "johnson_su": {
+        "help": "Die Parameter von Johnson SU (unbeschränkt).",
+        "gamma": {
+          "help": "Die Verschiebung γ der Johnson-Transformation, Beschriftung γ, Bereich −5 bis 5, voreingestellt 0. Johnson SU (unbeschränkt) rechnet γ + δ·asinh((x − ξ)/λ), Johnson SB (beschränkt) γ + δ·ln(z/(1 − z)) mit z = (x − ξ)/λ. γ wird nicht geschätzt, sondern von Hand gesetzt."
+        },
+        "delta": {
+          "help": "Der Formfaktor δ der Johnson-Transformation, Beschriftung δ, Bereich 0,1 bis 10, voreingestellt 1; er multipliziert den asinh- (SU, unbeschränkt) bzw. ln-Term (SB, beschränkt) in γ + δ·asinh((x − ξ)/λ) bzw. γ + δ·ln(z/(1 − z)). δ wird nicht geschätzt, sondern von Hand gesetzt."
+        },
+        "xi": {
+          "help": "Die Lage ξ der Johnson-Transformation, Beschriftung ξ, Bereich −100 bis 100, voreingestellt 0; sie wird vor der Skalierung von jedem Wert abgezogen, z = (x − ξ)/λ. Johnson SU (unbeschränkt) nimmt beliebige Werte. Bei Johnson SB (beschränkt) müssen alle Werte echt zwischen ξ und ξ + λ liegen, ein Wert genau auf einer Grenze genügt nicht; sonst scheitert die Rechnung mit „Johnson SB: Daten müssen in (ξ, ξ+λ) liegen“. ξ wird nicht geschätzt, sondern von Hand gesetzt."
+        },
+        "lambdaJ": {
+          "help": "Die Skala λ der Johnson-Transformation, Beschriftung λ, Bereich 0,1 bis 100, voreingestellt 1; durch sie wird geteilt, z = (x − ξ)/λ. Bei Johnson SB (beschränkt) ist ξ + λ die obere Grenze, die kein Wert erreichen darf; Johnson SU (unbeschränkt) hat keine Grenze. λ wird nicht geschätzt, sondern von Hand gesetzt; nicht zu verwechseln mit dem λ von Box-Cox und Yeo-Johnson."
+        }
+      },
+      "johnson_sb": {
+        "help": "Die Parameter von Johnson SB (beschränkt).",
+        "gamma": {
+          "help": "Die Verschiebung γ der Johnson-Transformation, Beschriftung γ, Bereich −5 bis 5, voreingestellt 0. Johnson SU (unbeschränkt) rechnet γ + δ·asinh((x − ξ)/λ), Johnson SB (beschränkt) γ + δ·ln(z/(1 − z)) mit z = (x − ξ)/λ. γ wird nicht geschätzt, sondern von Hand gesetzt."
+        },
+        "delta": {
+          "help": "Der Formfaktor δ der Johnson-Transformation, Beschriftung δ, Bereich 0,1 bis 10, voreingestellt 1; er multipliziert den asinh- (SU, unbeschränkt) bzw. ln-Term (SB, beschränkt) in γ + δ·asinh((x − ξ)/λ) bzw. γ + δ·ln(z/(1 − z)). δ wird nicht geschätzt, sondern von Hand gesetzt."
+        },
+        "xi": {
+          "help": "Die Lage ξ der Johnson-Transformation, Beschriftung ξ, Bereich −100 bis 100, voreingestellt 0; sie wird vor der Skalierung von jedem Wert abgezogen, z = (x − ξ)/λ. Johnson SU (unbeschränkt) nimmt beliebige Werte. Bei Johnson SB (beschränkt) müssen alle Werte echt zwischen ξ und ξ + λ liegen, ein Wert genau auf einer Grenze genügt nicht; sonst scheitert die Rechnung mit „Johnson SB: Daten müssen in (ξ, ξ+λ) liegen“. ξ wird nicht geschätzt, sondern von Hand gesetzt."
+        },
+        "lambdaJ": {
+          "help": "Die Skala λ der Johnson-Transformation, Beschriftung λ, Bereich 0,1 bis 100, voreingestellt 1; durch sie wird geteilt, z = (x − ξ)/λ. Bei Johnson SB (beschränkt) ist ξ + λ die obere Grenze, die kein Wert erreichen darf; Johnson SU (unbeschränkt) hat keine Grenze. λ wird nicht geschätzt, sondern von Hand gesetzt; nicht zu verwechseln mit dem λ von Box-Cox und Yeo-Johnson."
+        }
+      }
+    },
+    "exampleWorksheetId": {
+      "help": "Das Arbeitsblatt, das ein geladenes Beispiel angelegt hat; ein neues Beispiel räumt es ab."
+    },
+    "histOrigEdits": {
+      "help": "Die Einstellungen des Histogramms der Originalwerte aus dem Diagramm-Editor."
+    },
+    "histTransEdits": {
+      "help": "Die Einstellungen des Histogramms der transformierten Werte aus dem Diagramm-Editor."
+    },
+    "ppOrigEdits": {
+      "help": "Die Einstellungen des Normalverteilungsplots der Originalwerte aus dem Diagramm-Editor."
+    },
+    "ppTransEdits": {
+      "help": "Die Einstellungen des Normalverteilungsplots der transformierten Werte aus dem Diagramm-Editor."
+    },
+    "effectiveTF": {
+      "help": "Die Transformation, mit der gerechnet wird: die gewählte, außer Box-Cox auf einer Spalte mit mindestens 3 Werten, von denen einer ≤ 0 ist — dann Yeo-Johnson."
+    },
+    "activeParams": {
+      "help": "Die Pfade, die im aktuellen Stand wirken: params.<Transformation>.<Schlüssel> der wirksamen Transformation; leer bei Transformationen ohne Parameter. Geschrieben wird mit instance.set das ganze Feld params."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spaltenfelder, die im aktuellen Stand wirken (immer columnRef)."
+    },
+    "targetColumns": {
+      "help": "Die Ziele, die toWorksheet annimmt, je { key, name }: je Blatt alle seine Spalten (ihre Werte werden überschrieben), danach ein Eintrag mit columnId __new__, der eine neue Spalte anhängt (name ist der Blattname); null als Ziel legt ein neues Arbeitsblatt an."
+    }
+  },
+  "actions": {
+    "toWorksheet": {
+      "params": {
+        "command": "Der Ablauf als ein Objekt mit target."
+      }
+    },
+    "copyExport": {
+      "help": "Kopiert die transformierten Werte in die Zwischenablage, je Wert eine Zeile mit sechs Nachkommastellen und Punkt, wie der Kasten sie zeigt. Ohne Werte oder ohne Zugriff auf die Zwischenablage wird abgelehnt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    }
+  },
+  "asyncTasks": {
+    "analysis": {
+      "help": "Rechnet die Transformation mit der gewählten Spalte und den wirksamen Parametern; läuft von selbst nach jeder Änderung von Spalte, Transformation, Parametern oder Zellen (zusammengefasst, 80 ms Verzögerung). Der Wert ist das Ergebnis, jede Angabe unter keys einzeln beschrieben; ohne Spalte oder mit weniger als 3 Werten null ohne Fehler. Passen die Daten nicht zur Transformation (Logarithmus mit Werten ≤ 0, Johnson SB außerhalb von (ξ, ξ+λ) …), ist der Wert null und der Fehler nennt den Grund.",
+      "cancel": {
+        "help": "Bricht die laufende Rechnung ab; sie startet bei der nächsten Änderung neu."
+      }
+    },
+    "toWorksheet": {
+      "help": "Sendet die transformierte Reihe an ein neues Arbeitsblatt, in eine bestehende Spalte (überschreibt die Werte einer gewählten Spalte) oder als neue Spalte an ein bestehendes Blatt und liefert das empfangende Arbeitsblatt. Zuerst wartet er, bis die Rechnung fertig ist, und sendet deren Ergebnis; ein Start direkt nach einer Parameteränderung sendet also schon die neuen Werte. Der Spaltenname ist „<Quellspalte> (<wirksame Transformation>)“. Ohne Ergebnis wird nichts gesendet und nichts geliefert.",
+      "params": {
+        "target": "Das Ziel: ein neues Arbeitsblatt, eine Spalte eines Blatts (ihre Werte werden überschrieben) oder eine neue Spalte an einem Blatt; der Zielwähler bietet je Blatt alle Spalten an."
+      },
+      "cancel": {
+        "help": "Bricht das Senden ab, solange es noch nicht geschrieben ist."
+      }
+    }
+  },
+  "types": {
+    "Result": {
+      "n": "Zahl der Werte, Zeile n der Deskriptiven Statistik: die endlichen Zahlen der Quellspalte; leere und nicht numerische Zellen zählen nicht. Mit weniger als 3 Werten gibt es kein Ergebnis. Die Transformation erhält die Zahl der Werte.",
+      "transform": "Die Transformation, mit der das Ergebnis gerechnet wurde, eine der Kennungen von currentTF: die gewählte, außer Box-Cox auf Werten ≤ 0 — dann yeojohnson (wie effectiveTF).",
+      "params": "Die wirksamen Parameter dieser Rechnung, je Schlüssel wie unter params beschrieben: lambda bei Box-Cox und Yeo-Johnson (bei leerem λ die Schätzung als Zahl); gamma, delta, xi und lambdaJ bei Johnson SU und Johnson SB; ein leeres Objekt bei Logarithmus, Log₁₀, Quadratwurzel, Inverse und Quadrat.",
+      "original": "Die Kennwerte der Quellspalte vor der Transformation, Spalte Original der Deskriptiven Statistik und Zeile Original des Normalitätstests.",
+      "transformed": "Die Kennwerte der Reihe nach der Transformation mit den aktuellen Parametern, Spalte Transformiert der Deskriptiven Statistik und Zeile Transformiert des Normalitätstests."
+    },
+    "Descriptives": {
+      "mean": "Der arithmetische Mittelwert x̄ = Σx/n, Zeile Mittelwert; die Tabelle zeigt 4 Nachkommastellen.",
+      "std": "Die Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)), Zeile Std.-Abw.; leer, wenn sie nicht berechnet werden kann, die Tabelle zeigt dann einen Strich.",
+      "median": "Der Median, der mittlere Wert der sortierten Reihe bzw. der Mittelwert der beiden mittleren bei gerader Anzahl, Zeile Median.",
+      "skewness": "Die Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, Zeile Schiefe; 0 bei symmetrischen Daten, positiv bei rechtsschiefen. Leer, wenn alle Werte gleich sind (s = 0).",
+      "kurtosis": "Die Exzess-Wölbung der Stichprobe, Zeile Kurtosis (Exzess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 entspricht der Normalverteilung. Leer bei genau 3 Werten oder wenn alle Werte gleich sind; die Tabelle zeigt dann einen Strich.",
+      "min": "Der kleinste Wert der Reihe, Zeile Min.",
+      "max": "Der größte Wert der Reihe, Zeile Max.",
+      "adStatAdj": "Das korrigierte Anderson-Darling-A²* = A²·(1 + 0,75/n + 2,25/n²), in der Zeile des Normalitätstests angezeigt als A² = … mit 4 Nachkommastellen. Je größer der Wert, desto stärker weicht die Reihe von der Normalverteilung ab. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil.",
+      "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Das angezeigte A² ist bereits das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²); aus ihm folgt p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil.",
+      "normal": "Das Urteil des Normalitätstests: ja (Normal), wenn der p-Wert mindestens α = 0,05 beträgt, nein (Nicht normal), wenn er darunter liegt. Es steht als Plakette hinter p ≈ in der Zeile des Normalitätstests. Leer, wenn alle Werte gleich sind."
+    },
+    "TargetColumn": {
+      "key": "Das Ziel als instanceId|sheetId|columnId; columnId __new__ hängt eine neue Spalte an das Blatt an.",
+      "name": "Der Name der Spalte, beim Eintrag „neue Spalte“ der Name des Blatts."
+    }
+  }
+}
