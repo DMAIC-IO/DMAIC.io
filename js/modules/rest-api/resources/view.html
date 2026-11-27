@@ -33,7 +33,7 @@
         <div class="rest-api__detail-inner">
           <!-- URL-Zeile mit Lauf -->
           <div class="rest-api__url-bar" x-async-task="sendRequest">
-            <span class="rest-api__method-label" data-help-key="modules.rest-api.fields.endpoints.url.help" x-text="t('methodGet')"></span>
+            <span class="rest-api__method-label context-help-anchor--overlay" data-help-key="modules.rest-api.fields.endpoints.url.help" x-text="t('methodGet')"></span>
             <input class="field rest-api__url-input" data-field="url" data-help-key="" :aria-label="t('urlPlaceholder')"
               x-model="model.endpoints[activeIndex].url" :placeholder="t('urlPlaceholder')">
             <button type="button" class="rest-api__send-btn dmike-btn-run" data-action="send"

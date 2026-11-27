@@ -299,6 +299,24 @@ und Grenzen beider Teilkarten), dazu `activeParams` und `activeColumnSlots`
 (`['columnRef']`). Die Aktionen `setColumn`, `setParam` und `runAnalysis` gibt es
 nicht mehr; es rechnet bei jeder Änderung neu, ohne Entprellung.
 
+`rest-api` (Abruf von Endpunkten, Lauf mit Abbruch). Jedes Kommando nimmt genau ein
+Objekt mit `endpointId` aus `read().endpoints`: `addEndpoint {}` liefert die neue id,
+`renameEndpoint { endpointId, name }`, `removeEndpoint`, `addHeader`/`addMapping`
+(liefern den Index), `setHeader { endpointId, index, key, value }`, `removeHeader`,
+`setMapping { endpointId, index, jsonPath, ref }` (eine Spalte je Endpunkt höchstens
+einmal, Invariante `mappingColumnFree`) und `removeMapping`. URL, Schreibmodus und
+Zeitplan (`schedule { enabled, intervalValue 1–999, intervalUnit }`) setzt der Agent
+über `instance.set` auf `endpoints`; `setParam` und `setSchedule` gibt es nicht mehr.
+Der Abruf ist der Lauf `sendRequest { endpointId }`: er wartet und liefert die Antwort
+`{ status, statusText, ok, body }` als Rückgabewert, abgebrochen `{ cancelled: true }`;
+ohne URL antwortet er mit `call_failed`. Es läuft höchstens ein Abruf zur Zeit
+(„already running“), auch ein Zeitplan-Tick fällt dann aus; `sendRequest.cancel`
+bricht ab. `read()` führt `endpoints` ohne Antwort, die Ableitungen
+`scheduleWithoutUrl` (eingeschaltete Zeitpläne ohne URL) und `secretHeadersEmpty`
+(geheime Header ohne Wert) sowie `asyncTasks.sendRequest`; geheime Header-Werte stehen
+dort und im Projekt-Export als `••••` (siehe „Maskierte Werte“). Die App lässt nur
+Abrufe vom eigenen Ursprung zu (CSP); ein fremder Ursprung ergibt Status `0`.
+
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
 `auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
 
