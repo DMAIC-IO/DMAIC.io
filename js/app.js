@@ -60,7 +60,10 @@ async function init() {
   registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
   registerCommandDirectives(Alpine);
   registerAsyncTaskDirectives(Alpine, { i18n });
-  installWorksheetRevisions(eventBus);
+  installWorksheetRevisions(eventBus, {
+    isWorksheet: (id) => Object.values(stateManager.get('phases') || {})
+      .some((list) => Array.isArray(list) && list.some((e) => e?.instanceId === id && e.moduleId === 'worksheet')),
+  });
   Alpine.start();
 
   // ─── UI Components ───────────────────────────────────────

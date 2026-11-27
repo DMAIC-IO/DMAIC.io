@@ -77,7 +77,9 @@ export function adoptProjectModels(doc, { phaseFor } = {}) {
 
   // ── 1./2. Models → owner instance or orphan instance ─────────────
   for (const m of modelRecords(doc.models)) {
-    const candidates = [m.createdFromInstanceId, orphanFallbackId(m)].filter(Boolean);
+    const moduleId = m.family ? 'glm-regression' : 'regression';
+    const fallbacks = orphanFallbackIds(m);
+    const candidates = [m.createdFromInstanceId, ...fallbacks].filter(Boolean);
     const owner = candidates
       .map(id => findEntry(id))
       .find(x => x && OWNER_MODULES.has(x.entry.moduleId)
@@ -89,10 +91,20 @@ export function adoptProjectModels(doc, { phaseFor } = {}) {
       continue;
     }
 
-    const moduleId = m.family ? 'glm-regression' : 'regression';
+    // Eine Waise, deren Eintrag in `phases` schon steht, deren Zustand aber
+    // fehlt (Zustand nie geschrieben), bekommt ihn — kein zweiter Eintrag
+    // mit derselben id.
+    const stub = fallbacks.map(id => findEntry(id))
+      .find(x => x && x.entry.moduleId === moduleId && moduleStates[x.entry.instanceId]?.savedModelId == null);
+    if (stub) {
+      setState(stub.entry.instanceId, { savedModelId: m.id, savedModelName: m.name ?? null, savedModel: m });
+      continue;
+    }
+
     const instanceId = m.createdFromInstanceId && !findEntry(m.createdFromInstanceId)
       ? m.createdFromInstanceId
-      : orphanFallbackId(m);
+      : fallbacks.find(id => !findEntry(id));
+    if (!instanceId) continue;
     const phase = phaseOfReader(entries(), moduleStates, m.id)
       ?? phaseFor?.(moduleId)
       ?? Object.keys(phases)[0]
@@ -134,8 +146,15 @@ function modelRecords(models) {
   return list.filter(m => m && typeof m === 'object' && typeof m.id === 'string' && m.id);
 }
 
-/** @param {{ id: string }} m */
-function orphanFallbackId(m) { return `reg-${m.id}`; }
+/**
+ * Die Ersatz-ids einer Waise: `reg-<id>`, ist sie von einer Instanz mit
+ * anderem Modell belegt `reg-<id>-2`, `reg-<id>-3`, … — fest, damit ein
+ * zweiter Lauf dieselbe id findet.
+ * @param {{ id: string }} m @returns {string[]}
+ */
+function orphanFallbackIds(m) {
+  return [`reg-${m.id}`, ...Array.from({ length: 8 }, (_, i) => `reg-${m.id}-${i + 2}`)];
+}
 
 /** True when the raw owner state already carries the record of `id`. */
 function carriesModel(st, id) {

@@ -77,16 +77,21 @@ export function bumpWorksheetRevision(instanceId) { if (instanceId) { worksheetI
 /**
  * Den Zähler an den Bus hängen; je Bus nur einmal wirksam.
  * @param {{ on: (event: string, fn: Function) => void }} eventBus
+ * @param {{ isWorksheet?: (instanceId: string) => boolean }} [opts]
+ *   `isWorksheet` erkennt ein Arbeitsblatt auch vor seinem ersten Ereignis
+ *   (nach dem Neuladen): sein Speichern (etwa nach einem Ansichtskommando)
+ *   lässt die Leser dann nicht neu rechnen.
  * @returns {void}
  */
-export function installWorksheetRevisions(eventBus) {
+export function installWorksheetRevisions(eventBus, { isWorksheet } = {}) {
   if (installed.has(eventBus)) return;
   installed.add(eventBus);
+  const sheet = (/** @type {string} */ id) => worksheetIds.has(id) || isWorksheet?.(id) === true;
   eventBus.on('worksheet:dataChanged', (p) => { if (p?.instanceId) { worksheetIds.add(p.instanceId); bump(p.instanceId); } });
   // Gespeicherter Stand einer anderen Instanz (Speichern, Schreiben ohne Mount): ihre Leser lesen neu.
   eventBus.on('data:changed', (path) => {
     const id = typeof path === 'string' && /^module:[^:]+$/.test(path) ? path.slice(7) : null;
-    if (id && !worksheetIds.has(id)) bumpInstance(id);
+    if (id && !sheet(id)) bumpInstance(id);
   });
   eventBus.on('module:removed', (p) => { if (p?.instanceId) bump(p.instanceId); });
   eventBus.on('state:remote-changed', (p) => { for (const id of p?.instanceIds ?? []) bump(id); });

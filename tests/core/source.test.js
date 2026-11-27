@@ -132,6 +132,19 @@ suite('Source', () => {
     Alpine.release(runner);
   });
 
+  test('data:changed eines Arbeitsblatts vor seinem ersten Ereignis (neu geladen) erhöht den Zähler nicht', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus, { isWorksheet: (id) => id === 'wsFresh' });
+    const states = { wsFresh: { sheets: [{ id: 's1', state: { rowCount: 1, columns: [{ id: 'c1', values: [1] }] } }] } };
+    const src = createSource(project(states));
+    let runs = 0;
+    const runner = Alpine.effect(() => { src.read('wsFresh', { sheetId: 's1' }); runs++; });
+    bus.emit('data:changed', 'module:wsFresh');
+    await flush();
+    assertEqual(runs, 1);
+    Alpine.release(runner);
+  });
+
   test('ensureLoaded: ein frisch geladenes Modul lässt die Leser seiner Instanz neu lesen', async () => {
     let loaded = false;
     const sm = { get: (path) => (path === 'phases' ? { improve: [{ instanceId: 'lazy1', moduleId: 'regression' }] } : undefined) };

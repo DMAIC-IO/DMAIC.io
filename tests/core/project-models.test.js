@@ -104,6 +104,30 @@ suite('adoptProjectModels — orphans', () => {
     assertEqual(doc.moduleStates['inst-m-a'].savedModel.id, 'm-a');
   });
 
+  test('orphan entry in phases without state (state never written) → state healed, no second entry', () => {
+    const p = project();
+    p.models['m-old'] = model('m-old', { createdFromInstanceId: 'inst-m-a' });
+    p.phases.analyze.push({ instanceId: 'reg-m-old', moduleId: 'regression', order: 2, state: {}, customName: 'Modell m-old' });
+    const { doc, changed, phasesChanged } = adoptProjectModels(p, { phaseFor });
+    assertEqual(doc.phases.analyze.filter(e => e.instanceId === 'reg-m-old').length, 1);
+    assertEqual(doc.moduleStates['reg-m-old'].savedModel.id, 'm-old');
+    assertEqual(changed.includes('reg-m-old'), true);
+    assertEqual(phasesChanged, false);
+  });
+
+  test('reg-<model id> owned by another model → reg-<model id>-2, stable on a second run', () => {
+    const p = project();
+    p.models['m-old'] = model('m-old', { createdFromInstanceId: 'inst-m-a' });
+    p.phases.analyze.push({ instanceId: 'reg-m-old', moduleId: 'regression', order: 2, state: {} });
+    p.moduleStates['reg-m-old'] = { savedModelId: 'm-new', modelRecord: { coef: [9] } };
+    const first = adoptProjectModels(p, { phaseFor });
+    assertEqual(first.doc.moduleStates['reg-m-old'].savedModelId, 'm-new', 'fremder Besitzer bleibt');
+    assertEqual(first.doc.moduleStates['reg-m-old-2'].savedModel.id, 'm-old');
+    const again = adoptProjectModels({ ...first.doc, models: p.models }, { phaseFor });
+    assertDeepEqual(again.changed, []);
+    assertDeepEqual(again.doc.phases, first.doc.phases);
+  });
+
   test('instance id taken by another module → reg-<model id>', () => {
     const p = project();
     p.phases.analyze.push({ instanceId: 'inst-m-c', moduleId: 'histogram', order: 2, state: {} });
