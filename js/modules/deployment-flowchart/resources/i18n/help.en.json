@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Structure",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:swimlane|Deployment Flowchart}} (also swimlane or cross-functional flowchart) shows a process as a chain of steps distributed across horizontal bands — the lanes. Each lane stands for a role or department. Steps run left to right through the chain; moving from one lane to another is a hand-off. Those hand-offs are the whole point of the view: they are where waiting time, misunderstandings, and ownership gaps appear."
+        }
+      ]
+    },
+    "whenToUse": {
+      "title": "When to use",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The Deployment Flowchart fits the Analyze phase when a process spans several roles or departments and the question is \"who does what — and where is it handed over?\". Many lane switches across few steps is a strong signal for friction. Unlike the Activity Flowchart it shows no branching, and unlike the Opportunity Flowchart no value classification — only ownership."
+        }
+      ]
+    },
+    "howToUse": {
+      "title": "How to use",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "\"Add role\" creates a new lane; type its name directly in the sidebar. \"Add step\" appends the new step at the end of the chain — always in the \"Unassigned\" lane, and the view jumps straight there. Who owns the step is a deliberate second decision, made by dragging it onto a role band. The `»` arrow between two cards inserts a step at that point, in the lane of the following card. Cards are dragged by the grip, their blue number: dropping puts the card at the place in the chain the pointer indicates and in the band where it lands — dragging vertically changes only the ownership, dragging horizontally only the position. The keyboard does the same at the grip: Enter picks the card up, ←/→ change its position in the chain, ↑/↓ switch the lane, Enter drops it, Escape cancels. \"Detail steps\" expands any card into sub-steps. \"Import from …\" pulls steps in from a Process Map or SIPOC."
+        }
+      ]
+    },
+    "lanes": {
+      "title": "The \"Unassigned\" lane",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Alongside your own roles there is a reserved \"Unassigned\" lane. It appears automatically as soon as a step has no role — for example after importing from a Process Map or SIPOC, neither of which carries role information. This lane can neither be renamed nor deleted: it is the catch-all that guarantees no step exists without a visible row. Deleting a role moves its steps there — they are never lost with the role."
+        }
+      ]
+    }
+  }
+}

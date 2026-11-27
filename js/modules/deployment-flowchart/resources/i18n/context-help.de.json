@@ -1,0 +1,118 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "Die Kette in Reihenfolge von links nach rechts. Die Bahn eines Schritts ist nur seine senkrechte Lage; seine Position in der Kette bleibt von ihr unberührt.",
+      "title": {
+        "help": "Der Titel des Schritts, ein kurzer Name der Tätigkeit."
+      },
+      "description": {
+        "help": "Die Beschreibung des Schritts, freier Text."
+      },
+      "laneId": {
+        "help": "Die Bahn des Schritts: eine Rolle oder Abteilung aus der Seitenleiste, oder „Nicht zugeordnet“, solange noch niemand zuständig ist."
+      },
+      "substeps": {
+        "help": "Die Unter-Schritte des Schritts in Reihenfolge.",
+        "title": {
+          "help": "Der Titel des Unter-Schritts."
+        }
+      }
+    },
+    "lanes": {
+      "help": "Die Bahnen (Rollen oder Abteilungen) in Anzeigereihenfolge von oben nach unten. Die reservierte Bahn „Nicht zugeordnet“ trägt keinen eigenen Namen und lässt sich weder umbenennen noch entfernen.",
+      "name": {
+        "help": "Der Name der Rolle oder Abteilung."
+      }
+    },
+    "expanded": {
+      "help": "Die Schritte, deren Unter-Schritte aufgeklappt sind; rein darstellend."
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Fügt einen leeren Schritt in die Kette ein und liefert seine id. Ohne Bahn landet er in „Nicht zugeordnet“.",
+      "params": {
+        "command": "Das Kommando als ein Objekt, optional mit index und laneId.",
+        "index": "Position des neuen Schritts in der Kette nach dem Einfügen (0 = ganz vorn, die Zahl der Schritte = ans Ende). Ohne Angabe wird am Ende angehängt. Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler.",
+        "laneId": "Die id einer vorhandenen Bahn oder 'unassigned' für „Nicht zugeordnet“ (die Bahn entsteht bei Bedarf). Ohne Angabe 'unassigned'. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "removeStep": {
+      "help": "Entfernt einen Schritt samt seinen Unter-Schritten aus der Kette.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id.",
+        "id": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "moveStep": {
+      "help": "Verschiebt einen Schritt an eine andere Stelle der Kette und setzt auf Wunsch zugleich seine Bahn.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id, index und optional laneId.",
+        "id": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+        "index": "Die Position des Schritts nach dem Verschieben, eine ganze Zahl von 0 (ganz vorn) bis zur Zahl der Schritte minus eins.",
+        "laneId": "Optional: die neue Bahn, die id einer vorhandenen Bahn oder 'unassigned'. Ohne Angabe bleibt die Bahn. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "setLaneForStep": {
+      "help": "Weist einen Schritt einer Bahn zu; seine Position in der Kette bleibt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und laneId.",
+        "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+        "laneId": "Die id einer vorhandenen Bahn oder 'unassigned' für „Nicht zugeordnet“. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "addLane": {
+      "help": "Hängt eine unbenannte Bahn unten an und liefert ihre id.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
+    "removeLane": {
+      "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet“ und gehen nie mit der Bahn verloren. Die Bahn „Nicht zugeordnet“ selbst lässt sich nicht entfernen.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit laneId.",
+        "laneId": "Die id der Bahn. Eine unbekannte id oder 'unassigned' ist ein Fehler."
+      }
+    },
+    "addSubstep": {
+      "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu. Liefert die id des neuen Unter-Schritts.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId.",
+        "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "removeSubstep": {
+      "help": "Entfernt einen Unter-Schritt aus seinem übergeordneten Schritt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId und substepId.",
+        "stepId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+        "substepId": "Die id des zu entfernenden Unter-Schritts. Eine unbekannte id ist ein Fehler."
+      }
+    },
+    "moveSubstep": {
+      "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an eine andere Position.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit stepId, substepId und index.",
+        "stepId": "Die id des Schritts, zu dem der Unter-Schritt gehört. Eine unbekannte id ist ein Fehler.",
+        "substepId": "Die id des Unter-Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+        "index": "Die Position des Unter-Schritts nach dem Verschieben, eine ganze Zahl von 0 (ganz vorn) bis zur Zahl der Unter-Schritte des Schritts minus eins."
+      }
+    },
+    "setExpanded": {
+      "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit id und expanded.",
+        "id": "Die id des Schritts, dessen Unter-Schritte gezeigt oder verborgen werden. Eine unbekannte id ist ein Fehler.",
+        "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
+      }
+    },
+    "appendSteps": {
+      "help": "Hängt mehrere Schritte ans Ende der Kette an, etwa aus einer anderen Instanz übernommen; alle landen in „Nicht zugeordnet“. Liefert die Zahl der angehängten Schritte.",
+      "params": {
+        "command": "Das Kommando als ein Objekt mit steps.",
+        "steps": "Die anzuhängenden Schritte als Liste; jeder Eintrag hat title und description."
+      }
+    }
+  }
+}

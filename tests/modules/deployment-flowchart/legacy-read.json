@@ -1,0 +1,103 @@
+{
+  "$comment": "read() der Altform je Instanz aus legacy-project.json (Sprache de); Task 0 der F2-Umstellung.",
+  "a": {
+    "steps": [
+      {
+        "id": "a1",
+        "title": "Bestellung aufgeben",
+        "description": "Per E-Mail oder Portal.",
+        "laneId": "lane-kunde",
+        "expanded": false,
+        "substeps": []
+      },
+      {
+        "id": "a2",
+        "title": "Auftrag erfassen",
+        "description": "Im ERP anlegen.",
+        "laneId": "lane-vertrieb",
+        "expanded": true,
+        "substeps": [
+          {
+            "id": "a2x",
+            "title": "Kundendaten prüfen"
+          },
+          {
+            "id": "a2y",
+            "title": "Preis kalkulieren"
+          }
+        ],
+        "owner": "MW"
+      },
+      {
+        "id": "a3",
+        "title": "Klärung offen",
+        "description": "",
+        "laneId": "unassigned",
+        "expanded": false,
+        "substeps": []
+      },
+      {
+        "id": "a4",
+        "title": "Auftrag fertigen",
+        "description": "Los 1 von 2.",
+        "laneId": "lane-fertigung",
+        "expanded": false,
+        "substeps": [
+          {
+            "id": "a4x",
+            "title": "Material bereitstellen"
+          }
+        ]
+      }
+    ],
+    "lanes": [
+      {
+        "id": "lane-kunde",
+        "name": "Kunde",
+        "order": 3
+      },
+      {
+        "id": "lane-vertrieb",
+        "name": "Vertrieb",
+        "order": 0
+      },
+      {
+        "id": "unassigned",
+        "name": "",
+        "order": 2
+      },
+      {
+        "id": "lane-fertigung",
+        "name": "Fertigung",
+        "order": 1
+      }
+    ]
+  },
+  "b": {
+    "steps": [
+      {
+        "id": "b1",
+        "title": "Erster Schritt",
+        "description": "Ohne Rollen",
+        "laneId": "unassigned",
+        "expanded": false,
+        "substeps": []
+      },
+      {
+        "id": "b2",
+        "title": "Ohne Bahn",
+        "description": "",
+        "expanded": false,
+        "substeps": [],
+        "laneId": "unassigned"
+      }
+    ],
+    "lanes": [
+      {
+        "id": "unassigned",
+        "name": "",
+        "order": 0
+      }
+    ]
+  }
+}

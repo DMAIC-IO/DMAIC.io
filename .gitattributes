@@ -25,3 +25,6 @@
 *.pdf binary
 *.zip binary
 *.xlsx binary
+
+# Byte fixture of a legacy JSON download (BOM, no trailing newline).
+tests/modules/deployment-flowchart/legacy-export.json -text

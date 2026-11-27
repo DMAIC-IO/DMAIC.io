@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das {{term:swimlane|Deployment Flowchart}} (auch Swimlane- oder Cross-Functional-Flowchart) zeigt einen Prozess als Kette von Schritten, die auf horizontale Bänder — die Lanes — verteilt sind. Jede Lane steht für eine Rolle oder Abteilung. Die Reihenfolge der Schritte läuft von links nach rechts durch die Kette; der Wechsel von einer Lane in eine andere ist eine Übergabe. Genau diese Übergaben sind der Grund für die Darstellung: an ihnen entstehen Wartezeiten, Missverständnisse und Verantwortungslücken."
+        }
+      ]
+    },
+    "whenToUse": {
+      "title": "Wann verwenden?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Deployment Flowchart eignet sich in der Analyze-Phase, wenn ein Prozess über mehrere Rollen oder Abteilungen läuft und die Frage „Wer macht was — und wo wird übergeben?\" beantwortet werden muss. Viele Lane-Wechsel bei wenigen Schritten sind ein starkes Signal für Reibungsverluste. Im Unterschied zum Activity Flowchart bildet es keine Verzweigungen ab, im Unterschied zum Opportunity Flowchart keine Wert-Einstufung — sondern ausschließlich die Zuständigkeit."
+        }
+      ]
+    },
+    "howToUse": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "„Rolle hinzufügen\" legt eine neue Lane an; der Name wird direkt in der Seitenleiste eingetippt. „Schritt hinzufügen\" hängt den neuen Schritt ans Ende der Kette an — immer in der Lane „Nicht zugeordnet\", und die Ansicht springt gleich dorthin. Wem der Schritt gehört, entscheidet man danach bewusst, indem man ihn in ein Rollen-Band zieht. Der `»`-Pfeil zwischen zwei Karten fügt an dieser Stelle einen Schritt in der Lane der folgenden Karte ein. Karten werden am Griff, der blauen Nummer, gezogen: Das Ablegen setzt die Karte an die Stelle der Kette, auf die der Zeiger zeigt, und in das Band, in dem sie landet — senkrecht ziehen wechselt nur die Zuständigkeit, waagerecht ziehen nur die Position. Mit der Tastatur geht dasselbe am Griff: Enter nimmt die Karte auf, ←/→ ändern die Position in der Kette, ↑/↓ wechseln die Lane, Enter legt ab, Escape bricht ab. Über „Detail-Schritte\" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …\" werden Schritte aus einer {{term:process-map|Process Map}} oder SIPOC übernommen."
+        }
+      ]
+    },
+    "lanes": {
+      "title": "Die Lane „Nicht zugeordnet\"",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Neben den selbst angelegten Rollen gibt es eine reservierte Lane „Nicht zugeordnet\". Sie entsteht automatisch, sobald ein Schritt keine Rolle hat — etwa nach einem Import aus Process Map oder SIPOC, die beide keine Rollen-Information mitbringen. Diese Lane lässt sich weder umbenennen noch löschen: sie ist der Auffangbereich, damit nie ein Schritt ohne sichtbare Zeile existiert. Wird eine Rolle gelöscht, wandern ihre Schritte dorthin — sie gehen nie mit der Rolle verloren."
+        }
+      ]
+    }
+  }
+}

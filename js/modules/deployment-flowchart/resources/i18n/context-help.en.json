@@ -1,0 +1,118 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "The chain in order from left to right. A step's lane is only its vertical position; its place in the chain is not affected by it.",
+      "title": {
+        "help": "The title of the step, a short name for the activity."
+      },
+      "description": {
+        "help": "The description of the step, free text."
+      },
+      "laneId": {
+        "help": "The lane of the step: a role or department from the sidebar, or “Unassigned” while nobody owns it yet."
+      },
+      "substeps": {
+        "help": "The sub-steps of the step in order.",
+        "title": {
+          "help": "The title of the sub-step."
+        }
+      }
+    },
+    "lanes": {
+      "help": "The lanes (roles or departments) in display order from top to bottom. The reserved “Unassigned” lane carries no name of its own and can be neither renamed nor removed.",
+      "name": {
+        "help": "The name of the role or department."
+      }
+    },
+    "expanded": {
+      "help": "The steps whose sub-steps are expanded; display only."
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Inserts an empty step into the chain and returns its id. Without a lane it lands in “Unassigned”.",
+      "params": {
+        "command": "The command as an object, optionally with index and laneId.",
+        "index": "Position of the new step in the chain after inserting (0 = the very front, the number of steps = at the end). Without it the step is appended. A value outside that range or a non-integer is an error.",
+        "laneId": "The id of an existing lane, or 'unassigned' for “Unassigned” (that lane is created when needed). Defaults to 'unassigned'. An unknown id is an error."
+      }
+    },
+    "removeStep": {
+      "help": "Removes a step together with its sub-steps from the chain.",
+      "params": {
+        "command": "The command as an object with id.",
+        "id": "The id of the step to remove. An unknown id is an error."
+      }
+    },
+    "moveStep": {
+      "help": "Moves a step to another place in the chain and optionally sets its lane at the same time.",
+      "params": {
+        "command": "The command as an object with id, index and optionally laneId.",
+        "id": "The id of the step to move. An unknown id is an error.",
+        "index": "The position of the step after the move, a whole number from 0 (the very front) to the number of steps minus one.",
+        "laneId": "Optional: the new lane, the id of an existing lane or 'unassigned'. Without it the lane stays. An unknown id is an error."
+      }
+    },
+    "setLaneForStep": {
+      "help": "Assigns a step to a lane; its place in the chain stays.",
+      "params": {
+        "command": "The command as an object with stepId and laneId.",
+        "stepId": "The id of the step. An unknown id is an error.",
+        "laneId": "The id of an existing lane, or 'unassigned' for “Unassigned”. An unknown id is an error."
+      }
+    },
+    "addLane": {
+      "help": "Appends an unnamed lane at the bottom and returns its id.",
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
+    },
+    "removeLane": {
+      "help": "Removes a lane; its steps move to “Unassigned” and are never lost with the lane. The “Unassigned” lane itself cannot be removed.",
+      "params": {
+        "command": "The command as an object with laneId.",
+        "laneId": "The id of the lane. An unknown id or 'unassigned' is an error."
+      }
+    },
+    "addSubstep": {
+      "help": "Adds an empty sub-step to a step. Returns the id of the new sub-step.",
+      "params": {
+        "command": "The command as an object with stepId.",
+        "stepId": "The id of the step that gets the new sub-step. An unknown id is an error."
+      }
+    },
+    "removeSubstep": {
+      "help": "Removes a sub-step from its parent step.",
+      "params": {
+        "command": "The command as an object with stepId and substepId.",
+        "stepId": "The id of the parent step. An unknown id is an error.",
+        "substepId": "The id of the sub-step to remove. An unknown id is an error."
+      }
+    },
+    "moveSubstep": {
+      "help": "Moves a sub-step to another position within its step.",
+      "params": {
+        "command": "The command as an object with stepId, substepId and index.",
+        "stepId": "The id of the step the sub-step belongs to. An unknown id is an error.",
+        "substepId": "The id of the sub-step to move. An unknown id is an error.",
+        "index": "The position of the sub-step after the move, a whole number from 0 (the very front) to the number of sub-steps of the step minus one."
+      }
+    },
+    "setExpanded": {
+      "help": "Shows or hides a step's sub-steps; display only, the content stays.",
+      "params": {
+        "command": "The command as an object with id and expanded.",
+        "id": "The id of the step whose sub-steps are shown or hidden. An unknown id is an error.",
+        "expanded": "true shows the sub-steps, false hides them."
+      }
+    },
+    "appendSteps": {
+      "help": "Appends several steps to the end of the chain, for example taken over from another instance; all of them land in “Unassigned”. Returns the number of appended steps.",
+      "params": {
+        "command": "The command as an object with steps.",
+        "steps": "The steps to append as a list; each entry has title and description."
+      }
+    }
+  }
+}
