@@ -54,6 +54,18 @@
     },
     "activeColumnSlots": {
       "help": "The column slots that apply in the current state: reference (reference values) and measured (measured values), always both."
+    },
+    "inputs": {
+      "help": "The value pairs of the charts: reference and measured value per row of the two chosen columns; rows without two readable numbers are left out."
+    },
+    "linearityConfig": {
+      "help": "The display of the linearity plot: bias per measurement, regression line and its confidence band, computed from the chosen columns."
+    },
+    "perRefConfig": {
+      "help": "The display of the chart “Measurements per reference”: all measured values and the mean per reference value."
+    },
+    "residualConfig": {
+      "help": "The display of the residual chart: distance of each bias from the regression line over the estimated bias ŷ."
     }
   },
   "types": {

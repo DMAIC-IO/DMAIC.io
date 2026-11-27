@@ -1,0 +1,195 @@
+<div class="module-msa-typ4 dmike-split dmike-split--input-lg" x-data="msaTyp4">
+  <!-- data-help-key="" an Eingabe-, Auswahl-, Gruppen- und Spalten-Wirten ist gewollt: die Hilfe hängt an der Beschriftung daneben, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sections.feature')"></div>
+
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label data-help-key="modules.msa-typ4.types.Params.name" x-text="t('labels.name')"></label>
+        <input type="text" class="field" data-ref="inp-name" data-help-key="" x-model="model.params.name">
+      </div>
+      <div class="field-group field-group--minor">
+        <label data-help-key="modules.msa-typ4.types.Params.unit" x-text="t('labels.unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit" data-help-key=""
+               placeholder="mm" x-model="model.params.unit">
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ4.fields.refColumn.help" x-text="t('labels.referenceColumn')"></label>
+      <div data-ref="picker-ref" data-help-key="" x-field="model.refColumn"></div>
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ4.fields.measColumn.help" x-text="t('labels.measuredColumn')"></label>
+      <div data-ref="picker-meas" data-help-key="" x-field="model.measColumn"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
+
+    <fieldset class="field-radios field-radios--inline" data-ref="grp-norm" role="radiogroup" data-help-key="" x-set="model.params.norm">
+      <legend data-help-key="modules.msa-typ4.types.Params.norm" x-text="t('labels.norm')"></legend>
+      <label class="msa-typ4__choice"><input type="radio" value="AIAG" :name="fieldId('norm')"><span x-text="t('labels.normAiag')"></span></label>
+      <label class="msa-typ4__choice"><input type="radio" value="VDA5" :name="fieldId('norm')"><span x-text="t('labels.normVda')"></span></label>
+    </fieldset>
+
+    <fieldset class="field-radios field-radios--inline" data-ref="grp-pv" role="radiogroup" data-help-key="" x-set="model.params.pvMode">
+      <legend data-help-key="modules.msa-typ4.types.Params.pvMode" x-text="t('labels.pvMode')"></legend>
+      <label class="msa-typ4__choice"><input type="radio" value="tolerance" :name="fieldId('pv')"><span x-text="t('labels.pvModeTolerance')"></span></label>
+      <label class="msa-typ4__choice"><input type="radio" value="sixSigma" :name="fieldId('pv')"><span x-text="t('labels.pvModeSixSigma')"></span></label>
+    </fieldset>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ4.types.Params.tolerance.LSL" x-text="t('labels.lsl')"></label>
+        <input class="field field--num" data-ref="inp-lsl" data-help-key=""
+               :placeholder="num(0, 3)" x-field="model.params.tolerance.LSL">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.msa-typ4.types.Params.tolerance.USL" x-text="t('labels.usl')"></label>
+        <input class="field field--num" data-ref="inp-usl" data-help-key=""
+               :placeholder="num(0, 3)" x-field="model.params.tolerance.USL">
+      </div>
+    </div>
+    <span class="msa-typ4__field-error" data-ref="limits-error" x-text="fieldError('model.params.tolerance.LSL') || fieldError('model.params.tolerance.USL')"></span>
+
+    <div class="field-group" data-ref="group-sigma" x-show="showSigma">
+      <label data-help-key="modules.msa-typ4.types.Params.sigmaP" x-text="t('labels.sigmaP')"></label>
+      <input class="field field--num" data-ref="inp-sigma" data-help-key="" x-field="model.params.sigmaP">
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ4.types.Params.alpha" x-text="t('labels.alpha')"></label>
+      <select class="field" data-ref="sel-alpha" data-help-key="" x-field="model.params.alpha">
+        <option value="0.01" x-text="num(0.01, 2)"></option>
+        <option value="0.05" x-text="num(0.05, 2)"></option>
+        <option value="0.1" x-text="num(0.1, 2)"></option>
+      </select>
+    </div>
+
+    <template x-if="invalidText">
+      <div class="dmike-infobox dmike-infobox--bad" data-ref="error-box">
+        <span class="dmike-infobox__detail" data-help-key="modules.msa-typ4.types.Result.invalid" x-text="invalidText"></span>
+      </div>
+    </template>
+  </div>
+
+  <div class="dmike-split__output">
+    <div data-ref="results">
+      <template x-if="!res">
+        <div class="module-msa-typ4__empty" x-text="t('emptyState')"></div>
+      </template>
+
+      <template x-if="res">
+        <div>
+          <!-- Kennzahlen je Norm; „größter %Bias“ in beiden. -->
+          <div class="dmike-kpi-strip">
+            <template x-if="isAiag">
+              <div class="dmike-kpi" :class="kpiAiag.linClass">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.KpiAiag.percentLinearity" x-text="t('kpi.percentLinearity')"></div>
+                <div class="dmike-kpi-value" x-text="kpiAiag.lin"></div>
+                <div class="dmike-kpi-sub" x-text="kpiAiag.verdict"></div>
+              </div>
+            </template>
+            <template x-if="isAiag">
+              <div class="dmike-kpi" :class="kpiAiag.slopeClass">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.Regression.slope" x-text="t('kpi.slope')"></div>
+                <div class="dmike-kpi-value" x-text="kpiAiag.slope"></div>
+                <div class="dmike-kpi-sub" x-text="kpiAiag.slopeP"></div>
+              </div>
+            </template>
+            <template x-if="isAiag">
+              <div class="dmike-kpi" :class="kpiAiag.interceptClass">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.Regression.intercept" x-text="t('kpi.intercept')"></div>
+                <div class="dmike-kpi-value" x-text="kpiAiag.intercept"></div>
+                <div class="dmike-kpi-sub" x-text="kpiAiag.interceptP"></div>
+              </div>
+            </template>
+            <template x-if="isVda">
+              <div class="dmike-kpi" :class="kpiVda.cls">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.KpiVda5.u_BI" x-text="t('kpi.uBi')"></div>
+                <div class="dmike-kpi-value" x-text="kpiVda.uBi"></div>
+              </div>
+            </template>
+            <template x-if="isVda">
+              <div class="dmike-kpi" :class="kpiVda.cls">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.KpiVda5.U" x-text="t('kpi.u')"></div>
+                <div class="dmike-kpi-value" x-text="kpiVda.u"></div>
+              </div>
+            </template>
+            <template x-if="isVda">
+              <div class="dmike-kpi" :class="kpiVda.cls">
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.KpiVda5.Q_MS_BI" x-text="t('kpi.qMsBi')"></div>
+                <div class="dmike-kpi-value" x-text="kpiVda.qMsBi"></div>
+                <div class="dmike-kpi-sub" x-text="kpiVda.verdict"></div>
+              </div>
+            </template>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ4.types.KpiAiag.maxPercentBias" x-text="t('kpi.maxPercentBias')"></div>
+              <div class="dmike-kpi-value" x-text="maxBiasValue"></div>
+            </div>
+          </div>
+
+          <!-- Deutung (generisches .dmike-infobox aus css/components.css) -->
+          <div class="dmike-infobox" :class="verdictClass">
+            <span class="dmike-infobox__detail" data-help-key="modules.msa-typ4.types.Result.interpretation" x-text="interpretationText"></span>
+          </div>
+
+          <!-- Diagramme -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.linearity')"></span></div>
+          <div class="msa-typ4__chart" data-ref="chart-linearity" x-widget="scatter-chart" x-widget-config="linearityConfig"
+               x-widget-value="model.linearityChart" x-widget-legacy-edit-key="legacyLinearityKey"></div>
+
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.percentBias')"></span></div>
+          <div class="msa-typ4__chart" data-ref="chart-pctbias" x-widget="scatter-chart" x-widget-config="pctBiasConfig"
+               x-widget-value="model.pctBiasChart" x-widget-legacy-edit-key="legacyPctBiasKey"></div>
+
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.perReference')"></span></div>
+          <div class="msa-typ4__chart" data-ref="chart-per-ref" x-widget="scatter-chart" x-widget-config="perRefConfig"
+               x-widget-value="model.perRefChart" x-widget-legacy-edit-key="legacyPerRefKey"></div>
+
+          <!-- Residuen: das Diagramm hängt erst nach dem Aufklappen ein. -->
+          <details class="msa-typ4__residuals" data-ref="residuals-details" :open="state.residualsOpen" @toggle="residualsToggled($event)">
+            <summary x-text="t('charts.residuals')"></summary>
+            <div class="msa-typ4__chart" data-ref="chart-residuals">
+              <template x-if="state.residualsOpen">
+                <div class="msa-typ4__chart-inner" x-widget="scatter-chart" x-widget-config="residualConfig"
+                     x-widget-value="model.residualChart" x-widget-legacy-edit-key="legacyResidualKey"></div>
+              </template>
+            </div>
+          </details>
+
+          <!-- Tabelle je Referenz -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sections.results')"></span></div>
+          <table class="dmike-table msa-typ4__table">
+            <thead>
+              <tr>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.xRef" x-text="t('table.reference')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.n" x-text="t('table.n')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.mean" x-text="t('table.mean')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.bias" x-text="t('table.bias')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.percentBias" x-text="t('table.percentBias')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.tStat" x-text="t('table.tStat')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.pValue" x-text="t('table.pValue')"></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="row in tableRows" :key="row.key">
+                <tr :class="row.rowClass">
+                  <td x-text="row.xRef"></td>
+                  <td x-text="row.n"></td>
+                  <td x-text="row.mean"></td>
+                  <td x-text="row.bias"></td>
+                  <td x-text="row.percentBias"></td>
+                  <td x-text="row.tStat"></td>
+                  <td x-text="row.pValue"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

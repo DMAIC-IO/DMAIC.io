@@ -1,0 +1,49 @@
+/* ============================================================
+   D.Mike — MSA Typ 4: Stile des Moduls.
+   Farben über CSS-Variablen; Abschnittstitel, Felder, Tabelle, Kennzahlen
+   und Infoboxen kommen aus css/components.css und css/modules.css.
+   ============================================================ */
+
+.module-msa-typ4__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* Grund der Ablehnung von USG/OSG (limitsOrder) unter den beiden Feldern. */
+.msa-typ4__field-error {
+  display: block;
+  margin: calc(var(--spacing-xs) - var(--spacing-sm) - var(--spacing-m)) 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+.msa-typ4__field-error:empty {
+  display: none;
+}
+
+/* ─── Tabelle je Referenz: Zeilenfarbe je Ampel ───────────────── */
+.msa-typ4__table tr.msa-typ4__row--yellow td { color: var(--color-warning); }
+.msa-typ4__table tr.msa-typ4__row--red    td { color: var(--color-error); }
+
+/* ─── Diagramme ───────────────────────────────────────────────
+   Feste Höhe mit overflow: hidden; ohne Beschnitt wächst das SVG unter
+   dem ResizeObserver immer weiter. */
+.msa-typ4__chart {
+  width: 100%;
+  height: 300px;
+  margin-bottom: var(--spacing-md);
+  overflow: hidden;
+}
+
+/* Wirt des spät eingehängten Residuen-Widgets: füllt den Behälter. */
+.msa-typ4__chart-inner {
+  width: 100%;
+  height: 100%;
+}
+
+.msa-typ4__residuals summary {
+  cursor: pointer;
+  padding: var(--spacing-sm) 0;
+  color: var(--color-text-secondary);
+}

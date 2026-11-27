@@ -41,9 +41,11 @@ suite('msa-typ4 Texte in ui.<lang>.json', () => {
 });
 
 suite('msa-typ4 Kontexthilfe in context-help.<lang>.json', () => {
-  test('jedes Feld, Ansichtsfeld und jede Ableitung hat einen Hilfetext', async () => {
+  test('jedes Feld, Ansichtsfeld, jede Ableitung und jedes computed hat einen Hilfetext', async () => {
     const s = State.schema;
-    const names = [...Object.keys(s.fields), ...Object.keys(s.view), ...Object.keys(s.derived)];
+    // Die `computed` des Viewmodels; das Gate verlangt `fields.<computed>.help`.
+    const names = [...Object.keys(s.fields), ...Object.keys(s.view), ...Object.keys(s.derived),
+      'inputs', 'linearityConfig', 'perRefConfig', 'residualConfig'];
     for (const lang of LANGS) {
       const { fields } = await contextHelp(lang);
       for (const n of names) assertTrue(nonEmpty(fields[n]?.help), `${lang} fields.${n}`);

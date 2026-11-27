@@ -54,6 +54,18 @@
     },
     "activeColumnSlots": {
       "help": "Die Spalten-Slots, die im aktuellen Zustand wirken: reference (Referenzwerte) und measured (Messwerte), immer beide."
+    },
+    "inputs": {
+      "help": "Die Wertepaare der Diagramme: Referenz- und Messwert je Zeile der beiden gewählten Spalten; Zeilen ohne zwei lesbare Zahlen entfallen."
+    },
+    "linearityConfig": {
+      "help": "Die Darstellung des Linearitäts-Plots: Bias je Messung, Regressionsgerade und ihr Konfidenzband, gerechnet aus den gewählten Spalten."
+    },
+    "perRefConfig": {
+      "help": "Die Darstellung des Diagramms „Messwerte je Referenz“: alle Messwerte und die Mittelwerte je Referenzwert."
+    },
+    "residualConfig": {
+      "help": "Die Darstellung des Residuen-Diagramms: Abstand jedes Bias von der Regressionsgeraden über dem geschätzten Bias ŷ."
     }
   },
   "types": {
