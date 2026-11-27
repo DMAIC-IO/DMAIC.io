@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das REST-API-Modul verbindet Qprovement mit externen Datenquellen. Es ruft per HTTP-GET Daten von einer URL ab, zeigt die Antwort zur Prüfung an und kann den Abruf wiederkehrend ausführen — z. B. um Messwerte von einem Server, einer Maschinensteuerung oder einem Cloud-Dienst regelmäßig abzufragen. Zuordnungen einzelner Felder der Antwort zu Spalten im Arbeitsblatt lassen sich bereits festlegen; sie werden gespeichert, aber noch nicht angewendet — ein Abruf schreibt heute nichts ins Arbeitsblatt."
+        },
+        {
+          "type": "definition",
+          "term": "Endpunkt",
+          "content": "Ein gespeicherter Eintrag mit Name, URL, optionalen HTTP-Headern, Spaltenzuordnungen, Schreibmodus und Zeitplan. Pro Projekt lassen sich beliebig viele Endpunkte verwalten — z. B. einer pro Maschine oder pro Datenquelle."
+        },
+        {
+          "type": "definition",
+          "term": "JSON-Pfad",
+          "content": "Eine Punktnotation, die in der API-Antwort einen bestimmten Wert oder ein Array adressiert (z. B. data.measurements oder result.values[*].temperature). Der Wert hinter diesem Pfad ist für die zugewiesene Spalte bestimmt."
+        },
+        {
+          "type": "definition",
+          "term": "Mapping (JSON-Pfad → Spalte)",
+          "content": "Eine Liste von Zuordnungen: Pro Eintrag wird ein JSON-Pfad einer Zielspalte im Arbeitsblatt zugewiesen; eine Spalte gehört je Endpunkt zu höchstens einer Zuordnung. Die Zuordnungen werden gespeichert, aber noch nicht angewendet."
+        },
+        {
+          "type": "definition",
+          "term": "Schreibmodus",
+          "content": "Legt fest, wie die zugeordneten Werte in die Spalten geschrieben werden sollen — Spalten vor dem Schreiben leeren, Daten unten anhängen oder Daten oben einfügen. Der Modus wird gespeichert, aber noch nicht angewendet."
+        },
+        {
+          "type": "definition",
+          "term": "Zeitplan (Schedule)",
+          "content": "Optionaler Wiederholungsabruf in Minuten oder Stunden (1 bis 999). Solange das Modul geöffnet ist und eine URL gesetzt ist, ruft es den Endpunkt automatisch im eingestellten Intervall auf. Es läuft immer nur ein Abruf zur Zeit; ein fälliger Abruf während eines laufenden fällt aus."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Endpunkt einrichten"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mit „+“ einen neuen Endpunkt anlegen und einen sprechenden Namen vergeben.",
+            "URL eintragen — typischerweise eine REST-Schnittstelle, die JSON liefert.",
+            "Bei Bedarf HTTP-Header ergänzen (z. B. Authorization für API-Keys oder Bearer Tokens).",
+            "Mit „Senden“ einen Testabruf starten — die Antwort wird zur Inspektion angezeigt. Ein laufender Abruf lässt sich mit „Abbrechen“ beenden.",
+            "JSON-Pfade aus der Antwort identifizieren und je einer Spalte zuordnen (wird gespeichert, aber noch nicht angewendet).",
+            "Schreibmodus wählen: leeren, unten anhängen oder oben einfügen (wird gespeichert, aber noch nicht angewendet).",
+            "Optional: Zeitplan aktivieren, Intervall in Minuten oder Stunden eintragen."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Endpunkte verwalten"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Beim Löschen eines Endpunkts wird ein laufender Zeitplan automatisch beendet.",
+            "Es läuft immer nur ein Abruf zur Zeit, auch über Endpunkte hinweg; „Senden“ ist gesperrt, solange einer läuft.",
+            "Der gesamte Zustand (Endpunkte, Header, Zuordnungen, Zeitpläne) wird beim Projekt-Export mit gespeichert; Antworten nicht."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Nur der eigene Ursprung",
+          "content": "Die App lässt nur Abrufe vom eigenen Ursprung zu. Eine Adresse auf einem anderen Server scheitert im Browser vor dem Netz und erscheint als Status 0 mit der Fehlermeldung. Abhilfe: die Daten über den eigenen Server bereitstellen (z. B. einen Proxy)."
+        },
+        {
+          "type": "definition",
+          "term": "Sensible Daten in Headern",
+          "content": "API-Keys, Bearer Tokens und Passwörter stehen im Klartext im Projekt im Browser, damit der Abruf sie senden kann. Werte geheimer Header (Authorization, Proxy-Authorization, Cookie, X-API-Key und jeder Name mit token, secret, key oder auth) gibt der Projekt-Export nur als •••• aus, ebenso das Lesen durch einen Agenten. Ein importiertes Projekt lädt diese Werte leer; das Modul nennt die fehlenden Zugangsdaten, sie müssen neu eingetragen werden. Andere Header werden unverändert exportiert."
+        },
+        {
+          "type": "definition",
+          "term": "Ungültiges JSON",
+          "content": "Meldet der Server JSON als Inhaltstyp, liefert aber keinen gültigen Inhalt, erscheint Status 0 mit der Meldung des Parsers; der eigentliche Status der Antwort ist dann nicht zu sehen."
+        },
+        {
+          "type": "definition",
+          "term": "Falscher JSON-Pfad",
+          "content": "Tippfehler oder eine falsche Verschachtelungstiefe lassen eine Zuordnung ins Leere laufen. Den Pfad an der angezeigten Antwort eines Testabrufs prüfen."
+        },
+        {
+          "type": "definition",
+          "term": "Schreibmodus „Leeren“ mit Zeitplan",
+          "content": "Sobald Zuordnungen angewendet werden, überschreibt der Modus „Spalten vor dem Schreiben leeren“ bei jedem Abruf des Zeitplans den Spalteninhalt — alte Werte gingen verloren. Für Zeitreihen „Daten unten anhängen“ wählen. Heute wird noch nichts geschrieben."
+        },
+        {
+          "type": "definition",
+          "term": "Zeitplan läuft nur bei geöffnetem Modul",
+          "content": "Der wiederkehrende Abruf läuft im Browser-Tab. Schließt man das Modul oder den Browser, stoppt der Zeitplan. Für echte Hintergrund-Erfassung ist ein Server-Job nötig."
+        }
+      ]
+    }
+  }
+}

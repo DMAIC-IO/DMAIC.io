@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The REST API module connects Qprovement to external data sources. It performs HTTP GET requests against a URL, shows the response for inspection, and can repeat the fetch on a schedule — e.g. to regularly poll measurements from a server, a machine controller, or a cloud service. Mappings of individual fields of the response to worksheet columns can already be defined; they are stored but not applied yet — a fetch writes nothing into the worksheet today."
+        },
+        {
+          "type": "definition",
+          "term": "Endpoint",
+          "content": "A saved entry with name, URL, optional HTTP headers, column mappings, write mode and schedule. Any number of endpoints can be managed per project — e.g. one per machine or per data source."
+        },
+        {
+          "type": "definition",
+          "term": "JSON path",
+          "content": "A dot notation that addresses a specific value or array in the API response (e.g. data.measurements or result.values[*].temperature). The value behind this path is meant for the assigned column."
+        },
+        {
+          "type": "definition",
+          "term": "Mapping (JSON path → column)",
+          "content": "A list of assignments: each entry maps one JSON path to one target column in the worksheet; within an endpoint a column belongs to at most one mapping. The mappings are stored but not applied yet."
+        },
+        {
+          "type": "definition",
+          "term": "Write mode",
+          "content": "Defines how the mapped values are to be written into the columns — clear columns before writing, append data at the end, or insert data at the top. The mode is stored but not applied yet."
+        },
+        {
+          "type": "definition",
+          "term": "Schedule",
+          "content": "Optional repeating fetch in minutes or hours (1 to 999). As long as the module is open and a URL is set, it automatically calls the endpoint at the configured interval. Only one fetch runs at a time; a fetch that falls due during a running one is skipped."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Operation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Setting up an endpoint"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Use \"+\" to create a new endpoint and give it a meaningful name.",
+            "Enter the URL — typically a REST interface that returns JSON.",
+            "Add HTTP headers if needed (e.g. Authorization for API keys or bearer tokens).",
+            "Click \"Send\" to run a test fetch — the response is displayed for inspection. A running fetch can be stopped with \"Cancel\".",
+            "Identify JSON paths in the response and assign each one to a column (stored, but not applied yet).",
+            "Pick the write mode: clear, append at the end, or insert at the top (stored, but not applied yet).",
+            "Optional: enable the schedule and enter an interval in minutes or hours."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Managing endpoints"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Deleting an endpoint automatically stops a running schedule.",
+            "Only one fetch runs at a time, across endpoints too; \"Send\" is disabled while one is running.",
+            "The full state (endpoints, headers, mappings, schedules) is included in the project export; responses are not."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Own origin only",
+          "content": "The app only allows requests to its own origin. An address on another server fails in the browser before reaching the network and shows as status 0 with the error message. Remedy: serve the data through your own server (e.g. a proxy)."
+        },
+        {
+          "type": "definition",
+          "term": "Sensitive data in headers",
+          "content": "API keys, bearer tokens, and passwords are stored in clear text in the project in the browser so that the fetch can send them. Values of secret headers (Authorization, Proxy-Authorization, Cookie, X-API-Key and any name containing token, secret, key or auth) appear only as •••• in the project export and when an agent reads. An imported project loads these values empty; the module lists the missing credentials, which must be entered again. Other headers are exported unchanged."
+        },
+        {
+          "type": "definition",
+          "term": "Invalid JSON",
+          "content": "If the server declares JSON as content type but sends invalid content, status 0 appears with the parser message; the actual status of the response is not visible then."
+        },
+        {
+          "type": "definition",
+          "term": "Wrong JSON path",
+          "content": "Typos or the wrong nesting depth make a mapping point at nothing. Check the path against the response of a test fetch."
+        },
+        {
+          "type": "definition",
+          "term": "Write mode \"clear\" with a schedule",
+          "content": "Once mappings are applied, the mode \"Clear columns before writing\" overwrites the column content on every scheduled fetch — old values would be lost. For time series, choose \"Append data at the end\". Today nothing is written yet."
+        },
+        {
+          "type": "definition",
+          "term": "Schedule only runs while the module is open",
+          "content": "The recurring fetch runs in the browser tab. Closing the module or the browser stops the schedule. For real background acquisition, a server-side job is required."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "endpoints": {
+      "help": "Die gespeicherten Endpunkte in Listenreihenfolge. Jeder trägt eine Adresse für GET-Abrufe, Kopfzeilen, Spaltenzuordnungen, einen Schreibmodus und einen Zeitplan. Zuordnungen und Schreibmodus werden gespeichert, aber noch nicht angewendet: ein Abruf schreibt nichts ins Arbeitsblatt.",
+      "id": {
+        "help": "Die Kennung des Endpunkts; sie bleibt beim Umbenennen gleich."
+      },
+      "name": {
+        "help": "Der Name des Endpunkts in der Liste links; leer zeigt die Liste einen Platzhalter."
+      },
+      "url": {
+        "help": "Die Adresse, an die Senden und die automatische Abfrage eine GET-Anfrage schicken. Beliebiger Text ohne Prüfung; ist sie leer, lehnt Senden ab mit „Bitte eine URL eingeben.“. Die App lässt nur Abrufe vom eigenen Ursprung zu; eine fremde Adresse ergibt Status 0."
+      },
+      "headers": {
+        "help": "Zusätzliche Kopfzeilen der Anfrage, etwa ein Zugangsschlüssel, je mit Namen und Wert. Kopfzeilen ohne Namen werden nicht mitgeschickt. Werte geheimer Kopfzeilen (Authorization, Proxy-Authorization, Cookie, X-API-Key und jeder Name mit token, secret, key oder auth) stehen beim Lesen durch den Agenten und im Projekt-Export als ••••; ein importiertes Projekt braucht sie neu.",
+        "key": {
+          "help": "Der Name der Kopfzeile, etwa Authorization oder Accept; Leerzeichen am Rand werden beim Senden entfernt."
+        },
+        "value": {
+          "help": "Der Wert der Kopfzeile, unverändert gesendet. Der Platzhalter •••• ist kein gültiger Wert."
+        }
+      },
+      "mappings": {
+        "help": "Zuordnungen von einem Pfad in der JSON-Antwort zu einer Spalte im Arbeitsblatt. Sie werden gespeichert, aber noch nicht angewendet. Eine Spalte gehört je Endpunkt zu höchstens einer Zuordnung.",
+        "jsonPath": {
+          "help": "Der Pfad in der JSON-Antwort in Punktschreibweise, etwa data.values."
+        },
+        "columnRef": {
+          "help": "Die Zielspalte im Arbeitsblatt; leer, solange keine gewählt ist."
+        }
+      },
+      "writeMode": {
+        "help": "Wie zugeordnete Daten in die Spalten geschrieben werden sollen: Spalten vor dem Schreiben leeren, Daten unten anhängen oder Daten oben einfügen. Wird gespeichert, wirkt aber noch nicht, weil Zuordnungen noch nicht angewendet werden."
+      },
+      "schedule": {
+        "help": "Der Zeitplan der automatischen Abfrage. Er läuft nur, solange das Modul geöffnet ist und eine URL gesetzt ist; es läuft immer nur ein Abruf zur Zeit, ein fälliger Abruf während eines laufenden fällt aus.",
+        "enabled": {
+          "help": "Automatische Abfrage an oder aus. Ohne URL bleibt sie wirkungslos, bis eine URL gesetzt ist."
+        },
+        "intervalValue": {
+          "help": "Der Abstand zwischen zwei Abrufen als ganze Zahl von 1 bis 999, zusammen mit der Einheit daneben. Ein anderer Wert ist ein Fehler. Eine Änderung bei laufendem Zeitplan startet ihn neu; gesperrt, solange die automatische Abfrage aus ist."
+        },
+        "intervalUnit": {
+          "help": "Die Einheit des Abstands: Minuten oder Stunden."
+        }
+      }
+    },
+    "activeId": {
+      "help": "Der Endpunkt, den die Ansicht rechts zeigt. Ihn wählt nur die Oberfläche."
+    },
+    "scheduleWithoutUrl": {
+      "help": "Die Kennungen der Endpunkte, deren automatische Abfrage eingeschaltet ist, die aber keine URL haben; für sie läuft kein Abruf."
+    },
+    "secretHeadersEmpty": {
+      "help": "Die geheimen Kopfzeilen ohne Wert, je mit Endpunkt, Position und Namen — etwa nach dem Import eines Projekts, dessen Export die Werte maskiert hatte. Sie müssen neu eingetragen werden."
+    }
+  },
+  "actions": {
+    "addEndpoint": {
+      "help": "Legt einen neuen, leeren Endpunkt an und zeigt ihn an. Der Agent erhält die Kennung des neuen Endpunkts.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "selectEndpoint": {
+      "help": "Zeigt einen Endpunkt in der Ansicht rechts an; nur über die Oberfläche (Klick auf den Listeneintrag oder in sein Namensfeld).",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler."
+      }
+    },
+    "renameEndpoint": {
+      "help": "Benennt einen Endpunkt um; er muss nicht der angezeigte sein.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "name": "Der neue Name; der leere Text löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit endpointId und name."
+      }
+    },
+    "removeEndpoint": {
+      "help": "Entfernt einen Endpunkt samt Zeitplan. War er der angezeigte, wird der erste verbleibende angezeigt. Die Oberfläche fragt vorher nach.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit endpointId."
+      }
+    },
+    "addHeader": {
+      "help": "Header hinzufügen hängt dem Endpunkt eine leere Kopfzeile an. Der Agent erhält ihre Position in der Liste der Kopfzeilen.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit endpointId."
+      }
+    },
+    "setHeader": {
+      "help": "Setzt Namen und Wert einer Kopfzeile des Endpunkts.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "index": "Die Position der Kopfzeile, von 0 gezählt. Eine Position ohne Kopfzeile ist ein Fehler.",
+        "key": "Der Name der Kopfzeile; der leere Text löscht ihn.",
+        "value": "Der Wert der Kopfzeile; der leere Text löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit endpointId, index, key und value."
+      }
+    },
+    "removeHeader": {
+      "help": "Löscht eine Kopfzeile des Endpunkts.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "index": "Die Position der Kopfzeile, von 0 gezählt. Eine Position ohne Kopfzeile ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit endpointId und index."
+      }
+    },
+    "addMapping": {
+      "help": "Zuordnung hinzufügen hängt dem Endpunkt eine leere Zuordnung zwischen einem Pfad der Antwort und einer Spalte an. Zuordnungen werden gespeichert, aber noch nicht angewendet. Der Agent erhält ihre Position in der Liste der Zuordnungen.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit endpointId."
+      }
+    },
+    "setMapping": {
+      "help": "Setzt Pfad und Zielspalte einer Zuordnung des Endpunkts. Eine Spalte, die schon eine andere Zuordnung dieses Endpunkts belegt, ist ein Fehler.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "index": "Die Position der Zuordnung, von 0 gezählt. Eine Position ohne Zuordnung ist ein Fehler.",
+        "jsonPath": "Der Pfad in der JSON-Antwort; der leere Text löscht ihn.",
+        "ref": "Die Zielspalte als Spaltenbezug mit instanceId, sheetId und columnId, oder leer, um die Zuordnung zu lösen.",
+        "command": "Das Kommando als ein Objekt mit endpointId, index, jsonPath und ref."
+      }
+    },
+    "removeMapping": {
+      "help": "Löscht eine Zuordnung des Endpunkts.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler.",
+        "index": "Die Position der Zuordnung, von 0 gezählt. Eine Position ohne Zuordnung ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit endpointId und index."
+      }
+    },
+    "sendRequest": {
+      "params": {
+        "command": "Das Kommando als ein Objekt mit endpointId."
+      }
+    }
+  },
+  "asyncTasks": {
+    "sendRequest": {
+      "help": "Senden schickt eine GET-Anfrage an die URL des Endpunkts und wartet auf die Antwort; der Agent erhält sie als Ergebnis (Status, Statustext, Erfolg, Inhalt), die Oberfläche zeigt sie unter Antwort. Die Anfrage geht über das Netz; die App lässt nur den eigenen Ursprung zu. Ein Netzfehler oder unlesbares JSON ergibt Status 0 mit der Fehlermeldung als Inhalt. Ohne URL wird der Abruf abgelehnt. Es läuft immer nur ein Abruf zur Zeit, auch über Endpunkte hinweg.",
+      "params": {
+        "endpointId": "Die Kennung eines Endpunkts, wie read() sie in der Endpunktliste führt. Eine unbekannte Kennung ist ein Fehler."
+      },
+      "cancel": {
+        "help": "Bricht den laufenden Abruf ab; die Antwort des Endpunkts bleibt leer. Ohne Abruf geschieht nichts."
+      }
+    }
+  },
+  "types": {
+    "Response": {
+      "status": "Der HTTP-Status der Antwort, etwa 200 oder 404; 0, wenn keine Antwort lesbar war (Netzfehler, gesperrter Ursprung, unlesbares JSON).",
+      "statusText": "Der Statustext zum Status, etwa OK; Error, wenn keine Antwort lesbar war.",
+      "ok": "Ob der Status zwischen 200 und 299 liegt.",
+      "body": "Der Inhalt der Antwort: JSON mit zwei Leerzeichen eingerückt, sonst der Text; bei einem Fehler die Fehlermeldung."
+    },
+    "SecretGap": {
+      "endpointId": "Die Kennung des Endpunkts.",
+      "index": "Die Position der Kopfzeile, von 0 gezählt.",
+      "key": "Der Name der Kopfzeile."
+    }
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "a": {
+    "endpoints": [
+      {
+        "id": "ep-a1",
+        "name": "Messwerte Linie 1",
+        "url": "examples/index.json",
+        "headers": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "",
+            "value": "ohne Namen"
+          }
+        ],
+        "mappings": [
+          {
+            "jsonPath": "data.temperatur",
+            "columnRef": {
+              "instanceId": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01",
+              "sheetId": "sheet_1",
+              "columnId": "col_temp"
+            }
+          },
+          {
+            "jsonPath": "data.druck",
+            "columnRef": null
+          }
+        ],
+        "writeMode": "append",
+        "schedule": {
+          "enabled": false,
+          "intervalValue": 10,
+          "intervalUnit": "minutes"
+        },
+        "lastResponse": null,
+        "scheduleRunning": false
+      },
+      {
+        "id": "ep-a2",
+        "name": "",
+        "url": "https://api.example.com/status",
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer abc123"
+          }
+        ],
+        "mappings": [],
+        "writeMode": "prepend",
+        "schedule": {
+          "enabled": false,
+          "intervalValue": 2,
+          "intervalUnit": "hours"
+        },
+        "lastResponse": null,
+        "scheduleRunning": false
+      }
+    ],
+    "activeParams": [
+      "url",
+      "writeMode",
+      "schedule.intervalValue",
+      "schedule.intervalUnit"
+    ],
+    "pickableColumns": [
+      {
+        "key": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01|sheet_1|col_temp",
+        "name": "Temperatur"
+      },
+      {
+        "key": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01|sheet_1|col_druck",
+        "name": "Druck"
+      }
+    ],
+    "loading": false
+  },
+  "b": {
+    "endpoints": [
+      {
+        "id": "ep-b1",
+        "name": "Grenzfälle",
+        "url": "",
+        "headers": [
+          {
+            "key": "X-Count",
+            "value": ""
+          }
+        ],
+        "mappings": [
+          {
+            "jsonPath": "a",
+            "columnRef": {
+              "instanceId": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01",
+              "sheetId": "sheet_1",
+              "columnId": "col_temp"
+            }
+          },
+          {
+            "jsonPath": "b",
+            "columnRef": {
+              "instanceId": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01",
+              "sheetId": "sheet_1",
+              "columnId": "col_temp"
+            }
+          }
+        ],
+        "writeMode": "replace",
+        "schedule": {
+          "enabled": false,
+          "intervalValue": 1500,
+          "intervalUnit": "minutes"
+        },
+        "lastResponse": null,
+        "scheduleRunning": false
+      },
+      {
+        "id": "ep-b2",
+        "name": "",
+        "url": "examples/index.json",
+        "headers": [],
+        "mappings": [
+          {
+            "jsonPath": "",
+            "columnRef": null
+          }
+        ],
+        "writeMode": "replace",
+        "schedule": {
+          "enabled": false,
+          "intervalValue": 5,
+          "intervalUnit": "hours"
+        },
+        "lastResponse": null,
+        "scheduleRunning": false
+      }
+    ],
+    "activeParams": [
+      "url",
+      "writeMode",
+      "schedule.intervalValue",
+      "schedule.intervalUnit"
+    ],
+    "pickableColumns": [
+      {
+        "key": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01|sheet_1|col_temp",
+        "name": "Temperatur"
+      },
+      {
+        "key": "7a1e0c52-6b3d-4e8f-9a10-2b3c4d5e6f01|sheet_1|col_druck",
+        "name": "Druck"
+      }
+    ],
+    "loading": false
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "endpoints": {
+      "help": "The saved endpoints in list order. Each holds an address for GET requests, headers, column mappings, a write mode and a schedule. Mappings and write mode are stored but not applied yet: a fetch writes nothing into the worksheet.",
+      "id": {
+        "help": "The identifier of the endpoint; it stays the same when renaming."
+      },
+      "name": {
+        "help": "The name of the endpoint in the list on the left; when empty the list shows a placeholder."
+      },
+      "url": {
+        "help": "The address to which Send and the automatic polling send a GET request. Any text, not validated; if it is empty, Send is rejected with \"Please enter a URL.\". The app only allows requests to its own origin; a foreign address yields status 0."
+      },
+      "headers": {
+        "help": "Additional request headers, such as an access key, each with name and value. Headers without a name are not sent. Values of secret headers (Authorization, Proxy-Authorization, Cookie, X-API-Key and any name containing token, secret, key or auth) appear as •••• when the agent reads and in the project export; an imported project needs them again.",
+        "key": {
+          "help": "The name of the header, such as Authorization or Accept; surrounding spaces are removed when sending."
+        },
+        "value": {
+          "help": "The value of the header, sent unchanged. The placeholder •••• is not a valid value."
+        }
+      },
+      "mappings": {
+        "help": "Mappings from a path in the JSON response to a column in the worksheet. They are stored but not applied yet. Within an endpoint, a column belongs to at most one mapping.",
+        "jsonPath": {
+          "help": "The path in the JSON response in dot notation, such as data.values."
+        },
+        "columnRef": {
+          "help": "The target column in the worksheet; empty while none is chosen."
+        }
+      },
+      "writeMode": {
+        "help": "How mapped data is to be written into the columns: clear columns before writing, append data at the end or insert data at the top. Stored, but without effect yet, because mappings are not applied yet."
+      },
+      "schedule": {
+        "help": "The schedule of the automatic polling. It only runs while the module is open and a URL is set; only one fetch runs at a time, a fetch that falls due during a running one is skipped.",
+        "enabled": {
+          "help": "Automatic polling on or off. Without a URL it has no effect until a URL is set."
+        },
+        "intervalValue": {
+          "help": "The gap between two fetches as a whole number from 1 to 999, together with the unit next to it. Any other value is an error. Changing it while the schedule runs restarts the schedule; disabled while automatic polling is off."
+        },
+        "intervalUnit": {
+          "help": "The unit of the gap: minutes or hours."
+        }
+      }
+    },
+    "activeId": {
+      "help": "The endpoint the view on the right shows. Only the user interface selects it."
+    },
+    "scheduleWithoutUrl": {
+      "help": "The identifiers of the endpoints whose automatic polling is switched on but which have no URL; no fetch runs for them."
+    },
+    "secretHeadersEmpty": {
+      "help": "The secret headers without a value, each with endpoint, position and name — for example after importing a project whose export had masked the values. They must be entered again."
+    }
+  },
+  "actions": {
+    "addEndpoint": {
+      "help": "Adds a new, empty endpoint and shows it. The agent receives the identifier of the new endpoint.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "selectEndpoint": {
+      "help": "Shows an endpoint in the view on the right; only through the user interface (click on the list entry or into its name field).",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error."
+      }
+    },
+    "renameEndpoint": {
+      "help": "Renames an endpoint; it does not have to be the one shown.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "name": "The new name; the empty text clears it.",
+        "command": "The command as an object with endpointId and name."
+      }
+    },
+    "removeEndpoint": {
+      "help": "Removes an endpoint including its schedule. If it was the one shown, the first remaining one is shown. The user interface asks first.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "command": "The command as an object with endpointId."
+      }
+    },
+    "addHeader": {
+      "help": "Add header appends an empty header to the endpoint. The agent receives its position in the list of headers.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "command": "The command as an object with endpointId."
+      }
+    },
+    "setHeader": {
+      "help": "Sets name and value of a header of the endpoint.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "index": "The position of the header, counted from 0. A position without a header is an error.",
+        "key": "The name of the header; the empty text clears it.",
+        "value": "The value of the header; the empty text clears it.",
+        "command": "The command as an object with endpointId, index, key and value."
+      }
+    },
+    "removeHeader": {
+      "help": "Deletes a header of the endpoint.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "index": "The position of the header, counted from 0. A position without a header is an error.",
+        "command": "The command as an object with endpointId and index."
+      }
+    },
+    "addMapping": {
+      "help": "Add mapping appends an empty mapping between a path of the response and a column to the endpoint. Mappings are stored but not applied yet. The agent receives its position in the list of mappings.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "command": "The command as an object with endpointId."
+      }
+    },
+    "setMapping": {
+      "help": "Sets path and target column of a mapping of the endpoint. A column already used by another mapping of this endpoint is an error.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "index": "The position of the mapping, counted from 0. A position without a mapping is an error.",
+        "jsonPath": "The path in the JSON response; the empty text clears it.",
+        "ref": "The target column as a column reference with instanceId, sheetId and columnId, or empty to release the mapping.",
+        "command": "The command as an object with endpointId, index, jsonPath and ref."
+      }
+    },
+    "removeMapping": {
+      "help": "Deletes a mapping of the endpoint.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error.",
+        "index": "The position of the mapping, counted from 0. A position without a mapping is an error.",
+        "command": "The command as an object with endpointId and index."
+      }
+    },
+    "sendRequest": {
+      "params": {
+        "command": "The command as an object with endpointId."
+      }
+    }
+  },
+  "asyncTasks": {
+    "sendRequest": {
+      "help": "Send performs a GET request to the URL of the endpoint and waits for the response; the agent receives it as the result (status, status text, success, content), the user interface shows it under Response. The request goes over the network; the app only allows its own origin. A network error or unreadable JSON yields status 0 with the error message as content. Without a URL the fetch is rejected. Only one fetch runs at a time, across endpoints too.",
+      "params": {
+        "endpointId": "The identifier of an endpoint as read() lists it in the endpoint list. An unknown identifier is an error."
+      },
+      "cancel": {
+        "help": "Cancels the running fetch; the response of the endpoint stays empty. Without a fetch nothing happens."
+      }
+    }
+  },
+  "types": {
+    "Response": {
+      "status": "The HTTP status of the response, such as 200 or 404; 0 when no response could be read (network error, blocked origin, unreadable JSON).",
+      "statusText": "The status text for the status, such as OK; Error when no response could be read.",
+      "ok": "Whether the status is between 200 and 299.",
+      "body": "The content of the response: JSON indented by two spaces, otherwise the text; on an error the error message."
+    },
+    "SecretGap": {
+      "endpointId": "The identifier of the endpoint.",
+      "index": "The position of the header, counted from 0.",
+      "key": "The name of the header."
+    }
+  }
+}
