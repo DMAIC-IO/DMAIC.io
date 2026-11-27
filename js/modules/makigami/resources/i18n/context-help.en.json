@@ -262,6 +262,18 @@
       "params": {
         "command": "An empty object; the command takes no input."
       }
+    },
+    "toggleStepCollapsed": {
+      "help": "Collapses or expands a step card, only through the interface: via the arrow in the card header. Collapsed, the card shows only its header row; the content stays.",
+      "params": {
+        "stepId": "The id of the process step."
+      }
+    },
+    "setSettingsOpen": {
+      "help": "Opens or closes the area with the waste categories and time units, only through the interface: via the toolbar button or the cross in the area.",
+      "params": {
+        "open": "True opens the area, false closes it."
+      }
     }
   }
 }

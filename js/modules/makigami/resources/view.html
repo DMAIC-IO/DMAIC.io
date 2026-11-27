@@ -1,0 +1,468 @@
+<section class="module-container makigami" x-data="makigami">
+  <!-- data-help-key="" an Punkten, Chips, Feldern und Löschknöpfen ist gewollt: die Hilfe hängt an den Beschriftungen, Abschnittstiteln und Spaltenköpfen; ein Abzeichen je Zelle wäre Rauschen. -->
+  <div class="module-container__body">
+
+    <input
+      type="text"
+      class="makigami__title-input"
+      data-ref="title"
+      x-model="model.title"
+      :placeholder="t('titlePlaceholder')"
+      :aria-label="t('title')">
+
+    <!-- ── Einstellungen ─────────────────────────────────────── -->
+    <div class="makigami__settings-area" data-ref="settings" :hidden="!model.settingsOpen">
+      <div class="makigami__settings-head">
+        <h3 class="makigami__settings-title" x-text="t('settings')"></h3>
+        <button
+          class="makigami__head-delete makigami__head-delete--inline"
+          data-action="close-settings"
+          data-help-key="modules.makigami.fields.settingsOpen.help"
+          type="button"
+          :aria-label="t('settingsClose')"
+          x-command="setSettingsOpen"
+          data-arg-open="false">
+          <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <section class="makigami__settings-section">
+        <h4 class="makigami__settings-section-title"><span data-help-key="modules.makigami.fields.mudaCategories.help" x-text="t('settingsMudaTitle')"></span></h4>
+        <p class="makigami__settings-hint" x-text="t('settingsMudaHint')"></p>
+        <table class="dmike-table dmike-table--head-mono makigami__settings-table">
+          <thead>
+            <tr>
+              <th><span data-help-key="modules.makigami.fields.mudaCategories.code.help" x-text="t('colCode')"></span></th>
+              <th><span data-help-key="modules.makigami.fields.mudaCategories.label.help" x-text="t('colLabel')"></span></th>
+              <th><span data-help-key="modules.makigami.fields.mudaCategories.color.help" x-text="t('colColor')"></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="cat in model.mudaCategories" :key="cat.id">
+              <tr class="makigami__settings-row" :data-muda-id="cat.id">
+                <td>
+                  <input
+                    type="text"
+                    class="makigami__settings-input makigami__settings-input--code"
+                    data-action="edit-muda-code"
+                    :data-muda-id="cat.id"
+                    x-model="cat.code"
+                    maxlength="4"
+                    :aria-label="t('colCode')">
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="makigami__settings-input"
+                    data-action="edit-muda-label"
+                    :data-muda-id="cat.id"
+                    x-model="cat.label"
+                    :placeholder="mudaPlaceholder(cat)"
+                    :aria-label="t('colLabel')">
+                </td>
+                <td>
+                  <input
+                    type="color"
+                    class="makigami__settings-color"
+                    data-action="edit-muda-color"
+                    :data-muda-id="cat.id"
+                    x-model="cat.color"
+                    :aria-label="t('colColor')">
+                </td>
+                <td>
+                  <button
+                    class="makigami__head-delete makigami__head-delete--inline"
+                    data-action="delete-muda"
+                    :data-muda-id="cat.id"
+                    type="button"
+                    data-help-key=""
+                    :disabled="mudaLocked"
+                    :title="mudaRemoveTitle"
+                    :aria-label="mudaRemoveTitle"
+                    x-command="removeMudaCategory"
+                    :data-arg-muda-id="cat.id">
+                    <span class="icon makigami__remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                  </button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <button class="btn btn--sm makigami__settings-btn" data-help-key="modules.makigami.actions.addMudaCategory.help" data-action="add-muda" type="button" x-command="addMudaCategory">
+          <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
+          <span x-text="t('settingsAddMuda')"></span>
+        </button>
+      </section>
+
+      <section class="makigami__settings-section">
+        <h4 class="makigami__settings-section-title"><span data-help-key="modules.makigami.fields.timeUnits.help" x-text="t('settingsUnitsTitle')"></span></h4>
+        <p class="makigami__settings-hint" x-text="t('settingsUnitsHint')"></p>
+        <table class="dmike-table dmike-table--head-mono makigami__settings-table">
+          <thead>
+            <tr>
+              <th><span data-help-key="modules.makigami.fields.timeUnits.label.help" x-text="t('colLabel')"></span></th>
+              <th><span data-help-key="modules.makigami.fields.timeUnits.factorSeconds.help" x-text="t('colFactor')"></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(unit, i) in model.timeUnits" :key="unit.id">
+              <tr class="makigami__settings-row" :data-unit-id="unit.id">
+                <td>
+                  <input
+                    type="text"
+                    class="makigami__settings-input makigami__settings-input--code"
+                    data-action="edit-unit-label"
+                    :data-unit-id="unit.id"
+                    x-model="unit.label"
+                    maxlength="8"
+                    :aria-label="t('colLabel')">
+                </td>
+                <td>
+                  <input
+                    class="makigami__settings-input makigami__settings-input--factor"
+                    data-action="edit-unit-factor"
+                    :data-unit-id="unit.id"
+                    data-help-key=""
+                    x-field="model.timeUnits[i].factorSeconds"
+                    :aria-label="t('colFactor')">
+                </td>
+                <td>
+                  <button
+                    class="makigami__head-delete makigami__head-delete--inline"
+                    data-action="delete-unit"
+                    :data-unit-id="unit.id"
+                    type="button"
+                    data-help-key=""
+                    :disabled="unitLocked"
+                    :title="unitRemoveTitle"
+                    :aria-label="unitRemoveTitle"
+                    x-command="removeTimeUnit"
+                    :data-arg-unit-id="unit.id">
+                    <span class="icon makigami__remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                  </button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <button class="btn btn--sm makigami__settings-btn" data-help-key="modules.makigami.actions.addTimeUnit.help" data-action="add-unit" type="button" x-command="addTimeUnit">
+          <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
+          <span x-text="t('settingsAddUnit')"></span>
+        </button>
+      </section>
+
+      <div class="makigami__settings-footer">
+        <button class="btn btn--sm makigami__settings-btn" data-help-key="modules.makigami.actions.resetSettingsToDefaults.help" data-action="reset-settings" type="button"
+          x-command="resetSettingsToDefaults"><span x-text="t('settingsReset')"></span></button>
+      </div>
+    </div>
+
+    <!-- ── Matrix ────────────────────────────────────────────── -->
+    <div class="makigami__matrix-area" data-ref="matrix">
+
+      <template x-if="isEmpty">
+        <div class="makigami__matrix-empty">
+          <p><span x-text="t('rolesEmpty')"></span> <span x-text="t('stepsEmpty')"></span></p>
+          <div class="makigami__matrix-empty-actions">
+            <button class="btn btn--primary" data-help-key="modules.makigami.actions.addRole.help" data-action="add-role" type="button" x-command="addRole">
+              <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+              <span x-text="t('addRole')"></span>
+            </button>
+            <button class="btn btn--primary" data-help-key="modules.makigami.actions.addStep.help" data-action="add-step" type="button" x-command="addStep">
+              <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+              <span x-text="t('addStep')"></span>
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <template x-if="!isEmpty">
+        <div class="makigami__matrix-scroll">
+          <table class="makigami__matrix">
+            <thead>
+              <tr data-reorder-group="steps" data-reorder-closed :data-reorder-group-label="t('rolesHeaderCols')">
+                <th class="makigami__matrix-corner" scope="col">
+                  <span data-help-key="modules.makigami.fields.roles.help" x-text="t('rolesHeaderRows')"></span>
+                  <span class="icon icon--sm icon--text" data-icon="nav.arrow-down" aria-hidden="true"></span>
+                  <span> / </span>
+                  <span data-help-key="modules.makigami.fields.steps.help" x-text="t('rolesHeaderCols')"></span>
+                  <span class="icon icon--sm icon--text" data-icon="nav.arrow-right" aria-hidden="true"></span>
+                </th>
+                <template x-for="(step, i) in model.steps" :key="step.id">
+                  <th class="makigami__matrix-step-head" :class="stepHeadClass(step, i)" scope="col"
+                    :data-step-id="step.id" :data-id="step.id" :data-reorder-index="i">
+                    <div class="makigami__step-head-row">
+                      <button type="button" class="makigami__drag-handle makigami__drag-handle--step"
+                        data-drag-type="step" :data-step-id="step.id" :aria-label="t('common.reorder')">
+                        <span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span>
+                      </button>
+                      <span class="makigami__step-idx" x-text="stepBadge(i)"></span>
+                      <input
+                        type="text"
+                        class="makigami__step-title-input"
+                        :data-step-id="step.id"
+                        data-action="edit-step-title"
+                        x-model="step.title"
+                        :placeholder="t('stepTitlePlaceholder')"
+                        :aria-label="t('stepTitlePlaceholder')">
+                      <button
+                        class="makigami__head-delete"
+                        data-action="delete-step"
+                        :data-step-id="step.id"
+                        :title="t('deleteStep')"
+                        :aria-label="t('deleteStep')"
+                        type="button"
+                        data-help-key=""
+                        x-command="removeStep"
+                        :data-arg-step-id="step.id">
+                        <span class="icon makigami__remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                  </th>
+                </template>
+                <th class="makigami__matrix-add-col" scope="col">
+                  <button class="btn btn--sm btn--primary" data-help-key="modules.makigami.actions.addStep.help" data-action="add-step" type="button" x-command="addStep">
+                    <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
+                    <span x-text="t('addStep')"></span>
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody data-reorder-group="roles" data-reorder-closed :data-reorder-group-label="t('rolesHeaderRows')">
+              <template x-for="(role, ri) in model.roles" :key="role.id">
+                <tr :data-role-id="role.id" :data-id="role.id" :data-reorder-index="ri">
+                  <th class="makigami__matrix-role-head" :class="roleHeadClass(role, ri)" scope="row" :data-role-id="role.id">
+                    <div class="makigami__role-head-row">
+                      <button type="button" class="makigami__drag-handle makigami__drag-handle--role"
+                        data-drag-type="role" :data-role-id="role.id" :aria-label="t('common.reorder')">
+                        <span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span>
+                      </button>
+                      <input
+                        type="text"
+                        class="makigami__role-label-input"
+                        :data-role-id="role.id"
+                        data-action="edit-role-label"
+                        x-model="role.label"
+                        :placeholder="t('rolePlaceholder')"
+                        :aria-label="t('rolePlaceholder')">
+                      <button
+                        class="makigami__head-delete"
+                        data-action="delete-role"
+                        :data-role-id="role.id"
+                        :title="t('deleteRole')"
+                        :aria-label="t('deleteRole')"
+                        type="button"
+                        data-help-key=""
+                        x-command="removeRole"
+                        :data-arg-role-id="role.id">
+                        <span class="icon makigami__remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                  </th>
+                  <template x-for="step in model.steps" :key="step.id">
+                    <td class="makigami__matrix-cell" :data-role-id="role.id" :data-step-id="step.id">
+                      <button
+                        class="makigami__dot"
+                        :class="roleClass(step, role)"
+                        data-action="toggle"
+                        :data-role-id="role.id"
+                        :data-step-id="step.id"
+                        :aria-pressed="rolePressed(step, role)"
+                        :aria-label="t('toggleParticipation')"
+                        type="button"
+                        data-help-key=""
+                        x-command="setParticipation"
+                        :data-arg-step-id="step.id"
+                        :data-arg-role-id="role.id"
+                        :data-arg-participates="nextParticipation(step, role)"></button>
+                    </td>
+                  </template>
+                  <td class="makigami__matrix-cell makigami__matrix-cell--placeholder"></td>
+                </tr>
+              </template>
+              <tr class="makigami__matrix-add-row">
+                <th class="makigami__matrix-add-role" scope="row" :colspan="addRowSpan">
+                  <button class="btn btn--sm btn--primary" data-help-key="modules.makigami.actions.addRole.help" data-action="add-role" type="button" x-command="addRole">
+                    <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
+                    <span x-text="t('addRole')"></span>
+                  </button>
+                </th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
+
+    <!-- ── Kennzahlen ────────────────────────────────────────── -->
+    <div class="makigami__kpi-area" data-ref="kpi">
+      <div class="makigami__kpi" role="group" :aria-label="t('kpiPCE')">
+        <div class="makigami__kpi-item">
+          <span class="makigami__kpi-label" data-help-key="modules.makigami.types.MakigamiKpi.process" x-text="t('kpiProcess')"></span>
+          <span class="makigami__kpi-value" data-kpi="process" x-text="kpiTime('process')"></span>
+        </div>
+        <div class="makigami__kpi-item">
+          <span class="makigami__kpi-label" data-help-key="modules.makigami.types.MakigamiKpi.wait" x-text="t('kpiWait')"></span>
+          <span class="makigami__kpi-value" data-kpi="wait" x-text="kpiTime('wait')"></span>
+        </div>
+        <div class="makigami__kpi-item">
+          <span class="makigami__kpi-label" data-help-key="modules.makigami.types.MakigamiKpi.lead" x-text="t('kpiLead')"></span>
+          <span class="makigami__kpi-value" data-kpi="lead" x-text="kpiTime('lead')"></span>
+        </div>
+        <div class="makigami__kpi-item makigami__kpi-item--accent" :title="t('kpiPCEHint')">
+          <span class="makigami__kpi-label" data-help-key="modules.makigami.types.MakigamiKpi.pce" x-text="t('kpiPCE')"></span>
+          <span class="makigami__kpi-value" data-kpi="pce" x-text="kpiPce"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Karten ────────────────────────────────────────────── -->
+    <div class="makigami__cards-area" data-ref="cards">
+      <template x-if="model.steps.length === 0">
+        <div class="makigami__empty" x-text="t('stepsEmpty')"></div>
+      </template>
+
+      <template x-for="(step, idx) in model.steps" :key="step.id">
+        <div class="makigami__card" :data-step-id="step.id" :data-expanded="cardExpandedAttr(step)">
+          <div class="makigami__card-head">
+            <button
+              class="makigami__card-toggle"
+              data-action="toggle-expanded"
+              :data-step-id="step.id"
+              :aria-expanded="cardExpandedAttr(step)"
+              :aria-label="cardToggleLabel(step)"
+              type="button"
+              data-help-key=""
+              x-command="toggleStepCollapsed"
+              :data-arg-step-id="step.id">
+              <span class="makigami__card-chevron">
+                <span class="icon icon--sm" x-show="cardExpanded(step)" data-icon="nav.expand-down" aria-hidden="true"></span>
+                <span class="icon icon--sm" x-show="!cardExpanded(step)" data-icon="nav.expand-right" aria-hidden="true"></span>
+              </span>
+              <span class="makigami__card-index" x-text="stepBadge(idx)"></span>
+              <span class="makigami__card-title" x-text="cardTitle(step, idx)"></span>
+            </button>
+          </div>
+
+          <div class="makigami__card-body" x-show="cardExpanded(step)">
+            <div class="makigami__field">
+              <label class="makigami__field-label" data-help-key="modules.makigami.fields.steps.description.help" :for="fieldId('desc', step.id)" x-text="t('cardActivity')"></label>
+              <textarea
+                :id="fieldId('desc', step.id)"
+                class="makigami__textarea"
+                data-action="edit-description"
+                :data-step-id="step.id"
+                rows="2"
+                x-model="step.description"
+                :placeholder="t('cardActivityPlaceholder')"></textarea>
+            </div>
+
+            <div class="makigami__field">
+              <span class="makigami__field-label" data-help-key="modules.makigami.actions.setParticipation.help" x-text="t('cardRoles')"></span>
+              <div class="makigami__chips">
+                <template x-if="model.roles.length === 0">
+                  <span class="makigami__chip-empty" x-text="t('cardRolesNone')"></span>
+                </template>
+                <template x-for="role in model.roles" :key="role.id">
+                  <button
+                    class="makigami__chip"
+                    :class="roleChipClass(step, role)"
+                    data-action="toggle-role-chip"
+                    :data-role-id="role.id"
+                    :data-step-id="step.id"
+                    :aria-pressed="rolePressed(step, role)"
+                    type="button"
+                    data-help-key=""
+                    x-command="setParticipation"
+                    :data-arg-step-id="step.id"
+                    :data-arg-role-id="role.id"
+                    :data-arg-participates="nextParticipation(step, role)">
+                    <span class="makigami__chip-dot"></span>
+                    <span class="makigami__chip-label" x-text="roleChipLabel(role)"></span>
+                  </button>
+                </template>
+              </div>
+            </div>
+
+            <div class="makigami__time-row">
+              <div class="makigami__field">
+                <label class="makigami__field-label" data-help-key="modules.makigami.fields.steps.processTime.help" :for="fieldId('pt', step.id)" x-text="t('cardProcessTime')"></label>
+                <input
+                  :id="fieldId('pt', step.id)"
+                  type="text"
+                  class="makigami__time-input"
+                  :class="timeClass(step, 'processTime')"
+                  data-action="edit-process-time"
+                  :data-step-id="step.id"
+                  x-model="step.processTime"
+                  @blur="timeLeft(step.id, 'processTime')"
+                  :placeholder="t('cardTimeHint')"
+                  :aria-invalid="timeInvalidAttr(step, 'processTime')">
+                <span class="makigami__field-error" x-show="invalidTime(step, 'processTime')" x-text="t('cardTimeInvalid')"></span>
+              </div>
+              <div class="makigami__field">
+                <label class="makigami__field-label" data-help-key="modules.makigami.fields.steps.waitTime.help" :for="fieldId('wt', step.id)" x-text="t('cardWaitTime')"></label>
+                <input
+                  :id="fieldId('wt', step.id)"
+                  type="text"
+                  class="makigami__time-input"
+                  :class="timeClass(step, 'waitTime')"
+                  data-action="edit-wait-time"
+                  :data-step-id="step.id"
+                  x-model="step.waitTime"
+                  @blur="timeLeft(step.id, 'waitTime')"
+                  :placeholder="t('cardTimeHint')"
+                  :aria-invalid="timeInvalidAttr(step, 'waitTime')">
+                <span class="makigami__field-error" x-show="invalidTime(step, 'waitTime')" x-text="t('cardTimeInvalid')"></span>
+              </div>
+            </div>
+
+            <div class="makigami__field">
+              <span class="makigami__field-label" data-help-key="modules.makigami.actions.setMuda.help" x-text="t('cardMuda')"></span>
+              <div class="makigami__chips makigami__chips--muda">
+                <template x-for="cat in model.mudaCategories" :key="cat.id">
+                  <button
+                    class="makigami__chip makigami__chip--muda"
+                    :class="mudaChipClass(step, cat)"
+                    data-action="toggle-muda"
+                    :data-muda-id="cat.id"
+                    :data-step-id="step.id"
+                    :aria-pressed="mudaPressed(step, cat)"
+                    :style="chipStyle(cat)"
+                    :title="mudaLabel(cat)"
+                    type="button"
+                    data-help-key=""
+                    x-command="setMuda"
+                    :data-arg-step-id="step.id"
+                    :data-arg-muda-id="cat.id"
+                    :data-arg-marked="nextMarked(step, cat)">
+                    <span class="makigami__chip-dot"></span>
+                    <template x-if="cat.code">
+                      <span class="makigami__chip-code" x-text="cat.code"></span>
+                    </template>
+                    <span class="makigami__chip-label" x-text="mudaLabel(cat)"></span>
+                  </button>
+                </template>
+              </div>
+            </div>
+
+            <div class="makigami__field">
+              <label class="makigami__field-label" data-help-key="modules.makigami.fields.steps.notes.help" :for="fieldId('notes', step.id)" x-text="t('cardNotes')"></label>
+              <textarea
+                :id="fieldId('notes', step.id)"
+                class="makigami__textarea"
+                data-action="edit-notes"
+                :data-step-id="step.id"
+                rows="2"
+                x-model="step.notes"
+                :placeholder="t('cardNotesPlaceholder')"></textarea>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+  </div>
+</section>

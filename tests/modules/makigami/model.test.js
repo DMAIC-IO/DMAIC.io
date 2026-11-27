@@ -52,7 +52,7 @@ suite('makigami Model — Schema und Vorgaben', () => {
       'addRole', 'addStep', 'addMudaCategory', 'addTimeUnit', 'setParticipation', 'setMuda', 'setRoleLabel',
       'setStepTitle', 'setStepDescription', 'setStepNotes', 'setStepProcessTime', 'setStepWaitTime',
       'normalizeStepTime', 'setMudaCategory', 'setTimeUnit', 'removeStep', 'removeRole', 'removeMudaCategory',
-      'removeTimeUnit', 'moveStep', 'moveRole', 'resetSettingsToDefaults',
+      'removeTimeUnit', 'moveStep', 'moveRole', 'resetSettingsToDefaults', 'toggleStepCollapsed', 'setSettingsOpen',
     ]);
     assertDeepEqual(Object.keys(State.schema.invariants), ['uniqueIds', 'mudaNotEmpty', 'unitsNotEmpty', 'knownRefs', 'knownCollapsed']);
     assertDeepEqual(Object.keys(State.schema.derived), ['kpi', 'invalidTimes']);
@@ -312,6 +312,31 @@ suite('makigami Model — Umsortieren mit Endindex', () => {
   });
 });
 
+suite('makigami Model — Klappen (nur Oberfläche)', () => {
+  test('toggleStepCollapsed schaltet die id in collapsed; unbekannte id abgelehnt', () => {
+    const m = base();
+    assertDeepEqual(plain(m.collapsed), ['s2']);
+    m.toggleStepCollapsed({ stepId: 's1' });
+    assertDeepEqual(plain(m.collapsed), ['s2', 's1']);
+    m.toggleStepCollapsed({ stepId: 's2' });
+    assertDeepEqual(plain(m.collapsed), ['s1']);
+    let err = null;
+    try { m.toggleStepCollapsed({ stepId: 'weg' }); } catch (e) { err = e; }
+    assertTrue(err !== null, 'unbekannte id angenommen');
+    assertDeepEqual(plain(m.collapsed), ['s1']);
+  });
+  test('setSettingsOpen setzt das Ansichtsfeld; ohne Wahrheitswert abgelehnt', () => {
+    const m = base();
+    m.setSettingsOpen({ open: true });
+    assertEqual(m.settingsOpen, true);
+    m.setSettingsOpen({ open: false });
+    assertEqual(m.settingsOpen, false);
+    let err = null;
+    try { m.setSettingsOpen({ open: 'ja' }); } catch (e) { err = e; }
+    assertTrue(err !== null, 'Text angenommen');
+  });
+});
+
 suite('makigami Model — Ableitungen und Agentenkatalog', () => {
   const entry = schemaAgentEntry(State);
   /** @param {object} m @param {object} [options] */
@@ -340,7 +365,7 @@ suite('makigami Model — Ableitungen und Agentenkatalog', () => {
     assertDeepEqual(entry.invariants, ['uniqueIds', 'mudaNotEmpty', 'unitsNotEmpty', 'knownRefs', 'knownCollapsed']);
     assertEqual(entry.fields.kpi.derived, true);
     assertEqual(entry.fields.invalidTimes.derived, true);
-    for (const old of ['setTitle', 'setStepExpanded', 'setSettingsOpen', 'reorderSteps', 'reorderRoles']) {
+    for (const old of ['setTitle', 'setStepExpanded', 'setSettingsOpen', 'toggleStepCollapsed', 'reorderSteps', 'reorderRoles']) {
       assertEqual(Object.hasOwn(entry.actions, old), false, old);
     }
   });

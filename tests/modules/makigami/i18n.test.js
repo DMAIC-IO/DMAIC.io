@@ -65,7 +65,9 @@ suite('makigami Kontexthilfe', () => {
       assertDeepEqual(Object.keys(actions), Object.keys(State.schema.commands), lang);
       for (const [name, def] of Object.entries(State.schema.commands)) {
         assertTrue(nonEmpty(actions[name].help), `${lang} ${name}.help`);
-        assertDeepEqual(Object.keys(actions[name].params), [...Object.keys(def.params), 'command'], `${lang} ${name}`);
+        // Kommandos nur der Oberfläche (alle Parameter `agentWrite: false`) stehen nicht im Agentenkatalog: ohne Kommandoobjekt.
+        const uiOnly = Object.keys(def.params).length > 0 && Object.values(def.params).every((p) => p.agentWrite === false);
+        assertDeepEqual(Object.keys(actions[name].params), [...Object.keys(def.params), ...(uiOnly ? [] : ['command'])], `${lang} ${name}`);
       }
     }
   });

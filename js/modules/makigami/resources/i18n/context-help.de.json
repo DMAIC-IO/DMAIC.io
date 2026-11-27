@@ -262,6 +262,18 @@
       "params": {
         "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
       }
+    },
+    "toggleStepCollapsed": {
+      "help": "Klappt eine Schrittkarte zu oder auf, nur über die Oberfläche: über den Pfeil im Kopf der Karte. Zugeklappt zeigt die Karte nur ihre Kopfzeile; der Inhalt bleibt.",
+      "params": {
+        "stepId": "Die Kennung des Prozessschritts."
+      }
+    },
+    "setSettingsOpen": {
+      "help": "Öffnet oder schließt den Bereich mit den Verschwendungsarten und Zeiteinheiten, nur über die Oberfläche: über den Knopf in der Werkzeugleiste oder das Kreuz im Bereich.",
+      "params": {
+        "open": "Wahr öffnet den Bereich, falsch schließt ihn."
+      }
     }
   }
 }

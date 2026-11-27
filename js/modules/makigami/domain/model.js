@@ -12,7 +12,10 @@
  * collapsed, settingsOpen }`. Dass ids eindeutig sind, Arten und Einheiten
  * nicht fehlen und zugeklappte Karten zu vorhandenen Schritten gehören,
  * sichern die Invarianten — beim Laden repariert, beim Schreiben abgelehnt.
- * `moveStep.to` und `moveRole.to` sind ENDINDIZES.
+ * `moveStep.to` und `moveRole.to` sind ENDINDIZES. Auf- und Zuklappen der
+ * Karten und des Einstellungsbereichs sind Kommandos nur der Oberfläche
+ * (Parameter `agentWrite: false`); der Agent schreibt die Ansichtsfelder mit
+ * `instance.set`.
  */
 import {
   defineModel, command, list, object, text, number, boolean, oneOf, idOf, index,
@@ -395,6 +398,20 @@ export const State = defineModel({
         }
         this.mudaCategories = defaults;
         this.timeUnits = createDefaultTimeUnits();
+      },
+    }),
+    toggleStepCollapsed: command({
+      params: { stepId: idOf('steps', { agentWrite: false }) },
+      run({ stepId }) {
+        this.collapsed = this.collapsed.includes(stepId)
+          ? this.collapsed.filter((/** @type {string} */ id) => id !== stepId)
+          : [...this.collapsed, stepId];
+      },
+    }),
+    setSettingsOpen: command({
+      params: { open: boolean({ agentWrite: false }) },
+      run({ open }) {
+        if (this.settingsOpen !== open) this.settingsOpen = open;
       },
     }),
   },

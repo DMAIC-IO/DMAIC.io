@@ -140,6 +140,16 @@
  */
 
 /**
+ * @typedef {object} ToggleStepCollapsedCommand
+ * @property {string} stepId
+ */
+
+/**
+ * @typedef {object} SetSettingsOpenCommand
+ * @property {boolean} open
+ */
+
+/**
  * @typedef {StateFields & StateView & {
  *   addRole(cmd: AddRoleCommand): string,
  *   addStep(cmd: AddStepCommand): string,
@@ -163,7 +173,9 @@
  *   moveStep(cmd: MoveStepCommand): void,
  *   moveRole(cmd: MoveRoleCommand): void,
  *   resetSettingsToDefaults(cmd: ResetSettingsToDefaultsCommand): void,
- *   execute(cmd: ({ type: 'addRole' } & AddRoleCommand) | ({ type: 'addStep' } & AddStepCommand) | ({ type: 'addMudaCategory' } & AddMudaCategoryCommand) | ({ type: 'addTimeUnit' } & AddTimeUnitCommand) | ({ type: 'setParticipation' } & SetParticipationCommand) | ({ type: 'setMuda' } & SetMudaCommand) | ({ type: 'setRoleLabel' } & SetRoleLabelCommand) | ({ type: 'setStepTitle' } & SetStepTitleCommand) | ({ type: 'setStepDescription' } & SetStepDescriptionCommand) | ({ type: 'setStepNotes' } & SetStepNotesCommand) | ({ type: 'setStepProcessTime' } & SetStepProcessTimeCommand) | ({ type: 'setStepWaitTime' } & SetStepWaitTimeCommand) | ({ type: 'normalizeStepTime' } & NormalizeStepTimeCommand) | ({ type: 'setMudaCategory' } & SetMudaCategoryCommand) | ({ type: 'setTimeUnit' } & SetTimeUnitCommand) | ({ type: 'removeStep' } & RemoveStepCommand) | ({ type: 'removeRole' } & RemoveRoleCommand) | ({ type: 'removeMudaCategory' } & RemoveMudaCategoryCommand) | ({ type: 'removeTimeUnit' } & RemoveTimeUnitCommand) | ({ type: 'moveStep' } & MoveStepCommand) | ({ type: 'moveRole' } & MoveRoleCommand) | ({ type: 'resetSettingsToDefaults' } & ResetSettingsToDefaultsCommand)): unknown,
+ *   toggleStepCollapsed(cmd: ToggleStepCollapsedCommand): void,
+ *   setSettingsOpen(cmd: SetSettingsOpenCommand): void,
+ *   execute(cmd: ({ type: 'addRole' } & AddRoleCommand) | ({ type: 'addStep' } & AddStepCommand) | ({ type: 'addMudaCategory' } & AddMudaCategoryCommand) | ({ type: 'addTimeUnit' } & AddTimeUnitCommand) | ({ type: 'setParticipation' } & SetParticipationCommand) | ({ type: 'setMuda' } & SetMudaCommand) | ({ type: 'setRoleLabel' } & SetRoleLabelCommand) | ({ type: 'setStepTitle' } & SetStepTitleCommand) | ({ type: 'setStepDescription' } & SetStepDescriptionCommand) | ({ type: 'setStepNotes' } & SetStepNotesCommand) | ({ type: 'setStepProcessTime' } & SetStepProcessTimeCommand) | ({ type: 'setStepWaitTime' } & SetStepWaitTimeCommand) | ({ type: 'normalizeStepTime' } & NormalizeStepTimeCommand) | ({ type: 'setMudaCategory' } & SetMudaCategoryCommand) | ({ type: 'setTimeUnit' } & SetTimeUnitCommand) | ({ type: 'removeStep' } & RemoveStepCommand) | ({ type: 'removeRole' } & RemoveRoleCommand) | ({ type: 'removeMudaCategory' } & RemoveMudaCategoryCommand) | ({ type: 'removeTimeUnit' } & RemoveTimeUnitCommand) | ({ type: 'moveStep' } & MoveStepCommand) | ({ type: 'moveRole' } & MoveRoleCommand) | ({ type: 'resetSettingsToDefaults' } & ResetSettingsToDefaultsCommand) | ({ type: 'toggleStepCollapsed' } & ToggleStepCollapsedCommand) | ({ type: 'setSettingsOpen' } & SetSettingsOpenCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,
