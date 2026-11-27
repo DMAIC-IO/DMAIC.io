@@ -46,7 +46,9 @@ suite('kano-chart — kanoScatterConfig', () => {
     assertDeepEqual(series[0].sizeValues, [9]);
     assertEqual(series[0].sizeLabel, 'Mean importance');
     assertDeepEqual(series[1].sizes, [10]);
-    assertDeepEqual(series[1].sizeValues, [null]);
+    // Ohne Wichtigkeit kein Wert (das Widget nimmt nur Zahlen); der Tooltip lässt die Zeile weg.
+    assertEqual(series[1].sizeValues, undefined);
+    assertEqual(series[1].sizeLabel, 'Mean importance');
   });
 
   test('two dashed reference lines at 0.5', () => {

@@ -42,7 +42,9 @@ export function kanoScatterConfig(rows, { importance, sizeLabel }) {
     };
     if (importance) {
       s.sizes = [sizes[i]];
-      s.sizeValues = [r.importanceMean];
+      // Ohne Wichtigkeitsangabe kein Wert: der Tooltip lässt die Zeile weg
+      // (das Widget nimmt in `sizeValues` nur Zahlen).
+      if (r.importanceMean !== null) s.sizeValues = [r.importanceMean];
       s.sizeLabel = sizeLabel;
     }
     return s;
