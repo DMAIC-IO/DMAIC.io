@@ -200,7 +200,7 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   line-height: 1.4;
-  border: var(--border-width) solid var(--color-border-secondary);
+  border: var(--border-width) solid var(--chip-border);
   border-radius: 999px;
   background: transparent;
   color: var(--color-text-secondary);

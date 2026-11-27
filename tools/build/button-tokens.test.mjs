@@ -45,7 +45,7 @@ export function contrast(a, b) {
 }
 
 const TOKENS = ['--btn-secondary-bg', '--btn-secondary-bg-hover', '--btn-secondary-border', '--btn-secondary-text',
-  '--btn-danger-bg', '--btn-danger-bg-hover', '--btn-danger-text', '--chip-active-text'];
+  '--btn-danger-bg', '--btn-danger-bg-hover', '--btn-danger-text', '--chip-active-text', '--chip-border'];
 
 test('Tokens: alle Knopf-/Chip-Tokens in :root und [data-theme="dark"]', () => {
   for (const t of TOKENS) {
@@ -85,6 +85,15 @@ test('Kontrast: Sekundärknopf hebt sich dunkel von der Karte ab', () => {
   const card = resolve(DARK, 'var(--color-bg-secondary)');
   assert.ok(resolve(DARK, 'var(--btn-secondary-bg)') !== card, 'Fläche ≠ Karte');
   assert.ok(contrast(resolve(DARK, 'var(--btn-secondary-border)'), card) > 1.4);
+});
+
+test('Chip-Rahmen = Rahmen des Sekundärknopfs (border-primary), je Theme', () => {
+  for (const [name, theme] of [['hell', LIGHT], ['dunkel', DARK]]) {
+    assert.equal(resolve(theme, 'var(--chip-border)'), resolve(theme, 'var(--btn-secondary-border)'), name);
+    assert.equal(resolve(theme, 'var(--chip-border)'), resolve(theme, 'var(--color-border-primary)'), name);
+  }
+  const chip = /\.chip \{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
+  assert.match(chip, /border:[^;]*var\(--chip-border\)/);
 });
 
 test('components.css: Sperrzustand, Chip und Gefahr-Tokens', () => {
