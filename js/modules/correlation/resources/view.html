@@ -1,0 +1,221 @@
+<div class="corr dmike-split" x-data="correlation">
+  <!-- data-help-key="" an Wählerwirt, Eingaben und Knöpfen ist gewollt: Beschriftung bzw. Gruppe tragen die Anker fields.*. -->
+    <div class="corr__input dmike-split__input">
+      <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+      <div class="field-group">
+        <label data-help-key="modules.correlation.fields.colRefs.help" x-text="t('selectColumns')"></label>
+        <template x-if="showNoWorksheet">
+          <div class="corr__hint" x-text="t('noWorksheet')"></div>
+        </template>
+        <template x-if="showNoColumns">
+          <div class="corr__hint" x-text="t('noNumericColumns')"></div>
+        </template>
+        <div data-ref="col-list" data-help-key="" x-show="hasColumns" x-field="model.colRefs"></div>
+      </div>
+
+      <div class="corr__selected-info" data-ref="selected-info">
+        <span :class="selectedInfoClass" x-text="selectedInfoText"></span>
+      </div>
+
+      <div class="field-grid field-grid--3">
+        <div class="field-group">
+          <label data-help-key="modules.correlation.fields.confidenceLevel.help" x-text="t('confidenceLevel') + ' (%)'"></label>
+          <input type="text" class="field field--num" data-ref="conf-input" data-help-key="" inputmode="decimal"
+            :value="confDisplay" placeholder="95"
+            @change="commitConf($event)" @keydown="confKeydown($event)">
+        </div>
+      </div>
+
+      <div class="field-error" data-ref="error-box" x-show="hasError" x-text="errorText"></div>
+    </div>
+
+    <div class="corr__output dmike-split__output">
+      <div data-ref="results">
+
+        <!-- ── Paarweise (2 Spalten) ──────────────────────────────── -->
+        <template x-if="mode === 'pairwise'">
+          <div>
+            <div class="corr__cards">
+              <template x-for="(card, i) in cards" :key="card.method">
+                <div class="corr__card" :class="card.recClass">
+                  <span class="result-card__badge">
+                    <span x-text="t('recommended')"></span>
+                    <span class="result-card__tooltip">
+                      <template x-for="(line, li) in recTooltipLines" :key="li">
+                        <span class="corr__tooltip-line">
+                          <span class="icon icon--sm icon--text" :data-icon="line.iconName" aria-hidden="true" x-show="line.iconName"></span>
+                          <span x-text="line.text"></span>
+                        </span>
+                      </template>
+                    </span>
+                  </span>
+                  <div class="corr__card-header" :style="card.headerStyle"><span :data-help-key="card.help" x-text="card.label"></span></div>
+                  <div class="corr__card-body">
+                    <div class="corr__big-r" :style="card.headerStyle" x-text="card.rText"></div>
+                    <div class="corr__interpret-tag" :style="card.tagStyle" x-text="card.interp"></div>
+                    <template x-for="(srow, si) in card.stats" :key="si">
+                      <div class="corr__card-row">
+                        <span :data-help-key="srow.help" x-text="srow.label"></span><span x-text="srow.value"></span>
+                      </div>
+                    </template>
+                    <div class="corr__ci-wrap">
+                      <div class="corr__ci-label" x-text="ciLabel"></div>
+                      <div class="corr__ci-track">
+                        <div class="corr__ci-zero"></div>
+                        <div class="corr__ci-fill" :style="card.ciFillStyle"></div>
+                        <div class="corr__ci-point" :style="card.ciPointStyle"></div>
+                      </div>
+                      <div class="corr__ci-labels">
+                        <span x-text="card.ciLow"></span><span x-text="card.ciHigh"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionScatter')"></span></div>
+            <div class="corr__plot-wrap" data-ref="scatter-plot"
+                 x-widget="scatter-chart" x-widget-config="pairChart"
+                 x-widget-value="model.pairEdits" x-widget-legacy-edit-key="'single'"></div>
+
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionStats')"></span></div>
+            <div class="corr__stats-grid">
+              <template x-for="(grp, i) in statGroups" :key="i">
+                <div class="corr__stats-card">
+                  <div class="corr__stats-title" x-text="grp.title"></div>
+                  <template x-for="(row, ri) in grp.rows" :key="ri">
+                    <div class="corr__stat-row">
+                      <span :data-help-key="row.help" x-text="row.label"></span>
+                      <span :style="row.style" x-text="row.value"></span>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- ── Matrix (3+ Spalten) ───────────────────────────────── -->
+        <template x-if="mode === 'matrix'">
+          <div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.correlation.types.MatrixResult.matrix" x-text="t('sectionMatrix')"></span></div>
+            <div class="corr__matrix-toolbar">
+              <div class="btn-group corr__matrix-toggle" role="radiogroup" data-help-key="modules.correlation.fields.matrixMethod.help" x-set="model.matrixMethod">
+                <template x-for="opt in methodOptions" :key="opt.value">
+                  <button type="button" role="radio" class="btn--segment corr__toggle-btn" data-help-key=""
+                    :value="opt.value" :data-method="opt.value" :class="methodClass(opt.value)" x-text="opt.label"></button>
+                </template>
+              </div>
+              <div class="corr__filter-bar">
+                <span class="corr__filter-label" x-text="t('filter')"></span>
+                <label class="corr__filter-field">
+                  <span data-help-key="modules.correlation.fields.filterMinR.help">|r| ≥</span>
+                  <input class="corr__filter-input" data-ref="filter-min-r" data-help-key="" placeholder="–" x-field="model.filterMinR">
+                </label>
+                <label class="corr__filter-field">
+                  <span data-help-key="modules.correlation.fields.filterMaxP.help">p ≤</span>
+                  <input class="corr__filter-input" data-ref="filter-max-p" data-help-key="" placeholder="–" x-field="model.filterMaxP">
+                </label>
+              </div>
+            </div>
+
+            <div class="corr__matrix-wrap">
+              <table class="corr__matrix-table"
+                @mouseover="matrixHover($event)" @mouseleave="matrixHoverClear()"
+                @click="matrixClick($event)">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <template x-for="(name, j) in matrixNames" :key="j">
+                      <th class="corr__matrix-header" :data-col="j" :class="headClass(-1, j)" x-text="name"></th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(row, i) in matrixRows" :key="i">
+                    <tr :data-row="i">
+                      <th class="corr__matrix-row-header" :data-row="i" :class="headClass(i, -1)" x-text="matrixName(i)"></th>
+                      <template x-for="(cell, j) in row" :key="j">
+                        <td :class="cellClass(cell, i, j)" :style="cell.style" :title="cell.title"
+                          :data-row="i" :data-col="j">
+                          <template x-if="cell.kind === 'value'">
+                            <span class="corr__matrix-cell-inner">
+                              <span class="corr__matrix-r" x-text="cell.val"></span>
+                              <template x-if="cell.pStr">
+                                <span class="corr__matrix-p" x-text="cellPText(cell)"></span>
+                              </template>
+                              <template x-if="cell.ciStr">
+                                <span class="corr__matrix-ci" x-text="cell.ciStr"></span>
+                              </template>
+                            </span>
+                          </template>
+                          <template x-if="cell.kind === 'diag'">
+                            <span>1</span>
+                          </template>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="corr__matrix-legend">
+              <span class="corr__matrix-legend-item corr__matrix-legend-item--pos">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('strongPositive')"></span>
+              </span>
+              <span class="corr__matrix-legend-item corr__matrix-legend-item--mid">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('moderate')"></span>
+              </span>
+              <span class="corr__matrix-legend-item corr__matrix-legend-item--weak">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('weak')"></span>
+              </span>
+              <span class="corr__matrix-legend-item corr__matrix-legend-item--neg">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('strongNegative')"></span>
+              </span>
+            </div>
+
+            <template x-if="hasPlots">
+              <div class="corr__matrix-scatter-block">
+                <div class="dmike-split__output-section-header">
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionScatterMatrix')"></span></div>
+                  <button type="button" class="corr__collapse-all-btn" data-action="toggle-all-plots" data-help-key=""
+                    @click="toggleAllPlots()" x-text="collapseAllLabel"></button>
+                </div>
+                <div class="corr__matrix-plots">
+                  <template x-for="(pair, key) in filteredPairs" :key="key">
+                    <div class="corr__matrix-plot-card" :data-pair="key"
+                      :class="plotCardClass(pair)" :style="plotCardDisplay(pair)">
+                      <div class="corr__matrix-plot-header" data-action="toggle-plot"
+                        @click="togglePlot(key)">
+                        <span x-text="pair.titleText"></span>
+                        <span class="corr__matrix-plot-header-right">
+                          <span class="corr__matrix-plot-r" :style="pairRStyle(pair)" x-text="pairRText(pair)"></span>
+                          <template x-if="pair.ciLabel">
+                            <span class="corr__matrix-plot-meta" x-text="pairCiText(pair)"></span>
+                          </template>
+                          <span class="corr__matrix-plot-meta" x-text="pairPText(pair)"></span>
+                          <span class="corr__matrix-plot-chevron icon icon--sm" :data-icon="chevronIcon(pair)" aria-hidden="true"></span>
+                        </span>
+                      </div>
+                      <div class="corr__matrix-plot-area" :data-ref="'matrix-plot-' + key"
+                           x-widget="scatter-chart" x-widget-config="pair.config"
+                           x-widget-value="model.matrixEdits[key]"
+                           x-widget-legacy-edit-key="pair.legacyEditKey"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+      </div>
+    </div>
+</div>

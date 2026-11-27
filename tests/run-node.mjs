@@ -222,6 +222,7 @@ const SKIP = new Set([
   'modules/multivariate-control-chart-view.test.js',
   'modules/sample-size-view.test.js',
   'modules/attribute-test-view.test.js',
+  'modules/correlation-view.test.js',
   'modules/time-weighted-chart-view.test.js',
   'modules/rare-event-chart-view.test.js',
   'modules/short-run-chart-view.test.js',

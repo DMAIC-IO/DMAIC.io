@@ -20,6 +20,7 @@
   "noNumericColumns": "No numeric columns found in any worksheet.",
   "confidenceLevel": "Conf.",
   "confidenceInterval": "Confidence Interval",
+  "confRejected": "Enter a confidence between 50 and 99.99 %.",
   "ciShort": "CI",
   "filter": "Filter",
   "strongPositive": "Strong positive",

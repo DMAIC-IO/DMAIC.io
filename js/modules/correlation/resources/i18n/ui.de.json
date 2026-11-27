@@ -20,6 +20,7 @@
   "noNumericColumns": "Keine numerischen Spalten in den Worksheets gefunden.",
   "confidenceLevel": "Konfidenz",
   "confidenceInterval": "Konfidenzintervall",
+  "confRejected": "Konfidenz zwischen 50 und 99,99 % eingeben.",
   "ciShort": "KI",
   "filter": "Filter",
   "strongPositive": "Stark positiv",
