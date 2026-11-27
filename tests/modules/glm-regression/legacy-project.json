@@ -1,0 +1,1143 @@
+{
+  "appVersion": "1.9.6",
+  "exportedAt": "2026-11-27T12:00:00.000Z",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80,
+    "agent": {
+      "consent": {
+        "granted": true,
+        "at": "2026-06-07T12:00:00.000Z",
+        "contract": 3
+      }
+    }
+  },
+  "projects": [
+    {
+      "id": "p-legacy-glm-regression",
+      "status": "active",
+      "projectMeta": {
+        "name": "Altstand GLM",
+        "cycle": "dmaic",
+        "created": "2026-06-07T12:00:00.000Z",
+        "modified": "2026-06-07T12:00:00.000Z"
+      },
+      "phases": {
+        "data": [
+          {
+            "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+            "moduleId": "worksheet",
+            "order": 0,
+            "state": {},
+            "customName": "Lötstellen-Inspektion"
+          },
+          {
+            "instanceId": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba",
+            "moduleId": "worksheet",
+            "order": 1,
+            "state": {},
+            "customName": "Yield-Versuche"
+          }
+        ],
+        "define": [],
+        "measure": [],
+        "analyze": [
+          {
+            "instanceId": "b89de374-73ea-4784-8bb2-a118084aaf72",
+            "moduleId": "glm-regression",
+            "order": 0,
+            "state": {}
+          }
+        ],
+        "improve": [
+          {
+            "instanceId": "f4309ced-02f5-458f-a437-1d0b99aec268",
+            "moduleId": "glm-regression",
+            "order": 0,
+            "state": {}
+          }
+        ],
+        "control": [],
+        "extras": []
+      },
+      "phaseAchievement": {
+        "define": 0,
+        "measure": 0,
+        "analyze": 0,
+        "improve": 0,
+        "control": 0
+      },
+      "phaseAchievementHistory": {},
+      "models": {
+        "2c3754ea-544d-4fbb-b98e-aacb9f5887dd": {
+          "id": "2c3754ea-544d-4fbb-b98e-aacb9f5887dd",
+          "name": "Defekt — Binomial (logistisch)",
+          "experimentId": null,
+          "responseSpec": {
+            "sourceColumn": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+            "transform": "identity",
+            "aggregateOver": null
+          },
+          "family": {
+            "name": "binomial",
+            "link": "logit"
+          },
+          "terms": [
+            "Intercept",
+            "Temperatur",
+            "Druck"
+          ],
+          "termSet": [
+            "Intercept",
+            "Temperatur",
+            "Druck"
+          ],
+          "coef": [
+            -12.729004138790614,
+            0.06472620709558574,
+            -0.9874161396937433
+          ],
+          "vcov": null,
+          "sigma2": null,
+          "df": 47,
+          "rSqAdj": 0.01840957916935779,
+          "lofPValue": null,
+          "factorSpec": [
+            {
+              "name": "Temperatur",
+              "kind": "continuous",
+              "low": 220,
+              "high": 255
+            },
+            {
+              "name": "Druck",
+              "kind": "continuous",
+              "low": 2,
+              "high": 3.5
+            }
+          ],
+          "spec": {
+            "predictors": [
+              {
+                "id": "Temperatur",
+                "kind": "continuous"
+              },
+              {
+                "id": "Druck",
+                "kind": "continuous"
+              }
+            ],
+            "terms": []
+          },
+          "dataSnapshot": {
+            "X": [
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ]
+            ],
+            "y": [
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0,
+              1,
+              1,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0,
+              1,
+              0,
+              1,
+              1,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1,
+              1,
+              0,
+              1,
+              1,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "factorSpec": [
+              {
+                "name": "Temperatur",
+                "kind": "continuous",
+                "low": 220,
+                "high": 255
+              },
+              {
+                "name": "Druck",
+                "kind": "continuous",
+                "low": 2,
+                "high": 3.5
+              }
+            ],
+            "termSet": [
+              "Intercept",
+              "Temperatur",
+              "Druck"
+            ],
+            "trainedAt": "2026-06-07T12:00:00.000Z",
+            "sourceFingerprint": {
+              "experimentId": null,
+              "responseColumn": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+              "workbookHash": "453e9df7"
+            }
+          },
+          "dataHash": "453e9df7",
+          "createdFromInstanceId": "f4309ced-02f5-458f-a437-1d0b99aec268",
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        }
+      },
+      "optimizations": {},
+      "chartEdits": {
+        "f4309ced-02f5-458f-a437-1d0b99aec268": {
+          "scatter": {
+            "title": "Alt Residuen",
+            "showTitle": true
+          },
+          "scatter#2": {
+            "title": "Alt Q-Q",
+            "showTitle": true
+          },
+          "scatter#3": {
+            "title": "Alt Cook",
+            "showTitle": true
+          }
+        }
+      },
+      "dashboard": {
+        "layout": null
+      },
+      "version": "1.9.6",
+      "moduleStates": {
+        "42907b00-e8a7-4743-957f-efa88bb88055": {
+          "_schema": {
+            "name": "worksheet",
+            "version": "1.0"
+          },
+          "sheets": [
+            {
+              "id": "sheet-solder",
+              "name": "Lötstellen-Inspektion",
+              "columns": [
+                {
+                  "id": "c-temp",
+                  "name": "Temperatur",
+                  "shortName": "T",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-press",
+                  "name": "Druck",
+                  "shortName": "p",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-defect",
+                  "name": "Defekt",
+                  "shortName": "Y",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                }
+              ],
+              "formulas": {},
+              "data": {
+                "rowCount": 50,
+                "columns": [
+                  [
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225
+                  ],
+                  [
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2
+                  ],
+                  [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    1,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ],
+          "sheetCounter": 1,
+          "activeSheetId": "sheet-solder",
+          "gridView": {}
+        },
+        "f4309ced-02f5-458f-a437-1d0b99aec268": {
+          "colRefs": [
+            {
+              "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+              "sheetId": "sheet-solder",
+              "columnId": "c-temp"
+            },
+            {
+              "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+              "sheetId": "sheet-solder",
+              "columnId": "c-press"
+            }
+          ],
+          "yKey": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+          "trialsKey": null,
+          "successClass": null,
+          "method": "binomial",
+          "confLevel": 0.95,
+          "alpha": 0.05,
+          "cutoff": 0.4,
+          "activeTab": "diagnostics",
+          "exampleWorksheetId": "42907b00-e8a7-4743-957f-efa88bb88055",
+          "savedModelId": "2c3754ea-544d-4fbb-b98e-aacb9f5887dd",
+          "savedModelName": "Defekt — Binomial (logistisch)",
+          "result": {
+            "converged": true,
+            "iterations": 3,
+            "coefficients": [
+              -12.729004138790614,
+              0.06472620709558574,
+              -0.9874161396937433
+            ],
+            "stdErrors": [
+              20.87891068217985,
+              0.11403219114810252,
+              2.328734437593355
+            ],
+            "zValues": [
+              -0.6096584411204373,
+              0.5676134646182565,
+              -0.42401405834586897
+            ],
+            "pValues": [
+              0.5420879871073505,
+              0.5702973922340853,
+              0.6715556376326477
+            ],
+            "ciLower": [
+              -53.65091714528335,
+              -0.15877278081306928,
+              -5.551651770614586
+            ],
+            "ciUpper": [
+              28.192908867702123,
+              0.28822519500424076,
+              3.5768194912270994
+            ],
+            "confLevel": 0.95,
+            "oddsRatios": [
+              {
+                "or": 2.9639013352390225e-06,
+                "lower": 5.008442991093553e-24,
+                "upper": 1753980456731.4424
+              },
+              {
+                "or": 1.0668668838102677,
+                "lower": 0.8531901981294255,
+                "upper": 1.3340576934269586
+              },
+              {
+                "or": 0.37253803473878866,
+                "lower": 0.0038810413560817583,
+                "upper": 35.759625985319
+              }
+            ],
+            "rateRatios": null,
+            "deviance": 68.53990094629452,
+            "nullDeviance": 69.23469670899615,
+            "logLikelihood": -34.26995047314726,
+            "aic": 74.53990094629452,
+            "bic": 80.27596996257896,
+            "pseudoR2": {
+              "mcfadden": 0.010035369485649093,
+              "coxSnell": 0.013799812683048973,
+              "nagelkerke": 0.01840957916935779
+            },
+            "dispersion": 1,
+            "terms": [
+              "Intercept",
+              "Temperatur",
+              "Druck"
+            ],
+            "family": {
+              "name": "binomial",
+              "link": "logit",
+              "theta": null
+            },
+            "n": 50,
+            "p": 3,
+            "separationDetected": false,
+            "separationStrong": false,
+            "thetaEstimated": false,
+            "thetaConverged": true,
+            "thetaReason": null,
+            "_yName": "Defekt",
+            "_xNames": [
+              "Temperatur",
+              "Druck"
+            ],
+            "_quasiActivated": false,
+            "_successClassInfo": {
+              "success": 1,
+              "failure": 0
+            },
+            "_vifs": [
+              21.377344545963926,
+              21.377344545963926
+            ],
+            "_roc": {
+              "fpr": [
+                0,
+                0.11538461538461539,
+                0.23076923076923078,
+                0.3076923076923077,
+                0.4230769230769231,
+                0.5769230769230769,
+                0.7307692307692307,
+                0.7692307692307693,
+                1
+              ],
+              "tpr": [
+                0,
+                0.125,
+                0.25,
+                0.4166666666666667,
+                0.5416666666666666,
+                0.6666666666666666,
+                0.75,
+                0.9583333333333334,
+                1
+              ],
+              "thresholds": [
+                null,
+                0.5793783985662933,
+                0.5415708590706315,
+                0.50327849787275,
+                0.4991477873696754,
+                0.46494763813371287,
+                0.460839653828784,
+                0.42298858518740273,
+                0.38602054881323555
+              ],
+              "auc": 0.5705128205128205
+            },
+            "_classTable": {
+              "tp": 23,
+              "fp": 20,
+              "tn": 6,
+              "fn": 1,
+              "sensitivity": 0.9583333333333334,
+              "specificity": 0.23076923076923078,
+              "accuracy": 0.58,
+              "precision": 0.5348837209302325
+            },
+            "_hl": {
+              "statistic": 7.153200116779996,
+              "df": 6,
+              "pValue": 0.306911545219814,
+              "groups": 8
+            },
+            "_epv": 12,
+            "_slim": true
+          }
+        },
+        "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba": {
+          "_schema": {
+            "name": "worksheet",
+            "version": "1.0"
+          },
+          "sheets": [
+            {
+              "id": "sheet-logistic",
+              "name": "Yield-Versuche",
+              "columns": [
+                {
+                  "id": "c-temp",
+                  "name": "Temperatur",
+                  "shortName": "T",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-trials",
+                  "name": "Versuche",
+                  "shortName": "n",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-success",
+                  "name": "Erfolge",
+                  "shortName": "k",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-anteil",
+                  "name": "Anteil",
+                  "shortName": "p",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                }
+              ],
+              "formulas": {},
+              "data": {
+                "rowCount": 8,
+                "columns": [
+                  [
+                    140,
+                    150,
+                    160,
+                    170,
+                    175,
+                    180,
+                    190,
+                    200
+                  ],
+                  [
+                    50,
+                    50,
+                    50,
+                    50,
+                    50,
+                    50,
+                    50,
+                    50
+                  ],
+                  [
+                    19,
+                    18,
+                    28,
+                    30,
+                    36,
+                    32,
+                    38,
+                    45
+                  ],
+                  [
+                    0.38,
+                    0.36,
+                    0.56,
+                    0.6,
+                    0.72,
+                    0.64,
+                    0.76,
+                    0.9
+                  ]
+                ]
+              }
+            }
+          ],
+          "sheetCounter": 1,
+          "activeSheetId": "sheet-logistic",
+          "gridView": {}
+        },
+        "b89de374-73ea-4784-8bb2-a118084aaf72": {
+          "colRefs": [
+            {
+              "instanceId": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba",
+              "sheetId": "sheet-logistic",
+              "columnId": "c-temp"
+            }
+          ],
+          "yKey": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba|sheet-logistic|c-anteil",
+          "trialsKey": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba|sheet-logistic|c-trials",
+          "successClass": null,
+          "method": "binomial",
+          "confLevel": 0.9,
+          "cutoff": 0.5,
+          "activeTab": "model",
+          "exampleWorksheetId": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba",
+          "savedModelId": null,
+          "savedModelName": null,
+          "result": {
+            "converged": true,
+            "iterations": 5,
+            "coefficients": [
+              -6.358740616457638,
+              0.04036664123979414
+            ],
+            "stdErrors": [
+              1.0434841698711057,
+              0.006183421710408099
+            ],
+            "zValues": [
+              -6.093758583077584,
+              6.528204468384865
+            ],
+            "pValues": [
+              1.1071095151748978e-09,
+              6.689626630418388e-11
+            ],
+            "ciLower": [
+              -8.075119336039755,
+              0.03019581762369896
+            ],
+            "ciUpper": [
+              -4.642361896875521,
+              0.050537464855889315
+            ],
+            "confLevel": 0.9,
+            "oddsRatios": [
+              {
+                "or": 0.0017315460198370394,
+                "lower": 0.00031118613000692967,
+                "upper": 0.00963491405849845
+              },
+              {
+                "or": 1.0411924483094894,
+                "lower": 1.0306563348691284,
+                "upper": 1.0518362695110821
+              }
+            ],
+            "rateRatios": null,
+            "deviance": 5.014938841478276,
+            "nullDeviance": 53.27130023036167,
+            "logLikelihood": -19.10469250788496,
+            "aic": 42.20938501576992,
+            "bic": 42.36826809912959,
+            "pseudoR2": {
+              "mcfadden": 0.5580980144790193,
+              "coxSnell": 0.9975994206468414,
+              "nagelkerke": 0.9976196050265752
+            },
+            "dispersion": 1,
+            "terms": [
+              "Intercept",
+              "Temperatur"
+            ],
+            "family": {
+              "name": "binomial",
+              "link": "logit",
+              "theta": null
+            },
+            "n": 8,
+            "p": 2,
+            "separationDetected": false,
+            "separationStrong": false,
+            "thetaEstimated": false,
+            "thetaConverged": true,
+            "thetaReason": null,
+            "_yName": "Anteil",
+            "_xNames": [
+              "Temperatur"
+            ],
+            "_quasiActivated": false,
+            "_roc": {
+              "fpr": [
+                0,
+                0.032467532467532464,
+                0.11038961038961038,
+                0.22727272727272727,
+                0.3181818181818182,
+                0.44805194805194803,
+                0.5909090909090909,
+                0.7987012987012987,
+                1
+              ],
+              "tpr": [
+                0,
+                0.18292682926829268,
+                0.33739837398373984,
+                0.46747967479674796,
+                0.6138211382113821,
+                0.7357723577235772,
+                0.8495934959349594,
+                0.9227642276422764,
+                1
+              ],
+              "thresholds": [
+                null,
+                0.847430374773428,
+                0.7876672683384015,
+                0.712438082983514,
+                0.66938871277861,
+                0.6233022458764502,
+                0.5249597315985425,
+                0.4246423821817496,
+                0.330171201469304
+              ],
+              "auc": 0.6979727589483687
+            },
+            "_classTable": {
+              "tp": 209,
+              "fp": 91,
+              "tn": 63,
+              "fn": 37,
+              "sensitivity": 0.8495934959349594,
+              "specificity": 0.4090909090909091,
+              "accuracy": 0.68,
+              "precision": 0.6966666666666667
+            },
+            "_hl": {
+              "statistic": 4.935233476065935,
+              "df": 6,
+              "pValue": 0.5521464168823422,
+              "groups": 8
+            },
+            "_epv": 154,
+            "_slim": true
+          }
+        }
+      }
+    }
+  ]
+}

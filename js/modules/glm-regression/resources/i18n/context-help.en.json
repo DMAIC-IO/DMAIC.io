@@ -1,0 +1,235 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "colRefs": {
+      "help": "The predictors X in the order chosen, label X variables. Columns of type number, currency, percent or text with at least one value can be chosen; text columns become categorical predictors with one dummy row per level. If the response or the trials column is among the X, it is cleared. If a chosen column is deleted, it stays chosen and nothing is fitted."
+    },
+    "yRef": {
+      "help": "The response Y, label Y variable, without the columns chosen as X. Without a response there is no result."
+    },
+    "trialsRef": {
+      "help": "The column with the number of trials per row for grouped binomial data, label Trials (optional); the response is then read as a success proportion. If Y is set to this column, it is cleared. Empty when Y is used directly."
+    },
+    "successClass": {
+      "help": "For a binary response the level counted as success (1); empty means the larger of the two levels. The button next to the success class swaps them and fits again."
+    },
+    "method": {
+      "help": "The method, section Method: auto-detect, binary logistic, Poisson or negative binomial. Auto-detect picks binomial for exactly two levels of the response, for non-negative integers negative binomial when variance/mean exceeds 2, Poisson otherwise; proportions between 0 and 1 are fitted binomially and need a column with the number of trials."
+    },
+    "confLevel": {
+      "help": "The confidence level as a fraction between 0 and 1; the input shows it in percent. It sets the confidence limits of the coefficients, the ratios and the prediction. α follows along: it is always 1 minus this value. A change fits again."
+    },
+    "alpha": {
+      "help": "The significance level α as a fraction between 0 and 1; the input shows it in percent. The confidence level follows along: it is always 1 minus this value. A change fits again."
+    },
+    "cutoff": {
+      "help": "The classification cutoff between 0 and 1, default 0.5, on the slider in the tab ROC / classification: an observation counts as predicted 1 when its estimated probability reaches at least the cutoff. A new value only recounts the confusion table; the model is not refitted. Applies only to a binomial result."
+    },
+    "savedModelId": {
+      "help": "The id of the fit saved as a model; “Update model” keeps it. Empty while no model is saved."
+    },
+    "savedModelName": {
+      "help": "The name of the saved model as response optimization shows it; default “<response> — <distribution family>”."
+    },
+    "modelRecord": {
+      "help": "The snapshot of the saved model: family, terms, coefficients, factor ranges, model specification and training data. It stays when the data change afterwards, until the model is saved again."
+    },
+    "activeTab": {
+      "help": "The tab shown: model, diagnostics, ROC / classification or prediction. ROC exists only for a binomial result; without it, model applies."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example sheet this module was loaded from; empty when it does not come from an example."
+    },
+    "residualsEdits": {
+      "help": "The settings from the chart editor of the residuals versus fitted values chart; empty while nothing is changed."
+    },
+    "qqEdits": {
+      "help": "The settings from the chart editor of the normal Q-Q plot of the deviance residuals; empty while nothing is changed."
+    },
+    "cooksEdits": {
+      "help": "The settings from the chart editor of the Cook’s distance chart; empty while nothing is changed."
+    },
+    "rocEdits": {
+      "help": "The settings from the chart editor of the ROC curve; empty while nothing is changed."
+    },
+    "result": {
+      "help": "The fitted generalized linear model as numbers: family, goodness-of-fit figures, coefficient table, warnings and equation. Empty without X or Y and when the fit fails; the error then names the reason."
+    },
+    "error": {
+      "help": "Why there is no result — too few rows, no binary response, invalid proportions or trial counts, no convergence, a deleted column — with the text the error box shows. Empty without a reason."
+    },
+    "detection": {
+      "help": "The automatically chosen family with its reason, as the hint below the method shows it. Empty with a fixed method or with fewer than three rows."
+    },
+    "successClassInfo": {
+      "help": "For a binary response without trials the level counted as success and the other one, row success class. Empty otherwise."
+    },
+    "classification": {
+      "help": "The confusion table at the cutoff with sensitivity, specificity, accuracy and precision, tab ROC / classification. Empty without a binomial result."
+    },
+    "predictionTerms": {
+      "help": "The terms a prediction takes, in model order, dummy terms of categorical predictors included. Empty without a result."
+    },
+    "effectiveTab": {
+      "help": "The tab that is shown: the chosen one, but model instead of ROC when the result is not binomial."
+    },
+    "activeParams": {
+      "help": "The settings that apply in the current state; the cutoff only for a binomial result."
+    },
+    "canSaveModel": {
+      "help": "True when saving as a model is possible now: a converged fit with data."
+    },
+    "savedModel": {
+      "help": "The saved model with id and name, as response optimization reads it: family, terms, coefficients, factor ranges, model specification and training data. Empty while no model is saved."
+    }
+  },
+  "actions": {
+    "setConfLevel": {
+      "help": "Sets the confidence level as a fraction; α becomes 1 minus this value. The analysis is then recomputed.",
+      "params": {
+        "value": "The confidence level as a fraction strictly between 0 and 1, so 0.95 rather than 95.",
+        "command": "The command as an object with value."
+      }
+    },
+    "setAlpha": {
+      "help": "Sets the significance level α as a fraction; the confidence level becomes 1 minus this value. The analysis is then recomputed.",
+      "params": {
+        "value": "α as a fraction strictly between 0 and 1, so 0.05 rather than 5.",
+        "command": "The command as an object with value."
+      }
+    },
+    "swapSuccess": {
+      "help": "For a binary response swaps which level counts as success and fits again; the coefficients change sign and the odds ratios become their reciprocals. Without a binary result it refuses.",
+      "params": {
+        "command": "The command as an empty object; it takes no details."
+      }
+    },
+    "predict": {
+      "help": "Computes the predicted response with confidence limits for term values, as a probability for binomial and as an expected count for Poisson and negative binomial, and enters the values into the prediction fields. The limits are missing when the fit does not carry them; if a term is left without a value, there is no prediction. The prediction belongs to the view and is not saved.",
+      "params": {
+        "values": "One number per term from read().predictionTerms; categorical predictors as 0 or 1 per dummy term.",
+        "command": "The command as an object with values."
+      }
+    },
+    "saveAsModel": {
+      "params": {
+        "command": "The run as an empty object; it takes no details."
+      }
+    }
+  },
+  "asyncTasks": {
+    "saveAsModel": {
+      "help": "Saves the displayed fit as the model of this instance: family, terms, coefficients, factor ranges and training data. A model saved before is updated and keeps its id and name. Other modules, such as response optimization, read it from here. Without a converged fit the run refuses; the agent receives the id of the model.",
+      "cancel": {
+        "help": "Cancels saving as long as nothing has been written yet."
+      }
+    }
+  },
+  "types": {
+    "Result": {
+      "family": "The family actually fitted, with link function and, for negative binomial, the estimated θ; with auto-detection the family it chose.",
+      "quasi": "Whether quasi-Poisson is active: if the Poisson fit shows χ²/df above 1.5, it is refitted with the dispersion φ = Pearson χ²/df; the coefficients stay, standard errors and confidence intervals are widened by √φ, and a warning gives φ.",
+      "autoReason": "The reason for the automatic choice. It appears as a hint below the method while “Auto-Detect (recommended)” is chosen; the result holds the key of that hint text. Possible reasons: exactly two levels, count data, overdispersed count data, proportions without trials, or non-negative values as the fallback. Empty when a method is chosen explicitly.",
+      "n": "Number of rows used, row n: rows with finite values in Y, all X and, where given, the trials.",
+      "iterations": "Number of IRLS iterations until convergence, row IRLS Iterations; a high count points to a difficult fit such as separation.",
+      "aic": "Akaike information criterion, tile AIC: −2ℓ + 2k with the log-likelihood ℓ and k parameters (coefficients, plus θ for negative binomial). Smaller is better; only for comparing models of the same response.",
+      "bic": "Bayesian information criterion, tile BIC: −2ℓ + ln(n) · k; penalises extra parameters more than AIC. Smaller is better.",
+      "deviance": "Residual deviance: twice the log-likelihood gap to the saturated model. Compared with the null deviance it shows how much the predictors explain.",
+      "nullDeviance": "Null deviance: the deviance of the intercept-only model, the reference for residual deviance and pseudo-R².",
+      "logLikelihood": "The maximised log-likelihood ℓ of the model; the basis of AIC, BIC and the pseudo-R².",
+      "pseudoR2": "The three pseudo coefficients of determination McFadden, Nagelkerke and Cox-Snell, which compare the model's log-likelihood with that of the intercept-only model.",
+      "coefficients": "The coefficient table, one row per term, Intercept first, then the predictors; a categorical predictor gets one dummy row per level.",
+      "auc": "Area under the ROC curve, tile AUC, between 0 and 1: 0.5 is guessing, 1 a perfect separation. The tile is green from 0.8, yellow from 0.6, red below. Only with a binomial result, otherwise empty.",
+      "hosmerLemeshow": "Hosmer-Lemeshow goodness-of-fit test: the observations are split into 10 groups by estimated probability (fewer with little data, at least 4) and observed and expected events are compared by χ² with groups − 2 degrees of freedom; a small p-value speaks against the fit. With fewer than 20 observations (trials for grouped data) the test is skipped and then shows statistic 0 and p = 1. Only with a binomial result, otherwise empty.",
+      "overdispersionRatio": "χ²/df (Overdispersion): Pearson χ² divided by n − p; the same value as the ratio of the overdispersion check. Above 1.5 the Poisson fit counts as overdispersed. Only for Poisson, otherwise empty.",
+      "overdispersion": "The overdispersion check on the Diagnostics tab with Pearson χ², degrees of freedom and their ratio. Only for Poisson, otherwise empty.",
+      "vif": "Variance inflation factors of the predictors, table VIF, same order as vifTerms; the first value belongs to the first predictor after the intercept, i.e. the second row of the coefficient table. Above 5 the cell is marked, above 10 a warning is shown. Only with two or more predictor columns, otherwise empty; a single value is empty when it cannot be computed.",
+      "vifTerms": "The terms belonging to the values in vif, same order, column “Term” of the VIF table: the predictors after the intercept, i.e. the coefficient terms from the second row on. Empty when no VIF table appears.",
+      "warnings": "The warnings above the output, for example on separation, few events, slow convergence, overdispersion or quasi-Poisson. The texts are in the language of the interface.",
+      "warningDetails": "The warnings as a code with the inserted numbers, in the same order as warnings; the code is the text key, for example warnFewEvents with epv.",
+      "equation": "The model equation as text, as shown under Model Equation: logit(p) for binomial, log(μ) for Poisson and negative binomial, equal to the intercept plus coefficient times term, rounded to four decimals."
+    },
+    "Warning": {
+      "code": "The id of the warning, equal to the text key.",
+      "values": "The numbers behind the notice, by name, unrounded; shares as a value between 0 and 1; not computable stays empty."
+    },
+    "Family": {
+      "name": "The distribution family: binomial, poisson or negbin; the row Family shows the translated name.",
+      "link": "The link function that connects the expected value to the linear predictor: logit for binomial, log for Poisson and negative binomial.",
+      "theta": "The estimated shape parameter θ, row θ (dispersion), of the negative binomial distribution, variance = μ + μ²/θ; a small θ means strong overdispersion. Only for negative binomial, otherwise empty."
+    },
+    "PseudoR2": {
+      "mcfadden": "McFadden R², tile McFadden R²: 1 − ℓ/ℓ₀ with the log-likelihood ℓ of the model and ℓ₀ of the intercept-only model. The tile is green from 0.4, yellow from 0.2, red below; values from 0.2 to 0.4 already count as a good fit.",
+      "nagelkerke": "Nagelkerke R², tile Nagelkerke R²: the Cox-Snell R² divided by its largest possible value 1 − exp(2ℓ₀/n), so that it reaches 1. The tile is green from 0.8, yellow from 0.5, red below.",
+      "coxSnell": "Cox-Snell R²: 1 − exp(−2/n · (ℓ − ℓ₀)); does not always reach 1 even for a perfect fit."
+    },
+    "GlmCoefficient": {
+      "term": "The term name: Intercept, a column name, or for categorical predictors one dummy term per level.",
+      "estimate": "The estimated coefficient b on the link scale (logit or log). The Coefficient column also shows the confidence interval next to it, from the lower to the upper limit.",
+      "se": "Standard error of the coefficient, column SE, from the inverse Fisher information; widened by √φ under quasi-Poisson.",
+      "z": "Wald z, column z: the coefficient divided by its standard error.",
+      "p": "Two-sided p-value of the Wald test of b = 0, 2 · (1 − Φ(|z|)); below α the term counts as significant and is highlighted.",
+      "ciLower": "Lower confidence limit b − z · SE, with z the (1 + confidence level)/2 quantile of the normal distribution.",
+      "ciUpper": "Upper confidence limit b + z · SE, with the same z as the lower limit.",
+      "ratio": "The ratio exp(b) with confidence limits, column OR for binomial (odds ratio) or RR for Poisson and negative binomial (rate ratio): the factor by which the odds or the rate change per unit of the predictor. Empty for the intercept."
+    },
+    "Ratio": {
+      "value": "The ratio exp(b): odds ratio for binomial, rate ratio for Poisson and negative binomial; 1 means no effect.",
+      "lower": "Lower limit of the ratio, exp of the coefficient's lower confidence limit.",
+      "upper": "Upper limit of the ratio, exp of the coefficient's upper confidence limit."
+    },
+    "HosmerLemeshow": {
+      "statistic": "The χ² statistic of the Hosmer-Lemeshow test, the sum over the groups of (observed − expected)² divided by the expected variance; 0 when the test was skipped.",
+      "pValue": "p-value of the Hosmer-Lemeshow test from the χ² distribution with groups − 2 degrees of freedom; below α it speaks against the fit. 1 when the test was skipped."
+    },
+    "Overdispersion": {
+      "pearsonChi2": "Pearson χ²: the sum of the squared Pearson residuals of the Poisson fit, row Pearson χ².",
+      "df": "Degrees of freedom, row df: n − p, the number of observations minus the number of coefficients.",
+      "ratio": "The ratio χ²/df; under Poisson it should be close to 1.",
+      "overdispersed": "Whether overdispersion is detected: true when χ²/df is above 1.5; the hint towards negative binomial regression then appears and quasi-Poisson becomes active. Above 3 the computation counts it as severe, but that is not shown separately."
+    },
+    "Classification": {
+      "cutoff": "The cutoff of the confusion table: predicted 1 when the estimated probability reaches at least the cutoff, otherwise predicted 0.",
+      "tp": "True positives: actual 1 and predicted 1; for grouped data the trials are counted.",
+      "fn": "False negatives: actual 1 but predicted 0; for grouped data the trials are counted.",
+      "fp": "False positives: actual 0 but predicted 1; for grouped data the trials are counted.",
+      "tn": "True negatives: actual 0 and predicted 0; for grouped data the trials are counted.",
+      "sensitivity": "Sensitivity: true positives / (true positives + false negatives), the share of actual ones that are detected; 0 when there are none.",
+      "specificity": "Specificity: true negatives / (true negatives + false positives), the share of actual zeros that are detected; 0 when there are none.",
+      "accuracy": "Accuracy: (true positives + true negatives) / all, the share of correctly classified observations.",
+      "precision": "Precision: true positives / (true positives + false positives), the share of real ones among those predicted as 1; 0 when nothing is predicted as 1."
+    },
+    "FitError": {
+      "reason": "The reason as key: too few rows, too few rows for the parameters, no binary response, proportions outside [0, 1], invalid trial counts, a computation error, no convergence or a deleted column.",
+      "params": "The details of the reason, such as the message of a computation error.",
+      "message": "The reason as text in the app language, as the error box shows it."
+    },
+    "Detection": {
+      "reason": "The reason of the automatic choice as key: exactly two levels, count data, count data with overdispersion, proportions without trials or non-negative values as fallback.",
+      "family": "The chosen family: binomial, poisson or negbin.",
+      "message": "The hint below the method as text in the app language."
+    },
+    "SuccessClassInfo": {
+      "success": "The level of the response counted as success (1).",
+      "failure": "The other level, counted as failure (0)."
+    },
+    "SavedModel": {
+      "id": "The id of the model.",
+      "name": "The name of the model.",
+      "experimentId": "The DoE plan the model came from; empty for the GLM regression.",
+      "responseSpec": "The source of the response and its variant.",
+      "family": "The distribution family with link function and, for negative binomial, θ.",
+      "terms": "The terms including the intercept.",
+      "termSet": "The terms including the intercept, as response optimization reads them.",
+      "coef": "The coefficients in term order, on the link scale.",
+      "df": "The residual degrees of freedom n − p.",
+      "rSqAdj": "The Nagelkerke R² of the fit.",
+      "factorSpec": "Per X the range of the training data, for text columns the levels.",
+      "spec": "The model specification: the predictors.",
+      "dataSnapshot": "The training data with time and origin.",
+      "dataHash": "The checksum of the training data.",
+      "createdAt": "Time of the first save.",
+      "updatedAt": "Time of the last save."
+    }
+  }
+}

@@ -1,0 +1,883 @@
+{
+  "f4309ced-02f5-458f-a437-1d0b99aec268": {
+    "colRefs": [
+      {
+        "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+        "sheetId": "sheet-solder",
+        "columnId": "c-temp"
+      },
+      {
+        "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+        "sheetId": "sheet-solder",
+        "columnId": "c-press"
+      }
+    ],
+    "yKey": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+    "trialsKey": null,
+    "method": "binomial",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.4,
+    "successClass": {
+      "success": 1,
+      "failure": 0
+    },
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha",
+      "cutoff"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "binomial",
+        "link": "logit",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 50,
+      "iterations": 3,
+      "aic": 74.53990094629452,
+      "bic": 80.27596996257896,
+      "deviance": 68.53990094629452,
+      "nullDeviance": 69.23469670899615,
+      "logLikelihood": -34.26995047314726,
+      "pseudoR2": {
+        "mcfadden": 0.010035369485649093,
+        "nagelkerke": 0.01840957916935779,
+        "coxSnell": 0.013799812683048973
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -12.729004138790614,
+          "se": 20.87891068217985,
+          "z": -0.6096584411204373,
+          "p": 0.5420879871073505,
+          "ciLower": -53.65091714528335,
+          "ciUpper": 28.192908867702123,
+          "ratio": null
+        },
+        {
+          "term": "Temperatur",
+          "estimate": 0.06472620709558574,
+          "se": 0.11403219114810252,
+          "z": 0.5676134646182565,
+          "p": 0.5702973922340853,
+          "ciLower": -0.15877278081306928,
+          "ciUpper": 0.28822519500424076,
+          "ratio": {
+            "value": 1.0668668838102677,
+            "lower": 0.8531901981294255,
+            "upper": 1.3340576934269586
+          }
+        },
+        {
+          "term": "Druck",
+          "estimate": -0.9874161396937433,
+          "se": 2.328734437593355,
+          "z": -0.42401405834586897,
+          "p": 0.6715556376326477,
+          "ciLower": -5.551651770614586,
+          "ciUpper": 3.5768194912270994,
+          "ratio": {
+            "value": 0.37253803473878866,
+            "lower": 0.0038810413560817583,
+            "upper": 35.759625985319
+          }
+        }
+      ],
+      "auc": 0.5705128205128205,
+      "hosmerLemeshow": {
+        "statistic": 7.153200116779996,
+        "pValue": 0.306911545219814
+      },
+      "overdispersionRatio": null,
+      "overdispersion": null,
+      "vif": [
+        21.377344545963926,
+        21.377344545963926
+      ],
+      "vifTerms": [
+        "Temperatur",
+        "Druck"
+      ],
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "logit(p) = -12.7290 + 0.0647·Temperatur − 0.9874·Druck"
+    },
+    "classification": {
+      "cutoff": 0.4,
+      "tp": 23,
+      "fn": 1,
+      "fp": 20,
+      "tn": 6,
+      "sensitivity": 0.9583333333333334,
+      "specificity": 0.23076923076923078,
+      "accuracy": 0.58,
+      "precision": 0.5348837209302325
+    },
+    "errorMsg": "",
+    "predictionTerms": [
+      "Temperatur",
+      "Druck"
+    ],
+    "prediction": null,
+    "savedModelId": "2c3754ea-544d-4fbb-b98e-aacb9f5887dd"
+  },
+  "b89de374-73ea-4784-8bb2-a118084aaf72": {
+    "colRefs": [
+      {
+        "instanceId": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba",
+        "sheetId": "sheet-logistic",
+        "columnId": "c-temp"
+      }
+    ],
+    "yKey": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba|sheet-logistic|c-anteil",
+    "trialsKey": "f1dd3fb0-9bb0-4f2a-9e1d-55cc86a0feba|sheet-logistic|c-trials",
+    "method": "binomial",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.9,
+    "alpha": 0.05,
+    "cutoff": 0.5,
+    "successClass": null,
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha",
+      "cutoff"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "binomial",
+        "link": "logit",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 8,
+      "iterations": 5,
+      "aic": 42.20938501576992,
+      "bic": 42.36826809912959,
+      "deviance": 5.014938841478276,
+      "nullDeviance": 53.27130023036167,
+      "logLikelihood": -19.10469250788496,
+      "pseudoR2": {
+        "mcfadden": 0.5580980144790193,
+        "nagelkerke": 0.9976196050265752,
+        "coxSnell": 0.9975994206468414
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -6.358740616457638,
+          "se": 1.0434841698711057,
+          "z": -6.093758583077584,
+          "p": 1.1071095151748978e-09,
+          "ciLower": -8.075119336039755,
+          "ciUpper": -4.642361896875521,
+          "ratio": null
+        },
+        {
+          "term": "Temperatur",
+          "estimate": 0.04036664123979414,
+          "se": 0.006183421710408099,
+          "z": 6.528204468384865,
+          "p": 6.689626630418388e-11,
+          "ciLower": 0.03019581762369896,
+          "ciUpper": 0.050537464855889315,
+          "ratio": {
+            "value": 1.0411924483094894,
+            "lower": 1.0306563348691284,
+            "upper": 1.0518362695110821
+          }
+        }
+      ],
+      "auc": 0.6979727589483687,
+      "hosmerLemeshow": {
+        "statistic": 4.935233476065935,
+        "pValue": 0.5521464168823422
+      },
+      "overdispersionRatio": null,
+      "overdispersion": null,
+      "vif": null,
+      "vifTerms": null,
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "logit(p) = -6.3587 + 0.0404·Temperatur"
+    },
+    "classification": {
+      "cutoff": 0.5,
+      "tp": 209,
+      "fn": 37,
+      "fp": 91,
+      "tn": 63,
+      "sensitivity": 0.8495934959349594,
+      "specificity": 0.4090909090909091,
+      "accuracy": 0.68,
+      "precision": 0.6966666666666667
+    },
+    "errorMsg": "",
+    "predictionTerms": [
+      "Temperatur"
+    ],
+    "prediction": null,
+    "savedModelId": null
+  },
+  "example:glm-batch-complaints": {
+    "colRefs": [
+      {
+        "instanceId": "f0bab6be-6103-4a2b-82f1-ce865a1e2348",
+        "sheetId": "sheet-complaints",
+        "columnId": "c-batch"
+      },
+      {
+        "instanceId": "f0bab6be-6103-4a2b-82f1-ce865a1e2348",
+        "sheetId": "sheet-complaints",
+        "columnId": "c-supplier"
+      }
+    ],
+    "yKey": "f0bab6be-6103-4a2b-82f1-ce865a1e2348|sheet-complaints|c-complaints",
+    "trialsKey": null,
+    "method": "negbin",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.5,
+    "successClass": null,
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "negbin",
+        "link": "log",
+        "theta": 0.8517856519157067
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 30,
+      "iterations": 12,
+      "aic": 199.62080649304602,
+      "bic": 205.22559601969465,
+      "deviance": 35.15585372142472,
+      "nullDeviance": 59.36801091791559,
+      "logLikelihood": -95.81040324652301,
+      "pseudoR2": {
+        "mcfadden": 0.11218007102621563,
+        "nagelkerke": 0.5542535471115866,
+        "coxSnell": 0.5538374388775831
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -0.7917932133097665,
+          "se": 0.7160527513485332,
+          "z": -1.105774975123819,
+          "p": 0.2688240208782071,
+          "ciLower": -2.1952308181151703,
+          "ciUpper": 0.6116443914956373,
+          "ratio": null
+        },
+        {
+          "term": "Chargengröße",
+          "estimate": 0.011701979723622968,
+          "se": 0.00972567586295797,
+          "z": 1.2032047837613133,
+          "p": 0.2288972145414716,
+          "ciLower": -0.007359994708453103,
+          "ciUpper": 0.03076395415569904,
+          "ratio": {
+            "value": 1.0117707157425213,
+            "lower": 0.9926670237267861,
+            "upper": 1.031242054753582
+          }
+        },
+        {
+          "term": "Lieferant",
+          "estimate": 1.246932642350373,
+          "se": 0.8037004504124439,
+          "z": 1.5514892914523948,
+          "p": 0.12078450053174272,
+          "ciLower": -0.32829129608659646,
+          "ciUpper": 2.8221565807873423,
+          "ratio": {
+            "value": 3.4796532302810226,
+            "lower": 0.7201532113363944,
+            "upper": 16.813070347261608
+          }
+        }
+      ],
+      "auc": null,
+      "hosmerLemeshow": null,
+      "overdispersionRatio": null,
+      "overdispersion": null,
+      "vif": [
+        3.5386370084355248,
+        3.538637008435526
+      ],
+      "vifTerms": [
+        "Chargengröße",
+        "Lieferant"
+      ],
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "log(μ) = -0.7918 + 0.0117·Chargengröße + 1.2469·Lieferant"
+    },
+    "classification": null,
+    "errorMsg": "",
+    "predictionTerms": [
+      "Chargengröße",
+      "Lieferant"
+    ],
+    "prediction": null,
+    "savedModelId": null
+  },
+  "example:glm-line-defects": {
+    "colRefs": [
+      {
+        "instanceId": "91d78289-f4c3-4e3d-b6b4-551d5b8a2f90",
+        "sheetId": "sheet-line",
+        "columnId": "c-speed"
+      },
+      {
+        "instanceId": "91d78289-f4c3-4e3d-b6b4-551d5b8a2f90",
+        "sheetId": "sheet-line",
+        "columnId": "c-age"
+      }
+    ],
+    "yKey": "91d78289-f4c3-4e3d-b6b4-551d5b8a2f90|sheet-line|c-defects",
+    "trialsKey": null,
+    "method": "poisson",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.5,
+    "successClass": null,
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "poisson",
+        "link": "log",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 30,
+      "iterations": 6,
+      "aic": 103.28250999980044,
+      "bic": 107.48610214478691,
+      "deviance": 3.6019129033494934,
+      "nullDeviance": 39.2800780393214,
+      "logLikelihood": -48.64125499990022,
+      "pseudoR2": {
+        "mcfadden": 0.2683362212138234,
+        "nagelkerke": 0.7039272224910857,
+        "coxSnell": 0.6955572343376089
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -0.11240162923313335,
+          "se": 0.6866730861950974,
+          "z": -0.1636901627468152,
+          "p": 0.8699750517930023,
+          "ciLower": -1.4582561484135326,
+          "ciUpper": 1.2334528899472659,
+          "ratio": null
+        },
+        {
+          "term": "Geschwindigkeit",
+          "estimate": 0.050692812071146065,
+          "se": 0.08501934807050171,
+          "z": 0.5962503032734313,
+          "p": 0.5510079320016783,
+          "ciLower": -0.11594204827045476,
+          "ciUpper": 0.2173276724127469,
+          "ratio": {
+            "value": 1.0519996820389688,
+            "lower": 0.890526829372096,
+            "upper": 1.242751250729211
+          }
+        },
+        {
+          "term": "Anlagenalter",
+          "estimate": 0.2526520692954932,
+          "se": 0.2121160291084021,
+          "z": 1.191103144620792,
+          "p": 0.2336132228931027,
+          "ciLower": -0.16308770863579786,
+          "ciUpper": 0.6683918472267842,
+          "ratio": {
+            "value": 1.2874352606426132,
+            "lower": 0.8495166751982426,
+            "upper": 1.9510971340958343
+          }
+        }
+      ],
+      "auc": null,
+      "hosmerLemeshow": null,
+      "overdispersionRatio": 0.12185769701106698,
+      "overdispersion": {
+        "pearsonChi2": 3.2901578192988086,
+        "df": 27,
+        "ratio": 0.12185769701106698,
+        "overdispersed": false
+      },
+      "vif": [
+        11.18804172007403,
+        11.188041720074017
+      ],
+      "vifTerms": [
+        "Geschwindigkeit",
+        "Anlagenalter"
+      ],
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "log(μ) = -0.1124 + 0.0507·Geschwindigkeit + 0.2527·Anlagenalter"
+    },
+    "classification": null,
+    "errorMsg": "",
+    "predictionTerms": [
+      "Geschwindigkeit",
+      "Anlagenalter"
+    ],
+    "prediction": null,
+    "savedModelId": null
+  },
+  "example:glm-logistic-yield": {
+    "colRefs": [
+      {
+        "instanceId": "5a3720aa-7a9b-4eb3-8b89-ed3ef9a2ff2e",
+        "sheetId": "sheet-logistic",
+        "columnId": "c-temp"
+      }
+    ],
+    "yKey": "5a3720aa-7a9b-4eb3-8b89-ed3ef9a2ff2e|sheet-logistic|c-anteil",
+    "trialsKey": "5a3720aa-7a9b-4eb3-8b89-ed3ef9a2ff2e|sheet-logistic|c-trials",
+    "method": "binomial",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.5,
+    "successClass": null,
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha",
+      "cutoff"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "binomial",
+        "link": "logit",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 8,
+      "iterations": 5,
+      "aic": 42.20938501576992,
+      "bic": 42.36826809912959,
+      "deviance": 5.014938841478276,
+      "nullDeviance": 53.27130023036167,
+      "logLikelihood": -19.10469250788496,
+      "pseudoR2": {
+        "mcfadden": 0.5580980144790193,
+        "nagelkerke": 0.9976196050265752,
+        "coxSnell": 0.9975994206468414
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -6.358740616457638,
+          "se": 1.0434841698711057,
+          "z": -6.093758583077584,
+          "p": 1.1071095151748978e-09,
+          "ciLower": -8.403932009491534,
+          "ciUpper": -4.313549223423743,
+          "ratio": null
+        },
+        {
+          "term": "Temperatur",
+          "estimate": 0.04036664123979414,
+          "se": 0.006183421710408099,
+          "z": 6.528204468384865,
+          "p": 6.689626630418388e-11,
+          "ciLower": 0.028247357376400526,
+          "ciUpper": 0.05248592510318775,
+          "ratio": {
+            "value": 1.0411924483094894,
+            "lower": 1.0286500971439598,
+            "upper": 1.0538877286131159
+          }
+        }
+      ],
+      "auc": 0.6979727589483687,
+      "hosmerLemeshow": {
+        "statistic": 4.935233476065935,
+        "pValue": 0.5521464168823422
+      },
+      "overdispersionRatio": null,
+      "overdispersion": null,
+      "vif": null,
+      "vifTerms": null,
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "logit(p) = -6.3587 + 0.0404·Temperatur"
+    },
+    "classification": {
+      "cutoff": 0.5,
+      "tp": 209,
+      "fn": 37,
+      "fp": 91,
+      "tn": 63,
+      "sensitivity": 0.8495934959349594,
+      "specificity": 0.4090909090909091,
+      "accuracy": 0.68,
+      "precision": 0.6966666666666667
+    },
+    "errorMsg": "",
+    "predictionTerms": [
+      "Temperatur"
+    ],
+    "prediction": null,
+    "savedModelId": null
+  },
+  "example:glm-poisson-defects": {
+    "colRefs": [
+      {
+        "instanceId": "d71906f6-9ab2-4dae-93ff-55d491b26bef",
+        "sheetId": "sheet-poisson",
+        "columnId": "c-feed"
+      },
+      {
+        "instanceId": "d71906f6-9ab2-4dae-93ff-55d491b26bef",
+        "sheetId": "sheet-poisson",
+        "columnId": "c-wear"
+      }
+    ],
+    "yKey": "d71906f6-9ab2-4dae-93ff-55d491b26bef|sheet-poisson|c-defs",
+    "trialsKey": null,
+    "method": "poisson",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.5,
+    "successClass": null,
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "poisson",
+        "link": "log",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 40,
+      "iterations": 5,
+      "aic": 134.62709549607092,
+      "bic": 139.69373385841274,
+      "deviance": 36.25475768346933,
+      "nullDeviance": 66.01627339409687,
+      "logLikelihood": -64.31354774803546,
+      "pseudoR2": {
+        "mcfadden": 0.18790186670548237,
+        "nagelkerke": 0.5350106075879452,
+        "coxSnell": 0.5248087349662773
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -1.3042442250180724,
+          "se": 0.49946347152063036,
+          "z": -2.6112905134929383,
+          "p": 0.009020194992692465,
+          "ciLower": -2.2831746415810774,
+          "ciUpper": -0.3253138084550672,
+          "ratio": null
+        },
+        {
+          "term": "Vorschub",
+          "estimate": 0.021242178154307664,
+          "se": 0.006945253514703111,
+          "z": 3.0585173182430196,
+          "p": 0.002224490085619646,
+          "ciLower": 0.00762973139101486,
+          "ciUpper": 0.03485462491760047,
+          "ratio": {
+            "value": 1.021469399259019,
+            "lower": 1.0076589119576498,
+            "upper": 1.0354691664419409
+          }
+        },
+        {
+          "term": "Werkzeugverschleiss",
+          "estimate": 0.04189819611010079,
+          "se": 0.008987263476775812,
+          "z": 4.661952575260629,
+          "p": 3.1357153831290674e-06,
+          "ciLower": 0.024283483361846825,
+          "ciUpper": 0.05951290885835475,
+          "ratio": {
+            "value": 1.0427883134401845,
+            "lower": 1.0245807283147612,
+            "upper": 1.0613194613137036
+          }
+        }
+      ],
+      "auc": null,
+      "hosmerLemeshow": null,
+      "overdispersionRatio": 0.9074782116661086,
+      "overdispersion": {
+        "pearsonChi2": 33.57669383164602,
+        "df": 37,
+        "ratio": 0.9074782116661086,
+        "overdispersed": false
+      },
+      "vif": [
+        1.034002547917412,
+        1.0340025479174118
+      ],
+      "vifTerms": [
+        "Vorschub",
+        "Werkzeugverschleiss"
+      ],
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "log(μ) = -1.3042 + 0.0212·Vorschub + 0.0419·Werkzeugverschleiss"
+    },
+    "classification": null,
+    "errorMsg": "",
+    "predictionTerms": [
+      "Vorschub",
+      "Werkzeugverschleiss"
+    ],
+    "prediction": null,
+    "savedModelId": null
+  },
+  "example:glm-soldering": {
+    "colRefs": [
+      {
+        "instanceId": "d65b3356-5217-43bf-a84f-56f539c707a5",
+        "sheetId": "sheet-solder",
+        "columnId": "c-temp"
+      },
+      {
+        "instanceId": "d65b3356-5217-43bf-a84f-56f539c707a5",
+        "sheetId": "sheet-solder",
+        "columnId": "c-press"
+      }
+    ],
+    "yKey": "d65b3356-5217-43bf-a84f-56f539c707a5|sheet-solder|c-defect",
+    "trialsKey": null,
+    "method": "binomial",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.5,
+    "successClass": {
+      "success": 1,
+      "failure": 0
+    },
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha",
+      "cutoff"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "binomial",
+        "link": "logit",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 50,
+      "iterations": 3,
+      "aic": 74.53990094629452,
+      "bic": 80.27596996257896,
+      "deviance": 68.53990094629452,
+      "nullDeviance": 69.23469670899615,
+      "logLikelihood": -34.26995047314726,
+      "pseudoR2": {
+        "mcfadden": 0.010035369485649093,
+        "nagelkerke": 0.01840957916935779,
+        "coxSnell": 0.013799812683048973
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -12.729004138790614,
+          "se": 20.87891068217985,
+          "z": -0.6096584411204373,
+          "p": 0.5420879871073505,
+          "ciLower": -53.65091714528335,
+          "ciUpper": 28.192908867702123,
+          "ratio": null
+        },
+        {
+          "term": "Temperatur",
+          "estimate": 0.06472620709558574,
+          "se": 0.11403219114810252,
+          "z": 0.5676134646182565,
+          "p": 0.5702973922340853,
+          "ciLower": -0.15877278081306928,
+          "ciUpper": 0.28822519500424076,
+          "ratio": {
+            "value": 1.0668668838102677,
+            "lower": 0.8531901981294255,
+            "upper": 1.3340576934269586
+          }
+        },
+        {
+          "term": "Druck",
+          "estimate": -0.9874161396937433,
+          "se": 2.328734437593355,
+          "z": -0.42401405834586897,
+          "p": 0.6715556376326477,
+          "ciLower": -5.551651770614586,
+          "ciUpper": 3.5768194912270994,
+          "ratio": {
+            "value": 0.37253803473878866,
+            "lower": 0.0038810413560817583,
+            "upper": 35.759625985319
+          }
+        }
+      ],
+      "auc": 0.5705128205128205,
+      "hosmerLemeshow": {
+        "statistic": 7.153200116779996,
+        "pValue": 0.306911545219814
+      },
+      "overdispersionRatio": null,
+      "overdispersion": null,
+      "vif": [
+        21.377344545963926,
+        21.377344545963926
+      ],
+      "vifTerms": [
+        "Temperatur",
+        "Druck"
+      ],
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "logit(p) = -12.7290 + 0.0647·Temperatur − 0.9874·Druck"
+    },
+    "classification": {
+      "cutoff": 0.5,
+      "tp": 10,
+      "fn": 14,
+      "fp": 8,
+      "tn": 18,
+      "sensitivity": 0.4166666666666667,
+      "specificity": 0.6923076923076923,
+      "accuracy": 0.56,
+      "precision": 0.5555555555555556
+    },
+    "errorMsg": "",
+    "predictionTerms": [
+      "Temperatur",
+      "Druck"
+    ],
+    "prediction": null,
+    "savedModelId": null
+  }
+}
