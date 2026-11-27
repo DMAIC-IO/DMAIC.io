@@ -185,7 +185,11 @@
 
 /* Signifikante Zeilen (p < α) */
 .reg__tr--sig td {
-  background: color-mix(in srgb, var(--color-success) 6%, transparent);
+  background: color-mix(in srgb, var(--color-success-text) 6%, transparent);
+}
+
+[data-theme="dark"] .reg__tr--sig td {
+  background: color-mix(in srgb, var(--color-success-text) 8%, transparent);
 }
 
 /* Nicht signifikante Zeilen (p ≥ α) */
