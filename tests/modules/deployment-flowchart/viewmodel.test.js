@@ -492,4 +492,26 @@ suite('deployment-flowchart: Viewmodel im Browser', () => {
     assertDeepEqual(tree.steps.map((s) => s.expanded), [false, true, false, false]);
     unmountAll();
   });
+
+  test('Kartenhöhe wie die Altform: ein einzeiliger Titel hält zwei Zeilen Höhe, ein langer wächst (field-sizing)', async () => {
+    // Die Altform hatte Titel-Textfelder ohne `rows` (Vorgabe zwei Zeilen), die
+    // `autoSize` nie darunter schrumpfte; die Kartenhöhe bleibt (Spec §11).
+    for (const [key, path] of [['flowchart', 'js/core/flowchart/flowchart.css'], [ID, `js/modules/${ID}/resources/style.css`]]) {
+      if (document.querySelector(`style[data-test-css="${key}"]`)) continue;
+      const css = document.createElement('style');
+      css.dataset.testCss = key;
+      css.textContent = await (await fetch(new URL(`../../../${path}`, import.meta.url), { cache: 'no-cache' })).text();
+      document.head.append(css);
+    }
+    const h = await mount('df-1', plain(SMALL));
+    const title = /** @type {HTMLTextAreaElement} */ (h.q('.df__col[data-step-id="s1"] .df__step-title'));
+    const line = parseFloat(getComputedStyle(title).lineHeight);
+    assertTrue(line > 0, `line-height ${line}`);
+    const short = title.getBoundingClientRect().height;
+    assertTrue(short >= 2 * line - 1, `einzeiliger Titel ${short}px, erwartet ≥ ${2 * line}px`);
+    title.value = 'Ein recht langer Titel, der sicher über mehrere Zeilen der schmalen Karte umbricht';
+    await settle();
+    assertTrue(title.getBoundingClientRect().height > short + line / 2, 'langer Titel wächst nicht');
+    unmountAll();
+  });
 });

@@ -169,7 +169,10 @@
   field-sizing: content;
   overflow-y: auto;
 }
-.df textarea.df__step-title { min-height: 1.4em; }
+
+/* Zwei Zeilen Grundhöhe wie die Altform (Textfeld ohne `rows`, Vorgabe 2),
+   damit die Kartenhöhe bleibt; Zeilenhöhe 1.4 aus `textarea.fc-card__title`. */
+.df textarea.df__step-title { min-height: 2.8em; }
 .df textarea.df__step-description { min-height: 44px; }
 
 /* Kopie aus flowchart.css (`.fc-remove-icon`), damit das Modul nicht an der
