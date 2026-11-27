@@ -120,14 +120,20 @@ export function createAsyncTasks({ defs, vm, reactivity, checkArgs, notify = () 
     return defs[name];
   }
 
-  /** @param {string} name @returns {boolean} ob ein Lauf abgelöst wurde */
-  function stop(name) {
+  /**
+   * @param {string} name
+   * @param {boolean} [restart] ein neuer Lauf folgt sofort: der Laufzustand bleibt stehen
+   * @returns {boolean} ob ein Lauf abgelöst wurde
+   */
+  function stop(name, restart = false) {
     const run = live[name];
     if (!run) return false;
     delete live[name];
     run.controller.abort();
-    statuses[name].running = false;
-    statuses[name].progress = null;
+    if (!restart) {
+      statuses[name].running = false;
+      statuses[name].progress = null;
+    }
     run.resolve({ status: 'cancelled' });
     return true;
   }
@@ -152,18 +158,30 @@ export function createAsyncTasks({ defs, vm, reactivity, checkArgs, notify = () 
     run.resolve(out);
   }
 
-  /** `run` synchron aufrufen — nur so liest ein auto-Effect seine Abhängigkeiten. */
-  function launch(name, args) {
+  /**
+   * `run` synchron aufrufen — nur so liest ein auto-Effect seine Abhängigkeiten.
+   * Aus dem auto-Effect (`fromEffect`) schreibt der Start den Laufzustand erst
+   * nach Alpines Durchlauf: Ein Schreiben im Effect ginge an Lesern vorbei, die
+   * im selben Durchlauf schon liefen (Alpines Warteschlange verwirft ihren
+   * Weckruf), und ein `computed` über dem Zustand bliebe für sie veraltet.
+   * @param {string} name @param {object} args @param {boolean} [fromEffect]
+   */
+  function launch(name, args, fromEffect = false) {
     const def = defs[name];
-    stop(name);
+    stop(name, fromEffect);
     const controller = new AbortController();
     const token = ++gen;
     let resolve;
     const outcome = new Promise((r) => { resolve = r; });
     live[name] = { token, controller, outcome, resolve };
     const st = statuses[name];
-    st.running = true;
-    st.progress = null;
+    const markRunning = () => {
+      if (live[name]?.token !== token) return;
+      st.running = true;
+      st.progress = null;
+    };
+    if (fromEffect) queueMicrotask(markRunning);
+    else markRunning();
     const progress = (p) => {
       if (live[name]?.token !== token || typeof p !== 'number') return;
       st.progress = Number.isNaN(p) ? 0 : Math.min(1, Math.max(0, p));
@@ -202,7 +220,7 @@ export function createAsyncTasks({ defs, vm, reactivity, checkArgs, notify = () 
     // Jeder Wurf wird gefangen: ein werfender Effect hielte Alpines Flush an.
     handles.push(reactivity.effect(() => {
       if (released) return;
-      try { launch(name, {}); } catch (err) { console.error(`[asyncTask] ${name}:`, err); }
+      try { launch(name, {}, true); } catch (err) { console.error(`[asyncTask] ${name}:`, err); }
     }));
   }
 

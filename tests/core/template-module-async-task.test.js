@@ -4,7 +4,8 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
-import { asyncTask } from '../../js/core/async-task.js';
+import { asyncTask, defineAsyncTaskSlots, createAsyncTasks } from '../../js/core/async-task.js';
+import { defineComputedSlots, bindComputed } from '../../js/core/computed.js';
 import { defineModel, number } from '../../js/core/model.js';
 
 const Doc = defineModel({ fields: { a: number({ default: 1 }) } });
@@ -239,5 +240,40 @@ suite('createModule mit asyncTasks', () => {
     const { mod, container } = await mount({ view() { return { init() { seen = this._asyncTaskHost; } }; } });
     assertTrue(seen !== null && typeof seen.start === 'function', String(seen));
     await mod.destroy(); container.remove();
+  });
+});
+
+suite('asyncTask: auto-Start in Alpines Durchlauf', () => {
+  test('ein Leser, der im selben Durchlauf schon lief, sieht den Laufzustand eines Neustarts', async () => {
+    // reader und der auto-Effect hängen an model.a; reader steht vorn in der
+    // Warteschlange und liest busy, bevor der Neustart den Laufzustand setzt.
+    // Schriebe der Start im Effect, verwürfe Alpine den Weckruf an reader, und
+    // busy bliebe für ihn veraltet (verborgene Regression im Planer-Fall).
+    const comp = { model: { a: 1 } };
+    defineAsyncTaskSlots(comp, ['live']);
+    defineComputedSlots(comp, ['busy']);
+    const vm = Alpine.reactive(comp);
+    const releaseComputed = bindComputed(Alpine, vm, { busy() { return this._asyncTasks.live.running; } });
+    let seen = '';
+    const reader = Alpine.effect(() => { seen = `${vm.model.a}:${vm.busy}`; });
+    let first = true;
+    const host = createAsyncTasks({
+      defs: { live: asyncTask({ auto: true, run() {
+        void this.model.a;
+        if (first) { first = false; return null; }
+        return new Promise(() => {});
+      } }) },
+      vm, reactivity: { effect: Alpine.effect, release: Alpine.release }, checkArgs: () => ({}),
+    });
+    await flush();
+    assertEqual(seen, '1:false');
+    vm.model.a = 2;
+    await flush();
+    await flush();
+    assertEqual(vm._asyncTasks.live.running, true);
+    assertEqual(seen, '2:true');
+    host.release();
+    Alpine.release(reader);
+    releaseComputed();
   });
 });
