@@ -187,6 +187,15 @@ suite('glm-regression: Ableitungen', () => {
     assertAlmostEqual(c.tp + c.fn + c.fp + c.tn, 16 * 20, 1e-6);
   });
 
+  test('Versuchszahl auf Y oder unter den X (ohne Mount gesetzt) zählt nicht als Gewicht', () => {
+    const plainFit = derived(make(['x1'], 'bin', { method: 'binomial' }));
+    const onY = derived(make(['x1'], 'bin', { method: 'binomial', trialsRef: ref('bin') }));
+    const onX = derived(make(['x1'], 'bin', { method: 'binomial', trialsRef: ref('x1') }));
+    assertEqual(onY.error, null);
+    assertDeepEqual(onY.classification, plainFit.classification);
+    assertDeepEqual(onX.classification, plainFit.classification);
+  });
+
   test('gelöschte Spalte: Bezug bleibt, Grund errColumnMissing, kein Ergebnis', () => {
     const cols = { ...COLS };
     const src = source(cols);

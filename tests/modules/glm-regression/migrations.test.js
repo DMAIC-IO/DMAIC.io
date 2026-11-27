@@ -80,6 +80,9 @@ suite('glm-regression: Migration 0→1.0', () => {
       factorSpec: [{ name: 'G', kind: 'categorical', levels: ['a', 'b'], reference: 'a' }, { name: 'A', kind: 'continuous', low: 1, high: null }],
     });
     assertDeepEqual(recordFromLegacy({ family: { name: 'poisson' } }), {});
+    // Eine Textspalte mit Zahlen: die Altform schrieb die Stufen als Zahlen.
+    assertDeepEqual(recordFromLegacy({ factorSpec: [{ name: 'L', kind: 'categorical', levels: [1, 2, null], reference: 1 }] }).factorSpec,
+      [{ name: 'L', kind: 'categorical', levels: ['1', '2'], reference: '1' }]);
     assertEqual(from0({}).modelRecord, null);
   });
 });

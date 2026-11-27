@@ -83,7 +83,12 @@ export function readInputs(m, src) {
   const y = readCol(src, m.yRef);
   if (!y) return null;
   let trials = null;
-  if (m.trialsRef) {
+  // Eine Versuchszahl auf Y oder unter den X (Agent ohne Mount, Altstand)
+  // zählt nicht: die Rechnung nähme sonst Y oder ein X als Gewichte. Eingehängt
+  // leert die Ansicht den Bezug.
+  const tKey = m.trialsRef ? refKey(m.trialsRef) : '';
+  const clash = tKey !== '' && [m.yRef, ...m.colRefs].some((r) => r != null && refKey(r) === tKey);
+  if (m.trialsRef && !clash) {
     trials = readCol(src, m.trialsRef);
     if (!trials) return null;
   }
