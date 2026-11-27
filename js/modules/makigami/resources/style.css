@@ -344,7 +344,11 @@
   border: 1px solid var(--color-accent);
 }
 
+/* Als gestreckter Flex-Posten wäre die Beschriftung kachelbreit, ihr
+   Hilfe-Fragezeichen läge am fernen Kachelrand. */
 .makigami__kpi-label {
+  width: fit-content;
+  max-width: 100%;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   text-transform: uppercase;
