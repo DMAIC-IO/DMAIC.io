@@ -15,7 +15,7 @@ import {
 } from '../../../engines/regression-engine.js';
 import { tInv } from '../../../engines/math-utils.js';
 import { parseDecimalInput } from '../../../core/parse-decimal.js';
-import { readCol, descriptorOf, numericOf, pairedOf, refKey } from './columns.js';
+import { readCol, descriptorOf, numericOf, pairedOf, refKey, isCategoricalColumn } from './columns.js';
 
 /** @typedef {import('../../../core/source-reader.js').Source} Source */
 /** @typedef {import('./columns.js').ColumnRef} ColumnRef */
@@ -41,7 +41,7 @@ export const DEGREES = Object.freeze(/** @type {const} */ ([1, 2, 3]));
 /**
  * Ein Grund ohne (volles) Ergebnis.
  * @typedef {object} Failure
- * @property {string} reason  i18n-Schlüssel (`errMinData`, `errInsufficientDf`, `errAliasedTerms`, `errGeneric`, `errColumnMissing`, `perX`)
+ * @property {string} reason  i18n-Schlüssel (`errMinData`, `errInsufficientDf`, `errAliasedTerms`, `errGeneric`, `errColumnMissing`, `errCategoricalLevels`, `errCategoricalNeedsPolynomial`, `perX`)
  * @property {Record<string, any>|null} params  Parameter des Texts
  * @property {Array<{ name: string, reason: string, params: Record<string, any>|null }>} perX  Gründe je X bei Einzelmodellen
  */
@@ -160,6 +160,9 @@ function aliasedTermsError(spec, data) {
  * @returns {Analysis}
  */
 function polynomial(m, xCols, yCol) {
+  // Ein kategorialer Faktor mit weniger als zwei Stufen trägt kein Modell.
+  const flat = xCols.find((c) => isCategoricalColumn(c) && descriptorOf(c).kind !== 'categorical');
+  if (flat) return fail('errCategoricalLevels', { name: flat.name });
   const { predictors, data, xDescs, xFilteredRaw, yFiltered } = polyData(xCols, yCol);
   const xNames = xDescs.map((d) => d.name);
   const yName = yCol.name;
@@ -270,6 +273,11 @@ function singleX(m, xCols, yCol) {
   const errors = [];
   xCols.forEach((xCol, i) => {
     const name = xCol.name;
+    // Exponential-, Log- und Potenzform brauchen ein stetiges X.
+    if (isCategoricalColumn(xCol)) {
+      errors.push({ name, reason: 'errCategoricalNeedsPolynomial', params: null });
+      return;
+    }
     const paired = pairedOf(xCol, yCol);
     if (!paired || paired.x.length < 3) {
       errors.push({ name, reason: 'errMinData', params: { n: paired ? paired.x.length : 0 } });

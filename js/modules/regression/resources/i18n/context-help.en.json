@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "colRefs": {
-      "help": "The predictors X in the order chosen, label X variables. Columns of type number, currency, percent, date or time with at least one value can be chosen; date counts in milliseconds, time in seconds, categorical factor columns of the DoE planner with their levels. One X gives a single regression, several X a combined model. If the response is among the X, it is cleared. If a chosen column is deleted, it stays chosen and nothing is fitted."
+      "help": "The predictors X in the order chosen, label X variables. Columns of type number, currency, percent, date, time or text with at least one value can be chosen; date counts in milliseconds, time in seconds. A text column is a categorical factor (effect coding, the first level as reference): the factor columns of the DoE planner with their levels, other text columns with their values in alphabetical order. A categorical factor needs at least two levels and fits only in the polynomial type. One X gives a single regression, several X a combined model. If the response is among the X, it is cleared. If a chosen column is deleted, it stays chosen and nothing is fitted."
     },
     "yRef": {
       "help": "The response Y, label Y variable; the same column types as for X, without the columns chosen as X. Without a response there is no result."

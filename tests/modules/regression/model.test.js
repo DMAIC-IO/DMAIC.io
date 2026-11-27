@@ -38,12 +38,12 @@ suite('regression: Model — Schema und Vorgaben', () => {
     assertDeepEqual([...State.schema.fields.polyDegree.values], [...DEGREES]);
   });
 
-  test('Spaltenfelder: X als Liste nicht nullbarer Bezüge, Y nullbar, gleiche Arten', () => {
+  test('Spaltenfelder: X als Liste nicht nullbarer Bezüge (auch Text als kategorialer Faktor), Y nullbar und nur Zahlarten', () => {
     const c = State.schema.fields.colRefs;
     assertEqual(c.kind, 'list');
     assertEqual(c.item.nullable, false);
-    assertDeepEqual([...c.item.types], ['numeric', 'currency', 'percent', 'date', 'time']);
-    assertDeepEqual([...State.schema.fields.yRef.types], [...c.item.types]);
+    assertDeepEqual([...c.item.types], ['numeric', 'currency', 'percent', 'date', 'time', 'text']);
+    assertDeepEqual([...State.schema.fields.yRef.types], ['numeric', 'currency', 'percent', 'date', 'time']);
     assertEqual(new State().yRef, null);
   });
 
@@ -386,6 +386,15 @@ suite('regression: Spalten und Vorhersage', () => {
     assertDeepEqual(/** @type {any} */ (d).levels, ['a', 'b']);
   });
 
+  test('Textspalte ohne Planerkodierung: Stufen alphabetisch, Referenz die erste, Kodierung −1 … +1', () => {
+    const col = { name: 'G', type: 'text', values: ['b', 'a', null, 'c', 'a'], coding: null };
+    const d = descriptorOf(col);
+    assertEqual(d.kind, 'categorical');
+    assertDeepEqual(/** @type {any} */ (d).levels, ['a', 'b', 'c']);
+    assertEqual(/** @type {any} */ (d).reference, 'a');
+    assertDeepEqual(numericOf(col), [0, -1, null, 1, -1]);
+  });
+
   test('Vorhersage liest Dezimalkomma; fehlender Wert → null', () => {
     const m = make(['x1', 'x2'], 'y');
     const r = activeResultOf(analyze(m, SRC), null);
@@ -402,5 +411,62 @@ suite('regression: Spalten und Vorhersage', () => {
     const out = predictAt(r, { single: '4,0' });
     assertAlmostEqual(out.yHat, predictValue(r, 4).yHat, 1e-12);
     assertEqual(out.piLow, null);
+  });
+});
+
+// Referenz: ausgewogener Plan, x je Stufe gleich — x und der Effektkode der
+// Gruppe sind orthogonal, die Kleinstquadrate haben eine geschlossene Form
+// (wie R `lm(y ~ x + G, contrasts = list(G = contr.sum))`):
+// b_x = Sxy/Sxx, b_G=B = (ȳ_B − ȳ_A)/2, b0 = ȳ − b_x·x̄.
+suite('regression: Textspalte als kategorialer Faktor', () => {
+  const XS = [1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6];
+  const GS = ['B', 'B', 'B', 'B', 'B', 'B', 'A', 'A', 'A', 'A', 'A', 'A'];
+  const YS = [6.1, 7.9, 10.2, 11.8, 14.1, 16.3, 3.2, 4.8, 7.1, 9.0, 10.9, 13.1];
+  const one = ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'];
+  const src = sheetSource({ x: XS, g: GS, y: YS, one }, { names: { x: 'X', g: 'G', y: 'Y', one: 'One' }, types: { g: 'text', one: 'text' } });
+  const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+
+  test('Polynom Grad 1 mit X und G: Koeffizienten, SSE und R² wie die geschlossene Form', () => {
+    const d = evaluateDerived(make(['x', 'g'], 'y'), src, undefined, T);
+    assertEqual(d.error, null);
+    const xm = mean(XS); const ym = mean(YS);
+    const sxx = XS.reduce((s, x) => s + (x - xm) ** 2, 0);
+    const bx = XS.reduce((s, x, i) => s + (x - xm) * (YS[i] - ym), 0) / sxx;
+    const bg = (mean(YS.slice(0, 6)) - mean(YS.slice(6))) / 2;
+    const b0 = ym - bx * xm;
+    const fitted = XS.map((x, i) => b0 + bx * x + (GS[i] === 'B' ? bg : -bg));
+    const sse = YS.reduce((s, y, i) => s + (y - fitted[i]) ** 2, 0);
+    const sst = YS.reduce((s, y) => s + (y - ym) ** 2, 0);
+    const coef = Object.fromEntries(d.result.coefficients.map((c) => [c.term, c.coeff]));
+    assertAlmostEqual(coef.Intercept, b0, 1e-10);
+    assertAlmostEqual(coef.X, bx, 1e-10);
+    assertAlmostEqual(coef['G=B'], bg, 1e-10);
+    assertAlmostEqual(d.result.R2, 1 - sse / sst, 1e-10);
+    assertEqual(d.result.n, 12);
+    assertDeepEqual(d.predictors.map((p) => [p.id, p.kind]), [['X', 'numeric'], ['G', 'categorical']]);
+    assertDeepEqual(d.predictors[1].levels, ['A', 'B']);
+    assertEqual(d.canSaveModel, true);
+  });
+
+  test('gespeichertes Modell trägt G als kategorialen Prädiktor mit Term und Grad', () => {
+    const d = evaluateDerived(make(['x', 'g'], 'y'), src, ['result'], T);
+    assertTrue(d.result !== null);
+    const a = analyze(make(['x', 'g'], 'y'), src);
+    assertDeepEqual(plain(a.poly.spec.predictors[1]), { id: 'G', kind: 'categorical', levels: ['A', 'B'], reference: 'A' });
+    assertDeepEqual(plain(a.poly.spec.terms[1]), { id: 'G', factors: [{ id: 'G', degree: 1 }] });
+  });
+
+  test('Textspalte mit nur einer Stufe: Grund errCategoricalLevels statt stiller Verlust', () => {
+    const d = evaluateDerived(make(['x', 'one'], 'y'), src, undefined, T);
+    assertEqual(d.result, null);
+    assertEqual(d.error.reason, 'errCategoricalLevels');
+    assertDeepEqual(plain(d.error.params), { name: 'One' });
+  });
+
+  test('Nicht-Polynom mit kategorialem X: Grund je X errCategoricalNeedsPolynomial, die stetigen X rechnen', () => {
+    const d = evaluateDerived(make(['x', 'g'], 'y', { regType: 'exponential' }), src, undefined, T);
+    assertDeepEqual(d.perXKeys, ['ws1|s1|x']);
+    assertEqual(d.error.reason, 'perX');
+    assertDeepEqual(plain(d.error.perX), [{ name: 'G', reason: 'errCategoricalNeedsPolynomial', params: null }]);
   });
 });

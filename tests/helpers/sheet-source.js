@@ -7,13 +7,14 @@ import { storedSource } from './stored-source.js';
 
 /**
  * @param {Record<string, any[]>} sheet Spalten-Id → Werte
- * @param {{ instanceId?: string, sheetId?: string, names?: Record<string, string> }} [opts]
+ * @param {{ instanceId?: string, sheetId?: string, names?: Record<string, string>, types?: Record<string, string> }} [opts]
+ *   `types`: Spaltenart je Spalten-Id (sonst `numeric`)
  * @returns {import('../../js/core/source-reader.js').Source}
  */
-export function sheetSource(sheet, { instanceId = 'ws1', sheetId = 's1', names = {} } = {}) {
+export function sheetSource(sheet, { instanceId = 'ws1', sheetId = 's1', names = {}, types = {} } = {}) {
   const state = {
     get columns() {
-      return Object.keys(sheet).map((id) => ({ id, name: names[id] ?? id, values: sheet[id] }));
+      return Object.keys(sheet).map((id) => ({ id, name: names[id] ?? id, values: sheet[id], ...(types[id] ? { type: types[id] } : {}) }));
     },
   };
   return storedSource({ [instanceId]: { sheets: [{ id: sheetId, name: 'S', state }] } });

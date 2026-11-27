@@ -151,14 +151,16 @@ const clampFraction = (v) => Math.min(0.9999, Math.max(0.0001, v));
 
 /** @typedef {import('../../../core/source-reader.js').Source} Source */
 
-/** Spaltenarten der Eingaben X und Y. */
+/** Spaltenarten der Zielgröße Y. */
 const COLUMN_TYPES = ['numeric', 'currency', 'percent', 'date', 'time'];
+/** Spaltenarten der Einflussgrößen X: dazu Text als kategorialer Faktor. */
+const X_COLUMN_TYPES = [...COLUMN_TYPES, 'text'];
 
 export class State extends defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
   fields: {
-    colRefs: list(columnRef({ nullable: false, types: COLUMN_TYPES, minCount: 1 }), { default: [] }),
+    colRefs: list(columnRef({ nullable: false, types: X_COLUMN_TYPES, minCount: 1 }), { default: [] }),
     yRef: columnRef({ types: COLUMN_TYPES, minCount: 1 }),
     regType: oneOf(['polynomial', 'exponential', 'logarithmic', 'power'], { default: 'polynomial' }),
     polyDegree: oneOf([1, 2, 3], { default: 1 }),

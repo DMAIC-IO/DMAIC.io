@@ -92,6 +92,8 @@
   "excludeAliasedTerm": "Exclude term",
   "errGeneric": "An error occurred during calculation.",
   "errColumnMissing": "A selected column no longer exists. Please check the column selection.",
+  "errCategoricalLevels": "{name} is a text or factor column with fewer than two levels and cannot carry a model. Please choose a column with at least two levels.",
+  "errCategoricalNeedsPolynomial": "Categorical factor: only the polynomial type can fit it (effect coding with a reference level).",
   "defaultModelName": "{y} — Model",
   "savedModelStatus": "Saved model: {name}",
   "noWorksheet": "No worksheet in the project. Please create a worksheet with data first.",

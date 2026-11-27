@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "colRefs": {
-      "help": "Die Einflussgrößen X in der Reihenfolge der Wahl, Beschriftung X-Variablen. Wählbar sind Spalten vom Typ Zahl, Währung, Prozent, Datum oder Zeit mit mindestens einem Wert; Datum zählt in Millisekunden, Zeit in Sekunden, kategoriale Faktorspalten des Versuchsplans mit ihren Stufen. Ein X ergibt eine Einzelregression, mehrere X ein kombiniertes Modell. Ist die Zielgröße unter den X, wird sie geleert. Ist eine gewählte Spalte gelöscht, bleibt sie gewählt, und es wird nicht gerechnet."
+      "help": "Die Einflussgrößen X in der Reihenfolge der Wahl, Beschriftung X-Variablen. Wählbar sind Spalten vom Typ Zahl, Währung, Prozent, Datum, Zeit oder Text mit mindestens einem Wert; Datum zählt in Millisekunden, Zeit in Sekunden. Eine Textspalte ist ein kategorialer Faktor (Effektkodierung, Referenz die erste Stufe): die Faktorspalten des Versuchsplans mit ihren Stufen, andere Textspalten mit ihren Werten alphabetisch. Ein kategorialer Faktor braucht mindestens zwei Stufen und rechnet nur im Typ Polynom. Ein X ergibt eine Einzelregression, mehrere X ein kombiniertes Modell. Ist die Zielgröße unter den X, wird sie geleert. Ist eine gewählte Spalte gelöscht, bleibt sie gewählt, und es wird nicht gerechnet."
     },
     "yRef": {
       "help": "Die Zielgröße Y, Beschriftung Y-Variable; dieselben Spaltentypen wie bei X, ohne die als X gewählten Spalten. Ohne Zielgröße gibt es kein Ergebnis."

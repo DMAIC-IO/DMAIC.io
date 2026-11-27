@@ -92,6 +92,8 @@
   "excludeAliasedTerm": "Term ausschließen",
   "errGeneric": "Bei der Berechnung ist ein Fehler aufgetreten.",
   "errColumnMissing": "Eine gewählte Spalte gibt es nicht mehr. Bitte die Spaltenwahl prüfen.",
+  "errCategoricalLevels": "{name} ist eine Text- bzw. Faktorspalte mit weniger als zwei Stufen und trägt kein Modell. Bitte eine Spalte mit mindestens zwei Stufen wählen.",
+  "errCategoricalNeedsPolynomial": "Kategorialer Faktor: nur im Typ Polynom rechenbar (Effektkodierung mit Referenzstufe).",
   "defaultModelName": "{y} — Modell",
   "savedModelStatus": "Gespeichertes Modell: {name}",
   "noWorksheet": "Kein Arbeitsblatt im Projekt. Bitte zuerst ein Arbeitsblatt mit Daten anlegen.",

@@ -5,7 +5,10 @@
  * in Sekunden, alle übrigen Spaltenarten nur echte Zahlen. Kategoriale
  * Faktorspalten des Versuchsplaners tragen `meta.categoricalCoding`; als
  * Zahl gelesen gilt deren Kodierung, als Prädiktor sind sie kategorial mit
- * der Stufenfolge der Kodierung. Gepaart wird über die Rohwerte je Zeile.
+ * der Stufenfolge der Kodierung. Eine andere Textspalte ist ebenso ein
+ * kategorialer Faktor: Stufen sind ihre Werte, alphabetisch (wie Minitab),
+ * Referenz die erste, Kodierung gleichabständig −1 … +1 wie im Planer.
+ * Gepaart wird über die Rohwerte je Zeile.
  */
 import { readColumn, columnLabel } from '../../../core/source-columns.js';
 
@@ -70,14 +73,38 @@ export function readCol(src, ref) {
 }
 
 /**
+ * Die Kodierung einer Spalte: die des Planers, bei einer Textspalte ohne sie
+ * die aus ihren Werten (Stufen alphabetisch, −1 … +1; eine Stufe → 0),
+ * sonst `null`.
+ * @param {Column} col
+ * @returns {Record<string, number>|null}
+ */
+export function codingOf(col) {
+  if (col.coding) return col.coding;
+  if (col.type !== 'text') return null;
+  const levels = [...new Set(col.values.filter((v) => v != null && v !== '').map(String))]
+    .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  if (levels.length === 0) return null;
+  const k = levels.length;
+  return Object.fromEntries(levels.map((l, i) => [l, k === 1 ? 0 : -1 + (2 * i) / (k - 1)]));
+}
+
+/**
+ * Ob eine Spalte als kategorialer Faktor gilt: mit Kodierung oder als Textspalte.
+ * @param {Column} col
+ * @returns {boolean}
+ */
+export const isCategoricalColumn = (col) => col.coding != null || col.type === 'text';
+
+/**
  * Die Werte als Zahlen je Zeile (Kodierung kategorialer Spalten, sonst nach
  * Spaltenart), Leerstellen als `null`.
  * @param {Column} col
  * @returns {Array<number|null>}
  */
 export function numericOf(col) {
-  if (col.coding) {
-    const coding = col.coding;
+  const coding = codingOf(col);
+  if (coding) {
     return col.values.map((v) => {
       if (v == null) return null;
       const c = coding[String(v)];
@@ -99,8 +126,9 @@ export function numericOf(col) {
  * @returns {Descriptor}
  */
 export function descriptorOf(col) {
-  if (col.coding && Object.keys(col.coding).length >= 2) {
-    const levels = Object.keys(col.coding);
+  const coding = codingOf(col);
+  if (coding && Object.keys(coding).length >= 2) {
+    const levels = Object.keys(coding);
     return {
       kind: 'categorical', name: col.name, levels, reference: levels[0],
       values: col.values.map((v) => (v == null ? null : String(v))),

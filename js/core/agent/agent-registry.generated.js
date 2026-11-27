@@ -16686,7 +16686,7 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "rules": [
           "columnRef",
-          "types:numeric,currency,percent,date,time",
+          "types:numeric,currency,percent,date,time,text",
           "minCount:1"
         ]
       },
