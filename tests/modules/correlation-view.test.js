@@ -376,6 +376,7 @@ suite('correlation: Viewmodel im Browser', () => {
     a.q('.corr__toggle-btn[data-method="spearman"]').click();
     await until(() => a.vm().model.matrixMethod === 'spearman');
     assertEqual(b.vm().model.matrixMethod, 'pearson');
+    await settle(); // Methoden-Watcher (selectedPair = null) abwarten
     mouse(a, 'click', 1, 0);
     await settle();
     assertDeepEqual(visiblePairs(a), ['0-1']);
