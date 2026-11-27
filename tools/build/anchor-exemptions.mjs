@@ -103,11 +103,6 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':data-ref="mode.ref"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: "t('ppmColKind')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
-  'response-optimization': [
-    { match: "t('axisX')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
-    { match: "t('axisY')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
-    { match: 'class="ro__contour-fix"><span x-text="fix.id">', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
-  ],
   'process-map': [
     { match: 'class="pmap__sipoc-option" :class="importOptionClass(opt)"', reason: 'Auswahlzeile je SIPOC-Instanz im Importdialog; keine Agentenaktion', count: 1 },
   ],

@@ -37,7 +37,6 @@ export function renderHelpRegistryModule(ids) {
 ${imports}
 
 export const HELP = {
-${entries},
-};
+${entries ? `${entries},\n` : ''}};
 `;
 }

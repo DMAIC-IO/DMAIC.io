@@ -21,6 +21,8 @@ import { State } from '../domain/model.js';
 import { readOwners, selectedIdsOf, OWNER_MODULES } from '../domain/models.js';
 import { diagnose, reasonText } from '../domain/diagnose.js';
 import { optimize, contourOf } from '../domain/optimize.js';
+import { exampleParts } from '../domain/example.js';
+import { provisionInstance } from '../../../core/examples-registry.js';
 import { UiState } from './state.js';
 import { modelRows, dClass, optimumRows, predictionRows, contourChartConfig, fixed } from './present.js';
 
@@ -43,6 +45,29 @@ export default createModule({
   Model: State,
   State: UiState,
   history: true,
+  /**
+   * Beispiel mit Modellen: je Datensatz aus `data.models` eine
+   * Regressions-Instanz in der Phase dieser Instanz (Reiter = Modellname);
+   * trägt schon eine Besitzer-Instanz dieselbe Modell-id, bleibt sie der
+   * Besitzer. Das Optimum steht danach im eigenen Zustand.
+   * @this {any}
+   * @param {Record<string, any>} data
+   * @returns {Record<string, any>} der eigene Zustand
+   */
+  beforeLoadExample(data) {
+    const ctx = this._context;
+    const sm = ctx.stateManager;
+    const { owners, state } = exampleParts(data);
+    const phases = sm.get('phases') || {};
+    const entries = Object.keys(phases).flatMap((phase) => (phases[phase] || []).map((/** @type {any} */ r) => ({ ...r, phase })));
+    const phase = entries.find((r) => r.instanceId === ctx.instanceId)?.phase ?? descriptor.phase;
+    for (const owner of owners) {
+      const taken = entries.some((r) => OWNER_MODULES.includes(r.moduleId) && sm.getModuleState(r.instanceId)?.savedModelId === owner.id);
+      if (taken) continue;
+      provisionInstance(ctx, { moduleId: 'regression', phase, state: owner.state, customName: owner.name });
+    }
+    return state;
+  },
   asyncTasks: {
     runOptimize: asyncTask({
       blocked() {

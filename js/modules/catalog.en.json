@@ -270,6 +270,11 @@
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",
     "whenToUse": "When a statistic of one, two, paired or k samples needs a confidence interval or a test without assuming a distribution: bootstraps the interval (BCa or percentile) and tests by permutation (two samples, paired, k groups) or against a target value (one sample). Each sample needs at least 2 numeric values (10 for Ppk)."
   },
+  "response-optimization": {
+    "name": "Response Optimization",
+    "description": "Combines several saved regression models and searches for the factor point with the highest joint desirability (Derringer-Suich, multi-start Nelder-Mead).",
+    "whenToUse": "When several saved regression models (responses of one design) must be traded off: assigns each selected model a goal (maximise, minimise, hit a target) with limits and weight, then searches the factor box for the point with the highest composite desirability D (Derringer-Suich, multi-start Nelder-Mead). Needs at least one saved regression model in the project; the models themselves are created in the regression module."
+  },
   "rest-api": {
     "name": "REST API",
     "description": "Centrally manage and test REST API endpoints",

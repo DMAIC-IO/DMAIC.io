@@ -270,6 +270,11 @@
     "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",
     "whenToUse": "Wenn für eine Kennzahl von einer, zwei, gepaarten oder k Stichproben ein Konfidenzintervall oder ein Test ohne Verteilungsannahme gebraucht wird: bestimmt das Intervall per Bootstrap (BCa oder Perzentil) und testet per Permutation (zwei Stichproben, gepaart, k Gruppen) beziehungsweise gegen einen Zielwert (eine Stichprobe). Jede Stichprobe braucht mindestens 2 numerische Werte (10 bei Ppk)."
   },
+  "response-optimization": {
+    "name": "Zielgrößenoptimierung",
+    "description": "Kombiniert mehrere gespeicherte Regressionsmodelle und sucht den Faktor-Punkt mit höchster gemeinsamer Wunschbarkeit (Derringer-Suich, Multi-Start Nelder-Mead).",
+    "whenToUse": "Wenn mehrere gespeicherte Regressionsmodelle (Zielgrößen eines Versuchsplans) gegeneinander abgewogen werden müssen: gibt jedem gewählten Modell ein Ziel (maximieren, minimieren, Zielwert) mit Grenzen und Gewicht und sucht im Faktorraum den Punkt mit der höchsten gemeinsamen Wunschbarkeit D (Derringer-Suich, Multi-Start Nelder-Mead). Braucht mindestens ein gespeichertes Regressionsmodell im Projekt; die Modelle selbst entstehen im Regressionsmodul."
+  },
   "rest-api": {
     "name": "REST API",
     "description": "REST API Endpunkte zentral verwalten und testen",

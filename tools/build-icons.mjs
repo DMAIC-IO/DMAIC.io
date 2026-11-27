@@ -85,8 +85,8 @@ if (unmapped.length) {
 // ── Glyphen-Lint: kein Icon darf am Icon-System vorbei gezeichnet werden. ──
 
 /**
- * Dateien, die ein Icon berechtigt selbst zeichnen: die zwei
- * SVG-Export-Generatoren erzeugen Dateien, in denen es keine CSS-Maske gibt,
+ * Dateien, die ein Icon berechtigt selbst zeichnen: der
+ * SVG-Export-Generator erzeugt Dateien, in denen es keine CSS-Maske gibt,
  * und das Diagramm von triz-sufield zeichnet sein
  * Dreieck samt Pfeilspitze.
  *
@@ -96,7 +96,6 @@ if (unmapped.length) {
  */
 const GLYPH_EXEMPT = [
   'js/core/export-utils.js',
-  'js/modules/response-optimization/response-optimization.js',
   'js/modules/triz-sufield/resources/view.html',
 ];
 

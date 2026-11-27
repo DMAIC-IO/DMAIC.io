@@ -17546,6 +17546,7 @@ export const AGENT_REGISTRY = {
   "response-optimization": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -17562,150 +17563,191 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setSpec": {
+        "target": "model",
         "params": [
           {
-            "name": "modelId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id aus selectableModels"
-          },
-          {
-            "name": "key",
-            "type": "'selected'|'kind'|'lower'|'upper'|'target'|'weight'",
-            "optional": false,
-            "help": "welche Vorgabe"
-          },
-          {
-            "name": "value",
-            "type": "boolean|string|number",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Spec`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Eine Zielvorgabe eines gespeicherten Modells setzen.",
-        "keysOf": "Spec",
+        "help": "",
+        "keysOf": "setSpec",
+        "keysHelp": "actions.setSpec.params",
         "keys": {
-          "selected": {
-            "type": "boolean",
-            "help": "Zielgröße einbeziehen"
+          "modelId": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "nonEmpty"
+            ]
           },
-          "kind": {
-            "type": "'max'|'min'|'target'",
-            "help": "maximieren, minimieren oder Ziel"
+          "key": {
+            "type": "'selected'|'kind'|'lower'|'upper'|'target'|'weight'",
+            "help": ""
           },
-          "lower": {
-            "type": "number",
-            "help": "untere Grenze"
-          },
-          "upper": {
-            "type": "number",
-            "help": "obere Grenze"
-          },
-          "target": {
-            "type": "number",
-            "help": "Zielwert, nur bei Ziel"
-          },
-          "weight": {
-            "type": "number",
-            "help": "Gewicht"
+          "value": {
+            "type": "any",
+            "help": ""
           }
         }
       },
       "runOptimize": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "runOptimize",
+        "keysHelp": "asyncTasks.runOptimize.params",
+        "keys": {},
+        "task": "runOptimize",
+        "op": "start",
+        "helpKey": "asyncTasks.runOptimize.help"
+      },
+      "runOptimize.cancel": {
+        "target": "asyncTask",
+        "task": "runOptimize",
+        "op": "cancel",
         "params": [],
-        "returns": "void",
-        "help": "Optimieren: die gewählten Modelle gemeinsam über den Faktorraum maximieren und das Ergebnis im Projekt speichern. Ist `canOptimize` falsch, wird nicht gerechnet: `result` bleibt, wie es war, und `errorMsg` nennt die Gründe (oder dass kein Modell gewählt ist). Scheitert die Engine, bleibt `result` ebenfalls unverändert und `errorMsg` nennt den Fehler. Bei Erfolg ist `errorMsg` leer."
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.runOptimize.cancel.help"
       }
     },
     "fields": {
       "specs": {
-        "type": "Object<string, Spec>",
-        "help": "per model id the target specification; `selected` marks the models of the optimisation",
+        "type": "Record<string, { selected?: boolean, kind?: 'max'|'min'|'target', lower?: number, upper?: number, target?: number, weight?: number }>",
+        "help": "",
+        "bulk": false
+      },
+      "optimization": {
+        "type": "{ modelRefs: string[], result: { xOpt: Array<number|string|boolean|null>, yPredictions: Array<number|null>, dPerResponse: Array<number|null>, D: number, factorNames: string[], modelNames: string[], iter: number } }|null",
+        "help": "",
+        "bulk": false
+      },
+      "models": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
-        "keysOf": "Spec",
+        "keysOf": "ModelRef",
         "keys": {
-          "selected": {
-            "type": "boolean",
-            "help": "Zielgröße einbeziehen"
+          "id": {
+            "type": "string",
+            "help": "Kennung des Modells"
           },
-          "kind": {
-            "type": "'max'|'min'|'target'",
-            "help": "maximieren, minimieren oder Ziel"
+          "name": {
+            "type": "string",
+            "help": "Name des Modells"
           },
-          "lower": {
-            "type": "number",
-            "help": "untere Grenze"
+          "instanceId": {
+            "type": "string",
+            "help": "die Instanz, die es gespeichert hat"
           },
-          "upper": {
-            "type": "number",
-            "help": "obere Grenze"
+          "moduleId": {
+            "type": "string",
+            "help": "deren Modul"
           },
-          "target": {
-            "type": "number",
-            "help": "Zielwert, nur bei Ziel"
+          "rSqAdj": {
+            "type": "number|null",
+            "help": "bereinigtes R²"
           },
-          "weight": {
-            "type": "number",
-            "help": "Gewicht"
+          "lofPValue": {
+            "type": "number|null",
+            "help": "p-Wert des Anpassungsmangels"
+          },
+          "factorNames": {
+            "type": "string[]",
+            "help": "Faktoren"
+          },
+          "yRange": {
+            "type": "number[]",
+            "help": "kleinster und größter Trainingswert"
           }
         }
       },
-      "optId": {
-        "type": "string|null",
-        "help": "the id of the stored optimisation, or null before the first successful run",
+      "unreadOwners": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "selectableModels": {
-        "type": "Array<{ id: string, name: string }>",
-        "help": "the saved models of the project as references (no coefficients); read a model in the regression module that created it",
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "SelectableModel",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung des Modells"
+          },
+          "name": {
+            "type": "string",
+            "help": "Name des Modells"
+          },
+          "instanceId": {
+            "type": "string",
+            "help": "die Instanz, die es gespeichert hat"
+          }
+        }
+      },
+      "effectiveSpecs": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "canOptimize": {
-        "type": "boolean",
-        "help": "whether `runOptimize` computes: at least one model selected and no diagnostic reason",
+      "missingModels": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "diagnosticReasons": {
-        "type": "string[]",
-        "help": "the reasons that block the optimisation (low R², lack of fit, factor mismatch), or an empty list",
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "canOptimize": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "result": {
-        "type": "Result|null",
-        "help": "the stored optimum, or null while no optimisation has run",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
         "keys": {
           "xOpt": {
-            "type": "Array<number|string>",
+            "type": "Array<number|string|null>",
             "help": "Faktoreinstellungen"
           },
           "yPredictions": {
-            "type": "number[]",
+            "type": "Array<number|null>",
             "help": "Vorhersagen je Zielgröße"
           },
           "dPerResponse": {
-            "type": "number[]",
-            "help": "Einzelwunschbarkeit je Zielgröße"
+            "type": "Array<number|null>",
+            "help": "Einzelwunschbarkeiten"
           },
           "D": {
             "type": "number",
             "help": "Gesamtwunschbarkeit"
-          },
-          "ciAtOpt": {
-            "type": "null",
-            "help": "noch nicht berechnet"
-          },
-          "paretoFront": {
-            "type": "null",
-            "help": "noch nicht berechnet"
           },
           "factorNames": {
             "type": "string[]",
@@ -17721,13 +17763,35 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string; cleared again as soon as the model list, the selection or a specification changes",
+      "resultStale": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "runOptimize",
+        "auto": false,
+        "params": []
+      }
+    ],
+    "viewFields": [
+      "contourEdits"
+    ],
+    "settable": [
+      "specs"
+    ],
+    "invariants": [
+      "specBounds"
+    ]
   },
   "rest-api": {
     "tagged": true,

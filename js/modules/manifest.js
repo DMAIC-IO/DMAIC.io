@@ -21,19 +21,6 @@
  * @type {Array<object>}
  */
 export default [
-  // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
-  {
-    id: 'response-optimization',
-    phase: 'improve',
-    group: 'optimize',
-    load: () => import('./response-optimization/response-optimization.js'),
-    cycles: {
-      dmaic:  { phase: 'improve' },
-      dmadv:  { phase: 'design'  },
-      eightd: { phase: 'corrective' },
-    },
-  },
-
   // ─── Extras (cycle-independent catch-all, trailing tile) ─────
   // Modules with cycles: {} land in the trailing extras tile (⋯) —
   // the registry's cycle-mapping check (`m.cycles?.[cycleId]`) returns

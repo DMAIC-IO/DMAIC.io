@@ -1,14 +1,18 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "specs": {
     "model-pizza-lieferzeit": {
       "selected": true,
       "kind": "min",
       "lower": 6.6,
       "upper": 30,
+      "target": 18.3,
       "weight": 1
     }
   },
-  "optId": "opt-pizza-lieferzeit",
+  "optimization": null,
   "models": [
     {
       "id": "model-pizza-lieferzeit",
@@ -257,8 +261,7 @@
           "workbookHash": "e6ece3b6"
         }
       },
-      "dataHash": "e6ece3b6",
-      "createdFromInstanceId": null
+      "dataHash": "e6ece3b6"
     }
   ]
 }

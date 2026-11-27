@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "response-optimization-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Response-Optimierung",
+        "en": "Paper Helicopter — Response Optimization"
+      },
+      "description": {
+        "de": "Ziel: Regressions-Modell aus dem DoE-Planner-Beispiel „Papier-Hubschrauber\" (18 Läufe) auf „maximiere Flugzeit\" optimieren. Prognose-Optimum bei (L ≈ 7 cm, C = 1) → t̂ ≈ 2,80 s, Desirability-Untergrenze 2,5 s — liegt zwischen den physisch getesteten Rotorlängen (6 und 8 cm) und zeigt den RSM-Kernvorteil. Dieses Beispiel lädt nur einen leeren Optimizer-State, da response-optimization Modelle projektglobal aus dem Regression-Modul bezieht. Workflow: Öffne doe-planner-Beispiel → Aktion „Transfer zu Regression\" → dort „als Modell speichern\" → dann füllt sich response-optimization mit Daten.",
+        "en": "Goal: optimize the regression model from the DoE Planner \"Paper Helicopter\" example (18 runs) for \"maximize flight time\". Predicted optimum at (L ≈ 7 cm, C = 1) → t̂ ≈ 2.80 s, lower desirability bound 2.5 s — lies between the physically tested rotor lengths (6 and 8 cm) and demonstrates the core RSM advantage. This example only loads an empty optimizer state, since response-optimization sources models project-globally from the Regression module. Workflow: open the doe-planner example → action \"Transfer to Regression\" → \"save as model\" there → response-optimization then comes alive with data."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/response-optimization-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "response-optimization-pizza-lieferzeit",
+      "type": "project",
+      "title": {
+        "de": "Pizza-Lieferzeit — Optimum",
+        "en": "Pizza Delivery Time — Optimum"
+      },
+      "description": {
+        "de": "Das gespeicherte Regressionsmodell der Pizza-Lieferzeit (Entfernung, Verkehrslevel; korrigiertes R² ≈ 0,91) liegt bereits im Projekt, die Lieferzeit soll minimal werden. Das Beispiel zeigt das gerechnete Optimum mit Desirability, vorhergesagter Lieferzeit und den Faktoreinstellungen am Optimum — bei diesem linearen Modell liegt es in der Ecke mit kürzester Entfernung und geringstem Verkehr.",
+        "en": "The saved regression model of the pizza delivery time (distance, traffic level; adjusted R² ≈ 0.91) is already in the project, and the delivery time is to be minimised. The example shows the computed optimum with desirability, predicted delivery time and the factor settings at the optimum — for this linear model it lies in the corner with the shortest distance and the lowest traffic."
+      },
+      "source": "Aus dem Beispiel regression-pizza-delivery (Qprovement synthetisch, NumPy default_rng, Seed=2026), Modell gespeichert",
+      "license": "public-domain",
+      "file": "projects/response-optimization-pizza-lieferzeit.json",
+      "format": "json",
+      "tags": [
+        "regression",
+        "optimization",
+        "desirability"
+      ]
+    }
+  ]
+}
