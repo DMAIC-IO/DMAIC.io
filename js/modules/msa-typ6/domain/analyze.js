@@ -81,8 +81,8 @@ export function engineInputs(p, inputs) {
 
 /**
  * Die Studie rechnen: ohne Eingaben `null`, bei abgelehnten Eingaben
- * `{ invalid: { code, params } }` mit dem Fehlercode der Engine, sonst das
- * Ergebnis der Engine.
+ * `{ invalid: { code, params } }` mit dem Fehlercode der Engine (fehlt σ₀ bei
+ * vorgegebenen Grenzen: `E_SIGMA0_MISSING`), sonst das Ergebnis der Engine.
  * @param {StudyParams} p
  * @param {Inputs|null} inputs
  * @returns {any}
@@ -91,7 +91,11 @@ export function analyzeTyp6(p, inputs) {
   if (!inputs) return null;
   const engine = engineInputs(p, inputs);
   const v = /** @type {{ ok: boolean, code?: string, params?: object }} */ (validate(engine));
-  if (!v.ok) return { invalid: { code: v.code, params: v.params ?? null } };
+  if (!v.ok) {
+    // Fehlt σ₀ bei vorgegebenen Grenzen, sagt ein eigener Code, was zu tun ist.
+    const code = v.code === 'E_GIVEN_LIMITS_INVALID' && p.sigma0 == null ? 'E_SIGMA0_MISSING' : v.code;
+    return { invalid: { code, params: v.params ?? null } };
+  }
   try {
     return analyze(engine);
   } catch (/** @type {any} */ e) {

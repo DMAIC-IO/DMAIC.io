@@ -55,9 +55,14 @@ suite('MSA Typ 6 analyze — analyzeTyp6', () => {
     assertEqual(engineInputs(P, inputs).subgroups, null);
     assertDeepEqual(engineInputs({ ...P, chartType: 'xbar-r' }, inputs).subgroups, [1, 1]);
   });
-  test('vorgegebene Grenzen ohne σ₀: invalid E_GIVEN_LIMITS_INVALID', () => {
+  test('vorgegebene Grenzen ohne σ₀: invalid E_SIGMA0_MISSING', () => {
     const r = analyzeTyp6({ ...P, limitsMode: 'given', mu0: 10, sigma0: null }, { values: VALUES, timestamps: null, subgroups: null });
-    assertDeepEqual(r, { invalid: { code: 'E_GIVEN_LIMITS_INVALID', params: null } });
+    assertDeepEqual(r, { invalid: { code: 'E_SIGMA0_MISSING', params: null } });
+  });
+  test('vorgegebene Grenzen mit σ₀ ≤ 0 oder ohne μ₀: invalid E_GIVEN_LIMITS_INVALID', () => {
+    const inputs = { values: VALUES, timestamps: null, subgroups: null };
+    assertDeepEqual(analyzeTyp6({ ...P, limitsMode: 'given', mu0: 10, sigma0: 0 }, inputs), { invalid: { code: 'E_GIVEN_LIMITS_INVALID', params: null } });
+    assertDeepEqual(analyzeTyp6({ ...P, limitsMode: 'given', mu0: null, sigma0: 0.002 }, inputs), { invalid: { code: 'E_GIVEN_LIMITS_INVALID', params: null } });
   });
   test('zu wenige Punkte: invalid mit Mindestzahl', () => {
     const r = analyzeTyp6(P, { values: VALUES.slice(0, 5), timestamps: null, subgroups: null });

@@ -109,7 +109,7 @@
       "invalid": "Grund, wenn die Rechnung die Eingaben ablehnt: Fehlercode und Werte für den Fehlertext. Dann fehlen alle Kennzahlen."
     },
     "Invalid": {
-      "code": "Kennung des Fehlers, zum Beispiel E_TOO_FEW_POINTS (zu wenige Punkte) oder E_GIVEN_LIMITS_INVALID (μ₀ oder σ₀ fehlt).",
+      "code": "Kennung des Fehlers, zum Beispiel E_TOO_FEW_POINTS (zu wenige Punkte), E_SIGMA0_MISSING (σ₀ fehlt) oder E_GIVEN_LIMITS_INVALID (μ₀ fehlt oder σ₀ ≤ 0).",
       "params": "Werte, die der Fehlertext einsetzt, etwa die Mindestzahl; sonst leer."
     },
     "Meta": {

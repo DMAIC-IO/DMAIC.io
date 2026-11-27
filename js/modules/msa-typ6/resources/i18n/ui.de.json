@@ -97,6 +97,7 @@
     "E_UNEQUAL_SUBGROUP_SIZES": "Untergruppen haben unterschiedliche Größen.",
     "E_SUBGROUP_SIZE_OUT_OF_RANGE": "Untergruppengröße n = {n} außerhalb des zulässigen Bereichs ({min}–{max}).",
     "E_GIVEN_LIMITS_INVALID": "μ₀/σ₀ ungültig. σ₀ muss > 0 sein.",
+    "E_SIGMA0_MISSING": "σ₀ fehlt – eingeben oder aus Typ-1 übernehmen.",
     "E_BASELINE_TOO_SMALL": "Basis-Untergruppen zu klein (Minimum {min}).",
     "E_BASELINE_EXCEEDS_DATA": "Basis-Untergruppen k = {k} übersteigt die verfügbaren Daten ({available}).",
     "E_INVALID_ALPHA": "Signifikanzniveau α ungültig — erlaubt sind 0.01, 0.05, 0.10.",

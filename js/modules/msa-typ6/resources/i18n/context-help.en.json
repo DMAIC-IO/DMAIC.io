@@ -109,7 +109,7 @@
       "invalid": "The reason when the computation rejects the inputs: error code and the values for the error text. All figures are then missing."
     },
     "Invalid": {
-      "code": "Identifier of the error, for example E_TOO_FEW_POINTS (too few points) or E_GIVEN_LIMITS_INVALID (μ₀ or σ₀ missing).",
+      "code": "Identifier of the error, for example E_TOO_FEW_POINTS (too few points), E_SIGMA0_MISSING (σ₀ missing) or E_GIVEN_LIMITS_INVALID (μ₀ missing or σ₀ ≤ 0).",
       "params": "Values the error text inserts, such as the minimum count; otherwise empty."
     },
     "Meta": {

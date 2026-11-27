@@ -204,7 +204,7 @@ suite('MSA Typ 6 Model — Ableitungen', () => {
   test('result invalid bei vorgegebenen Grenzen ohne σ₀', () => {
     const m = full();
     setP(m, { limitsMode: 'given', mu0: 10 });
-    assertDeepEqual(evaluateDerived(m, src).result, { invalid: { code: 'E_GIVEN_LIMITS_INVALID', params: null } });
+    assertDeepEqual(evaluateDerived(m, src).result, { invalid: { code: 'E_SIGMA0_MISSING', params: null } });
   });
   test('activeParams je Grenzen-Modus wie die Altform', () => {
     const m = new State(CTX);
