@@ -195,20 +195,6 @@
   margin-top: var(--spacing-md);
 }
 
-/* „Neu starten“ und „Zurück“ (btn ohne Variante) auf den App-Flächen,
-   sonst bleibt die Browserfläche im Dunkeln hell. */
-.doe-advisor__wizard-restart,
-.doe-advisor__wizard-back {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-primary);
-}
-
-.doe-advisor__wizard-restart:hover,
-.doe-advisor__wizard-back:hover {
-  background: color-mix(in srgb, var(--color-text-primary) 12%, var(--color-bg-tertiary));
-}
-
 /* ── Result card ── */
 .doe-advisor__result {
   background: var(--color-bg-secondary);

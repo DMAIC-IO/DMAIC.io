@@ -123,19 +123,7 @@
   color: var(--color-text-primary);
 }
 
-/* Knöpfe ohne Variante: auf die App-Flächen setzen (sonst hell im Dunkeln). */
-.kano__sync-btn,
-.kano__add-btn {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-primary);
-}
-
-.kano__sync-btn:hover:not(:disabled),
-.kano__add-btn:hover {
-  background: var(--color-bg-tertiary);
-}
-
+/* Flächen kommen aus `btn--secondary`; nur der gesperrte Zustand ist eigen. */
 .kano__sync-btn:disabled {
   opacity: 0.5;
   cursor: default;

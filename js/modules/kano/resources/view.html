@@ -29,7 +29,7 @@
 
       <div class="dmike-split__section-title" x-text="t('syncTitle')"></div>
       <div class="kano__sync" x-async-task="applySync">
-        <button class="btn btn--sm kano__sync-btn" type="button" data-ref="syncBtn"
+        <button class="btn btn--sm btn--secondary kano__sync-btn" type="button" data-ref="syncBtn"
                 x-async-task-start x-text="t('syncButton')"></button>
       </div>
       <p class="kano__sync-status" data-ref="syncStatus" x-text="syncStatus"></p>
@@ -40,7 +40,7 @@
     <div class="dmike-split__output" data-ref="output">
       <div class="dmike-split__output-section-header">
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('captureTitle')"></span></div>
-        <button class="btn btn--sm kano__add-btn" type="button" data-ref="addRespondent"
+        <button class="btn btn--sm btn--secondary kano__add-btn" type="button" data-ref="addRespondent"
                 x-command="addRespondent" :data-arg-name="nextRespondentName"
                 data-help-key="modules.kano.actions.addRespondent.help"
                 x-text="t('respondentAdd')"></button>
