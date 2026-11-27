@@ -5,7 +5,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import {
-  insertStep, removeStep, moveStep, addSubstep, removeSubstep, moveSubstep, expandedFromLegacy,
+  insertStep, removeStep, moveStep, addSubstep, removeSubstep, moveSubstep,
 } from '../../../js/core/flowchart/chain.js';
 
 const step = (id, substeps = []) => ({ id, title: id.toUpperCase(), substeps });
@@ -73,11 +73,6 @@ suite('flowchart/chain — Unterschritte', () => {
     assertDeepEqual(ids(removeSubstep(chain(), 'b', 'y')[1].substeps), ['x', 'z']);
     throwsParam(() => addSubstep(chain(), 'q', { id: 'n', title: '' }), 'stepId');
     throwsParam(() => removeSubstep(chain(), 'b', 'q'), 'substepId');
-  });
-
-  test('expandedFromLegacy: ids der aufgeklappten Schritte', () => {
-    assertDeepEqual(expandedFromLegacy([{ id: 'a', expanded: true }, { id: 'b' }]), ['a']);
-    assertDeepEqual(expandedFromLegacy([{ id: 'a', expanded: 'yes' }, { id: 'b', expanded: false }]), []);
   });
 });
 

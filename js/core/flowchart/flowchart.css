@@ -145,7 +145,7 @@ textarea.fc-card__title {
 
 .fc-card__delete:hover {
   color: var(--color-error);
-  background: rgb(255 59 48 / 10%);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
 }
 
 /* Every remove control in the flowchart family shows the same trash glyph:
@@ -204,12 +204,6 @@ textarea.fc-card__description {
   font-size: 35px;
   line-height: 1;
 }
-
-/* Cards are top-aligned and differ in height, so a connector centred on the
-   card would sit at a different height in every module — and beside every
-   card. It lines up with the card HEADER instead, the one row every card
-   shares (header ≈ 40px, connector 32px → 4px offset). */
-.fc-connector--header-aligned { margin-top: var(--spacing-xs); }
 
 /* Gap n hangs off the RIGHT of the last card, mirroring the connector that
    normally sits in the gap to a card's left. The swimlane canvases scroll
@@ -354,7 +348,6 @@ textarea.fc-card__description {
 }
 
 .fc-substep-item:hover { background: var(--color-bg-primary); }
-.fc-substep-item.is-dragging { opacity: 0.4; }
 .fc-substep-item.is-drop-target { box-shadow: 0 -2px 0 0 var(--color-accent); }
 .fc-substep-item.fc-substep-item--drop-after { box-shadow: 0 2px 0 0 var(--color-accent); }
 
@@ -367,10 +360,7 @@ textarea.fc-card__description {
   border-radius: var(--border-radius-sm);
   flex-shrink: 0;
   white-space: nowrap;
-  cursor: grab;
 }
-
-.fc-substep-number:active { cursor: grabbing; }
 
 .fc-substep-title {
   flex: 1;
@@ -402,7 +392,7 @@ textarea.fc-card__description {
 
 .fc-substep-remove:hover {
   color: var(--color-error);
-  background: rgb(255 59 48 / 10%);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
 }
 
 .fc-substep-add {
@@ -440,7 +430,6 @@ button.fc-substeps-bar {
   text-align: left;
 }
 
-.fc-substep-grip + .fc-substep-number { cursor: default; }
 .fc-substep-item:hover .fc-substep-grip { opacity: 1; }
 .fc-substep-item[data-gesture-dragging] { opacity: 0.4; }
 

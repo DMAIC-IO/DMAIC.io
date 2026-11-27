@@ -112,11 +112,17 @@ suite('Activity-Flowchart Model — Anlegen', () => {
     assertEqual(s.steps.length, 5);
   });
 
-  test('addStep vor die Raute des Bands lehnt knownBranch ab (A14), der Stand bleibt', () => {
+  test('addStep vor die Raute des Bands wird abgelehnt (A14): index mit bandNotBefore, der Stand bleibt', () => {
     const s = chain();
-    const err = errorOf(() => s.addStep({ bandId: 'no:D', index: 1 }));
-    assertEqual(err.invariant, 'knownBranch');
+    for (const at of [0, 1]) {
+      const err = errorOf(() => s.addStep({ bandId: 'no:D', index: at }));
+      assertEqual(err.param, 'index');
+      assertEqual(err.hintKey, 'bandNotBefore');
+      assert(!String(err.message).includes('"title"'), 'die Meldung listet nicht die ganze Kette');
+    }
     assertDeepEqual(ids(s), ['a', 'D', 'x', 'y', 'b']);
+    s.addStep({ bandId: 'no:D', index: 2 });
+    assertEqual(s.steps[2].branchId, 'no:D');
   });
 
   test('appendSteps hängt Aktivitäten an den Hauptpfad und liefert die Anzahl', () => {

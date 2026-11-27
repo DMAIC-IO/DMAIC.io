@@ -167,12 +167,14 @@ export class State extends defineModel({
       returns: text(),
       run({ kind = 'activity', bandId = MAIN_BRANCH, index: at }) {
         requireKnownId('bandId', bandId, knownBands(this.steps));
+        const ownerAt = this.steps.findIndex((s) => s.id === branchOwnerId(bandId));
         let where = at;
         if (where === undefined) {
-          const ownerAt = this.steps.findIndex((s) => s.id === branchOwnerId(bandId));
           const members = memberIndices(this.steps, bandId);
           where = bandId === MAIN_BRANCH ? this.steps.length
             : (members.length > 0 ? members[members.length - 1] : ownerAt) + 1;
+        } else if (bandId !== MAIN_BRANCH && where <= ownerAt) {
+          reject('index', where, `a position after the decision of the band (> ${ownerAt})`, 'bandNotBefore');
         }
         const id = `s${uid()}`;
         const decision = kind === 'decision' ? { label: '', noTarget: 'end' } : null;

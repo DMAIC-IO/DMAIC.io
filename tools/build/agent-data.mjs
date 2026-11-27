@@ -20,14 +20,14 @@
  * sind keine Methoden und brauchen keine Marke.
  *
  * Mixins werden AUFGELÖST, nicht bloß gemeldet: ein Spread im `data()`-Literal
- * (`...chartModuleLifecycle(module, {…})`, `..._core`, `...renderMethods`) und
- * eine durchgereichte Datenfunktion (`data: activityFlowchartData`) führen über
+ * (`...mixin(module, {…})`, `..._core`, `...renderMethods`) und
+ * eine durchgereichte Datenfunktion (`data: fooData`) führen über
  * `agent-resolve.mjs` zu den echten Mitgliedern. Stammt ein Mitglied aus einer
  * ANDEREN Datei, trägt sein Verstoßcode die Herkunft (`@<pfad>`, zeilenfrei) — die
  * Registry-Form bleibt davon unberührt.
  *
  * Auf der MODEL-Seite gilt dasselbe für die Vererbung: ein Model, das von
- * einer Basisklasse erbt (`export class State extends FlowchartState`), erbt
+ * einer Basisklasse erbt (`export class State extends Base`), erbt
  * auch deren Felder, und ein im Konstruktor annotiertes Feld
  * (`/** @type {…} *\/ this.steps = []`) ist ein Feld. Beides zusammen war die
  * Lücke, durch die die vier Flowchart-Module mit NULL Lesefelder in der
@@ -2829,7 +2829,7 @@ function originSuffix(entry, moduleSf, appDir) {
 
 /**
  * Obergrenze der `extends`-Kette. Der Bestand hat zwei Stufen
- * (`State extends FlowchartState`); zwölf halten einen pathologischen Fall an,
+ * (`State extends Base`); zwölf halten einen pathologischen Fall an,
  * ohne je einen echten zu treffen. Wie bei den Spreads fängt der Pfadschutz
  * die Zyklen und die Tiefe die Ketten, die wachsen ohne zu kreisen — und ein
  * Treffer der Grenze ist ein BEFUND, kein stilles Verwerfen.
@@ -2903,9 +2903,9 @@ function viewFieldFindings(paths, persisted, declared, directWritten) {
  *
  * Zwei Quellen eines Feldes, beide nötig: eine Property-Deklaration
  * (`problem = ''`) UND eine annotierte Konstruktor-Zuweisung
- * (`this.steps = []`). Die vier Flowchart-Module hatten null Felder, weil ihr
- * Zustand über BEIDE Lücken fiel — `FlowchartState` deklariert `steps` im
- * Konstruktor, und die Modelle erben es.
+ * (`this.steps = []`). Die vier Flowchart-Module der Altform hatten null
+ * Felder, weil ihr Zustand über BEIDE Lücken fiel — ihre gemeinsame
+ * Basisklasse deklarierte `steps` im Konstruktor, und die Modelle erbten es.
  *
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {ts.SourceFile} sf  die MODUL-Datei (`js/modules/<id>/<id>.js`)
@@ -2981,8 +2981,8 @@ function persistedKeys(resolver, sf) {
  * Finde `toJSON` an der Klasse, sonst die `extends`-Kette hoch — derselbe
  * Pfadschutz und dieselbe Tiefengrenze wie `classFields`, denn dieselben
  * drei Zeilen (`modelClassName` → `findDeclaration` → Kettenaufstieg) tragen
- * beide Prüfungen: die vier Flowchart-Module haben kein eigenes `toJSON()`
- * und erben es von `FlowchartState`.
+ * beide Prüfungen: ein Model ohne eigenes `toJSON()` erbt es von seiner
+ * Basisklasse (so die Flowchart-Module der Altform).
  *
  * Ein EIGENES Mitglied namens `toJSON`, das keine `MethodDeclaration` ist
  * (z. B. `toJSON = () => ({…})` als Klassenfeld), beendet den Abstieg HIER,

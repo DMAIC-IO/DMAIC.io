@@ -144,9 +144,12 @@
   gap: var(--spacing-2xs);
 }
 
-/* The ✕ that drops a chosen re-entry, so the detour ends where its cards do
-   again — reachable without going through the picker first. */
+/* The ✕ (icon `action.close`) that drops a chosen re-entry, so the detour
+   ends where its cards do again — reachable without going through the picker
+   first. */
 .af__band-exit-clear {
+  display: inline-flex;
+  align-items: center;
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
@@ -158,10 +161,7 @@
 }
 .af__band-exit-clear:hover { color: var(--color-error); background: var(--color-bg-tertiary); }
 
-/* Doubled class on purpose: the rule that gives every exit the canvas colour
-   (so the rail does not strike through its label) sits further down, and a
-   single class would lose to it on source order — the chosen exit would look
-   like all the others. */
+/* The chosen exit (the re-entry marker) stands out from the invitations. */
 .af__band-exit.af__band-exit--active {
   background: var(--color-flowchart-step-accent-bg);
   color: var(--color-flowchart-step-accent);
@@ -183,8 +183,6 @@
 .af__step--dimmed { opacity: 0.45; }
 
 .af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
-
-
 
 /* The connector is absolutely positioned INTO the gap left of its step, so it
    costs no layout space and two cards sit exactly --fc-chain-gap apart —
@@ -539,9 +537,6 @@
   outline: none;
   box-shadow: 0 0 0 2px var(--color-accent);
 }
-
-/* ✕ des Wiedereinstiegs als Icon. */
-.af__band-exit-clear { display: inline-flex; align-items: center; }
 
 /* ── Textfelder wachsen mit dem Inhalt ──────────────────────────────────
    `field-sizing: content` statt Messung per JavaScript; ohne Unterstützung

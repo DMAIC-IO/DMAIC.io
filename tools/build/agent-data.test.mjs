@@ -445,7 +445,7 @@ test('collectAgentData: a spread of an imported object constant resolves its met
 });
 
 test('collectAgentData: a spread of a local constant holding a factory call resolves', async () => {
-  // Das Muster `const _core = chainViewMixin(…)` im `data()`,
+  // Das Muster `const _core = mixFactory(…)` im `data()`,
   // danach `..._core` plus Aufrufe von `_core.x.call(this)`.
   const vm = vmWith('..._core,').replace('  data(module, _t) {\n    return {',
     '  data(module, _t) {\n    const _core = mixFactory(module, { mountPicker() {} });\n    return {');
@@ -554,9 +554,9 @@ test('collectAgentData: a spread whose source stays unresolvable is still report
 });
 
 // ── Task 3: `extends` und annotierte Konstruktor-Zuweisungen ──────────────
-// Vier Flowchart-Module hatten NULL Model-Felder: ihre Modelle erben von
-// `FlowchartState`, und dessen einziges Zustandsfeld (`this.steps`) steht im
-// Konstruktor. Beide Lücken mussten zugleich fallen — `extends` allein hätte
+// Die vier Flowchart-Module der Altform hatten NULL Model-Felder: ihre
+// Modelle erbten von einer gemeinsamen Basisklasse, und deren einziges
+// Zustandsfeld (`this.steps`) stand im Konstruktor. Beide Lücken mussten zugleich fallen — `extends` allein hätte
 // nur eine Klasse ohne Property-Deklarationen gefunden.
 
 /** Ein Modul-Viewmodel ohne Verstöße, damit nur die Model-Seite geprüft wird. */

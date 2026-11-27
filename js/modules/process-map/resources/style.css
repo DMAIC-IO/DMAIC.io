@@ -421,9 +421,9 @@
 .pmap__connector {
   position: absolute;
 
-  /* Aligned with the card header, matching every other flowchart — see
-     .fc-connector--header-aligned. Centring on the card would place the arrow
-     at a different height for every card now that cards are top-aligned. */
+  /* Aligned with the card header, matching every other flowchart. Centring
+     on the card would place the arrow at a different height for every card
+     now that cards are top-aligned. */
   top: 4px;
   z-index: 1;
 }

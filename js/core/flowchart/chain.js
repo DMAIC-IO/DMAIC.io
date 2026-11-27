@@ -123,13 +123,3 @@ export function moveSubstep(steps, stepId, substepId, index) {
     return { ...s, substeps: relocate(subs, at, index) };
   });
 }
-
-/**
- * Die ids der aufgeklappten Schritte aus der Altform (`steps[].expanded === true`)
- * — für die Migration auf eine id-Liste im Ansichtsteil.
- * @param {Array<{ id: string, expanded?: any }>} steps
- * @returns {string[]}
- */
-export function expandedFromLegacy(steps) {
-  return steps.filter((s) => s?.expanded === true).map((s) => s.id);
-}

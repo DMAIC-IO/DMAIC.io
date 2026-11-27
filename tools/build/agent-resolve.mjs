@@ -4,9 +4,8 @@
  * `agent-data.mjs` las bis hierher nur das Objektliteral, das die `data()`-
  * Funktion eines Moduls unmittelbar zurückgibt. 21 von 72 Modulen holen ihre
  * Viewmodel-Methoden aber ganz oder teilweise aus einem Mixin
- * (`...chartModuleLifecycle(module, {…})`, `...chainViewMixin(module, _t, {…})`,
- * `...renderMethods`, `..._core`) oder reichen die Datenfunktion als Referenz
- * durch (`data: activityFlowchartData`). Nur zu MELDEN, was man nicht sieht,
+ * (`...mixin(module, {…})`, `...renderMethods`, `..._core`) oder reichen die
+ * Datenfunktion als Referenz durch (`data: fooData`). Nur zu MELDEN, was man nicht sieht,
  * genügt vor der ersten Freigabe nicht: ein solches Modul könnte das Modul-Tag
  * `@agent` tragen, mit null Verstößen durch den Build gehen und
  * `available: true` werden, während zwanzig echte Methoden nie begutachtet
@@ -127,7 +126,7 @@ export function createResolver(_appDir) {
       if (!decl) return null;
       // Eine Funktionsdeklaration ist hier KEIN Treffer: `{...fn}` liefert
       // keine Methoden. Nur ein Objektwert zählt — direkt oder als Ergebnis
-      // eines Fabrikaufrufs (`const _core = chainViewMixin(…)`).
+      // eines Fabrikaufrufs (`const _core = mix(…)`).
       if (!ts.isVariableDeclaration(decl.node) || !decl.node.initializer) return null;
       const init = unwrap(decl.node.initializer);
       if (ts.isObjectLiteralExpression(init)) return { literal: init, sf: decl.sf };
@@ -341,7 +340,7 @@ export function isFunctionLike(node) {
  * eine Suche nur über `sf.statements` würde es übersehen.
  *
  * Klassendeklarationen zählen mit, seit die Model-Seite die `extends`-Kette
- * verfolgt (`export class State extends FlowchartState`). Für die
+ * verfolgt (`export class State extends Base`). Für die
  * Spread-Auflösung ändert das nichts: eine Klasse ist weder ein Objektliteral
  * noch eine Funktion, beide Pfade dort verwerfen sie ohnehin.
  *
