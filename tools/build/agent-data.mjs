@@ -95,10 +95,9 @@ const VOID_RETURNS = new Set(['void', 'undefined', 'Promise<void>', 'Promise<und
  * als `"<modul>.<aktion>"`; bei Teil-Viewmodels trägt die Aktion den
  * Teil-Präfix (`"<modul>.<teil>.<aktion>"`).
  * Geprüft wird das letzte Namenssegment.
- * `attribute-test.addRow/addCol`: Tabellenzeile/-spalte ist eine Position, keine Entität.
  * `worksheet.addRows`: legt `count` Zeilen an, Zeilen haben keine id.
  */
-export const CREATING_VOID_EXEMPT = new Set(['attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
+export const CREATING_VOID_EXEMPT = new Set(['worksheet.addRows']);
 
 /**
  * Sammle die Agenten-Registry über alle Module.

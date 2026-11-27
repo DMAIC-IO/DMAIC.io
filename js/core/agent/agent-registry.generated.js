@@ -504,6 +504,7 @@ export const AGENT_REGISTRY = {
   "attribute-test": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -519,417 +520,319 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setParam": {
+      "setTableCell": {
+        "target": "model",
         "params": [
           {
-            "name": "key",
-            "type": "'testKind'|'inputMode'|'alpha'|'direction'|'p0'|'pooled'|'ratePooled'|'summary.x'|'summary.n'|'summary.x1'|'summary.n1'|'summary.x2'|'summary.n2'|'summary.t'|'summary.t1'|'summary.t2'|'summary.lambda0'|'summary.diff0'|'summary.pairs.labels.before'|'summary.pairs.labels.after'|'equiv.samples'|'equiv.symmetric'|'equiv.delta'|'equiv.lower'|'equiv.upper'|'exposurePerRow'|'eventValue'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "welcher Parameter; activeParams nennt die im Zustand gültigen"
-          },
-          {
-            "name": "value",
-            "type": "string|number|boolean",
-            "optional": false,
-            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "setTableCell",
+        "keysHelp": "actions.setTableCell.params",
         "keys": {
-          "testKind": {
-            "type": "'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'",
-            "help": "Testart"
-          },
-          "inputMode": {
-            "type": "'summary'|'columns'",
-            "help": "Eingabeart"
-          },
-          "alpha": {
+          "row": {
             "type": "number",
-            "help": "Signifikanzniveau"
+            "help": ""
           },
-          "direction": {
-            "type": "'two-sided'|'greater'|'less'",
-            "help": "Alternativhypothese",
-            "optional": true
+          "col": {
+            "type": "number",
+            "help": ""
           },
-          "p0": {
-            "type": "string",
-            "help": "Sollanteil, nur ein Anteil",
-            "optional": true
-          },
-          "pooled": {
-            "type": "boolean",
-            "help": "gepoolter Standardfehler, nur zwei Anteile",
-            "optional": true
-          },
-          "ratePooled": {
-            "type": "boolean",
-            "help": "gemeinsame Rate, nur zwei Raten",
-            "optional": true
-          },
-          "summary.x": {
-            "type": "string",
-            "help": "Ereignisse, ein Anteil",
-            "optional": true
-          },
-          "summary.n": {
-            "type": "string",
-            "help": "Versuche, ein Anteil",
-            "optional": true
-          },
-          "summary.x1": {
-            "type": "string",
-            "help": "Ereignisse Stichprobe 1",
-            "optional": true
-          },
-          "summary.n1": {
-            "type": "string",
-            "help": "Versuche Stichprobe 1",
-            "optional": true
-          },
-          "summary.x2": {
-            "type": "string",
-            "help": "Ereignisse Stichprobe 2",
-            "optional": true
-          },
-          "summary.n2": {
-            "type": "string",
-            "help": "Versuche Stichprobe 2",
-            "optional": true
-          },
-          "summary.t": {
-            "type": "string",
-            "help": "Umfang, eine Rate",
-            "optional": true
-          },
-          "summary.t1": {
-            "type": "string",
-            "help": "Umfang Stichprobe 1, zwei Raten",
-            "optional": true
-          },
-          "summary.t2": {
-            "type": "string",
-            "help": "Umfang Stichprobe 2, zwei Raten",
-            "optional": true
-          },
-          "summary.lambda0": {
-            "type": "string",
-            "help": "hypothetische Rate, eine Rate",
-            "optional": true
-          },
-          "summary.diff0": {
-            "type": "string",
-            "help": "hypothetische Differenz, zwei Raten",
-            "optional": true
-          },
-          "summary.pairs.labels.before": {
-            "type": "string",
-            "help": "Bezeichnung vorher, McNemar",
-            "optional": true
-          },
-          "summary.pairs.labels.after": {
-            "type": "string",
-            "help": "Bezeichnung nachher, McNemar",
-            "optional": true
-          },
-          "equiv.samples": {
-            "type": "1|2",
-            "help": "Stichprobenzahl, Äquivalenz",
-            "optional": true
-          },
-          "equiv.symmetric": {
-            "type": "boolean",
-            "help": "symmetrische Grenzen, Äquivalenz",
-            "optional": true
-          },
-          "equiv.delta": {
-            "type": "string",
-            "help": "Grenze δ, symmetrisch",
-            "optional": true
-          },
-          "equiv.lower": {
-            "type": "string",
-            "help": "untere Grenze, asymmetrisch",
-            "optional": true
-          },
-          "equiv.upper": {
-            "type": "string",
-            "help": "obere Grenze, asymmetrisch",
-            "optional": true
-          },
-          "exposurePerRow": {
-            "type": "string",
-            "help": "Umfang je Zeile, Raten aus Spalten",
-            "optional": true
-          },
-          "eventValue": {
-            "type": "string",
-            "help": "Wert, der als Ereignis zählt",
-            "optional": true
+          "value": {
+            "type": "number|null",
+            "help": ""
           }
         }
       },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'response'|'counts'|'before'|'after'|'group'|'rowVar'|'colVar'",
-            "optional": false,
-            "help": "die Rolle; activeColumnSlots nennt die im Zustand gültigen"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einer Rolle zuweisen; die Analyse läuft danach neu."
-      },
-      "setTableCell": {
-        "params": [
-          {
-            "name": "row",
-            "type": "number",
-            "optional": false,
-            "help": "Zeilenindex, 0 ist die erste Zeile"
-          },
-          {
-            "name": "col",
-            "type": "number",
-            "optional": false,
-            "help": "Spaltenindex, 0 ist die erste Spalte"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "die Anzahl als Text oder Zahl (abgelegt als Text), '' leert die Zelle"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Zelle der Kreuztabelle setzen (Zusammenfassung, Zusammenhang). Die Tabelle gilt nur bei der Testart assoc mit Eingabe über Zusammenfassung."
-      },
       "setTableRowName": {
+        "target": "model",
         "params": [
           {
-            "name": "row",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Zeilenindex, 0 ist die erste Zeile"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "der Name, '' leert ihn"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Den Namen einer Zeile der Kreuztabelle setzen."
+        "help": "",
+        "keysOf": "setTableRowName",
+        "keysHelp": "actions.setTableRowName.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setTableColName": {
+        "target": "model",
         "params": [
           {
-            "name": "col",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Spaltenindex, 0 ist die erste Spalte"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setTableColName",
+        "keysHelp": "actions.setTableColName.params",
+        "keys": {
+          "col": {
+            "type": "number",
+            "help": ""
           },
-          {
-            "name": "name",
+          "name": {
             "type": "string",
-            "optional": false,
-            "help": "der Name, '' leert ihn"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Den Namen einer Spalte der Kreuztabelle setzen."
-      },
-      "addRow": {
-        "params": [],
-        "returns": "void",
-        "help": "Eine Zeile ans Ende der Kreuztabelle hängen; die Zählwerte sind leer."
-      },
-      "addCol": {
-        "params": [],
-        "returns": "void",
-        "help": "Eine Spalte ans Ende der Kreuztabelle hängen; die Zählwerte sind leer."
-      },
-      "removeRow": {
-        "params": [
-          {
-            "name": "row",
-            "type": "number",
-            "optional": false,
-            "help": "Zeilenindex, 0 ist die erste Zeile"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Zeile der Kreuztabelle entfernen."
-      },
-      "removeCol": {
-        "params": [
-          {
-            "name": "col",
-            "type": "number",
-            "optional": false,
-            "help": "Spaltenindex, 0 ist die erste Spalte"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte der Kreuztabelle entfernen."
+        }
       },
       "setPairCell": {
+        "target": "model",
         "params": [
           {
-            "name": "row",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Zeile, 0 = Ereignis vorher, 1 = kein Ereignis vorher"
-          },
-          {
-            "name": "col",
-            "type": "number",
-            "optional": false,
-            "help": "Spalte, 0 = Ereignis nachher, 1 = kein Ereignis nachher"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "die Anzahl als Text oder Zahl (abgelegt als Text), '' leert die Zelle"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Eine Anzahl der McNemar-Vierfeldertafel setzen (Zusammenfassung). Zeile ist der Zustand vorher, Spalte der Zustand nachher; 0 heißt Ereignis, 1 kein Ereignis."
+        "help": "",
+        "keysOf": "setPairCell",
+        "keysHelp": "actions.setPairCell.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          },
+          "col": {
+            "type": "number",
+            "help": ""
+          },
+          "value": {
+            "type": "number|null",
+            "help": ""
+          }
+        }
+      },
+      "addRow": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "addRow",
+        "keysHelp": "actions.addRow.params",
+        "keys": {}
+      },
+      "addCol": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "addCol",
+        "keysHelp": "actions.addCol.params",
+        "keys": {}
+      },
+      "removeRow": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeRow",
+        "keysHelp": "actions.removeRow.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "removeCol": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeCol",
+        "keysHelp": "actions.removeCol.params",
+        "keys": {
+          "col": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
       "checkEquivalence": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Zum Äquivalenztest mit zwei Stichproben wechseln. Anzahlen und Spalten teilt er mit dem Test zweier Anteile, sie bleiben also stehen; die Äquivalenzgrenzen bleiben unverändert."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Das Ergebnis aus den aktuellen Eingaben neu rechnen. Fehlen Eingaben oder sind sie ungültig, bleibt `result` ohne Bericht und `errorMsg` nennt den Grund; das ist keine Absage der Aktion. Sie rechnet immer, auch wenn nur die Tabellendaten sich geändert haben."
+        "help": "",
+        "keysOf": "checkEquivalence",
+        "keysHelp": "actions.checkEquivalence.params",
+        "keys": {}
       }
     },
     "fields": {
       "testKind": {
         "type": "'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'",
-        "help": "the kind of test",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "inputMode": {
         "type": "'summary'|'columns'",
-        "help": "where the counts come from",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "direction": {
         "type": "'two-sided'|'greater'|'less'",
-        "help": "the alternative hypothesis",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "alpha": {
-        "type": "number|null",
-        "help": "the significance level",
-        "bulk": false,
-        "derived": true
+        "type": "number",
+        "help": "",
+        "bulk": false
       },
       "p0": {
-        "type": "string",
-        "help": "the hypothesized proportion as entered",
-        "bulk": false,
-        "derived": true
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
       "pooled": {
         "type": "boolean",
-        "help": "pooled standard error for the 2-proportion z statistic",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "ratePooled": {
         "type": "boolean",
-        "help": "pooled rate estimate for the 2-rate z statistic",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "equiv": {
-        "type": "object",
-        "help": "the equivalence settings `{ samples, symmetric, delta, lower, upper }`, bounds as entered",
-        "bulk": false,
-        "derived": true
+        "type": "{ samples: 1|2, symmetric: boolean, delta: number|null, lower: number|null, upper: number|null }",
+        "help": "",
+        "bulk": false
       },
       "exposurePerRow": {
-        "type": "string",
-        "help": "the exposure per worksheet row for rates from columns, as entered",
-        "bulk": false,
-        "derived": true
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
       "summary": {
-        "type": "object",
-        "help": "the summarized counts as entered: x, n, x1, n1, x2, n2, t, t1, t2, lambda0, diff0, the McNemar table `pairs` `{ labels, counts }` and the cross table `{ rows, cols, counts }`",
-        "bulk": false,
-        "derived": true
+        "type": "{ x: number|null, n: number|null, x1: number|null, n1: number|null, x2: number|null, n2: number|null, t: number|null, t1: number|null, t2: number|null, lambda0: number|null, diff0: number|null, pairs: { labels: { before: string, after: string }, counts: Array<Array<number|null>> }, table: { rows: string[], cols: string[], counts: Array<Array<number|null>> } }",
+        "help": "",
+        "bulk": false
       },
       "colRefs": {
-        "type": "object",
-        "help": "the chosen column per role (response, counts, before, after, group, rowVar, colVar), each `{ instanceId, sheetId, columnId }` or null",
-        "bulk": false,
-        "derived": true
+        "type": "{ response: { instanceId: string, sheetId?: string, columnId: string }|null, group: { instanceId: string, sheetId?: string, columnId: string }|null, rowVar: { instanceId: string, sheetId?: string, columnId: string }|null, colVar: { instanceId: string, sheetId?: string, columnId: string }|null, counts: { instanceId: string, sheetId?: string, columnId: string }|null, before: { instanceId: string, sheetId?: string, columnId: string }|null, after: { instanceId: string, sheetId?: string, columnId: string }|null }",
+        "help": "",
+        "bulk": false
       },
       "eventValue": {
         "type": "string|null",
-        "help": "the value of the response column that counts as event",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "eventValueOptions": {
-        "type": "string[]",
-        "help": "the values `setParam('eventValue', …)` accepts",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "result": {
-        "type": "Result|null",
-        "help": "the test report, or null while the inputs are incomplete or invalid",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
         "keys": {
+          "status": {
+            "type": "'ok'|'insufficient'",
+            "help": "ob es ein Ergebnis gibt"
+          },
+          "reason": {
+            "type": "string",
+            "help": "Grund ohne Ergebnis (Textschlüssel)",
+            "optional": true
+          },
+          "hint": {
+            "type": "boolean",
+            "help": "der Grund ist ein Eingabehinweis, kein Fehler",
+            "optional": true
+          },
+          "message": {
+            "type": "string",
+            "help": "der Grund als Text in der App-Sprache",
+            "optional": true
+          },
           "kind": {
             "type": "'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'",
-            "help": "Testart"
+            "help": "Testart",
+            "optional": true
           },
           "stats": {
             "type": "Stat[]",
             "help": "Kennzahlen",
+            "optional": true,
             "keysOf": "Stat",
             "keys": {
               "key": {
@@ -958,6 +861,7 @@ export const AGENT_REGISTRY = {
           "notes": {
             "type": "Note[]",
             "help": "Hinweise",
+            "optional": true,
             "keysOf": "Note",
             "keys": {
               "key": {
@@ -974,6 +878,7 @@ export const AGENT_REGISTRY = {
           "noteDetails": {
             "type": "Warning[]",
             "help": "die Hinweise als Codes mit ungerundeten Zahlen",
+            "optional": true,
             "keysOf": "Warning",
             "keys": {
               "code": {
@@ -988,15 +893,18 @@ export const AGENT_REGISTRY = {
           },
           "pValue": {
             "type": "number|null",
-            "help": "p-Wert der Entscheidung als Zahl"
+            "help": "p-Wert der Entscheidung als Zahl",
+            "optional": true
           },
           "ci": {
             "type": "number[]|null",
-            "help": "Konfidenzintervall [unten, oben], null ohne Intervall"
+            "help": "Konfidenzintervall [unten, oben], null ohne Intervall",
+            "optional": true
           },
           "decision": {
             "type": "'reject'|'keep'|'equivalent'|'notEquivalent'",
-            "help": "Entscheidung gegen α"
+            "help": "Entscheidung gegen α",
+            "optional": true
           },
           "decisionParams": {
             "type": "object",
@@ -1005,11 +913,13 @@ export const AGENT_REGISTRY = {
           },
           "basisKey": {
             "type": "string",
-            "help": "Grundlage der Entscheidung"
+            "help": "Grundlage der Entscheidung",
+            "optional": true
           },
           "table": {
             "type": "CrossTable|null",
             "help": "Kreuztabelle, nur Zusammenhangstest",
+            "optional": true,
             "keysOf": "CrossTable",
             "keys": {
               "cols": {
@@ -1061,14 +971,30 @@ export const AGENT_REGISTRY = {
             }
           }
         }
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "the reason there is no result (input hint or refusal), or an empty string",
-        "bulk": false,
-        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId"
+    ],
+    "settable": [
+      "testKind",
+      "inputMode",
+      "direction",
+      "alpha",
+      "p0",
+      "pooled",
+      "ratePooled",
+      "equiv",
+      "exposurePerRow",
+      "summary",
+      "colRefs",
+      "eventValue"
+    ],
+    "invariants": [
+      "tableShape",
+      "pairsShape"
+    ]
   },
   "bar": {
     "tagged": true,

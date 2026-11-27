@@ -26,6 +26,15 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setOrgNodeStyle', reason: 'nur für den Agenten; die Oberfläche ändert den Knotenstil im Bearbeiten-Dialog (updateOrgNode)' },
     { name: 'actions.setOrgNodeBorderWidth', reason: 'nur für den Agenten; die Oberfläche ändert die Rahmenbreite im Bearbeiten-Dialog (updateOrgNode)' },
   ],
+  'attribute-test': [
+    { name: 'actions.setTableCell', reason: 'Eingabe je Zelle der Kreuztabelle; die Kreuztabelle hat keine Spaltenköpfe mit Text (die Köpfe sind selbst Namensfelder), ein Fragezeichen je Zelle wäre Rauschen' },
+    { name: 'actions.setTableRowName', reason: 'Namensfeld je Zeile der Kreuztabelle, ohne Beschriftung; ein Fragezeichen je Zeile wäre Rauschen' },
+    { name: 'actions.setTableColName', reason: 'Namensfeld je Spalte der Kreuztabelle, ohne Beschriftung; ein Fragezeichen je Spalte wäre Rauschen' },
+    { name: 'fields.summary', reason: 'Sammelfeld der Zusammenfassungsangaben aller Testarten; die Oberfläche zeigt nur die Felder der gewählten Testart, jedes mit eigenem Anker (fields.summary.<angabe>)' },
+    { name: 'fields.equiv', reason: 'Sammelfeld der Äquivalenzangaben; Stichprobenzahl, Grenzart und Grenzen tragen je einen eigenen Anker (fields.equiv.<angabe>)' },
+    { name: 'fields.colRefs', reason: 'Sammelfeld der Spaltenbezüge; jeder Spaltenwähler trägt den Anker seiner Rolle (fields.colRefs.<rolle>)' },
+    { name: 'fields.eventValueOptions', reason: 'Auswahlhilfe für den Agenten (welche Ereigniswerte es gibt); die Oberfläche zeigt sie als Optionen der Ereigniswert-Auswahl, deren Anker an fields.eventValue hängt' },
+  ],
   'sample-size': [
     { name: 'fields.effect', reason: 'Sammelfeld der Effektangaben aller Varianten; die Oberfläche zeigt nur die Felder der gewählten Variante, jedes mit eigenem Anker (fields.effect.<variante>.<angabe>)' },
   ],

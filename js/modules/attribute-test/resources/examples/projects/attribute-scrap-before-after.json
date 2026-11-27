@@ -1,0 +1,79 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "testKind": "two",
+  "inputMode": "summary",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "p0": 0.5,
+  "pooled": false,
+  "ratePooled": false,
+  "equiv": {
+    "samples": 2,
+    "symmetric": true,
+    "delta": null,
+    "lower": null,
+    "upper": null
+  },
+  "exposurePerRow": 1,
+  "summary": {
+    "x": null,
+    "n": null,
+    "x1": 46,
+    "n1": 1200,
+    "x2": 21,
+    "n2": 1150,
+    "t": null,
+    "t1": null,
+    "t2": null,
+    "lambda0": null,
+    "diff0": 0,
+    "pairs": {
+      "labels": {
+        "before": "",
+        "after": ""
+      },
+      "counts": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    "table": {
+      "rows": [
+        "A",
+        "B"
+      ],
+      "cols": [
+        "X",
+        "Y"
+      ],
+      "counts": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "colRefs": {
+    "response": null,
+    "group": null,
+    "rowVar": null,
+    "colVar": null,
+    "counts": null,
+    "before": null,
+    "after": null
+  },
+  "eventValue": null
+}

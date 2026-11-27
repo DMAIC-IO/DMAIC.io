@@ -5,6 +5,11 @@
     "description": "SPC charts for count data: p, np, c, u",
     "whenToUse": "Control-chart counted data: p and np for defectives, c and u for defects, with Nelson-type rules on the plotted points."
   },
+  "attribute-test": {
+    "name": "Attribute Tests",
+    "description": "Tests for proportions, rates and counts: 1 and 2 proportions, Fisher's exact, chi-square association, McNemar, equivalence (TOST), 1 and 2 Poisson rates",
+    "whenToUse": "When counts of events are compared: tests one proportion against a hypothesized value, two proportions against each other (z test and Fisher's exact test), the equivalence of proportions (TOST), paired proportions before and after (McNemar), one or two Poisson rates (events per exposure) or the association of two categorical variables (chi-square on a cross table). The counts are given as summarized numbers or taken from worksheet columns."
+  },
   "bar": {
     "name": "Bar Chart",
     "description": "Bar chart from worksheet columns: frequency, mean, or sum per category",

@@ -5,6 +5,11 @@
     "description": "SPC-Karten für Zähldaten: p, np, c, u",
     "whenToUse": "Gezählte Daten in einer Regelkarte überwachen: p und np für fehlerhafte Einheiten, c und u für Fehler, mit Regeln nach Nelson auf den gezeichneten Punkten."
   },
+  "attribute-test": {
+    "name": "Attributtests",
+    "description": "Tests für Anteile, Raten und Häufigkeiten: 1 und 2 Anteile, Fisher-exakt, Chi-Quadrat-Assoziation, McNemar, Äquivalenz (TOST), 1 und 2 Poisson-Raten",
+    "whenToUse": "Wenn Häufigkeiten von Ereignissen verglichen werden: prüft einen Anteil gegen einen vermuteten Wert, zwei Anteile gegeneinander (z-Test und exakter Test nach Fisher), die Gleichwertigkeit von Anteilen (Äquivalenztest, TOST), gepaarte Anteile vorher und nachher (McNemar), eine oder zwei Poisson-Raten (Ereignisse je Umfang) oder den Zusammenhang zweier kategorialer Merkmale (Chi-Quadrat auf einer Kreuztabelle). Die Häufigkeiten werden als Zusammenfassung angegeben oder aus Tabellenspalten gezählt."
+  },
   "bar": {
     "name": "Säulendiagramm",
     "description": "Säulen-/Balkendiagramm aus Worksheet-Spalten: Häufigkeit, Mittelwert oder Summe je Kategorie",

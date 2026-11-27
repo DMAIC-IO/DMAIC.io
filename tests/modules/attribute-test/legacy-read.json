@@ -1,0 +1,599 @@
+{
+  "$comment": "read() der Altform (Sprache en) je Beispiel: activeParams, activeColumnSlots, eventValueOptions, result — festgehalten vor dem Löschen des Altmoduls.",
+  "attribute-scrap-before-after": {
+    "activeParams": [
+      "testKind",
+      "inputMode",
+      "alpha",
+      "summary.x1",
+      "summary.n1",
+      "summary.x2",
+      "summary.n2",
+      "direction",
+      "pooled"
+    ],
+    "activeColumnSlots": [],
+    "eventValueOptions": [],
+    "result": {
+      "kind": "two",
+      "stats": [
+        {
+          "num": null,
+          "key": "counts1",
+          "labelKey": "statCountsGroup",
+          "params": {
+            "group": "1"
+          },
+          "value": "46 / 1200"
+        },
+        {
+          "num": null,
+          "key": "counts2",
+          "labelKey": "statCountsGroup",
+          "params": {
+            "group": "2"
+          },
+          "value": "21 / 1150"
+        },
+        {
+          "num": 0.03833333333333333,
+          "key": "p1",
+          "labelKey": "statPGroup",
+          "params": {
+            "group": "1"
+          },
+          "value": "0.0383"
+        },
+        {
+          "num": 0.018260869565217393,
+          "key": "p2",
+          "labelKey": "statPGroup",
+          "params": {
+            "group": "2"
+          },
+          "value": "0.0183"
+        },
+        {
+          "num": 0.020072463768115938,
+          "key": "diff",
+          "labelKey": "statDiff",
+          "value": "0.0201"
+        },
+        {
+          "num": null,
+          "key": "ci",
+          "labelKey": "statCiDiff",
+          "params": {
+            "level": 95
+          },
+          "value": "[0.0067, 0.0334]"
+        },
+        {
+          "num": 2.949634266323607,
+          "key": "z",
+          "labelKey": "statZ",
+          "value": "2.9496"
+        },
+        {
+          "num": 0.00318150299858011,
+          "key": "pValue",
+          "labelKey": "statPValue",
+          "value": "0.0032"
+        },
+        {
+          "num": 0.004067411433548128,
+          "key": "pFisher",
+          "labelKey": "statPFisher",
+          "value": "0.0041"
+        }
+      ],
+      "notes": [
+        {
+          "key": "notePairedUseMcNemar"
+        }
+      ],
+      "pValue": 0.00318150299858011,
+      "ci": [
+        0.006734774239736932,
+        0.033410153296494945
+      ],
+      "decision": "reject",
+      "basisKey": "basisZ",
+      "table": null,
+      "noteDetails": [
+        {
+          "code": "notePairedUseMcNemar",
+          "values": {}
+        }
+      ]
+    }
+  },
+  "attribute-reklamation-one": {
+    "activeParams": [
+      "testKind",
+      "inputMode",
+      "alpha",
+      "summary.x",
+      "summary.n",
+      "p0",
+      "direction"
+    ],
+    "activeColumnSlots": [],
+    "eventValueOptions": [],
+    "result": {
+      "kind": "one",
+      "stats": [
+        {
+          "num": null,
+          "key": "counts",
+          "labelKey": "statCounts",
+          "value": "18 / 200"
+        },
+        {
+          "num": 0.09,
+          "key": "pHat",
+          "labelKey": "statPHat",
+          "value": "0.0900"
+        },
+        {
+          "num": null,
+          "key": "ci",
+          "labelKey": "statCi",
+          "params": {
+            "level": 95
+          },
+          "value": "[0.0542, 0.1385]"
+        },
+        {
+          "num": 0.02417888746178072,
+          "key": "pExact",
+          "labelKey": "statPExact",
+          "value": "0.0242"
+        },
+        {
+          "num": 2.5955427380922003,
+          "key": "z",
+          "labelKey": "statZ",
+          "value": "2.5955"
+        },
+        {
+          "num": 0.009444165687832573,
+          "key": "pNormal",
+          "labelKey": "statPNormal",
+          "value": "0.0094"
+        }
+      ],
+      "notes": [],
+      "pValue": 0.02417888746178072,
+      "ci": [
+        0.05421425445609593,
+        0.1385082084738249
+      ],
+      "decision": "reject",
+      "basisKey": "basisExact",
+      "table": null,
+      "noteDetails": []
+    }
+  },
+  "attribute-shift-pass-fail": {
+    "activeParams": [
+      "testKind",
+      "inputMode",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "rowVar",
+      "colVar"
+    ],
+    "eventValueOptions": [
+      "i.O.",
+      "n.i.O."
+    ],
+    "result": {
+      "kind": "assoc",
+      "stats": [
+        {
+          "num": 7.30909090909091,
+          "key": "pearson",
+          "labelKey": "statPearson",
+          "params": {
+            "df": 2
+          },
+          "value": "7.309"
+        },
+        {
+          "num": 0.025873255381341442,
+          "key": "pPearson",
+          "labelKey": "statPValue",
+          "value": "0.0259"
+        },
+        {
+          "num": 7.054599574620009,
+          "key": "lr",
+          "labelKey": "statLr",
+          "params": {
+            "df": 2
+          },
+          "value": "7.055"
+        },
+        {
+          "num": 0.02938415230221436,
+          "key": "pLR",
+          "labelKey": "statPLr",
+          "value": "0.0294"
+        }
+      ],
+      "notes": [],
+      "pValue": 0.025873255381341442,
+      "ci": null,
+      "noteDetails": [],
+      "decision": "reject",
+      "basisKey": "basisPearson",
+      "table": {
+        "cols": [
+          "i.O.",
+          "n.i.O."
+        ],
+        "rows": [
+          {
+            "name": "Früh",
+            "cells": [
+              {
+                "obs": "77",
+                "exp": "73.33",
+                "contrib": "0.183"
+              },
+              {
+                "obs": "3",
+                "exp": "6.67",
+                "contrib": "2.017"
+              }
+            ]
+          },
+          {
+            "name": "Nacht",
+            "cells": [
+              {
+                "obs": "68",
+                "exp": "73.33",
+                "contrib": "0.388"
+              },
+              {
+                "obs": "12",
+                "exp": "6.67",
+                "contrib": "4.267"
+              }
+            ]
+          },
+          {
+            "name": "Spät",
+            "cells": [
+              {
+                "obs": "75",
+                "exp": "73.33",
+                "contrib": "0.038"
+              },
+              {
+                "obs": "5",
+                "exp": "6.67",
+                "contrib": "0.417"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "attribute-paint-defects-rates": {
+    "activeParams": [
+      "testKind",
+      "inputMode",
+      "alpha",
+      "summary.x1",
+      "summary.t1",
+      "summary.x2",
+      "summary.t2",
+      "summary.diff0",
+      "ratePooled",
+      "direction"
+    ],
+    "activeColumnSlots": [],
+    "eventValueOptions": [],
+    "result": {
+      "kind": "rate2",
+      "stats": [
+        {
+          "num": 0.45,
+          "key": "rate1",
+          "labelKey": "statRateGroup",
+          "params": {
+            "group": "1"
+          },
+          "value": "0.4500"
+        },
+        {
+          "num": 0.25263157894736843,
+          "key": "rate2",
+          "labelKey": "statRateGroup",
+          "params": {
+            "group": "2"
+          },
+          "value": "0.2526"
+        },
+        {
+          "num": 0.19736842105263158,
+          "key": "diff",
+          "labelKey": "statRateDiff",
+          "value": "0.1974"
+        },
+        {
+          "num": null,
+          "key": "ci",
+          "labelKey": "statCiRateDiff",
+          "params": {
+            "level": 95
+          },
+          "value": "[0.04046, 0.3543]"
+        },
+        {
+          "num": 2.4653185972732996,
+          "key": "z",
+          "labelKey": "statZ",
+          "value": "2.4653"
+        },
+        {
+          "num": 0.013689147150945047,
+          "key": "pValue",
+          "labelKey": "statPValue",
+          "value": "0.0137"
+        },
+        {
+          "num": 0.02133083930725665,
+          "key": "pExactCond",
+          "labelKey": "statPExactCond",
+          "value": "0.0213"
+        },
+        {
+          "num": 1.78125,
+          "key": "ratio",
+          "labelKey": "statRateRatio",
+          "value": "1.7813"
+        },
+        {
+          "num": null,
+          "key": "ratioCi",
+          "labelKey": "statCiRatio",
+          "params": {
+            "level": 95
+          },
+          "value": "[1.0824, 3.0130]"
+        }
+      ],
+      "notes": [],
+      "pValue": 0.013689147150945047,
+      "ci": [
+        0.04045766826938388,
+        0.35427917383587926
+      ],
+      "decision": "reject",
+      "basisKey": "basisZRate",
+      "table": null,
+      "noteDetails": []
+    }
+  },
+  "attribute-supplier-equivalence": {
+    "activeParams": [
+      "testKind",
+      "inputMode",
+      "alpha",
+      "equiv.samples",
+      "equiv.symmetric",
+      "equiv.delta",
+      "summary.x1",
+      "summary.n1",
+      "summary.x2",
+      "summary.n2"
+    ],
+    "activeColumnSlots": [],
+    "eventValueOptions": [],
+    "result": {
+      "kind": "equiv",
+      "stats": [
+        {
+          "num": null,
+          "key": "counts1",
+          "labelKey": "statCountsGroup",
+          "params": {
+            "group": "1"
+          },
+          "value": "46 / 1200"
+        },
+        {
+          "num": null,
+          "key": "counts2",
+          "labelKey": "statCountsGroup",
+          "params": {
+            "group": "2"
+          },
+          "value": "41 / 1180"
+        },
+        {
+          "num": 0.003587570621468923,
+          "key": "estimate",
+          "labelKey": "statEquivEstimate2",
+          "value": "0.36"
+        },
+        {
+          "num": null,
+          "key": "ci",
+          "labelKey": "statEquivCi",
+          "params": {
+            "level": 90,
+            "unit": "pp"
+          },
+          "value": "[-0.91; 1.62]"
+        },
+        {
+          "num": null,
+          "key": "bounds",
+          "labelKey": "statEquivBounds",
+          "params": {
+            "unit": "pp"
+          },
+          "value": "[-1.00; 1.00]"
+        },
+        {
+          "num": 0.03862912759520609,
+          "key": "pLower",
+          "labelKey": "statPLower",
+          "value": "0.0386"
+        },
+        {
+          "num": 0.2021906922418406,
+          "key": "pUpper",
+          "labelKey": "statPUpper",
+          "value": "0.2022"
+        },
+        {
+          "num": 0.2021906922418406,
+          "key": "pValue",
+          "labelKey": "statPTost",
+          "value": "0.2022"
+        }
+      ],
+      "notes": [
+        {
+          "key": "noteEquivBoundsPractical"
+        },
+        {
+          "key": "noteEquivCiOutside"
+        }
+      ],
+      "pValue": 0.2021906922418406,
+      "ci": [
+        -0.00906202330060901,
+        0.01623716454354686
+      ],
+      "decision": "notEquivalent",
+      "decisionParams": {
+        "lower": "-1.00",
+        "upper": "1.00",
+        "unit": "pp",
+        "alpha": 0.05
+      },
+      "basisKey": "basisTost",
+      "table": null,
+      "noteDetails": [
+        {
+          "code": "noteEquivBoundsPractical",
+          "values": {}
+        },
+        {
+          "code": "noteEquivCiOutside",
+          "values": {}
+        }
+      ]
+    }
+  },
+  "attribute-before-after-paired": {
+    "activeParams": [
+      "testKind",
+      "inputMode",
+      "alpha",
+      "eventValue",
+      "direction"
+    ],
+    "activeColumnSlots": [
+      "before",
+      "after"
+    ],
+    "eventValueOptions": [
+      "i.O.",
+      "n.i.O."
+    ],
+    "result": {
+      "kind": "mcnemar",
+      "stats": [
+        {
+          "num": null,
+          "key": "discordant",
+          "labelKey": "statDiscordant",
+          "value": "25 / 9"
+        },
+        {
+          "num": 0.2866666666666667,
+          "key": "pBefore",
+          "labelKey": "statPBeforeLabeled",
+          "params": {
+            "label": "Vorher"
+          },
+          "value": "0.2867"
+        },
+        {
+          "num": 0.18,
+          "key": "pAfter",
+          "labelKey": "statPAfterLabeled",
+          "params": {
+            "label": "Nachher"
+          },
+          "value": "0.1800"
+        },
+        {
+          "num": -0.10666666666666667,
+          "key": "diff",
+          "labelKey": "statPairedDiff",
+          "value": "-0.1067"
+        },
+        {
+          "num": null,
+          "key": "ci",
+          "labelKey": "statCiPairedDiff",
+          "params": {
+            "level": 95
+          },
+          "value": "[-0.1809, -0.0324]"
+        },
+        {
+          "num": 0.009041185490787172,
+          "key": "pExact",
+          "labelKey": "statPExactMcNemar",
+          "value": "0.0090"
+        },
+        {
+          "num": 7.529411764705882,
+          "key": "chi2",
+          "labelKey": "statChi2McNemar",
+          "value": "7.529"
+        },
+        {
+          "num": 0.006069972362023224,
+          "key": "pChi2",
+          "labelKey": "statPChi2",
+          "value": "0.0061"
+        },
+        {
+          "num": 6.617647058823529,
+          "key": "chi2Cc",
+          "labelKey": "statChi2McNemarCc",
+          "value": "6.618"
+        },
+        {
+          "num": 0.010097314647507183,
+          "key": "pChi2Cc",
+          "labelKey": "statPChi2Cc",
+          "value": "0.0101"
+        }
+      ],
+      "notes": [],
+      "pValue": 0.009041185490787172,
+      "ci": [
+        -0.18091954096432847,
+        -0.03241379236900488
+      ],
+      "decision": "reject",
+      "basisKey": "basisExactMcNemar",
+      "table": null,
+      "noteDetails": []
+    }
+  }
+}

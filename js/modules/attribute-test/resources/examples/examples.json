@@ -1,0 +1,132 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "attribute-scrap-before-after",
+      "type": "project",
+      "title": {
+        "de": "Ausschuss vor und nach der Verbesserung (2 Anteile)",
+        "en": "Scrap before and after the improvement (2 proportions)"
+      },
+      "description": {
+        "de": "46 von 1200 Teilen Ausschuss vor, 21 von 1150 nach einer Prozessänderung. Erfundenes Szenario.",
+        "en": "46 of 1200 parts scrapped before, 21 of 1150 after a process change. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-scrap-before-after.json",
+      "format": "json",
+      "tags": [
+        "attribute",
+        "proportion",
+        "fisher"
+      ]
+    },
+    {
+      "id": "attribute-reklamation-one",
+      "type": "project",
+      "title": {
+        "de": "Reklamationsquote gegen Zielwert (1 Anteil)",
+        "en": "Complaint rate against a target (1 proportion)"
+      },
+      "description": {
+        "de": "18 von 200 gelieferten Sendungen wurden beanstandet; der Zielwert liegt bei 5 %. Zeigt den Test auf einen Anteil gegen einen Sollwert (exakter Test, p = 0,024). Erfundenes Szenario.",
+        "en": "18 of 200 shipments were complained about; the target is 5 %. Shows the test of one proportion against a target value (exact test, p = 0.024). Invented scenario."
+      },
+      "source": "Qprovement synthetisch (feste Zahlen, kein Zufallsgenerator)",
+      "license": "public-domain",
+      "file": "projects/attribute-reklamation-one.json",
+      "format": "json",
+      "tags": [
+        "attribute",
+        "proportion",
+        "binomial"
+      ]
+    },
+    {
+      "id": "attribute-shift-pass-fail",
+      "type": "project",
+      "title": {
+        "de": "Prüfergebnis je Schicht (Chi-Quadrat)",
+        "en": "Inspection result by shift (chi-square)"
+      },
+      "description": {
+        "de": "240 Prüfergebnisse (i.O./n.i.O.) aus drei Schichten; die Nachtschicht hat mehr Fehler. Erfundenes Szenario.",
+        "en": "240 inspection results (pass/fail) from three shifts; the night shift has more failures. Invented scenario."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=1010",
+      "license": "public-domain",
+      "file": "projects/attribute-shift-pass-fail.json",
+      "format": "json",
+      "tags": [
+        "attribute",
+        "chi-square",
+        "contingency"
+      ]
+    },
+    {
+      "id": "attribute-paint-defects-rates",
+      "type": "project",
+      "title": {
+        "de": "Lackfehler je m² auf zwei Linien (2 Poisson-Raten)",
+        "en": "Paint defects per m² on two lines (2 Poisson rates)"
+      },
+      "description": {
+        "de": "54 Lackfehler auf 120 m² (Linie 1) gegen 24 Fehler auf 95 m² (Linie 2). Die Fläche ist die Beobachtungsmenge; verglichen werden Fehler je m². Erfundenes Szenario.",
+        "en": "54 paint defects on 120 m² (line 1) versus 24 defects on 95 m² (line 2). The area is the exposure; defects per m² are compared. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-paint-defects-rates.json",
+      "format": "json",
+      "tags": [
+        "attribute",
+        "poisson",
+        "rate"
+      ]
+    },
+    {
+      "id": "attribute-supplier-equivalence",
+      "type": "project",
+      "title": {
+        "de": "Lieferantenwechsel: gleichwertige Ausschussquote? (Äquivalenztest)",
+        "en": "Supplier change: equivalent defect rate? (equivalence test)"
+      },
+      "description": {
+        "de": "46 von 1200 Teilen n.i.O. beim alten, 41 von 1180 beim neuen Lieferanten, Grenze ±1 Prozentpunkt. Der 90-%-Bereich der Differenz liegt nicht ganz innerhalb der Grenzen – Gleichwertigkeit ist nicht nachgewiesen. Erfundenes Szenario.",
+        "en": "46 of 1200 parts failed with the old supplier, 41 of 1180 with the new one, bound ±1 percentage point. The 90 % interval of the difference does not lie entirely within the bounds – equivalence is not shown. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-supplier-equivalence.json",
+      "format": "json",
+      "tags": [
+        "attribute",
+        "proportion",
+        "equivalence",
+        "tost"
+      ]
+    },
+    {
+      "id": "attribute-before-after-paired",
+      "type": "project",
+      "title": {
+        "de": "Dieselben Teile vorher und nachher (McNemar)",
+        "en": "The same parts before and after (McNemar)"
+      },
+      "description": {
+        "de": "150 Teile werden vor und nach einer Nacharbeit geprüft (i.O./n.i.O.). Gepaarte Daten: Es zählen nur die Teile, deren Ergebnis sich geändert hat. Erfundenes Szenario.",
+        "en": "150 parts are inspected before and after a rework (pass/fail). Paired data: only the parts whose result changed count. Invented scenario."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=1020",
+      "license": "public-domain",
+      "file": "projects/attribute-before-after-paired.json",
+      "format": "json",
+      "tags": [
+        "attribute",
+        "mcnemar",
+        "paired"
+      ]
+    }
+  ]
+}

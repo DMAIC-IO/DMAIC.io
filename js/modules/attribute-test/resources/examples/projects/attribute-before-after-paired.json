@@ -1,0 +1,88 @@
+{
+  "_schema": {
+    "version": "1.0"
+  },
+  "testKind": "mcnemar",
+  "inputMode": "columns",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "p0": 0.5,
+  "pooled": false,
+  "ratePooled": false,
+  "equiv": {
+    "samples": 2,
+    "symmetric": true,
+    "delta": null,
+    "lower": null,
+    "upper": null
+  },
+  "exposurePerRow": 1,
+  "summary": {
+    "x": null,
+    "n": null,
+    "x1": null,
+    "n1": null,
+    "x2": null,
+    "n2": null,
+    "t": null,
+    "t1": null,
+    "t2": null,
+    "lambda0": null,
+    "diff0": 0,
+    "pairs": {
+      "labels": {
+        "before": "",
+        "after": ""
+      },
+      "counts": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    "table": {
+      "rows": [
+        "A",
+        "B"
+      ],
+      "cols": [
+        "X",
+        "Y"
+      ],
+      "counts": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "colRefs": {
+    "response": null,
+    "group": null,
+    "rowVar": null,
+    "colVar": null,
+    "counts": null,
+    "before": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-before-after-paired",
+      "columnId": "c-before"
+    },
+    "after": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-before-after-paired",
+      "columnId": "c-after"
+    }
+  },
+  "eventValue": "n.i.O.",
+  "sourceWorksheetFile": "worksheets/attribute-before-after-paired.json"
+}

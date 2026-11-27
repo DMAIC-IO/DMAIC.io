@@ -4310,13 +4310,22 @@ test('void_creating_action: Promise<void>, undefined und Promise<undefined> zäh
 });
 
 test('void_creating_action: eine Ausnahme aus CREATING_VOID_EXEMPT bleibt befundfrei', async () => {
-  const vm = TAGGED_VM
+  // Fixture-Modul in der Altform unter dem Namen einer Ausnahme; `converted: []`,
+  // weil das echte Modul umgestellt ist und dort kein Viewmodel-Vertrag gilt.
+  const vmFor = (action) => TAGGED_VM
     .replace('       * @returns {boolean} whether it was accepted\n', '       * @returns {void}\n')
-    .replace("config: { id: 'foo' }", "config: { id: 'attribute-test' }")
-    .replace('setProblem(text)', 'addRow(text)');
-  const root = fixture({ 'attribute-test': { 'attribute-test.js': vm, 'foo-model.js': MODEL } });
-  const entry = (await collectAgentData(root)).modules['attribute-test'];
-  assert.ok(!entry.violations.some((v) => v.startsWith('void_creating_action')), entry.violations.join(', '));
+    .replace("config: { id: 'foo' }", "config: { id: 'worksheet' }")
+    .replace('setProblem(text)', `${action}(text)`);
+  const entryFor = async (action) => {
+    const root = fixture({ worksheet: { 'worksheet.js': vmFor(action), 'foo-model.js': MODEL } });
+    return (await collectAgentData(root, { converted: [] })).modules.worksheet;
+  };
+  assert.ok(CREATING_VOID_EXEMPT.has('worksheet.addRows'));
+  const exempt = await entryFor('addRows');
+  assert.ok(!exempt.violations.some((v) => v.startsWith('void_creating_action')), exempt.violations.join(', '));
+  // Gegenprobe: dasselbe Modul ohne Ausnahme für die Aktion bleibt ein Befund.
+  const other = await entryFor('addRow');
+  assert.ok(other.violations.includes('void_creating_action:addRow'), other.violations.join(', '));
 });
 
 test('void_creating_action: jede Ausnahme trifft im echten Baum noch eine void-Anlegeaktion', async () => {
