@@ -7,7 +7,7 @@
  * Entfernen mit Rückfrage, Großansicht, Rückgängig und Wiederholen, ids je
  * Instanz und das Altprojekt ohne Verlaufsschritt.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, fakeChartManager } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerCommandDirectives } from '../../js/core/command-directives.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
@@ -158,7 +158,7 @@ async function mount(instanceId, model, { keep = false } = {}) {
     },
     i18n: { t: (k) => k, tf: () => tr, getLanguage: () => 'de' },
     eventBus: bus,
-    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },
+    chartManager: fakeChartManager(),
     notify: (...args) => { notes.push(args); },
     dialog: {
       confirm: async (opts) => { confirms.push(opts); return answer.ok; },

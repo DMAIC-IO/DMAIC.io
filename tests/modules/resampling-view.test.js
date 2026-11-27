@@ -4,7 +4,7 @@
  * steuerbaren Runner (`mod.runnerFactory`). Prüft Sperre, Fortschritt über
  * zwei Teil-Läufe, Veraltet-Anzeige, Abbruch, Fehlertext und die Lesefläche.
  */
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, fakeChartManager } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/resampling/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
@@ -98,7 +98,7 @@ async function mount(model, sheets = {}) {
     }),
     i18n: I18N,
     eventBus: bus,
-    chartManager: { create: async (el, type, config) => ({ el, type, config: { ...config } }), update: () => {}, destroy: () => {} },
+    chartManager: fakeChartManager(),
     notify: () => {},
     dialog: { confirm: async () => true },
     theme: 'light',

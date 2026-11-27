@@ -4,7 +4,7 @@
  * Prüft die Verdrahtung des view-Blocks: computed levels/analysis, Getter der
  * Diagramme und das Viewmodel-Kommando swapPositive.
  */
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, fakeChartManager } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/msa-typ5/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
@@ -59,7 +59,7 @@ async function mount(name, editSheet) {
     }),
     i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
     eventBus: bus,
-    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },
+    chartManager: fakeChartManager(),
     notify: () => {},
     dialog: { confirm: async () => true },
     theme: 'light',

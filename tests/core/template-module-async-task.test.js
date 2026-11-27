@@ -107,7 +107,8 @@ suite('createModule mit asyncTasks', () => {
   });
 
   test('ohne asyncTasks fehlt das Glied', async () => {
-    const { mod, container, vm } = await mount({ asyncTasks: undefined });
+    // The shared template binds `twice` — without the task it is a plain member.
+    const { mod, container, vm } = await mount({ asyncTasks: undefined, view() { return { twice: null }; } });
     assertEqual(Object.hasOwn(vm(), 'asyncTasks'), false);
     await mod.destroy(); container.remove();
   });

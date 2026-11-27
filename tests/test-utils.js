@@ -345,3 +345,17 @@ export function assertSignificance(pValue, alpha = 0.05, message) {
     fail(message ?? `Expected p-value ${pValue} < ${alpha}`);
   }
 }
+
+/**
+ * Chart manager stand-in for module view tests that mount charts but do not
+ * inspect them. Like the real one, every created chart carries its `config`
+ * (chart-mount reads `chart.config` after create) and `update` merges into it.
+ * @returns {{ create: Function, update: Function, destroy: Function }}
+ */
+export function fakeChartManager() {
+  return {
+    create: async (el, type, config) => ({ el, type, config: { ...config } }),
+    update: (chart, patch) => { if (chart?.config) Object.assign(chart.config, patch); },
+    destroy: () => {},
+  };
+}

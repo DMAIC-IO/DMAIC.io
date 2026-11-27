@@ -8,7 +8,7 @@
  * Wiederholen, Agent und `instance.set`, zwei Instanzen, den JSON-Export und
  * das Altprojekt ohne Verlaufsschritt.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, fakeChartManager } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerCommandDirectives, runUiCommand } from '../../js/core/command-directives.js';
 import { runExport } from '../../js/core/exporter.js';
@@ -150,7 +150,7 @@ async function mount(instanceId, model, { keep = false, confirm = true } = {}) {
         for (const [a, f] of [...handlers]) if (a === n) f(p);
       },
     },
-    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },
+    chartManager: fakeChartManager(),
     notify: (...args) => { notes.push(args); },
     dialog: { confirm: async (o) => { confirms.push(o); return confirm; }, show: () => ({ close() {}, setTitle() {} }) },
     theme: 'light',

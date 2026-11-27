@@ -6,6 +6,7 @@
  * the app. Dialog answers, notifications and `command:executed` events are
  * recorded.
  */
+import { fakeChartManager } from '../../test-utils.js';
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import mod from '../../../js/modules/survey-builder/viewmodel/viewmodel.js';
 import { SurveyModel } from '../../../js/modules/survey-builder/domain/model.js';
@@ -156,7 +157,7 @@ export async function mount(model = null, { confirm = true, chartManager = null,
   };
   context.chartManager = chartManager
     ? chartManager(bus, context.i18n)
-    : { create: async () => ({}), update: () => {}, destroy: () => {}, renderSVG: () => '' };
+    : { ...fakeChartManager(), renderSVG: () => '' };
   const container = document.createElement('div');
   document.body.append(container);
   mounted.push(container);

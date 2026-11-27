@@ -158,7 +158,8 @@ suite('createModule mit derived', () => {
   test('derived liest über src.read und rechnet nach bumpWorksheetRevisions neu (Vorladen)', async () => {
     const Reads = defineModel({
       fields: { n: number({ default: 1 }) },
-      derived: { rows(src) { return src.read('ws1', {}).rowCount; } },
+      // `double` as in Doc: the shared template binds it.
+      derived: { rows(src) { return src.read('ws1', {}).rowCount; }, double() { return this.n * 2; } },
     });
     let loaded = false;
     const readSync = (id) => {

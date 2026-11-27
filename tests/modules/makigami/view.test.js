@@ -10,7 +10,7 @@
  * Umsortieren per Alt+Pfeil an beiden Griffen, zwei Instanzen mit gleichen
  * Schritt-ids und die Exporte.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, fakeChartManager } from '../../test-utils.js';
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import { registerCommandDirectives } from '../../../js/core/command-directives.js';
 import { registerFieldDirective } from '../../../js/core/field-directive.js';
@@ -122,7 +122,7 @@ async function mount(instanceId, model, { keep = false, confirm = true } = {}) {
       off: (n, fn) => { const i = handlers.findIndex(([a, f]) => a === n && f === fn); if (i >= 0) handlers.splice(i, 1); },
       emit: (n, p) => { for (const [a, f] of [...handlers]) if (a === n) f(p); },
     },
-    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },
+    chartManager: fakeChartManager(),
     notify: (...args) => { notes.push(args); },
     dialog: { confirm: async (o) => { confirms.push(o); return confirm; }, show: () => ({ close() {}, setTitle() {} }) },
     theme: 'light',

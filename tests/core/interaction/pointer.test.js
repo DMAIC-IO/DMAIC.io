@@ -313,8 +313,10 @@ suite('interaction/attach — Zeiger', () => {
     document.body.append(root);
     const moves = [];
     let endHook = null;
+    let pressed = false;
     const gesture = {
-      press: () => true,
+      press: () => (pressed = true),
+      idle: () => !pressed,
       pointerMove: (e) => moves.push(e.clientY),
       pointerUp() {}, pointerCancel() {},
       consumeClick: () => false,

@@ -34,6 +34,11 @@ function ensureTemplate() {
   document.body.append(tpl);
 }
 
+/** The component members the shared template binds (`upperTitle`). */
+const templateData = () => ({
+  get upperTitle() { return this.model.title.toUpperCase(); },
+});
+
 function makeModule() {
   return createModule({
     config: { id: ID, engine: 'alpine', phase: 'define',
@@ -43,9 +48,7 @@ function makeModule() {
       label: command({ params: { upper: boolean() }, returns: text(),
         run({ upper }) { return upper ? this.model.title.toUpperCase() : this.model.title; } }),
     },
-    data: () => ({
-      get upperTitle() { return this.model.title.toUpperCase(); },
-    }),
+    data: templateData,
   });
 }
 
@@ -469,7 +472,7 @@ suite('createModule: fehlende Felder bekommen die Vorgabe des Projektkontexts', 
     while (mounted.length) mounted.pop().remove();
     const persisted = [];
     const mod = createModule({ config: { id: ID, engine: 'alpine', phase: 'define',
-      templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model: Ctx, data: () => ({}) });
+      templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model: Ctx, data: templateData });
     const container = document.createElement('div');
     document.body.append(container);
     mounted.push(container);
@@ -497,7 +500,7 @@ async function mountStateful(Model, saved, events = []) {
   while (mounted.length) mounted.pop().remove();
   const states = { 'ctx-1': saved };
   const mod = createModule({ config: { id: ID, engine: 'alpine', phase: 'define',
-    templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model, data: () => ({}) });
+    templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model, data: templateData });
   const container = document.createElement('div');
   document.body.append(container);
   mounted.push(container);

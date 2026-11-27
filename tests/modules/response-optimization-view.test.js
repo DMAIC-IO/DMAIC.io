@@ -8,7 +8,7 @@
  * Ergebnis und Wirkungsfläche, die Achsenwahl, fehlende Modelle und das
  * veraltete Ergebnis, das Altprojekt ohne Verlaufsschritt und zwei Instanzen.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, fakeChartManager } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerCommandDirectives } from '../../js/core/command-directives.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
@@ -158,11 +158,7 @@ async function mount(model, { inst = INST, keep = false, owners = {}, unloaded =
     stateManager: env.sm,
     i18n: { t: (k) => k, tf: () => tr, getLanguage: () => 'de' },
     eventBus: env.bus,
-    chartManager: {
-      create: async (el, type, config) => ({ el, type, config: { ...config } }),
-      update: (chart, config) => { Object.assign(chart.config, config); },
-      destroy: () => {},
-    },
+    chartManager: fakeChartManager(),
     notify: (message, type) => notes.push({ message, type }),
     dialog: { confirm: async () => true },
     theme: 'light',

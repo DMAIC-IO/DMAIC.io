@@ -8,7 +8,7 @@
  * Tick bei laufendem Abruf, Aufräumen), den abgelehnten Platzhalter im
  * Header-Wert, den Hinweis auf fehlende Zugangsdaten und zwei Instanzen.
  */
-import { suite, test, afterEach, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, afterEach, assertEqual, assertTrue, assertDeepEqual, fakeChartManager } from '../../test-utils.js';
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import { registerCommandDirectives } from '../../../js/core/command-directives.js';
 import { registerFieldDirective } from '../../../js/core/field-directive.js';
@@ -137,7 +137,7 @@ async function mount(model, { inst = 'ra-1', keep = false, extra = {} } = {}) {
     }),
     i18n: { t: (k, p) => (k.startsWith(`modules.${ID}.`) ? tr(k.slice(ID.length + 9), p) : k), tf: () => tr, getLanguage: () => 'de' },
     eventBus: bus,
-    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },
+    chartManager: fakeChartManager(),
     notify: (...a) => notes.push(a),
     dialog: { confirm: async (o) => { asked.push(o); return true; } },
     theme: 'light',

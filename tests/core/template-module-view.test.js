@@ -28,6 +28,9 @@ function ensureTemplate() {
 
 let seenCtx = null;
 
+/** View part with the `label` the shared template binds, for views that bring none. */
+const labelPart = () => ({ label: '' });
+
 function makeModule(extra = {}) {
   return createModule({
     config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
@@ -231,7 +234,7 @@ suite('createModule: computed im view-Block', () => {
 
   test('read() enthält kein computed, das Viewmodel liest es weiter', async () => {
     const { data } = await mount({
-      view() { return { computed: { shout() { return { text: String(this.model.title) }; } } }; },
+      view() { return { ...labelPart(), computed: { shout() { return { text: String(this.model.title) }; } } }; },
     });
     assertDeepEqual(data().shout, { text: 'abc' });
     assertEqual('shout' in data().read(), false);
@@ -278,7 +281,7 @@ suite('createModule: computed im view-Block', () => {
   test('destroy gibt die Effects frei', async () => {
     let runs = 0;
     const { data, container } = await mount({
-      view() { return { computed: { c() { runs += 1; return this.model.title; } } }; },
+      view() { return { ...labelPart(), computed: { c() { runs += 1; return this.model.title; } } }; },
     });
     const vm = data();
     Alpine.destroyTree(container.querySelector('[x-data]'));
@@ -298,7 +301,7 @@ suite('createModule: view-Block aus Teilen', () => {
   test('view: [a, b] — Glieder und computed beider Teile in der Komponente', async () => {
     const a = () => ({ x() { return 'x'; }, computed: { upper() { return String(this.model.title).toUpperCase(); } } });
     const b = () => ({ get y() { return `${this.upper}!`; }, computed: { len() { return String(this.model.title).length; } } });
-    const { data } = await mount({ view: [a, b] });
+    const { data } = await mount({ view: [a, b, labelPart] });
     assertEqual(data().x(), 'x');
     assertEqual(data().y, 'ABC!');
     assertEqual(data().len, 3);
@@ -310,7 +313,7 @@ suite('createModule: view-Block aus Teilen', () => {
 
   test('Teile bekommen denselben ctx', async () => {
     const seen = [];
-    await mount({ view: [(ctx) => { seen.push(ctx); return {}; }, (ctx) => { seen.push(ctx); return {}; }] });
+    await mount({ view: [(ctx) => { seen.push(ctx); return {}; }, (ctx) => { seen.push(ctx); return {}; }, labelPart] });
     // je zwei Aufrufe: Probe beim Anlegen (wirft bei Zugriff) und Mount
     assertEqual(seen.length, 4);
     assertEqual(seen[2].instanceId, 'vt-1');
@@ -337,7 +340,7 @@ suite('createModule: view-Block aus Teilen', () => {
   test('init und destroy je Teil: init in Reihenfolge, destroy umgekehrt', async () => {
     const calls = [];
     const part = (n) => () => ({ init() { calls.push(`init ${n}`); }, destroy() { calls.push(`destroy ${n}`); } });
-    const { container } = await mount({ view: [part('a'), part('b')] });
+    const { container } = await mount({ view: [part('a'), part('b'), labelPart] });
     assertDeepEqual(calls, ['init a', 'init b']);
     Alpine.destroyTree(container.querySelector('[x-data]'));
     assertDeepEqual(calls, ['init a', 'init b', 'destroy b', 'destroy a']);
