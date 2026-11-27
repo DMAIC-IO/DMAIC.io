@@ -1,0 +1,184 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "params": {
+      "help": "Die neun Eingaben der Studie: measurementName und unit frei, chartType (i-mr oder xbar-r), limitsMode (from-study oder given), baselineK als ganze Zahl ab 1, mu0 und sigma0 als Zahl oder leer, enabledRules als Liste der Regeln 1 bis 8, alpha als 0,01, 0,05 oder 0,1. Geschrieben wird das ganze Objekt; jeder Schlüssel ist unter keys beschrieben.",
+      "chartType": {
+        "help": "Der Kartentyp, Beschriftung „Kartentyp“: I-MR für Einzelwerte, x̄-R für Untergruppen."
+      },
+      "limitsMode": {
+        "help": "Die Herkunft der Eingriffsgrenzen, Beschriftung „Grenzen-Modus“: aus den Studiendaten oder vorgegeben."
+      },
+      "baselineK": {
+        "help": "Die Zahl der Basis-Untergruppen, Beschriftung „Basis-Untergruppen k“, als ganze Zahl; unter 5 rechnet die Studie nicht."
+      },
+      "mu0": {
+        "help": "Der vorgegebene Sollmittelwert, Beschriftung „μ₀ (Sollmittelwert)“, als Zahl. Er wirkt nur bei vorgegebenen Grenzen."
+      },
+      "sigma0": {
+        "help": "Die vorgegebene Sollstreuung, Beschriftung „σ₀ (Sollstreuung)“, als Zahl größer 0. Sie wirkt nur bei vorgegebenen Grenzen."
+      },
+      "alpha": {
+        "help": "Das Signifikanzniveau des Drift-Tests, Beschriftung „Signifikanzniveau α (Drift-Test)“: 0,01, 0,05 oder 0,1, voreingestellt 0,05."
+      }
+    },
+    "columns": {
+      "help": "Die drei Spalten einer Datensammlung: timestamp (Zeitstempel oder Reihenfolge, Zahl oder Datum), value (Messwert, Zahl) und subgroup (Untergruppe, wirkt nur bei xbar-r), je als Spaltenbezug oder leer. Geschrieben wird das ganze Objekt; nach einer Änderung wird neu gerechnet.",
+      "timestamp": {
+        "help": "Die Spalte mit Zeitstempel oder Reihenfolge, Beschriftung „Zeitstempel / Reihenfolge“; Zahl oder Datum."
+      },
+      "value": {
+        "help": "Die Spalte mit den Messwerten, Beschriftung „Messwert“; numerisch."
+      },
+      "subgroup": {
+        "help": "Die Spalte mit der Untergruppe je Messwert, Beschriftung „Untergruppe“; sie wirkt nur bei x̄-R."
+      }
+    },
+    "sourceTyp1InstanceId": {
+      "help": "Die Typ-1-Studie, aus der μ₀ und σ₀ übernommen wurden; leer ohne Übernahme. Die Auswahl übernimmt μ₀ und σ₀ in einem Schritt."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispiel-Arbeitsblatts, aus dem dieses Modul befüllt wurde; leer, wenn keines geladen wurde."
+    },
+    "primaryChart": {
+      "help": "Die Einstellungen der Lagekarte (Einzelwerte bzw. Mittelwerte) aus dem Diagramm-Editor."
+    },
+    "secondaryChart": {
+      "help": "Die Einstellungen der Streuungskarte (gleitende Spannweite bzw. Spannweite) aus dem Diagramm-Editor."
+    },
+    "driftChart": {
+      "help": "Die Einstellungen der Driftgrafik aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; leer, solange Messwertspalte oder Messwerte fehlen. Lehnt die Rechnung die Eingaben ab, steht nur der Grund da."
+    },
+    "activeParams": {
+      "help": "Die Schlüssel der Eingaben, die im aktuellen Zustand wirken; baselineK fehlt bei limitsMode given, mu0 und sigma0 fehlen bei limitsMode from-study. Geschrieben werden alle immer."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spalten-Slots, die im aktuellen Zustand wirken; subgroup fehlt außerhalb von chartType xbar-r."
+    }
+  },
+  "actions": {
+    "toggleRule": {
+      "help": "Hakt eine Nelson-Regel an oder ab; die Liste der angehakten Regeln bleibt ohne Doppelte und aufsteigend.",
+      "params": {
+        "ruleId": "Die Regel, 1 bis 8 (Bedeutung bei den angehakten Regeln). Ein anderer Wert ist ein Fehler.",
+        "on": "true hakt an, false ab.",
+        "command": "Das Kommando als ein Objekt mit ruleId und on."
+      }
+    },
+    "adoptTyp1": {
+      "help": "Übernimmt μ₀ und σ₀ aus einer Typ-1-Studie in einem Schritt und merkt sich die Studie, wie die Auswahl „Aus Typ-1-Instanz übernehmen“. Mittelwert und Standardabweichung liefert die Typ-1-Instanz unter columnStats. Ohne Studie wird nur die Auswahl zurückgesetzt, μ₀ und σ₀ bleiben.",
+      "params": {
+        "instanceId": "Die id der Typ-1-Instanz, oder null zum Zurücksetzen der Auswahl.",
+        "mu0": "Der zu übernehmende Mittelwert; fehlt er, bleibt μ₀ unverändert.",
+        "sigma0": "Die zu übernehmende Standardabweichung; fehlt sie, bleibt σ₀ unverändert.",
+        "command": "Das Kommando als ein Objekt mit instanceId und optional mu0 und sigma0."
+      }
+    }
+  },
+  "types": {
+    "Params": {
+      "measurementName": "Bezeichnung des beobachteten Merkmals, zum Beispiel „Wellendurchmesser“. Sie dient der Beschriftung und hat auf die Rechnung keinen Einfluss.",
+      "unit": "Maßeinheit der Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+      "chartType": "Kartentyp: I-MR für Einzelwerte mit gleitender Spannweite, mindestens 10 Werte; x̄-R für Mittelwerte von Untergruppen mit ihrer Spannweite, mindestens 5 Untergruppen gleicher Größe mit 2 bis 25 Werten. Für x̄-R ist eine Untergruppenspalte nötig.",
+      "limitsMode": "Herkunft der Eingriffsgrenzen: aus den Studiendaten, berechnet aus den ersten k Basis-Untergruppen, oder vorgegeben über Sollmittelwert μ₀ und Sollstreuung σ₀, etwa aus einer Typ-1-Studie.",
+      "baselineK": "Anzahl k der Basis-Untergruppen (bei I-MR der ersten Einzelwerte), aus denen Mittellinie und Eingriffsgrenzen berechnet werden. Erlaubt sind mindestens 5 und höchstens so viele, wie Daten vorliegen; unter 20 erscheint eine Warnung. Vorgabe ist 20.",
+      "mu0": "Vorgegebener Sollmittelwert μ₀; er ist die Mittellinie der Lagekarte. Nur bei vorgegebenen Grenzen.",
+      "sigma0": "Vorgegebene Sollstreuung σ₀ der Einzelwerte, größer als 0. Die Eingriffsgrenzen liegen bei μ₀ ± 3 · σ₀, bei x̄-R bei μ₀ ± 3 · σ₀ / √n. Nur bei vorgegebenen Grenzen.",
+      "enabledRules": "Die Nelson-Regeln 1 bis 8, nach denen die Punkte der Lagekarte geprüft werden. Vorgabe sind die Regeln 1 bis 6; ist keine angehakt, wird nicht geprüft.",
+      "alpha": "Signifikanzniveau des Drift-Tests: 0,01, 0,05 (üblich) oder 0,1. Ein Drift mit p < α macht das Urteil mindestens grenzwertig, einer mit p < α/10 instabil."
+    },
+    "Columns": {
+      "timestamp": "Die Spalte mit Zeitstempel oder Reihenfolge. Mit ihr liegt die Drift-Regression auf der Zeitachse der Zeitstempel, ohne sie auf der laufenden Nummer der Punkte.",
+      "value": "Die Spalte mit den Messwerten am Referenzteil. Zeilen ohne lesbaren Messwert entfallen samt Zeitstempel und Untergruppe.",
+      "subgroup": "Die Spalte, die jedem Messwert seine Untergruppe zuordnet; nur bei x̄-R. Alle Untergruppen brauchen gleich viele Werte, 2 bis 25."
+    },
+    "Result": {
+      "meta": "Rahmendaten der Auswertung: Kartentyp, Herkunft der Grenzen, Umfang und Warnungen.",
+      "primary": "Die Lagekarte: Einzelwerte bei I-MR, Mittelwerte der Untergruppen bei x̄-R, mit Mittellinie, Eingriffsgrenzen und Regelverletzungen.",
+      "secondary": "Die Streuungskarte: gleitende Spannweiten bei I-MR, Spannweiten der Untergruppen bei x̄-R, mit Mittellinie und Eingriffsgrenzen.",
+      "drift": "Lineare Regression der Punkte der Lagekarte über der Zeit, mit t-Test, ob die Steigung von 0 abweicht.",
+      "ruleViolations": "Je Punkt der Lagekarte, der mindestens eine Nelson-Regel verletzt, ein Eintrag mit Zeitpunkt, Wert und verletzten Regeln, nach Punkt sortiert.",
+      "verdict": "Urteil zur Stabilität mit seinem Auslöser und den Grenzen, nach denen geurteilt wurde.",
+      "interpretation": "Die Deutung des Ergebnisses als Satz, abhängig von Urteil und Auslöser.",
+      "invalid": "Grund, wenn die Rechnung die Eingaben ablehnt: Fehlercode und Werte für den Fehlertext. Dann fehlen alle Kennzahlen."
+    },
+    "Invalid": {
+      "code": "Kennung des Fehlers, zum Beispiel E_TOO_FEW_POINTS (zu wenige Punkte) oder E_GIVEN_LIMITS_INVALID (μ₀ oder σ₀ fehlt).",
+      "params": "Werte, die der Fehlertext einsetzt, etwa die Mindestzahl; sonst leer."
+    },
+    "Meta": {
+      "chartType": "Der gerechnete Kartentyp: I-MR oder x̄-R.",
+      "limitsMode": "Woher die Grenzen stammen: aus den Studiendaten oder vorgegeben.",
+      "n": "Untergruppengröße: 1 bei I-MR, bei x̄-R die Zahl der Werte je Untergruppe.",
+      "subgroupCount": "Anzahl der Punkte der Lagekarte: Einzelwerte bei I-MR, Untergruppen bei x̄-R.",
+      "pointCount": "Anzahl aller ausgewerteten Messwerte.",
+      "baselineK": "Die eingestellte Zahl k der Basis-Untergruppen; sie wirkt nur, wenn die Grenzen aus den Studiendaten stammen.",
+      "warnings": "Hinweise zur Belastbarkeit: weniger als 20 Basis-Untergruppen, nicht monoton steigende Zeitstempel oder eine Regelverletzung innerhalb der Basis, die die daraus berechneten Grenzen verfälschen kann."
+    },
+    "Warning": {
+      "code": "Kennung der Warnung: W_BASELINE_LT_20 (weniger als 20 Basis-Untergruppen), W_TIMESTAMPS_NON_MONOTONIC (Zeitstempel nicht monoton steigend) oder W_LIMITS_FROM_UNSTABLE_BASELINE (Regelverletzung innerhalb der Basis).",
+      "params": "Werte, die der Warnungstext einsetzt; nur bei zu kleiner Basis vorhanden, dann mit der Zahl k der Basis-Untergruppen."
+    },
+    "PrimaryChart": {
+      "series": "Die Punkte der Lagekarte in Zeitreihenfolge: die Einzelwerte bei I-MR, die Mittelwerte der Untergruppen bei x̄-R. Die Kachel Mittelwert zeigt den Mittelwert dieser Punkte.",
+      "cl": "Mittellinie der Lagekarte: Mittelwert der Basis bei Grenzen aus den Studiendaten, sonst der Sollmittelwert μ₀.",
+      "ucl": "Obere Eingriffsgrenze der Lagekarte: Mittellinie + 3 · σ.",
+      "lcl": "Untere Eingriffsgrenze der Lagekarte: Mittellinie − 3 · σ.",
+      "sigma": "Geschätzte Streuung der Punkte der Lagekarte. Aus den Studiendaten: bei I-MR mittlere gleitende Spannweite der Basis / d₂, bei x̄-R mittlere Spannweite der Basis / (d₂ · √n). Vorgegeben: σ₀, bei x̄-R σ₀ / √n.",
+      "label": "Kartenart: i für Einzelwerte, xbar für Mittelwerte der Untergruppen.",
+      "violations": "Je Punkt und verletzter Nelson-Regel ein Eintrag; ein Punkt, der mehrere Regeln verletzt, kommt mehrfach vor."
+    },
+    "Violation": {
+      "index": "Position des Punkts in der Lagekarte, ab 0 gezählt.",
+      "ruleId": "Nummer der verletzten Nelson-Regel, 1 bis 8."
+    },
+    "SecondaryChart": {
+      "series": "Die Spannweiten in Zeitreihenfolge: bei I-MR der Betrag der Differenz zweier aufeinanderfolgender Werte, wobei der erste Wert fehlt; bei x̄-R größter minus kleinster Wert je Untergruppe.",
+      "cl": "Mittellinie der Streuungskarte: mittlere Spannweite der Basis bei Grenzen aus den Studiendaten, sonst d₂ · σ₀.",
+      "ucl": "Obere Eingriffsgrenze der Streuungskarte: D₄ · Mittellinie.",
+      "lcl": "Untere Eingriffsgrenze der Streuungskarte: D₃ · Mittellinie; bei Untergruppen bis 6 Werten ist sie 0.",
+      "label": "Kartenart: MR für gleitende Spannweiten, R für Spannweiten der Untergruppen."
+    },
+    "Drift": {
+      "slope": "Steigung der Regressionsgeraden durch die Punkte der Lagekarte über der Zeit: Änderung je Punkt, wenn keine Zeitspalte gewählt ist, sonst je Einheit der Zeitstempel (bei Datumsangaben je Millisekunde). Ideal ist 0.",
+      "se": "Standardfehler der Steigung: Wurzel aus Residuenvarianz geteilt durch die Summe der quadrierten Abstände der Zeitpunkte von ihrem Mittel.",
+      "tStat": "Prüfgröße für Steigung = 0: Steigung geteilt durch ihren Standardfehler.",
+      "pValue": "Zweiseitiger p-Wert des Drift-Tests auf Steigung = 0. Unter α gilt der Drift als signifikant, unter α/10 als stark; ein starker Drift macht das Urteil instabil.",
+      "intercept": "Achsenabschnitt der Regressionsgeraden: ihr Wert beim Zeitpunkt 0.",
+      "df": "Freiheitsgrade des Drift-Tests: Anzahl der Punkte der Lagekarte minus 2.",
+      "ciSlope": "Konfidenzintervall der Steigung zum Niveau 1 − α, als untere und obere Grenze. Schließt es 0 ein, ist kein Drift nachweisbar.",
+      "slopeUnit": "Einheitenangabe der Steigung; derzeit immer Messeinheit je Punkt, auch wenn die Zeitachse aus Zeitstempeln stammt.",
+      "tScale": "Zeitachse der Regression: die Zeitstempel, wenn eine Zeitspalte gewählt ist, sonst die laufende Nummer der Punkte ab 1."
+    },
+    "RuleViolation": {
+      "primaryIndex": "Position des Punkts in der Lagekarte, ab 0 gezählt.",
+      "time": "Zeitpunkt des Punkts: der Zeitstempel aus der Zeitspalte, bei x̄-R der Mittelwert der Zeitstempel der Untergruppe (Datumsangaben in Millisekunden); ohne Zeitspalte die laufende Nummer ab 1.",
+      "value": "Wert des Punkts in der Lagekarte: Einzelwert bei I-MR, Mittelwert der Untergruppe bei x̄-R.",
+      "ruleIds": "Die Nummern der Nelson-Regeln, die dieser Punkt verletzt, aufsteigend."
+    },
+    "Verdict": {
+      "level": "Urteil zur Stabilität: stabil ohne Regelverletzung und ohne signifikanten Drift (p ≥ α); instabil ab 3 verletzten Punkten oder bei starkem Drift (p < α/10); dazwischen grenzwertig.",
+      "driver": "Auslöser des Urteils: keiner, Nelson-Verletzungen, Drift oder beides.",
+      "nelsonCount": "Anzahl der Punkte, die mindestens eine Nelson-Regel verletzen. Ab 3 lautet das Urteil instabil, ab 1 mindestens grenzwertig.",
+      "driftP": "p-Wert des Drift-Tests, derselbe wie in der Drift-Regression.",
+      "thresholds": "Die Grenzen, nach denen geurteilt wurde: instabil ab 3 verletzten Punkten oder bei starkem Drift mit p < α/10; signifikanter Drift bei p < α."
+    },
+    "Thresholds": {
+      "nelsonUnstable": "Anzahl verletzter Punkte, ab der das Urteil instabil lautet: 3.",
+      "driftStrong": "p-Grenze für starken Drift: α/10, bei α = 0,05 also 0,005. Darunter lautet das Urteil instabil.",
+      "alpha": "Signifikanzniveau des Drift-Tests als Zahl; darunter gilt ein Drift als signifikant."
+    },
+    "Interpretation": {
+      "textKey": "Schlüssel des Deutungssatzes in der Übersetzungsdatei, je Urteil und Auslöser.",
+      "params": "Die Werte, die der Deutungssatz einsetzt."
+    },
+    "InterpretationParams": {
+      "nelsonCount": "Anzahl der verletzten Punkte, wie beim Urteil.",
+      "driftP": "p-Wert des Drift-Tests als Text mit vier Nachkommastellen.",
+      "slope": "Steigung des Drifts als Text mit vier Nachkommastellen."
+    }
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "goal": {
+      "title": "Purpose of the Study",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "MSA Type 6 assesses the *stability of a measurement system over time* {{ref:aiag-msa-4}}. Unlike Type 1 (one point in time, many replicates), a {{term:stabilitaets-studie|stability study}} measures the same {{term:referenzteil|reference part}} at regular intervals — daily, weekly, monthly — and combines the readings across weeks or months into a {{term:regelkarte|control chart}}. The question is not \"how precise is the system today?\" but \"is the system drifting gradually or shifting abruptly?\""
+        },
+        {
+          "type": "definition",
+          "term": "Reference part concept",
+          "content": "A {{term:referenzteil|reference part}} is a master sample with a stable, known — or at least reproducible — true value. Measured repeatedly with the same gage over months, any change in the reading series reflects a change in the measurement system — wear, recalibration, thermal drift, operator change — not a change in the part itself."
+        },
+        {
+          "type": "paragraph",
+          "content": "Depending on the data layout, the module draws an {{term:i-mr-chart|I-MR chart}} (one reading per time point) or an {{term:xbar-r-chart|x̄-R chart}} (several replicates per time point, combined into subgroups) and evaluates two independent signals: {{term:nelson-regeln|Nelson rules}} 1–8 {{ref:nelson-1984}} for pattern violations within the chart, and a linear {{term:drift-test|drift test}} for a systematic trend across the whole study duration."
+        },
+        {
+          "type": "paragraph",
+          "content": "Boundary: MSA Type 1 checks repeatability and bias at *one* point in time (Cg/Cgk). Type 2 checks repeatability and reproducibility with operator effects (Gage R&R). Type 4 checks linearity across the measurement range. Type 5 checks attribute inspection processes (kappa). Type 6, in contrast, tracks *one* reference part across *many time points* — the only one of the six MSA studies with a genuine time axis."
+        }
+      ]
+    },
+    "prerequisites": {
+      "title": "Prerequisites",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Exactly one {{term:referenzteil|reference part}} (master sample) with a stable, reproducible characteristic — the same physical part is remeasured at every time point.",
+            "At least 10 time points for I-MR (single readings), at least 5 subgroups for x̄-R (several replicates per time point). Recommended: 20 or more baseline points so the study-derived limits are trustworthy.",
+            "Constant measurement conditions across the whole study — the same gage, ideally the same appraiser or a documented rotation, stable environmental conditions. Mid-study changes make Nelson-rule violations harder to interpret.",
+            "A timestamp or sequence column (date or integer index) and a value column in the worksheet. For x̄-R, additionally a {{term:subgruppe|subgroup}} column (e.g. day, batch, calibration interval).",
+            "For the *from-study* limits mode: the baseline subgroups themselves should be largely free of {{term:nelson-regeln|Nelson-rule violations}} — otherwise the derived limits are contaminated.",
+            "Alternatively, for the *given* limits mode: known values, or values imported from a Type 1 study, for μ₀ (target value of the reference part) and σ₀ (known repeatability spread)."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Why not just use a regular control chart?",
+          "content": "A process control chart in the Control phase monitors the *product* — variation of the manufacturing process. The stability study in Type 6 instead monitors the *measurement system itself* by measuring a constant reference part. Any variation observed here comes exclusively from the measurement system — not from the part."
+        }
+      ]
+    },
+    "parameters": {
+      "title": "Parameters",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Chart type — I-MR vs. x̄-R",
+          "content": "With exactly one reading per time point the module draws an {{term:i-mr-chart|I-MR chart}} (individual values + moving range). As soon as a subgroup column is chosen (several replicates per time point, e.g. three readings per day), the chart type automatically switches to {{term:xbar-r-chart|x̄-R}} (subgroup mean + range). The user can switch back to I-MR at any time; the subgroup reference is then ignored and values are counted flat."
+        },
+        {
+          "type": "definition",
+          "term": "Limits mode — from study data vs. given",
+          "content": "*From study data* (default) computes {{term:regelkarte|control chart}} limits from the first **k** subgroups/points of the study itself (default k = 20, minimum 5) — the same logic as setting up a fresh {{term:regelkarte|control chart}}. *Given / from Type 1* instead uses fixed values μ₀ (target) and σ₀ (spread), e.g. taken directly from an already-completed MSA Type 1 study of the same reference part — Type 6 then checks whether the system stays within the *known* target limits instead of deriving new limits from the current data itself."
+        },
+        {
+          "type": "definition",
+          "term": "{{term:nelson-regeln|Nelson rules}} 1–8",
+          "content": "Eight pattern tests on the {{term:regelkarte|control chart}} (point outside ±3σ, nine points in a row on one side of the centerline, six-point trend, points in {{term:sigma-zonen|sigma zones}} B/C etc.) {{ref:nelson-1984}}. Rules 1–6 are enabled by default; rules 7 and 8 (stratification) are optional. Every violation counts toward the traffic-light verdict."
+        },
+        {
+          "type": "definition",
+          "term": "Significance level α for the drift test",
+          "content": "Controls the p-value threshold at which the linear {{term:drift-test|drift test}} classifies a trend as significant (0.01 · 0.05 default · 0.10). A *strong* trend (p &lt; α/10) weighs more heavily in the verdict than one that is only barely significant."
+        },
+        {
+          "type": "definition",
+          "term": "Baseline subgroups k",
+          "content": "Only in the *from study data* limits mode. Number of leading subgroups or individual values used to compute the {{term:regelkarte|control chart}} limits. Below 20 a warning is shown that the limits may still be unstable."
+        }
+      ]
+    },
+    "verdict": {
+      "title": "Verdict Rules",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The traffic light combines two independent signals: the number of {{term:nelson-regeln|Nelson-rule violations}} on the {{term:regelkarte|control chart}} and the p-value of the linear {{term:drift-test|drift test}}."
+        },
+        {
+          "type": "definition",
+          "term": "Stable (green)",
+          "content": "0 Nelson violations **and $p_{drift}$ ≥ α. The measurement system shows neither pattern outliers nor a significant trend — the {{term:regelkarte|control chart}} is unremarkable."
+        },
+        {
+          "type": "definition",
+          "term": "Unstable (red)",
+          "content": "≥ 3 Nelson violations or $p_{drift}$ &lt; α/10 (strong trend). At least one of the two signals is pronounced — either repeated pattern violations or a clear, statistically robust trend. The measurement system cannot be released in this state."
+        },
+        {
+          "type": "definition",
+          "term": "Conditional / marginal (yellow)",
+          "content": "Neither the green nor the red condition is met — e.g. 1–2 Nelson violations without a significant trend, or a barely significant trend (α ≤ $p_{drift}$ &lt; α/10) without pattern violations. Watch closely and clarify the {{term:ursachenanalyse|root cause}} before the next study."
+        },
+        {
+          "type": "definition",
+          "term": "Verdict driver",
+          "content": "The verdict.driver** field names which signal determined the verdict: **nelson** (pattern violations dominate), **drift** (the trend dominates), **both** (both conditions together for unstable) or **none** (stable). The interpretation text uses this field to name concretely what needs a response."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Unstable does not automatically mean \"the gage is broken\" — it means \"the measurement system behaves differently than at the start of the study, and that needs to be understood before trusting it further\"."
+        },
+        {
+          "type": "definition",
+          "term": "When drift dominates",
+          "content": "A significant, sustained trend (slope β₁ clearly different from 0) points to a gradual cause: wear of gage components, gradual contamination, sensor aging, seasonal temperature change. Action: schedule recalibration, review the calibration interval, and if possible compare the trend against known maintenance/calibration dates to confirm the cause."
+        },
+        {
+          "type": "definition",
+          "term": "When Nelson violations dominate",
+          "content": "Repeated or striking patterns (e.g. rule 2 — several consecutive points on one side of the centerline) point more toward an abrupt or recurring cause: a one-time event (shock, drop, repair), an operator or shift change, a batch change of the reference part, or a faulty recalibration. Action: compare the timing of the first violation against the maintenance/event log; check responsibility (appraiser, shift) if relevant."
+        },
+        {
+          "type": "definition",
+          "term": "When both signals combine",
+          "content": "Drift **and** Nelson violations together often indicate an accelerating degradation (e.g. progressive wear that starts as a trend and later produces outliers). Priority: take the gage out of service temporarily until the cause is clarified and a new stability study confirms release."
+        },
+        {
+          "type": "definition",
+          "term": "Mind the baseline warning",
+          "content": "If the warning appears that the limits come from an already unstable baseline (**W_LIMITS_FROM_UNSTABLE_BASELINE**), read all Nelson results with caution — the limits themselves may be contaminated. In that case, choose a cleaner baseline first or switch to the *given* limits mode."
+        }
+      ]
+    },
+    "examples": {
+      "title": "Examples",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Four example data sets are available in the HelpPanel \"Examples\" tab — two per chart type, one stable (green) and one flagged (red):"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**I-MR — stable**: 50 individual values, no {{term:nelson-regeln|Nelson-rule violation}}, no trend. Verdict green.",
+            "**I-MR — drifting**: 50 individual values with a slow linear trend (~0.01·σ per point). The {{term:drift-test|drift test}} clearly detects the trend, verdict red with driver **drift**.",
+            "**x̄-R — stable**: 25 subgroups of 5 replicates, unremarkable {{term:xbar-r-chart|x̄-R chart}}. Verdict green.",
+            "**x̄-R — mean shift**: 25 subgroups of 5 replicates with an abrupt mean jump starting at subgroup 15. Several consecutive {{term:nelson-regeln|rule-2 violations}}, verdict red with driver **nelson**."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "All four data sets are useful for tracing the verdict logic and the distinction between the two signals (pattern vs. trend) against concrete numbers before feeding in your own study data."
+        }
+      ]
+    }
+  }
+}

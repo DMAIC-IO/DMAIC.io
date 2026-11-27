@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../schemas/module-references.schema.json",
+  "references": [
+    {
+      "book": "aiag-msa-4",
+      "note": {
+        "de": "Stabilitätsstudie: ein Referenzteil wird regelmäßig gemessen und die Werte werden auf einer Regelkarte über die Zeit ausgewertet.",
+        "en": "Stability study: one reference part is measured periodically and the readings are evaluated on a control chart over time."
+      }
+    },
+    {
+      "book": "montgomery-sqc-6",
+      "note": {
+        "de": "Shewhart-Regelkarten (I-MR, x̄-R) und Regeln für Sonderursachen.",
+        "en": "Shewhart control charts (I-MR, x̄-R) and run rules for special causes."
+      }
+    },
+    {
+      "id": "nelson-1984",
+      "type": "article-journal",
+      "author": [
+        {
+          "family": "Nelson",
+          "given": "Lloyd S."
+        }
+      ],
+      "title": "The Shewhart Control Chart—Tests for Special Causes",
+      "container-title": "Journal of Quality Technology",
+      "volume": "16",
+      "issue": "4",
+      "page": "237–239",
+      "issued": {
+        "date-parts": [
+          [
+            1984
+          ]
+        ]
+      },
+      "DOI": "10.1080/00224065.1984.11978921",
+      "note": {
+        "de": "Die acht Tests auf Sonderursachen (Nelson-Regeln 1–8).",
+        "en": "The eight tests for special causes (Nelson rules 1–8)."
+      }
+    }
+  ]
+}

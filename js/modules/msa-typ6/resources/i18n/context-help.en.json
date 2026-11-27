@@ -1,0 +1,184 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "params": {
+      "help": "The nine inputs of the study: measurementName and unit free, chartType (i-mr or xbar-r), limitsMode (from-study or given), baselineK as a whole number from 1, mu0 and sigma0 as a number or empty, enabledRules as a list of rules 1 to 8, alpha as 0.01, 0.05 or 0.1. The whole object is written; each key is described under keys.",
+      "chartType": {
+        "help": "The chart type, label “Chart type”: I-MR for individual values, x̄-R for subgroups."
+      },
+      "limitsMode": {
+        "help": "Where the control limits come from, label “Limits mode”: from the study data or given."
+      },
+      "baselineK": {
+        "help": "The number of baseline subgroups, label “Baseline subgroups k”, as a whole number; below 5 the study does not compute."
+      },
+      "mu0": {
+        "help": "The given target mean, label “μ₀ (target mean)”, as a number. It applies only with given limits."
+      },
+      "sigma0": {
+        "help": "The given target spread, label “σ₀ (target spread)”, as a number greater than 0. It applies only with given limits."
+      },
+      "alpha": {
+        "help": "The significance level of the drift test, label “Significance level α (drift test)”: 0.01, 0.05 or 0.1, default 0.05."
+      }
+    },
+    "columns": {
+      "help": "The three columns of a data collection: timestamp (timestamp or order, number or date), value (measured value, number) and subgroup (subgroup, applies only with xbar-r), each as a column reference or empty. The whole object is written; the study recomputes after a change.",
+      "timestamp": {
+        "help": "The column with timestamp or order, label “Timestamp / order”; number or date."
+      },
+      "value": {
+        "help": "The column with the measured values, label “Measured value”; numeric."
+      },
+      "subgroup": {
+        "help": "The column with the subgroup of each value, label “Subgroup”; it applies only with x̄-R."
+      }
+    },
+    "sourceTyp1InstanceId": {
+      "help": "The type 1 study μ₀ and σ₀ were taken from; empty without adoption. The choice adopts μ₀ and σ₀ in one step."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was filled from; empty when none was loaded."
+    },
+    "primaryChart": {
+      "help": "The settings of the location chart (individual values or means) from the chart editor."
+    },
+    "secondaryChart": {
+      "help": "The settings of the spread chart (moving range or range) from the chart editor."
+    },
+    "driftChart": {
+      "help": "The settings of the drift chart from the chart editor (title, axes, series)."
+    },
+    "result": {
+      "help": "The computed result, each figure described under keys; empty while the value column or values are missing. When the computation rejects the inputs, only the reason is given."
+    },
+    "activeParams": {
+      "help": "The input keys that take effect in the current state; baselineK is missing with limitsMode given, mu0 and sigma0 are missing with limitsMode from-study. All of them can always be written."
+    },
+    "activeColumnSlots": {
+      "help": "The column slots that take effect in the current state; subgroup is missing outside chartType xbar-r."
+    }
+  },
+  "actions": {
+    "toggleRule": {
+      "help": "Ticks or unticks a Nelson rule; the list of ticked rules stays free of duplicates and ascending.",
+      "params": {
+        "ruleId": "The rule, 1 to 8 (meaning under the ticked rules). Any other value is an error.",
+        "on": "true ticks, false unticks.",
+        "command": "The command as one object with ruleId and on."
+      }
+    },
+    "adoptTyp1": {
+      "help": "Takes μ₀ and σ₀ from a type 1 study in one step and remembers the study, like the choice “Adopt from Type 1 instance”. The type 1 instance supplies mean and standard deviation under columnStats. Without a study only the choice is reset, μ₀ and σ₀ stay.",
+      "params": {
+        "instanceId": "The id of the type 1 instance, or null to reset the choice.",
+        "mu0": "The mean to adopt; when missing, μ₀ stays unchanged.",
+        "sigma0": "The standard deviation to adopt; when missing, σ₀ stays unchanged.",
+        "command": "The command as one object with instanceId and optionally mu0 and sigma0."
+      }
+    }
+  },
+  "types": {
+    "Params": {
+      "measurementName": "Name of the observed feature, for example “shaft diameter”. It labels the result and has no effect on the computation.",
+      "unit": "Unit of the measured values, for example mm. It is only used for labels.",
+      "chartType": "Chart type: I-MR for individual values with moving range, at least 10 values; x̄-R for subgroup means with their range, at least 5 subgroups of equal size with 2 to 25 values. x̄-R needs a subgroup column.",
+      "limitsMode": "Origin of the control limits: from the study data, computed from the first k baseline subgroups, or given as target mean μ₀ and target spread σ₀, for example from a type 1 study.",
+      "baselineK": "Number k of baseline subgroups (for I-MR, of the first individual values) from which the center line and control limits are computed. At least 5 and at most as many as the data hold are allowed; below 20 a warning appears. The default is 20.",
+      "mu0": "Given target mean μ₀; it is the center line of the location chart. Only with given limits.",
+      "sigma0": "Given target spread σ₀ of the individual values, greater than 0. The control limits lie at μ₀ ± 3 · σ₀, for x̄-R at μ₀ ± 3 · σ₀ / √n. Only with given limits.",
+      "enabledRules": "The Nelson rules 1 to 8 the points of the location chart are checked against. The default is rules 1 to 6; with none ticked, nothing is checked.",
+      "alpha": "Significance level of the drift test: 0.01, 0.05 (common) or 0.1. A drift with p < α makes the verdict at least marginal, one with p < α/10 unstable."
+    },
+    "Columns": {
+      "timestamp": "The column with timestamp or order. With it the drift regression runs on the time axis of the timestamps, without it on the running number of the points.",
+      "value": "The column with the measured values on the reference part. Rows without a readable value are dropped together with timestamp and subgroup.",
+      "subgroup": "The column assigning each value to its subgroup; x̄-R only. All subgroups need the same number of values, 2 to 25."
+    },
+    "Result": {
+      "meta": "Frame data of the analysis: chart type, origin of the limits, size and warnings.",
+      "primary": "The location chart: individual values for I-MR, subgroup means for x̄-R, with center line, control limits and rule violations.",
+      "secondary": "The spread chart: moving ranges for I-MR, subgroup ranges for x̄-R, with center line and control limits.",
+      "drift": "Linear regression of the location chart points over time, with a t-test of whether the slope differs from 0.",
+      "ruleViolations": "One entry per location chart point that violates at least one Nelson rule, with time, value and violated rules, sorted by point.",
+      "verdict": "Stability verdict with its driver and the limits it was judged by.",
+      "interpretation": "The interpretation of the result as a sentence, depending on verdict and driver.",
+      "invalid": "The reason when the computation rejects the inputs: error code and the values for the error text. All figures are then missing."
+    },
+    "Invalid": {
+      "code": "Identifier of the error, for example E_TOO_FEW_POINTS (too few points) or E_GIVEN_LIMITS_INVALID (μ₀ or σ₀ missing).",
+      "params": "Values the error text inserts, such as the minimum count; otherwise empty."
+    },
+    "Meta": {
+      "chartType": "The computed chart type: I-MR or x̄-R.",
+      "limitsMode": "Where the limits come from: the study data or given values.",
+      "n": "Subgroup size: 1 for I-MR, for x̄-R the number of values per subgroup.",
+      "subgroupCount": "Number of points on the location chart: individual values for I-MR, subgroups for x̄-R.",
+      "pointCount": "Number of all analysed measured values.",
+      "baselineK": "The set number k of baseline subgroups; it only takes effect when the limits come from the study data.",
+      "warnings": "Notes on reliability: fewer than 20 baseline subgroups, timestamps that do not increase monotonically, or a rule violation within the baseline that can distort the limits computed from it."
+    },
+    "Warning": {
+      "code": "Identifier of the warning: W_BASELINE_LT_20 (fewer than 20 baseline subgroups), W_TIMESTAMPS_NON_MONOTONIC (timestamps not monotonically increasing) or W_LIMITS_FROM_UNSTABLE_BASELINE (rule violation within the baseline).",
+      "params": "Values filled into the warning text; present only for a too small baseline, then with the number k of baseline subgroups."
+    },
+    "PrimaryChart": {
+      "series": "The points of the location chart in time order: the individual values for I-MR, the subgroup means for x̄-R. The mean tile shows the mean of these points.",
+      "cl": "Center line of the location chart: mean of the baseline when the limits come from the study data, otherwise the target mean μ₀.",
+      "ucl": "Upper control limit of the location chart: center line + 3 · σ.",
+      "lcl": "Lower control limit of the location chart: center line − 3 · σ.",
+      "sigma": "Estimated spread of the location chart points. From the study data: for I-MR the mean moving range of the baseline / d₂, for x̄-R the mean range of the baseline / (d₂ · √n). Given: σ₀, for x̄-R σ₀ / √n.",
+      "label": "Chart kind: i for individual values, xbar for subgroup means.",
+      "violations": "One entry per point and violated Nelson rule; a point that violates several rules appears several times."
+    },
+    "Violation": {
+      "index": "Position of the point on the location chart, counted from 0.",
+      "ruleId": "Number of the violated Nelson rule, 1 to 8."
+    },
+    "SecondaryChart": {
+      "series": "The ranges in time order: for I-MR the absolute difference of two consecutive values, with the first value missing; for x̄-R the largest minus the smallest value per subgroup.",
+      "cl": "Center line of the spread chart: mean range of the baseline when the limits come from the study data, otherwise d₂ · σ₀.",
+      "ucl": "Upper control limit of the spread chart: D₄ · center line.",
+      "lcl": "Lower control limit of the spread chart: D₃ · center line; for subgroups of up to 6 values it is 0.",
+      "label": "Chart kind: MR for moving ranges, R for subgroup ranges."
+    },
+    "Drift": {
+      "slope": "Slope of the regression line through the location chart points over time: change per point when no time column is chosen, otherwise per unit of the timestamps (per millisecond for dates). Ideally 0.",
+      "se": "Standard error of the slope: square root of the residual variance divided by the sum of squared distances of the time values from their mean.",
+      "tStat": "Test statistic for slope = 0: the slope divided by its standard error.",
+      "pValue": "Two-sided p-value of the drift test for slope = 0. Below α the drift counts as significant, below α/10 as strong; a strong drift makes the verdict unstable.",
+      "intercept": "Intercept of the regression line: its value at time 0.",
+      "df": "Degrees of freedom of the drift test: number of location chart points minus 2.",
+      "ciSlope": "Confidence interval of the slope at level 1 − α, as lower and upper limit. If it contains 0, no drift can be shown.",
+      "slopeUnit": "Unit label of the slope; currently always measurement unit per point, even when the time axis comes from timestamps.",
+      "tScale": "Time axis of the regression: the timestamps when a time column is chosen, otherwise the running number of the points from 1."
+    },
+    "RuleViolation": {
+      "primaryIndex": "Position of the point on the location chart, counted from 0.",
+      "time": "Time of the point: the timestamp from the time column, for x̄-R the mean of the subgroup's timestamps (dates in milliseconds); without a time column the running number from 1.",
+      "value": "Value of the point on the location chart: individual value for I-MR, subgroup mean for x̄-R.",
+      "ruleIds": "The numbers of the Nelson rules this point violates, ascending."
+    },
+    "Verdict": {
+      "level": "Stability verdict: stable without rule violations and without significant drift (p ≥ α); unstable from 3 violating points or with strong drift (p < α/10); marginal in between.",
+      "driver": "What drives the verdict: nothing, Nelson violations, drift or both.",
+      "nelsonCount": "Number of points that violate at least one Nelson rule. From 3 the verdict is unstable, from 1 at least marginal.",
+      "driftP": "p-value of the drift test, the same as in the drift regression.",
+      "thresholds": "The limits the verdict was judged by: unstable from 3 violating points or with strong drift at p < α/10; significant drift at p < α."
+    },
+    "Thresholds": {
+      "nelsonUnstable": "Number of violating points from which the verdict is unstable: 3.",
+      "driftStrong": "p limit for strong drift: α/10, so 0.005 at α = 0.05. Below it the verdict is unstable.",
+      "alpha": "Significance level of the drift test as a number; below it a drift counts as significant."
+    },
+    "Interpretation": {
+      "textKey": "Key of the interpretation sentence in the translation file, per verdict and driver.",
+      "params": "The values filled into the interpretation sentence."
+    },
+    "InterpretationParams": {
+      "nelsonCount": "Number of violating points, as in the verdict.",
+      "driftP": "p-value of the drift test as text with four decimals.",
+      "slope": "Slope of the drift as text with four decimals."
+    }
+  }
+}

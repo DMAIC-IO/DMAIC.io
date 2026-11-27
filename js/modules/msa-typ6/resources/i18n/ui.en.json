@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "MSA Type 6 (stability)",
+  "description": "Stability / long-term behavior — control chart (I-MR/x̄-R) over a repeatedly measured reference part, Nelson rules 1–8 and a linear drift test",
+  "whenToUse": "When a measurement system has to stay stable over time: a reference part is measured repeatedly, the control chart (I-MR or x̄-R) shows violations of the Nelson rules, and a linear drift test checks for a trend. Needs a data collection with a value column, optionally a timestamp column and, for x̄-R, a subgroup column — not for the spread of a single measurement series, use types 1 to 3 for that.",
+  "warningTitle": "Warning",
+  "emptyHint": "Select a timestamp/order and a value column to start the analysis.",
+  "empty": "Select a timestamp/order and a value column to start the analysis.",
+  "sections": {
+    "dataSource": "Data source",
+    "limits": "Limits mode"
+  },
+  "input": {
+    "measurementName": "Characteristic name",
+    "measurementNamePlaceholder": "e.g. shaft diameter",
+    "unit": "Unit",
+    "chartType": "Chart type",
+    "chartTypeIMr": "I-MR",
+    "chartTypeXbarR": "x̄-R",
+    "timestampColumn": "Timestamp / order",
+    "valueColumn": "Measured value",
+    "subgroupColumn": "Subgroup",
+    "limitsMode": "Limits mode",
+    "limitsModeFromStudy": "From study data",
+    "limitsModeGiven": "Manual / from Type 1",
+    "baselineK": "Baseline subgroups k",
+    "mu0": "μ₀ (target mean)",
+    "sigma0": "σ₀ (target sigma)",
+    "sourceTyp1": "Adopt from Type 1 instance",
+    "sourceTyp1Placeholder": "— none —",
+    "nelsonRules": "Nelson rules",
+    "alpha": "Significance level α (drift test)"
+  },
+  "kpi": {
+    "points": "Data points",
+    "mean": "Mean (grand mean)",
+    "sigma": "σ (estimated)",
+    "violations": "Rule violations",
+    "driftSlope": "Drift slope",
+    "driftP": "Drift test p-value"
+  },
+  "verdict": {
+    "stable": "Stable",
+    "marginal": "Marginal",
+    "unstable": "Unstable"
+  },
+  "driver": {
+    "none": "no anomaly",
+    "nelson": "Nelson violations",
+    "drift": "significant drift",
+    "both": "Nelson violations and drift"
+  },
+  "violations": {
+    "title": "Rule violations",
+    "time": "Time",
+    "value": "Value",
+    "rules": "Rule(s)",
+    "description": "Description"
+  },
+  "drift": {
+    "xLabel": "Time / point index",
+    "yLabel": "Measured value",
+    "seriesLabel": "Control chart series",
+    "regressionLabel": "Regression line"
+  },
+  "charts": {
+    "primaryImr": "Control chart — Individuals (I)",
+    "primaryXbar": "Control chart — Means (x̄)",
+    "secondaryImr": "Control chart — Moving range (MR)",
+    "secondaryXbar": "Control chart — Range (R)",
+    "drift": "Drift analysis"
+  },
+  "interpretation": {
+    "stable": {
+      "none": "No Nelson violations and no significant drift (p = {driftP}). The measurement system behaves stably over time."
+    },
+    "marginal": {
+      "nelson": "{nelsonCount} Nelson violation(s), but no significant drift (p = {driftP}). Marginal — investigate the cause of the violation(s).",
+      "drift": "No pattern in the Nelson rules, but a weak trend is emerging (slope {slope}, p = {driftP}). Marginal — keep monitoring the development."
+    },
+    "unstable": {
+      "nelson": "{nelsonCount} Nelson violations — the measurement system shows an unstable pattern over time. Investigate the cause (calibration, reference part, operator).",
+      "drift": "Significant linear trend (slope {slope}, p = {driftP}) — the measurement system is drifting systematically. Check calibration/adjustment.",
+      "both": "{nelsonCount} Nelson violations AND significant drift (slope {slope}, p = {driftP}) — the measurement system is unstable and drifting systematically. Immediate investigation required."
+    }
+  },
+  "warnings": {
+    "W_BASELINE_LT_20": "Baseline subgroups k = {k} < 20 — the computed control limits are statistically less robust.",
+    "W_TIMESTAMPS_NON_MONOTONIC": "Timestamps are not monotonically increasing; the series was automatically sorted by time.",
+    "W_LIMITS_FROM_UNSTABLE_BASELINE": "A Nelson violation lies within the baseline subgroups — the control limits computed from them may be contaminated."
+  },
+  "errors": {
+    "E_NO_VALUES": "No measured values present.",
+    "E_TOO_FEW_POINTS": "Too few data points (minimum {min}).",
+    "E_INVALID_CHART_TYPE": "Unknown chart type.",
+    "E_SUBGROUP_MISMATCH": "The subgroup column and value column must have the same length.",
+    "E_UNEQUAL_SUBGROUP_SIZES": "Subgroups have different sizes.",
+    "E_SUBGROUP_SIZE_OUT_OF_RANGE": "Subgroup size n = {n} is outside the allowed range ({min}–{max}).",
+    "E_GIVEN_LIMITS_INVALID": "μ₀/σ₀ invalid. σ₀ must be > 0.",
+    "E_BASELINE_TOO_SMALL": "Baseline subgroups too small (minimum {min}).",
+    "E_BASELINE_EXCEEDS_DATA": "Baseline subgroups k = {k} exceeds the available data ({available}).",
+    "E_INVALID_ALPHA": "Significance level α invalid — allowed values are 0.01, 0.05, 0.10.",
+    "E_INVALID_LIMITS_MODE": "Unknown limits mode."
+  }
+}

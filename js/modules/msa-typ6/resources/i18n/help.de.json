@@ -1,0 +1,158 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "goal": {
+      "title": "Ziel des Verfahrens",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "MSA Verfahren 6 prüft die *Stabilität eines Messsystems über die Zeit* {{ref:aiag-msa-4}}. Anders als Typ 1 (ein Zeitpunkt, viele Wiederholungen) misst eine {{term:stabilitaets-studie|Stabilitäts-Studie}} regelmäßig — täglich, wöchentlich, monatlich — dasselbe {{term:referenzteil|Referenzteil}} und zieht die Werte über Wochen oder Monate zu einer {{term:regelkarte|Regelkarte}} zusammen. Die Frage lautet nicht „Wie präzise misst das System heute?\", sondern „Verändert sich das System schleichend oder sprunghaft?\""
+        },
+        {
+          "type": "definition",
+          "term": "Referenzteil-Konzept",
+          "content": "Ein {{term:referenzteil|Referenzteil}} ist ein Normal oder Master-Sample mit einem stabilen, bekannten oder zumindest reproduzierbaren wahren Wert. Wird es über Monate hinweg immer wieder mit demselben Prüfmittel gemessen, zeigt jede Veränderung in der Messreihe eine Veränderung des Messsystems — Verschleiß, Rekalibrierung, Temperaturdrift, Bediener-Wechsel — und nicht eine Veränderung des Teils."
+        },
+        {
+          "type": "paragraph",
+          "content": "Das Modul zieht je nach Datenlage eine {{term:i-mr-chart|I-MR-Karte}} (ein Wert je Zeitpunkt) oder eine {{term:xbar-r-chart|x̄-R-Karte}} (mehrere Wiederholungen je Zeitpunkt, zu Untergruppen zusammengefasst) und wertet zwei unabhängige Signale aus: {{term:nelson-regeln|Nelson-Regeln}} 1–8 {{ref:nelson-1984}} auf Muster-Verletzungen innerhalb der Karte, und einen linearen {{term:drift-test|Drift-Test}} auf einen systematischen Trend über die gesamte Studiendauer."
+        },
+        {
+          "type": "paragraph",
+          "content": "Abgrenzung: MSA Typ 1 prüft Wiederholpräzision und Bias an *einem* Zeitpunkt (Cg/Cgk). Typ 2 prüft Wiederhol- und Vergleichspräzision mit Bediener-Einfluss ({{term:gage-rr|Gage R&R}}). Typ 4 prüft {{term:linearitaet|Linearität}} über den Messbereich. Typ 5 prüft attributive Prüfprozesse (Kappa). Typ 6 dagegen prüft *ein* Referenzteil über *viele Zeitpunkte* — die einzige der sechs MSA-Studien, die eine echte Zeitachse hat."
+        }
+      ]
+    },
+    "prerequisites": {
+      "title": "Voraussetzungen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Genau ein {{term:referenzteil|Referenzteil}} (Normal, Master-Sample) mit stabilem, reproduzierbarem Merkmal — dasselbe physische Teil wird bei jedem Messzeitpunkt erneut gemessen.",
+            "Mindestens 10 Messzeitpunkte bei I-MR (einzeln), mindestens 5 Untergruppen bei x̄-R (mehrere Wiederholungen je Zeitpunkt). Empfohlen: 20 oder mehr Basis-Zeitpunkte, damit die Grenzen aus der Studie belastbar sind.",
+            "Konstante Prüfbedingungen über die gesamte Studiendauer — dasselbe Prüfmittel, möglichst derselbe Prüfer oder eine dokumentierte Rotation, gleichbleibende Umgebungsbedingungen. Wechsel während der Studie erschweren die Interpretation von Nelson-Verletzungen.",
+            "Eine Zeitstempel- oder Reihenfolge-Spalte (Datum oder ganzzahliger Index) und eine Messwert-Spalte im Worksheet. Bei x̄-R zusätzlich eine Untergruppen-Spalte (z. B. Tag, Charge, Kalibrierintervall).",
+            "Für den Grenzen-Modus *aus Studien-Daten*: die Basis-Untergruppen selbst sollten weitgehend frei von {{term:nelson-regeln|Nelson-Verletzungen}} sein — sonst sind die daraus abgeleiteten Grenzen kontaminiert.",
+            "Alternativ für den Grenzen-Modus *manuell*: bekannte oder aus einer Typ-1-Studie übernommene Werte für μ₀ (Sollwert des Referenzteils) und σ₀ (bekannte {{term:wiederholbarkeit|Wiederholstreuung}})."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Warum nicht einfach eine normale Regelkarte?",
+          "content": "Eine Prozess-Regelkarte in der Control-Phase überwacht das *Produkt* — Streuung des Fertigungsprozesses. Die Stabilitäts-Studie in Typ 6 überwacht dagegen das *Messsystem selbst*, indem sie ein konstantes Referenzteil misst. Jede Streuung, die hier auftritt, kommt ausschließlich vom Messsystem — nicht vom Teil."
+        }
+      ]
+    },
+    "parameters": {
+      "title": "Parameter",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Kartentyp — I-MR vs. x̄-R",
+          "content": "Bei genau einer Messung je Zeitpunkt zieht das Modul eine {{term:i-mr-chart|I-MR-Karte}} (Individualwerte + gleitende {{term:spannweite|Spannweite}}). Sobald eine Untergruppen-Spalte gewählt wird (mehrere Wiederholungen je Zeitpunkt, z. B. drei Messungen pro Tag), wechselt der Kartentyp automatisch auf {{term:xbar-r-chart|x̄-R}} (Untergruppen-Mittelwert + Spannweite). Der Nutzer kann jederzeit zurück auf I-MR schalten; dann wird die Untergruppen-Referenz ignoriert und die Werte flach durchgezählt."
+        },
+        {
+          "type": "definition",
+          "term": "Grenzen-Modus — aus Studien-Daten vs. manuell",
+          "content": "*Aus Studien-Daten* (Default) berechnet {{term:regelkarte|Regelkarten}}-Grenzen aus den ersten **k** Untergruppen/Punkten der Studie selbst (Default k = 20, Minimum 5) — dieselbe Logik wie eine neu aufgesetzte {{term:regelkarte|Regelkarte}}. *Manuell / aus Typ 1* übernimmt stattdessen feste Werte μ₀ (Sollwert) und σ₀ (Streuung), z. B. direkt aus einer bereits abgeschlossenen MSA-Typ-1-Studie desselben Referenzteils — dann prüft Typ 6, ob das System bei den *bekannten* Sollgrenzen bleibt, statt sich neue Grenzen aus den aktuellen Daten selbst zu ziehen."
+        },
+        {
+          "type": "definition",
+          "term": "{{term:nelson-regeln|Nelson-Regeln}} 1–8",
+          "content": "Acht Muster-Tests auf der {{term:regelkarte|Regelkarte}} (Punkt außerhalb ±3σ, neun Punkte in Folge auf einer Seite der {{term:mittellinie|Mittellinie}}, Trend über sechs Punkte, Punkte in den {{term:sigma-zonen|Sigma-Zonen}} B/C usw.) {{ref:nelson-1984}}. Default aktiviert sind Regel 1–6; Regel 7 und 8 (Stratifikation) sind optional zuschaltbar. Jede Verletzung zählt in die Ampel-Bewertung."
+        },
+        {
+          "type": "definition",
+          "term": "Signifikanzniveau α für den Drift-Test",
+          "content": "Steuert, ab welchem p-Wert der lineare {{term:drift-test|Drift-Test}} einen Trend als signifikant einstuft (0,01 · 0,05 Default · 0,10). Ein *starker* Trend (p &lt; α/10) wiegt in der Ampel-Bewertung schwerer als ein nur knapp signifikanter."
+        },
+        {
+          "type": "definition",
+          "term": "Basis-Untergruppen k",
+          "content": "Nur im Grenzen-Modus *aus Studien-Daten*. Anzahl der ersten Untergruppen bzw. Einzelwerte, aus denen die {{term:regelkarte|Regelkarten}}-Grenzen berechnet werden. Unter 20 erscheint die Warnung, dass die Grenzen noch instabil sein können."
+        }
+      ]
+    },
+    "verdict": {
+      "title": "Ampel-Regeln",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Ampel kombiniert zwei unabhängige Signale: die Zahl der {{term:nelson-regeln|Nelson-Verletzungen}} auf der {{term:regelkarte|Regelkarte}} und den p-Wert des linearen {{term:drift-test|Drift-Tests}}."
+        },
+        {
+          "type": "definition",
+          "term": "Stabil (grün)",
+          "content": "0 Nelson-Verletzungen **und $p_{drift}$ ≥ α. Das Messsystem zeigt weder Muster-Ausreißer noch einen signifikanten Trend — die {{term:regelkarte|Regelkarte}} ist unauffällig."
+        },
+        {
+          "type": "definition",
+          "term": "Instabil (rot)",
+          "content": "≥ 3 Nelson-Verletzungen oder $p_{drift}$ &lt; α/10 (starker Trend). Mindestens eines der beiden Signale ist deutlich — entweder wiederholte Muster-Verletzungen oder ein klarer, statistisch belastbarer Trend. Das Messsystem ist in diesem Zustand nicht freigebbar."
+        },
+        {
+          "type": "definition",
+          "term": "Bedingt / marginal (gelb)",
+          "content": "Weder die grüne noch die rote Bedingung ist erfüllt — z. B. 1–2 Nelson-Verletzungen ohne signifikanten Trend, oder ein knapp signifikanter Trend (α ≤ $p_{drift}$ &lt; α/10) ohne Muster-Verletzungen. Beobachten und Ursache klären, bevor die nächste Studie ansteht."
+        },
+        {
+          "type": "definition",
+          "term": "Ausschlag-Treiber (driver)",
+          "content": "Das Feld verdict.driver** benennt, welches Signal die Ampel bestimmt hat: **nelson** (Muster-Verletzungen dominieren), **drift** (der Trend dominiert), **both** (beide Bedingungen gemeinsam bei Instabil) oder **none** (stabil). Der Interpretationstext greift dieses Feld auf, um konkret zu benennen, worauf reagiert werden sollte."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Instabil heißt nicht automatisch „Messmittel kaputt\" — es heißt „das Messsystem verhält sich anders als zu Beginn der Studie, und das muss verstanden werden, bevor man ihm weiter vertraut\"."
+        },
+        {
+          "type": "definition",
+          "term": "Bei dominierendem Drift",
+          "content": "Ein signifikanter, anhaltender Trend (Steigung β₁ deutlich von 0 verschieden) deutet auf eine schleichende Ursache: Verschleiß von Prüfmittel-Komponenten, allmähliche Verschmutzung, Sensor-Alterung, saisonale Temperaturänderung. Maßnahme: Rekalibrierung planen, Kalibrierintervall überprüfen, ggf. den Trend gegen bekannte Wartungs-/Kalibrierdaten abgleichen, um die Ursache zu bestätigen."
+        },
+        {
+          "type": "definition",
+          "term": "Bei dominierenden Nelson-Verletzungen",
+          "content": "Wiederholte oder auffällige Muster (z. B. Regel 2 — mehrere Punkte auf einer Seite der Mittellinie in Folge) deuten eher auf eine abrupte oder wiederkehrende Ursache: ein einmaliges Ereignis (Stoß, Fall, Reparatur), ein Bediener- oder Schichtwechsel, ein Chargenwechsel des Referenzteils, oder eine fehlerhafte Rekalibrierung. Maßnahme: Zeitpunkt der ersten Verletzung mit dem Wartungs-/Ereignisprotokoll abgleichen; ggf. Verantwortlichkeit (Prüfer, Schicht) prüfen."
+        },
+        {
+          "type": "definition",
+          "term": "Bei beiden Signalen gemeinsam",
+          "content": "Kombiniert deuten Drift **und** Nelson-Verletzungen häufig auf eine sich beschleunigende Verschlechterung hin (z. B. fortschreitender Verschleiß, der erst als Trend beginnt und später zu Ausreißern führt). Priorität: Prüfmittel kurzfristig aus dem Einsatz nehmen, bis die Ursache geklärt und eine neue Stabilitäts-Studie die Freigabe bestätigt."
+        },
+        {
+          "type": "definition",
+          "term": "Basis-Warnung beachten",
+          "content": "Wenn die Warnung erscheint, dass die Grenzen aus einer bereits instabilen Basis stammen (**W_LIMITS_FROM_UNSTABLE_BASELINE**), sind alle Nelson-Auswertungen mit Vorsicht zu lesen — die Grenzen selbst können kontaminiert sein. In diesem Fall zuerst eine bereinigte Basis wählen oder in den Grenzen-Modus *manuell* wechseln."
+        }
+      ]
+    },
+    "examples": {
+      "title": "Beispiele",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Vier Beispieldatensätze stehen im HelpPanel-Tab „Beispiele\" bereit — je zwei pro Kartentyp, einmal stabil (grün) und einmal auffällig (rot):"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**I-MR — stabil**: 50 Einzelwerte, keine {{term:nelson-regeln|Nelson-Verletzung}}, kein Trend. Verdikt grün.",
+            "**I-MR — driftend**: 50 Einzelwerte mit langsamem linearen Trend (~0,01·σ pro Punkt). Der {{term:drift-test|Drift-Test}} erkennt den Trend deutlich, Verdikt rot mit Driver **drift**.",
+            "**x̄-R — stabil**: 25 Untergruppen à 5 Wiederholungen, unauffällige {{term:xbar-r-chart|x̄-R-Karte}}. Verdikt grün.",
+            "**x̄-R — Mittelwert-Shift**: 25 Untergruppen à 5 Wiederholungen mit einem abrupten Mittelwert-Sprung ab Untergruppe 15. Mehrere {{term:nelson-regeln|Regel-2-Verletzungen}} in Folge, Verdikt rot mit Driver **nelson**."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Alle vier Datensätze eignen sich, um die Ampel-Logik und die Unterscheidung zwischen den beiden Signalen (Muster vs. Trend) an konkreten Zahlen nachzuvollziehen, bevor eigene Studien-Daten eingespielt werden."
+        }
+      ]
+    }
+  }
+}
