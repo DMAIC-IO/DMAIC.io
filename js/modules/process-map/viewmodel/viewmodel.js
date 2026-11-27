@@ -72,8 +72,10 @@ const chainPart = (ctx) => {
     },
 
     /**
-     * Klicks in der Kette: merkt sich einen Klick auf „+ Detail-Schritt“ für
-     * den Fokus nach dem Anlegen (das Kommando löst der Knopf selbst aus).
+     * Klicks in der Kette (Capture-Phase): merkt sich einen Klick auf
+     * „+ Detail-Schritt“ für den Fokus nach dem Anlegen. Das Kommando löst
+     * der Knopf selbst aus; bei echter Maus läuft der Watcher schon zwischen
+     * den Listenern, der Merker muss also vor dem Knopf greifen.
      * @param {Event} event
      */
     noteClick(event) {

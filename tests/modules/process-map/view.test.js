@@ -512,6 +512,67 @@ suite('process-map: Viewmodel im Browser', () => {
     unmountAll();
   });
 
+  test('„+ Detail-Schritt“: der Klickmerker greift vor dem Kommando des Knopfs (Capture)', async () => {
+    // Bei echter Maus laufen Watcher zwischen den Listenern eines Ereignisses
+    // (Mikrotasks nach jedem Listener); ein Merker, der erst beim Aufsteigen
+    // greift, käme nach dem Watcher. Hier hält der Knopf das Ereignis an:
+    // nur ein Merker in der Capture-Phase sieht den Klick dann noch.
+    const h = await mount('pm-1', plain(SMALL));
+    const add = /** @type {HTMLButtonElement} */ (h.q('.fc-substeps[data-step-id="s1"] .fc-substep-add'));
+    add.addEventListener('click', (e) => e.stopPropagation());
+    await h.click(add);
+    await until(() => h.qa('.fc-substeps[data-step-id="s1"] .fc-substep-title').length === 2);
+    const last = () => h.qa('.fc-substeps[data-step-id="s1"] .fc-substep-title').at(-1);
+    await until(() => document.activeElement === last());
+    assertEqual(document.activeElement, last());
+    unmountAll();
+  });
+
+  test('Textfelder: Spaltenbreite folgt nicht dem Text, Beschreibung zwei Zeilen hoch wie bisher', async () => {
+    for (const [key, path] of [['fc', 'js/core/flowchart/flowchart.css'], [ID, `js/modules/${ID}/resources/style.css`]]) {
+      if (document.querySelector(`style[data-test-css="${key}"]`)) continue;
+      const css = document.createElement('style');
+      css.dataset.testCss = key;
+      css.textContent = await (await fetch(new URL(`../../../${path}`, import.meta.url), { cache: 'no-cache' })).text();
+      document.head.append(css);
+    }
+    const h = await mount('pm-1', plain({ ...SMALL, steps: [step('s1', 'A', { inputs: [{ id: 'i1', name: 'B', inputType: null }] }), SMALL.steps[1]], expanded: [] }));
+    const width = () => h.card('s1').getBoundingClientRect().width;
+    const before = width();
+    const long = 'Ein sehr langer Text, der weit über die Spalte hinausreicht und darum umbrechen muss';
+    h.vm().model.steps[0].title = long;
+    h.vm().model.steps[0].description = long;
+    h.vm().model.steps[0].inputs[0].name = long;
+    await settle();
+    assertEqual(width(), before, `Spalte folgt dem Text: ${before} → ${width()} px`);
+    // Mindestbreite wie ein Textfeld mit 20 Spalten (Altform), auch mit kurzem Text;
+    // die Konstante in style.css stimmt also mit der Schrift überein.
+    h.vm().model.steps[0].title = 'A';
+    h.vm().model.steps[0].inputs[0].name = 'B';
+    await settle();
+    for (const sel of ['.pmap__step-title', '.pmap__io-name']) {
+      const el = /** @type {HTMLTextAreaElement} */ (h.q(`[data-step-id="s1"] ${sel}, [data-io-step="s1"] ${sel}`));
+      const ref = /** @type {HTMLTextAreaElement} */ (el.cloneNode());
+      ref.style.cssText = 'field-sizing: fixed; overflow: hidden; width: auto; min-width: 0; flex: none; position: absolute';
+      ref.cols = 20;
+      el.parentElement.append(ref);
+      const want = ref.getBoundingClientRect().width;
+      ref.remove();
+      const min = parseFloat(getComputedStyle(el).minWidth);
+      assertTrue(Math.abs(min - want) < 1 && el.getBoundingClientRect().width >= want - 0.5, `${sel}: Mindestbreite ${min} px statt ${want} px`);
+    }
+    // Leere Beschreibung: so hoch wie ein Textfeld mit zwei Zeilen (Altform: rows-Vorgabe 2).
+    const desc = /** @type {HTMLTextAreaElement} */ (h.q('.pmap__step-row[data-step-id="s2"] .pmap__step-description'));
+    const ref = /** @type {HTMLTextAreaElement} */ (desc.cloneNode());
+    ref.style.setProperty('field-sizing', 'fixed');
+    ref.rows = 2;
+    desc.parentElement.append(ref);
+    const delta = Math.abs(desc.getBoundingClientRect().height - ref.getBoundingClientRect().height);
+    ref.remove();
+    assertTrue(delta < 1, `Beschreibung ${desc.getBoundingClientRect().height} px statt zwei Zeilen`);
+    unmountAll();
+  });
+
   test('Leerzustand: Angebot nur mit SIPOC, aktualisiert bei module:added; ohne SIPOC Hinweis statt Dialog', async () => {
     const h = await mount('pm-1', null);
     assertEqual(h.q('.pmap__sipoc-offer'), null);

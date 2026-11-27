@@ -196,6 +196,11 @@
 }
 
 .pmap__io-item {
+  /* Bezug für das Hilfe-Abzeichen des Namensfelds: das Skript rechnet mit
+     offsetLeft/offsetTop, und ohne Positionierung wäre der Bezug die
+     Tabellenzelle (offsetParent), das Abzeichen aber am nächsten
+     positionierten Vorfahren — alle Abzeichen lägen übereinander. */
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -587,10 +592,14 @@
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--pmap-loop);
-  flex: 1;
+
+  /* Schrumpfbreit: das Hilfe-Abzeichen sitzt neben dem Text, nicht auf dem
+     Löschknopf am Ende der Zeile. */
+  flex: 0 1 auto;
 }
 
 .pmap__loop-remove {
+  margin-left: auto;
   background: none;
   border: none;
   color: var(--color-text-tertiary);
@@ -873,8 +882,33 @@
 }
 
 .pmap textarea.pmap__step-title { min-height: 1.4em; }
-.pmap textarea.pmap__step-description { min-height: 44px; }
 .pmap textarea.pmap__io-name { min-height: 1.4em; }
+
+/* Zwei Zeilen hoch wie bisher (Vorgabe `rows` 2 der Altform). */
+.pmap textarea.pmap__step-description {
+  min-height: calc(2lh + 2 * var(--spacing-xs) + 2 * var(--border-width));
+}
+
+/* Breite: `field-sizing` gilt in beiden Achsen; ohne Mindestbreite richtete
+   sich die Tabelle (Spalten ohne feste Breite) nach dem Text und würde
+   schmaler. Die Mindestbreite ist die eines Textfelds mit 20 Spalten
+   (Vorgabe `cols`) wie bisher, gemessen in der App-Schrift: Titel 161 px,
+   Beschreibung 140 px (samt Innenabstand und Rahmen), Input/Output 122 px. */
+.pmap textarea.pmap__step-title { min-width: 161px; }
+.pmap textarea.pmap__step-description { min-width: 140px; }
+.pmap textarea.pmap__io-name { min-width: 122px; }
+
+/* Der Input-Typ ist nur 18 px breit: das Abzeichen sitzt mittig auf dem
+   Knopf statt an seinem Ende, sonst bedeckte es den Anfang des Namens. */
+.pmap__input-type.context-help-anchor--overlay > .context-help__btn {
+  left: 50%;
+  margin-left: 0;
+  transform: translate(-50%, -50%);
+}
+
+/* Wie `.pmap__io-item`: Bezug für das Hilfe-Abzeichen des Unterschritt-Titels
+   (das Teil-Template liegt hier in einer Tabellenzelle). */
+.pmap .fc-substep-item { position: relative; }
 
 /* Kopie aus flowchart.css (`.fc-remove-icon`), damit das Modul nicht an der
    Regel des Altkerns hängt. */

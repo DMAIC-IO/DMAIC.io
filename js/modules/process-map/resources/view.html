@@ -1,7 +1,7 @@
 <div class="module-container pmap" x-data="processMap" data-ref="root">
   <div class="module-container__body">
     <div class="pmap__canvas">
-      <div class="pmap__flow" data-ref="flow" @click="noteClick($event)">
+      <div class="pmap__flow" data-ref="flow" @click.capture="noteClick($event)">
 
         <!-- Empty state: no in-canvas add button (the toolbar covers it). With
              a SIPOC in the project it offers the import instead of opening the
@@ -40,7 +40,7 @@
                                :data-io-id="io.id" :data-reorder-index="j">
                             <button type="button" class="pmap__io-dot pmap__io-dot--input pmap__io-grip context-help-anchor--overlay"
                                     :aria-label="t('ioGrip')" data-help-key="modules.process-map.actions.moveIO.help"></button>
-                            <button type="button" class="pmap__input-type" :class="inputTypeClass(io)"
+                            <button type="button" class="pmap__input-type context-help-anchor--overlay" :class="inputTypeClass(io)"
                                     data-action="cycle-input-type" :data-step-id="step.id" :data-io-id="io.id"
                                     x-command="cycleInputType" :data-arg-step-id="step.id" :data-arg-io-id="io.id"
                                     :title="inputTypeTitle(io)" x-text="inputTypeLabel(io)"></button>
@@ -82,7 +82,7 @@
                         <button type="button" class="pmap__step-number pmap__grip fc-step-number context-help-anchor--overlay"
                                 :aria-label="t('stepGrip')" x-text="stepNum(i)"
                                 data-help-key="modules.process-map.actions.moveStep.help"></button>
-                        <button type="button" class="pmap__value-badge" :class="valueBadgeClass(step)"
+                        <button type="button" class="pmap__value-badge context-help-anchor--overlay" :class="valueBadgeClass(step)"
                                 data-action="cycle-value" :data-step-id="step.id" :data-arg-step-id="step.id"
                                 x-command="cycleValueType" :title="valueBadgeTitle(step)"
                                 x-text="valueBadgeLabel(step)"></button>
@@ -90,7 +90,7 @@
                                   :placeholder="t('stepNamePlaceholder')" data-field="title" :data-step-id="step.id"
                                   x-field="step.title"></textarea>
                         <div class="pmap__step-actions fc-card__actions">
-                          <button type="button" class="pmap__step-loop-toggle" :class="loopToggleClass(step)"
+                          <button type="button" class="pmap__step-loop-toggle context-help-anchor--overlay" :class="loopToggleClass(step)"
                                   data-action="toggle-loop" :data-step-id="step.id" x-command="setLoop" :data-arg-step-id="step.id"
                                   :data-arg-on="loopArg(step)" :aria-pressed="loopPressed(step)"
                                   :title="t('loopLabel')" :aria-label="t('loopLabel')">
@@ -229,7 +229,7 @@
                         <button type="button" class="pmap__loop-step-add" data-action="add-loop-step" :data-step-id="step.id"
                                 @click.stop="addLoopStepAt(step.id)">
                           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
-                          <span data-help-key="modules.process-map.actions.addLoopStep.help" x-text="t('addLoopStep')"></span>
+                          <span class="context-help-anchor--overlay" data-help-key="modules.process-map.actions.addLoopStep.help" x-text="t('addLoopStep')"></span>
                         </button>
                       </div>
                     </td>
