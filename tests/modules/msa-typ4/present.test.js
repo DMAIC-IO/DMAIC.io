@@ -52,10 +52,15 @@ suite('MSA Typ 4 present — Zahlen und Klassen', () => {
 
 suite('MSA Typ 4 present — Texte', () => {
   test('Fehlertext ohne Modulpräfix, mit den Werten der Engine; sonst leer', () => {
-    assertEqual(errorText({ invalid: { key: 'modules.msa-typ4.errTooFewReferences', vars: { got: 4 } } }, t), 'errTooFewReferences|{"got":4}');
-    assertEqual(errorText({ invalid: { key: 'modules.msa-typ4.errInvalidPv', vars: null } }, t), 'errInvalidPv');
-    assertEqual(errorText(R, t), '');
-    assertEqual(errorText(null, t), '');
+    assertEqual(errorText({ invalid: { key: 'modules.msa-typ4.errTooFewReferences', vars: { got: 4 } } }, t, 'de'), 'errTooFewReferences|{"got":"4"}');
+    assertEqual(errorText({ invalid: { key: 'modules.msa-typ4.errInvalidPv', vars: null } }, t, 'de'), 'errInvalidPv');
+    assertEqual(errorText(R, t, 'de'), '');
+    assertEqual(errorText(null, t, 'de'), '');
+  });
+  test('Fehlertext: Zahlwerte im Format der App-Sprache, Texte unverändert', () => {
+    const d = { invalid: { key: 'modules.msa-typ4.errTooFewRepeats', vars: { xRef: 2.5, n: 1, col: 'Ref' } } };
+    assertEqual(errorText(d, t, 'de'), 'errTooFewRepeats|{"xRef":"2,5","n":"1","col":"Ref"}');
+    assertEqual(errorText(d, t, 'en'), 'errTooFewRepeats|{"xRef":"2.5","n":"1","col":"Ref"}');
   });
   test('Kacheln nach AIAG: Stellen der Altform, p-Wert, Signifikanz-Ampel', () => {
     const k = kpiAiag(R, t, 'de');

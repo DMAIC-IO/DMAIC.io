@@ -48,14 +48,20 @@ export function resultOf(derived) {
 }
 
 /**
- * Der Fehlertext einer abgelehnten Rechnung samt Werten, sonst leer.
+ * Der Fehlertext einer abgelehnten Rechnung samt Werten, sonst leer; Zahlwerte
+ * im Format der App-Sprache.
  * @param {any} derived Wert der Ableitung `result`
  * @param {Translate} t
+ * @param {string} lang
  * @returns {string}
  */
-export function errorText(derived, t) {
+export function errorText(derived, t, lang) {
   const inv = derived?.invalid;
-  return inv ? t(String(inv.key).replace(OWN_PREFIX, ''), inv.vars ?? undefined) : '';
+  if (!inv) return '';
+  const vars = inv.vars
+    ? Object.fromEntries(Object.entries(inv.vars).map(([k, v]) => [k, typeof v === 'number' ? formatNumber(v, lang) : v]))
+    : undefined;
+  return t(String(inv.key).replace(OWN_PREFIX, ''), vars);
 }
 
 /**

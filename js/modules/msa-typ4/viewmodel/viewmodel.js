@@ -43,7 +43,7 @@ export default createModule({
       /** Das Ergebnis, oder null bei fehlenden oder abgelehnten Eingaben. */
       get res() { return resultOf(this.result); },
       /** Fehlertext einer abgelehnten Rechnung samt Werten, sonst leer. */
-      get invalidText() { return errorText(this.result, this.t); },
+      get invalidText() { return errorText(this.result, this.t, lang()); },
       /** Ampelklasse des Urteils der gewählten Norm. */
       get verdictClass() { return verdictClass(this.res, this.model.params.norm); },
       /** Kacheln nach AIAG. */
