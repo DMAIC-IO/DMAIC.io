@@ -206,7 +206,8 @@ suite('Chart type contour', () => {
       'T:chart.editor.contour.dataPoints');
 
     const schemeSel = sections[0].querySelector('select');
-    assertEqual(schemeSel.options.length, 5);
+    assertEqual(schemeSel.options.length, 6);
+    assertEqual(schemeSel.options[5].value, 'hue');
     assertTrue(!!sections[0].querySelector('.dmike-chart-ed__color-preview'), 'colour preview');
 
     const ranges = [...sections[0].querySelectorAll('input[type=range]')]
@@ -222,7 +223,7 @@ suite('Chart type contour', () => {
   });
 
   test('editor texts exist in de and en', async () => {
-    const keys = ['appearance', 'colorScheme', 'schemeGreen', 'schemeGray', 'numLevels', 'gridRes',
+    const keys = ['appearance', 'colorScheme', 'schemeGreen', 'schemeGray', 'schemeHue', 'numLevels', 'gridRes',
       'showLines', 'showLabels', 'showDataPoints', 'dataPoints', 'markerStrokeDash',
       'dash.solid', 'dash.dash', 'dash.dot', 'dash.dashdot', 'dash.longdash'];
     for (const lang of ['de', 'en']) {

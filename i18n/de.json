@@ -1141,13 +1141,15 @@
         "valueDecimals": "Nachkommastellen",
         "colorScheme": "Farbschema",
         "schemeGreen": "Grün-Verlauf",
-        "schemeGray": "Graustufen"
+        "schemeGray": "Graustufen",
+        "schemeHue": "Blau–Rot (Farbton)"
       },
       "contour": {
         "appearance": "Darstellung",
         "colorScheme": "Farbschema",
         "schemeGreen": "Grün-Verlauf",
         "schemeGray": "Graustufen",
+        "schemeHue": "Blau–Rot (Farbton)",
         "numLevels": "Konturstufen",
         "gridRes": "Rasterauflösung",
         "showLines": "Konturlinien anzeigen",

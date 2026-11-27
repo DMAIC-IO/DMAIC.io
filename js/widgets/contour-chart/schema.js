@@ -16,7 +16,7 @@ export default chartWidget({
     xRange: list(number(), opt), yRange: list(number(), opt),
     zLabel: text(opt),
     points: list(object({ x: number(), y: number(), z: number() }), opt),
-    colorScheme: oneOf(['viridis', 'plasma', 'thermal', 'green', 'grayscale'], ed),
+    colorScheme: oneOf(['viridis', 'plasma', 'thermal', 'green', 'grayscale', 'hue'], ed),
     numLevels: number({ ...ed, integer: true, min: 4, max: 20 }),
     gridRes: oneOf([40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200], ed),
     showLines: boolean(ed), showLabels: boolean(ed), showDataPoints: boolean(ed),

@@ -1141,13 +1141,15 @@
         "valueDecimals": "Decimal places",
         "colorScheme": "Color scheme",
         "schemeGreen": "Green gradient",
-        "schemeGray": "Grayscale"
+        "schemeGray": "Grayscale",
+        "schemeHue": "Blue–red (hue)"
       },
       "contour": {
         "appearance": "Display",
         "colorScheme": "Color scheme",
         "schemeGreen": "Green gradient",
         "schemeGray": "Grayscale",
+        "schemeHue": "Blue–red (hue)",
         "numLevels": "Contour levels",
         "gridRes": "Grid resolution",
         "showLines": "Show contour lines",

@@ -6,7 +6,12 @@
  *
  * Used by:
  *   - js/core/chart/types/heatmap.js
- *   - js/core/chart/types/contour.js, js/modules/contour-plot (legend)
+ *   - js/core/chart/types/contour.js, js/core/chart/color-legend.js
+ *
+ * `hue` ist die Altfarbe der Wirkungsfläche (response-optimization):
+ * `hsl(220 − 210·t, 70 %, 55 %)`, blau → rot. Stützstellen alle 10° Farbton;
+ * da die Sektorgrenzen von HSL (60°, 120°, 180°) auf Stützstellen fallen,
+ * ist die lineare Interpolation zwischen ihnen bis auf Rundung exakt.
  */
 
 export const COLOR_SCHEMES = {
@@ -15,6 +20,7 @@ export const COLOR_SCHEMES = {
   thermal:   [[4,35,100],[12,60,150],[30,100,200],[80,170,220],[180,220,180],[240,220,100],[240,160,50],[200,50,30],[140,10,10]],
   green:     [[5,30,15],[10,60,25],[15,95,40],[25,140,60],[50,180,80],[100,210,110],[160,230,160],[220,250,220]],
   grayscale: [[30,30,30],[60,60,60],[95,95,95],[130,130,130],[165,165,165],[195,195,195],[220,220,220],[245,245,245]],
+  hue:       [[60,113,221],[60,140,221],[60,167,221],[60,194,221],[60,221,221],[60,221,194],[60,221,167],[60,221,140],[60,221,113],[60,221,87],[60,221,60],[87,221,60],[113,221,60],[140,221,60],[167,221,60],[194,221,60],[221,221,60],[221,194,60],[221,167,60],[221,140,60],[221,113,60],[221,87,60]],
 };
 
 function lerpColor(c1, c2, t) {

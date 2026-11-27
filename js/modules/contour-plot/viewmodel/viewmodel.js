@@ -95,12 +95,6 @@ export default createModule({
         clearRejection(el);
         setFields(this.model, { b: this.model.b.map((x, k) => (k === i ? v : x)) });
       },
-      /**
-       * @noagent Hintergrund eines Legendenfelds.
-       * @param {{ color: string }} it
-       * @returns {string}
-       */
-      swatchStyle(it) { return `background: ${it.color}`; },
     };
   },
 

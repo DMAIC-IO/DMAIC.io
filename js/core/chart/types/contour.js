@@ -13,7 +13,7 @@
  *   yRange: [min, max]         — y span of the grid (also the exact y axis)
  *   zLabel: ''                 — name of z in the tooltip
  *   points: [{ x, y, z }]      — measured points, drawn with showDataPoints
- *   colorScheme: 'viridis'     — viridis / plasma / thermal / green / grayscale
+ *   colorScheme: 'viridis'     — viridis / plasma / thermal / green / grayscale / hue
  *   numLevels: 10              — number of contour levels
  *   gridRes: 100               — grid resolution (consumed by the caller that samples the grid)
  *   showLines: true            — draw contour lines
@@ -317,6 +317,7 @@ export default class ContourChart extends ChartBase {
       { value: 'thermal', label: 'Thermal' },
       { value: 'green', label: th('schemeGreen') },
       { value: 'grayscale', label: th('schemeGray') },
+      { value: 'hue', label: th('schemeHue') },
     ], cfg.colorScheme || 'viridis', (v) => {
       cfg.colorScheme = v;
       this._updateColorPreview(preview);

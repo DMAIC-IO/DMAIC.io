@@ -1090,3 +1090,43 @@ button.dmike-chart-ed-section-title:focus-visible {
   font-family: var(--font-family);
   font-size: 11px;
 }
+
+/* ── Farblegende (Widget `color-legend`, js/widgets/color-legend/) ──
+   Zeile unter einem Heat-/Konturbild, schließt unten an dessen Rahmen an.
+   Aus contour-plot gehoben (Werte unverändert). */
+.dmike-color-legend {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  background: var(--color-bg-secondary);
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.dmike-color-legend__title {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-right: var(--spacing-xs);
+}
+
+.dmike-color-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.dmike-color-legend__swatch {
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--color-border-secondary);
+}

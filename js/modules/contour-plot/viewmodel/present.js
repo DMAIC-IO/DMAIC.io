@@ -8,7 +8,7 @@
 import { formatNumber, roundTo } from '../../../core/number-format.js';
 import { getColor } from '../../../core/chart/color-schemes.js';
 import { CONTOUR_DEFAULTS } from '../../../core/chart/contour-defaults.js';
-import { legendModel } from '../domain/legend.js';
+import { legendModel } from '../../../core/chart/color-legend.js';
 
 /** @typedef {(key: string, params?: Record<string, unknown>) => string} T */
 /** @typedef {{ grid: number[][], zMin: number, zMax: number, optimum: { x: number, y: number, z: number } }} SurfaceGrid */

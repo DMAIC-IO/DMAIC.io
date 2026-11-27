@@ -3,7 +3,7 @@
  *
  * Cells are arranged in an `nY × nX` grid (one row per Y-level, one
  * column per X-level). Cell colour is sampled from a sequential
- * scheme (viridis / plasma / thermal / green / grayscale, same as the
+ * scheme (viridis / plasma / thermal / green / grayscale / hue, same as the
  * Contour Plot module). NaN / missing cells render as a light-gray
  * placeholder.
  *
@@ -243,6 +243,7 @@ export default class HeatmapChart extends ChartBase {
       { value: 'thermal', label: 'Thermal' },
       { value: 'green', label: th('schemeGreen') },
       { value: 'grayscale', label: th('schemeGray') },
+      { value: 'hue', label: th('schemeHue') },
     ], cfg.colorScheme || 'viridis', (v) => {
       cfg.colorScheme = v;
       this._updateColorPreview(preview);

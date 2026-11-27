@@ -46,7 +46,7 @@ function ensureTemplate() {
     + '<p data-ref="formula-error" x-show="formulaErrorText" x-text="formulaErrorText"></p>'
     + '<div data-ref="infoRangeSub" x-text="info.rangeSub"></div>'
     + '<div data-ref="infoZmax" x-text="info.zMax"></div>'
-    + '<div data-ref="legend"><template x-for="(it, i) in legend.items" :key="i"><span class="contour__legend-item" x-text="it.value"></span></template></div>'
+    + '<div data-ref="legend" x-widget="color-legend" x-widget-legend="legend"></div>'
     + '<div data-ref="chart-wrap" style="width: 700px; height: 520px">'
     + '<div x-widget="contour-chart" x-widget-config="chart" x-widget-value="model.chartEdits"></div>'
     + '</div>'
@@ -143,10 +143,10 @@ suite('contour-plot: Viewmodel im Browser', () => {
     await settle();
     assertEqual(h.lines(), 6);
     assertEqual(h.text('infoRangeSub'), '6 Konturstufen');
-    assertEqual(h.container.querySelectorAll('.contour__legend-item').length, 6);
+    assertEqual(h.container.querySelectorAll('.dmike-color-legend__item').length, 6);
     h.vm().model.chartEdits = { numLevels: 14 };
     await settle();
-    assertEqual(h.container.querySelectorAll('.contour__legend-item').length, 10);
+    assertEqual(h.container.querySelectorAll('.dmike-color-legend__item').length, 10);
   });
 
   test('drei Spalten gesetzt: Marker sichtbar; showDataPoints false: keine', async () => {

@@ -90,12 +90,7 @@
       <div class="contour__chart-wrap" data-ref="chart-wrap">
         <div class="contour__chart" x-widget="contour-chart" x-widget-config="chart" x-widget-value="model.chartEdits"></div>
       </div>
-      <div class="contour__legend" data-ref="legend">
-        <span class="contour__legend-title" x-text="legend.title"></span>
-        <template x-for="(it, i) in legend.items" :key="i">
-          <span class="contour__legend-item"><span class="contour__legend-swatch" :style="swatchStyle(it)"></span><span x-text="it.value"></span></span>
-        </template>
-      </div>
+      <div data-ref="legend" x-widget="color-legend" x-widget-legend="legend"></div>
     </div>
   </main>
 </div>

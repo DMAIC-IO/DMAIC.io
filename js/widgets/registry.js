@@ -55,6 +55,8 @@ import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
 import richText from './rich-text/schema.js';
 import { mount as mountRichText } from './rich-text/mount.js';
+import colorLegend from './color-legend/schema.js';
+import { mount as mountColorLegend } from './color-legend/mount.js';
 import algoLabLink from './algo-lab-link/schema.js';
 import { mount as mountAlgoLabLink } from './algo-lab-link/mount.js';
 
@@ -76,6 +78,7 @@ export const WIDGETS = Object.freeze({
   'individual-value-plot-chart': { schema: individualValuePlotChart, mount: mountIndividualValuePlotChart },
   'heatmap-chart': { schema: heatmapChart, mount: mountHeatmapChart },
   'contour-chart': { schema: contourChart, mount: mountContourChart },
+  'color-legend': { schema: colorLegend, mount: mountColorLegend },
   'multi-vari-chart': { schema: multiVariChart, mount: mountMultiVariChart },
   'gage-run-chart': { schema: gageRunChart, mount: mountGageRunChart },
   'algo-lab-link': { schema: algoLabLink, mount: mountAlgoLabLink },
