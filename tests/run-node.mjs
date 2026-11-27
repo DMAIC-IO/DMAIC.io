@@ -244,6 +244,7 @@ const SKIP = new Set([
   'modules/model-data-generator-view.test.js',
   'modules/calculator-view.test.js',
   'modules/unit-converter-view.test.js',
+  'modules/doe-advisor-view.test.js',
   'modules/five-why-view.test.js',
   'modules/lessons-learned-view.test.js',
   'modules/voc-ctx-tree-view.test.js',
