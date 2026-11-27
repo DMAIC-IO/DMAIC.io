@@ -1,0 +1,363 @@
+{
+  "fd4d076e-e27c-4b93-b77a-1d2671d8505c": {
+    "colRefs": [
+      {
+        "instanceId": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf",
+        "sheetId": "sheet-pizza",
+        "columnId": "c-entfernung"
+      },
+      {
+        "instanceId": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf",
+        "sheetId": "sheet-pizza",
+        "columnId": "c-verkehr"
+      }
+    ],
+    "yKey": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf|sheet-pizza|c-lieferzeit",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [
+      "Entfernung",
+      "Verkehr"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = 3.5119 + 2.7489·Entfernung + 1.3424·Verkehr",
+      "n": 30,
+      "R2": 0.9178663831968785,
+      "adjR2": 0.9117824115818325,
+      "R2pred": 0.897815586273641,
+      "Se": 2.553350566651193,
+      "Fstat": 150.86631583338394,
+      "fPVal": 2.218363921743152e-15,
+      "dw": 1.3963265416165633,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 3.5118550968000193,
+          "se": 1.5079114087763097,
+          "t": 2.328953197356559,
+          "pval": 0.027591377639119712,
+          "ciLow": 0.4178764521240135,
+          "ciHigh": 6.605833741476025,
+          "vif": null
+        },
+        {
+          "term": "Entfernung",
+          "coeff": 2.7489278034515117,
+          "se": 0.17056896679749647,
+          "t": 16.116224745120864,
+          "pval": 2.2368525070598353e-15,
+          "ciLow": 2.398949192211896,
+          "ciHigh": 3.098906414691127,
+          "vif": 1.0314638050179121
+        },
+        {
+          "term": "Verkehr",
+          "coeff": 1.3423584236436525,
+          "se": 0.3763943322666768,
+          "t": 3.566361946950324,
+          "pval": 0.0013766786081391205,
+          "ciLow": 0.5700610464686661,
+          "ciHigh": 2.114655800818639,
+          "vif": 1.031463805017912
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 1967.1757987487815,
+          "df": 2,
+          "ms": 983.5878993743908,
+          "f": 150.86631583338394,
+          "p": 2.218363921743152e-15
+        },
+        "terms": [
+          {
+            "term": "Entfernung",
+            "ss": 1693.3530816026966,
+            "df": 1,
+            "ms": 1693.3530816026966,
+            "f": 259.732700035246,
+            "p": 2.2368525070598515e-15
+          },
+          {
+            "term": "Verkehr",
+            "ss": 82.92237392320946,
+            "df": 1,
+            "ms": 82.92237392320946,
+            "f": 12.718937536655304,
+            "p": 0.0013766786081391205
+          }
+        ],
+        "error": {
+          "ss": 176.02917613788514,
+          "df": 27,
+          "ms": 6.519599116217968
+        },
+        "total": {
+          "ss": 2143.2049748866666,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Entfernung",
+        "label": "Entfernung",
+        "kind": "numeric"
+      },
+      {
+        "id": "Verkehr",
+        "label": "Verkehr",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": "m-a"
+  },
+  "f4309ced-02f5-458f-a437-1d0b99aec268": {
+    "colRefs": [
+      {
+        "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+        "sheetId": "sheet-solder",
+        "columnId": "c-temp"
+      },
+      {
+        "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+        "sheetId": "sheet-solder",
+        "columnId": "c-press"
+      }
+    ],
+    "yKey": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+    "trialsKey": null,
+    "method": "binomial",
+    "methods": [
+      "auto",
+      "binomial",
+      "poisson",
+      "negbin"
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "cutoff": 0.4,
+    "successClass": {
+      "success": 1,
+      "failure": 0
+    },
+    "activeParams": [
+      "method",
+      "confLevel",
+      "alpha",
+      "cutoff"
+    ],
+    "activeColumnSlots": [
+      "y",
+      "trials"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "family": {
+        "name": "binomial",
+        "link": "logit",
+        "theta": null
+      },
+      "quasi": false,
+      "autoReason": null,
+      "n": 50,
+      "iterations": 3,
+      "aic": 74.53990094629452,
+      "bic": 80.27596996257896,
+      "deviance": 68.53990094629452,
+      "nullDeviance": 69.23469670899615,
+      "logLikelihood": -34.26995047314726,
+      "pseudoR2": {
+        "mcfadden": 0.010035369485649093,
+        "nagelkerke": 0.01840957916935779,
+        "coxSnell": 0.013799812683048973
+      },
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "estimate": -12.729004138790614,
+          "se": 20.87891068217985,
+          "z": -0.6096584411204373,
+          "p": 0.5420879871073505,
+          "ciLower": -53.65091714528335,
+          "ciUpper": 28.192908867702123,
+          "ratio": null
+        },
+        {
+          "term": "Temperatur",
+          "estimate": 0.06472620709558574,
+          "se": 0.11403219114810252,
+          "z": 0.5676134646182565,
+          "p": 0.5702973922340853,
+          "ciLower": -0.15877278081306928,
+          "ciUpper": 0.28822519500424076,
+          "ratio": {
+            "value": 1.0668668838102677,
+            "lower": 0.8531901981294255,
+            "upper": 1.3340576934269586
+          }
+        },
+        {
+          "term": "Druck",
+          "estimate": -0.9874161396937433,
+          "se": 2.328734437593355,
+          "z": -0.42401405834586897,
+          "p": 0.6715556376326477,
+          "ciLower": -5.551651770614586,
+          "ciUpper": 3.5768194912270994,
+          "ratio": {
+            "value": 0.37253803473878866,
+            "lower": 0.0038810413560817583,
+            "upper": 35.759625985319
+          }
+        }
+      ],
+      "auc": 0.5705128205128205,
+      "hosmerLemeshow": {
+        "statistic": 7.153200116779996,
+        "pValue": 0.306911545219814
+      },
+      "overdispersionRatio": null,
+      "overdispersion": null,
+      "vif": [
+        21.377344545963926,
+        21.377344545963926
+      ],
+      "vifTerms": [
+        "Temperatur",
+        "Druck"
+      ],
+      "warnings": [],
+      "warningDetails": [],
+      "equation": "logit(p) = -12.7290 + 0.0647·Temperatur − 0.9874·Druck"
+    },
+    "classification": {
+      "cutoff": 0.4,
+      "tp": 23,
+      "fn": 1,
+      "fp": 20,
+      "tn": 6,
+      "sensitivity": 0.9583333333333334,
+      "specificity": 0.23076923076923078,
+      "accuracy": 0.58,
+      "precision": 0.5348837209302325
+    },
+    "errorMsg": "",
+    "predictionTerms": [
+      "Temperatur",
+      "Druck"
+    ],
+    "prediction": null,
+    "savedModelId": "m-b"
+  },
+  "r0e5f6a7-0001-4b2c-8d3e-9f0a1b2c3d4e": {
+    "specs": {
+      "m-a": {
+        "selected": true,
+        "kind": "max",
+        "lower": 7.8325,
+        "upper": 42.1747,
+        "target": 25.0036,
+        "weight": 1
+      },
+      "m-c": {
+        "selected": true,
+        "kind": "max",
+        "lower": 7.8325,
+        "upper": 42.1747,
+        "target": 25.0036,
+        "weight": 1
+      },
+      "m-b": {
+        "selected": false,
+        "kind": "max",
+        "lower": 0,
+        "upper": 1,
+        "target": 0.5,
+        "weight": 1
+      }
+    },
+    "optId": "o1",
+    "selectableModels": [
+      {
+        "id": "m-a",
+        "name": "Lieferzeit — Modell"
+      },
+      {
+        "id": "m-b",
+        "name": "Defekt — Binomial (logistisch)"
+      },
+      {
+        "id": "m-c",
+        "name": "Lieferzeit quadratisch — Modell"
+      }
+    ],
+    "canOptimize": true,
+    "diagnosticReasons": [],
+    "result": {
+      "xOpt": [
+        11.6201,
+        5
+      ],
+      "yPredictions": [
+        42.16646318390519,
+        43.63349601382332
+      ],
+      "dPerResponse": [
+        0.9997601546757399,
+        1
+      ],
+      "D": 0.999880070146285,
+      "ciAtOpt": null,
+      "paretoFront": null,
+      "factorNames": [
+        "Entfernung",
+        "Verkehr"
+      ],
+      "modelNames": [
+        "Lieferzeit — Modell",
+        "Lieferzeit quadratisch — Modell"
+      ],
+      "iter": 28
+    },
+    "errorMsg": ""
+  }
+}

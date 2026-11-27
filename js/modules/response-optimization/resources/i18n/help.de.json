@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Zielgrößenoptimierung",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Zielgrößenoptimierung sucht den Faktor-Punkt, an dem alle gewählten Antworten gleichzeitig möglichst gut sind. Dazu wird jede Antwort über eine Wunschfunktion auf den Wert d ∈ [0, 1] abgebildet, und das geometrische Mittel D dieser Werte wird mittels Multi-Start Nelder–Mead über den Faktor-Bereich maximiert."
+        },
+        {
+          "type": "definition",
+          "term": "Wunschfunktion (Derringer-Suich)",
+          "content": "Drei Formen: Maximieren (lineare Skala zwischen einem nicht akzeptablen Untergrenze und einem zufriedenstellenden Wert), Minimieren (gespiegelt) und Zielwert (zweiseitig, mit Maximum genau am Ziel). Form-Parameter steuern, wie streng die Funktion in der Nähe der Grenzen wird."
+        },
+        {
+          "type": "definition",
+          "term": "Composite D",
+          "content": "D = (∏ d_i^w_i)^(1/Σw_i). Sobald irgendeine einzelne Antwort d=0 erreicht, ist D=0 — kein einzelnes Ergebnis darf außerhalb seines akzeptablen Bereichs liegen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Modelle stammen aus dem Regressionsmodul (dort „Als Modell speichern\" anklicken). Das Optimum speichert diese Instanz; die Modelle bleiben bei der Instanz, die sie gespeichert hat."
+        }
+      ]
+    }
+  }
+}

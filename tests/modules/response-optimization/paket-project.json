@@ -1,0 +1,2358 @@
+{
+  "appVersion": "1.9.6",
+  "exportedAt": "2026-11-27T12:00:00.000Z",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80,
+    "exportReminderSeconds": 0,
+    "agent": {
+      "consent": {
+        "granted": true,
+        "at": "2026-06-07T12:00:00.000Z",
+        "contract": 3
+      }
+    }
+  },
+  "projects": [
+    {
+      "id": "p-legacy-models",
+      "status": "active",
+      "projectMeta": {
+        "name": "Altstand Modelle",
+        "cycle": "dmaic",
+        "created": "2026-06-07T12:00:00.000Z",
+        "modified": "2026-06-07T12:00:00.000Z"
+      },
+      "phases": {
+        "data": [
+          {
+            "instanceId": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf",
+            "moduleId": "worksheet",
+            "order": 0,
+            "state": {},
+            "customName": "Pizza-Lieferungen"
+          },
+          {
+            "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+            "moduleId": "worksheet",
+            "order": 1,
+            "state": {},
+            "customName": "Lötstellen-Inspektion"
+          }
+        ],
+        "define": [],
+        "measure": [],
+        "analyze": [
+          {
+            "instanceId": "f4309ced-02f5-458f-a437-1d0b99aec268",
+            "moduleId": "glm-regression",
+            "order": 0,
+            "state": {}
+          }
+        ],
+        "improve": [
+          {
+            "instanceId": "fd4d076e-e27c-4b93-b77a-1d2671d8505c",
+            "moduleId": "regression",
+            "order": 0,
+            "state": {}
+          },
+          {
+            "instanceId": "r0e5f6a7-0001-4b2c-8d3e-9f0a1b2c3d4e",
+            "moduleId": "response-optimization",
+            "order": 1,
+            "state": {}
+          }
+        ],
+        "control": [],
+        "extras": []
+      },
+      "phaseAchievement": {
+        "define": 0,
+        "measure": 0,
+        "analyze": 0,
+        "improve": 0,
+        "control": 0
+      },
+      "phaseAchievementHistory": {},
+      "models": {
+        "m-a": {
+          "id": "m-a",
+          "name": "Lieferzeit — Modell",
+          "experimentId": null,
+          "responseSpec": {
+            "sourceColumn": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf|sheet-pizza|c-lieferzeit",
+            "transform": "identity",
+            "aggregateOver": null
+          },
+          "termSet": [
+            "Intercept",
+            "Entfernung",
+            "Verkehr"
+          ],
+          "coef": [
+            3.5118550968000193,
+            2.7489278034515117,
+            1.3423584236436525
+          ],
+          "vcov": null,
+          "sigma2": 6.519599116217969,
+          "df": 27,
+          "rSqAdj": 0.9117824115818325,
+          "lofPValue": null,
+          "factorSpec": [
+            {
+              "name": "Entfernung",
+              "low": 0.6477,
+              "high": 11.6201
+            },
+            {
+              "name": "Verkehr",
+              "low": 1,
+              "high": 5
+            }
+          ],
+          "spec": {
+            "predictors": [
+              {
+                "id": "Entfernung",
+                "kind": "continuous"
+              },
+              {
+                "id": "Verkehr",
+                "kind": "continuous"
+              }
+            ],
+            "terms": [
+              {
+                "id": "Entfernung",
+                "factors": [
+                  {
+                    "id": "Entfernung",
+                    "degree": 1
+                  }
+                ]
+              },
+              {
+                "id": "Verkehr",
+                "factors": [
+                  {
+                    "id": "Verkehr",
+                    "degree": 1
+                  }
+                ]
+              }
+            ]
+          },
+          "dataSnapshot": {
+            "X": [
+              [
+                2.5578,
+                5
+              ],
+              [
+                7.859,
+                2
+              ],
+              [
+                5.8736,
+                5
+              ],
+              [
+                4.7608,
+                5
+              ],
+              [
+                4.5815,
+                5
+              ],
+              [
+                9.591,
+                4
+              ],
+              [
+                10.9092,
+                3
+              ],
+              [
+                2.5396,
+                4
+              ],
+              [
+                8.007,
+                2
+              ],
+              [
+                3.9305,
+                2
+              ],
+              [
+                11.6201,
+                3
+              ],
+              [
+                11.0783,
+                5
+              ],
+              [
+                7.8125,
+                4
+              ],
+              [
+                9.1564,
+                3
+              ],
+              [
+                6.4243,
+                3
+              ],
+              [
+                9.9978,
+                3
+              ],
+              [
+                5.6564,
+                3
+              ],
+              [
+                4.3963,
+                5
+              ],
+              [
+                3.6958,
+                1
+              ],
+              [
+                3.1028,
+                2
+              ],
+              [
+                6.5469,
+                3
+              ],
+              [
+                5.4555,
+                4
+              ],
+              [
+                8.1266,
+                3
+              ],
+              [
+                0.6477,
+                2
+              ],
+              [
+                5.6486,
+                1
+              ],
+              [
+                4.6996,
+                2
+              ],
+              [
+                2.7471,
+                1
+              ],
+              [
+                7.341,
+                4
+              ],
+              [
+                5.5061,
+                3
+              ],
+              [
+                3.9499,
+                2
+              ]
+            ],
+            "y": [
+              20.283,
+              28.2354,
+              27.1234,
+              27.2689,
+              20.8221,
+              38.8963,
+              42.1747,
+              19.3857,
+              29.0718,
+              15.8986,
+              39.6391,
+              37.8103,
+              29.288,
+              30.9102,
+              25.2283,
+              36.1706,
+              21.6298,
+              20.0201,
+              13.4337,
+              13.2205,
+              22.105,
+              21.6129,
+              31.503,
+              7.8325,
+              20.8356,
+              16.7152,
+              13.407,
+              24.6708,
+              20.9677,
+              21.7838
+            ],
+            "factorSpec": [
+              {
+                "name": "Entfernung",
+                "low": 0.6477,
+                "high": 11.6201
+              },
+              {
+                "name": "Verkehr",
+                "low": 1,
+                "high": 5
+              }
+            ],
+            "termSet": [
+              "Intercept",
+              "Entfernung",
+              "Verkehr"
+            ],
+            "trainedAt": "2026-06-07T12:00:00.000Z",
+            "sourceFingerprint": {
+              "experimentId": null,
+              "responseColumn": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf|sheet-pizza|c-lieferzeit",
+              "workbookHash": "e6ece3b6"
+            }
+          },
+          "dataHash": "e6ece3b6",
+          "createdFromInstanceId": "fd4d076e-e27c-4b93-b77a-1d2671d8505c",
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        },
+        "m-b": {
+          "id": "m-b",
+          "name": "Defekt — Binomial (logistisch)",
+          "experimentId": null,
+          "responseSpec": {
+            "sourceColumn": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+            "transform": "identity",
+            "aggregateOver": null
+          },
+          "family": {
+            "name": "binomial",
+            "link": "logit"
+          },
+          "terms": [
+            "Intercept",
+            "Temperatur",
+            "Druck"
+          ],
+          "termSet": [
+            "Intercept",
+            "Temperatur",
+            "Druck"
+          ],
+          "coef": [
+            -12.729004138790614,
+            0.06472620709558574,
+            -0.9874161396937433
+          ],
+          "vcov": null,
+          "sigma2": null,
+          "df": 47,
+          "rSqAdj": 0.01840957916935779,
+          "lofPValue": null,
+          "factorSpec": [
+            {
+              "name": "Temperatur",
+              "kind": "continuous",
+              "low": 220,
+              "high": 255
+            },
+            {
+              "name": "Druck",
+              "kind": "continuous",
+              "low": 2,
+              "high": 3.5
+            }
+          ],
+          "spec": {
+            "predictors": [
+              {
+                "id": "Temperatur",
+                "kind": "continuous"
+              },
+              {
+                "id": "Druck",
+                "kind": "continuous"
+              }
+            ],
+            "terms": []
+          },
+          "dataSnapshot": {
+            "X": [
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ],
+              [
+                1,
+                230,
+                2.5
+              ],
+              [
+                1,
+                235,
+                2.5
+              ],
+              [
+                1,
+                240,
+                3
+              ],
+              [
+                1,
+                245,
+                3
+              ],
+              [
+                1,
+                250,
+                3.5
+              ],
+              [
+                1,
+                255,
+                3.5
+              ],
+              [
+                1,
+                220,
+                2
+              ],
+              [
+                1,
+                225,
+                2
+              ]
+            ],
+            "y": [
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0,
+              1,
+              1,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0,
+              1,
+              0,
+              1,
+              1,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1,
+              1,
+              0,
+              1,
+              1,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "factorSpec": [
+              {
+                "name": "Temperatur",
+                "kind": "continuous",
+                "low": 220,
+                "high": 255
+              },
+              {
+                "name": "Druck",
+                "kind": "continuous",
+                "low": 2,
+                "high": 3.5
+              }
+            ],
+            "termSet": [
+              "Intercept",
+              "Temperatur",
+              "Druck"
+            ],
+            "trainedAt": "2026-06-07T12:00:00.000Z",
+            "sourceFingerprint": {
+              "experimentId": null,
+              "responseColumn": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+              "workbookHash": "453e9df7"
+            }
+          },
+          "dataHash": "453e9df7",
+          "createdFromInstanceId": "f4309ced-02f5-458f-a437-1d0b99aec268",
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        },
+        "m-c": {
+          "id": "m-c",
+          "name": "Lieferzeit quadratisch — Modell",
+          "experimentId": null,
+          "responseSpec": {
+            "sourceColumn": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf|sheet-pizza|c-lieferzeit",
+            "transform": "identity",
+            "aggregateOver": null
+          },
+          "termSet": [
+            "Intercept",
+            "Entfernung",
+            "Verkehr",
+            "Entfernung²",
+            "Verkehr²"
+          ],
+          "coef": [
+            6.1533926102019905,
+            1.7909989601412093,
+            1.2190552042864056,
+            0.07390366673674797,
+            0.02377081414650206
+          ],
+          "vcov": null,
+          "sigma2": 6.56606466594403,
+          "df": 25,
+          "rSqAdj": 0.9111536798656199,
+          "lofPValue": null,
+          "factorSpec": [
+            {
+              "name": "Entfernung",
+              "low": 0.6477,
+              "high": 11.6201
+            },
+            {
+              "name": "Verkehr",
+              "low": 1,
+              "high": 5
+            }
+          ],
+          "spec": {
+            "predictors": [
+              {
+                "id": "Entfernung",
+                "kind": "continuous"
+              },
+              {
+                "id": "Verkehr",
+                "kind": "continuous"
+              }
+            ],
+            "terms": [
+              {
+                "id": "Entfernung",
+                "factors": [
+                  {
+                    "id": "Entfernung",
+                    "degree": 1
+                  }
+                ]
+              },
+              {
+                "id": "Verkehr",
+                "factors": [
+                  {
+                    "id": "Verkehr",
+                    "degree": 1
+                  }
+                ]
+              },
+              {
+                "id": "Entfernung²",
+                "factors": [
+                  {
+                    "id": "Entfernung",
+                    "degree": 2
+                  }
+                ]
+              },
+              {
+                "id": "Verkehr²",
+                "factors": [
+                  {
+                    "id": "Verkehr",
+                    "degree": 2
+                  }
+                ]
+              }
+            ]
+          },
+          "dataSnapshot": {
+            "X": [
+              [
+                2.5578,
+                5
+              ],
+              [
+                7.859,
+                2
+              ],
+              [
+                5.8736,
+                5
+              ],
+              [
+                4.7608,
+                5
+              ],
+              [
+                4.5815,
+                5
+              ],
+              [
+                9.591,
+                4
+              ],
+              [
+                10.9092,
+                3
+              ],
+              [
+                2.5396,
+                4
+              ],
+              [
+                8.007,
+                2
+              ],
+              [
+                3.9305,
+                2
+              ],
+              [
+                11.6201,
+                3
+              ],
+              [
+                11.0783,
+                5
+              ],
+              [
+                7.8125,
+                4
+              ],
+              [
+                9.1564,
+                3
+              ],
+              [
+                6.4243,
+                3
+              ],
+              [
+                9.9978,
+                3
+              ],
+              [
+                5.6564,
+                3
+              ],
+              [
+                4.3963,
+                5
+              ],
+              [
+                3.6958,
+                1
+              ],
+              [
+                3.1028,
+                2
+              ],
+              [
+                6.5469,
+                3
+              ],
+              [
+                5.4555,
+                4
+              ],
+              [
+                8.1266,
+                3
+              ],
+              [
+                0.6477,
+                2
+              ],
+              [
+                5.6486,
+                1
+              ],
+              [
+                4.6996,
+                2
+              ],
+              [
+                2.7471,
+                1
+              ],
+              [
+                7.341,
+                4
+              ],
+              [
+                5.5061,
+                3
+              ],
+              [
+                3.9499,
+                2
+              ]
+            ],
+            "y": [
+              20.283,
+              28.2354,
+              27.1234,
+              27.2689,
+              20.8221,
+              38.8963,
+              42.1747,
+              19.3857,
+              29.0718,
+              15.8986,
+              39.6391,
+              37.8103,
+              29.288,
+              30.9102,
+              25.2283,
+              36.1706,
+              21.6298,
+              20.0201,
+              13.4337,
+              13.2205,
+              22.105,
+              21.6129,
+              31.503,
+              7.8325,
+              20.8356,
+              16.7152,
+              13.407,
+              24.6708,
+              20.9677,
+              21.7838
+            ],
+            "factorSpec": [
+              {
+                "name": "Entfernung",
+                "low": 0.6477,
+                "high": 11.6201
+              },
+              {
+                "name": "Verkehr",
+                "low": 1,
+                "high": 5
+              }
+            ],
+            "termSet": [
+              "Intercept",
+              "Entfernung",
+              "Verkehr",
+              "Entfernung²",
+              "Verkehr²"
+            ],
+            "trainedAt": "2026-06-07T12:00:00.000Z",
+            "sourceFingerprint": {
+              "experimentId": null,
+              "responseColumn": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf|sheet-pizza|c-lieferzeit",
+              "workbookHash": "e6ece3b6"
+            }
+          },
+          "dataHash": "e6ece3b6",
+          "createdFromInstanceId": "1e9f66c8-6e81-47f1-876b-8796bbf550a5",
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        }
+      },
+      "optimizations": {
+        "o1": {
+          "id": "o1",
+          "name": "Optimierung",
+          "modelRefs": [
+            "m-a",
+            "m-c"
+          ],
+          "desirability": [
+            {
+              "modelId": "m-a",
+              "kind": "max",
+              "lower": 7.8325,
+              "upper": 42.1747,
+              "target": 25.0036,
+              "weight": 1
+            },
+            {
+              "modelId": "m-c",
+              "kind": "max",
+              "lower": 7.8325,
+              "upper": 42.1747,
+              "target": 25.0036,
+              "weight": 1
+            }
+          ],
+          "factorOverrides": [],
+          "constraints": [
+            {
+              "kind": "box",
+              "factor": "Entfernung",
+              "low": 0.6477,
+              "high": 11.6201
+            },
+            {
+              "kind": "box",
+              "factor": "Verkehr",
+              "low": 1,
+              "high": 5
+            }
+          ],
+          "result": {
+            "xOpt": [
+              11.6201,
+              5
+            ],
+            "yPredictions": [
+              42.16646318390519,
+              43.63349601382332
+            ],
+            "dPerResponse": [
+              0.9997601546757399,
+              1
+            ],
+            "D": 0.999880070146285,
+            "ciAtOpt": null,
+            "paretoFront": null,
+            "factorNames": [
+              "Entfernung",
+              "Verkehr"
+            ],
+            "modelNames": [
+              "Lieferzeit — Modell",
+              "Lieferzeit quadratisch — Modell"
+            ],
+            "iter": 28
+          },
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        },
+        "o2": {
+          "id": "o2",
+          "name": "Alt unverwiesen",
+          "modelRefs": [
+            "m-a",
+            "m-c"
+          ],
+          "desirability": [
+            {
+              "modelId": "m-a",
+              "kind": "max",
+              "lower": 7.8325,
+              "upper": 42.1747,
+              "target": 25.0036,
+              "weight": 1
+            },
+            {
+              "modelId": "m-c",
+              "kind": "max",
+              "lower": 7.8325,
+              "upper": 42.1747,
+              "target": 25.0036,
+              "weight": 1
+            }
+          ],
+          "factorOverrides": [],
+          "constraints": [
+            {
+              "kind": "box",
+              "factor": "Entfernung",
+              "low": 0.6477,
+              "high": 11.6201
+            },
+            {
+              "kind": "box",
+              "factor": "Verkehr",
+              "low": 1,
+              "high": 5
+            }
+          ],
+          "result": {
+            "xOpt": [
+              11.6201,
+              5
+            ],
+            "yPredictions": [
+              42.16646318390519,
+              43.63349601382332
+            ],
+            "dPerResponse": [
+              0.9997601546757399,
+              1
+            ],
+            "D": 0.999880070146285,
+            "ciAtOpt": null,
+            "paretoFront": null,
+            "factorNames": [
+              "Entfernung",
+              "Verkehr"
+            ],
+            "modelNames": [
+              "Lieferzeit — Modell",
+              "Lieferzeit quadratisch — Modell"
+            ],
+            "iter": 28
+          },
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        }
+      },
+      "chartEdits": {},
+      "dashboard": {
+        "layout": null
+      },
+      "version": "1.9.6",
+      "moduleStates": {
+        "42907b00-e8a7-4743-957f-efa88bb88055": {
+          "_schema": {
+            "name": "worksheet",
+            "version": "1.0"
+          },
+          "sheets": [
+            {
+              "id": "sheet-solder",
+              "name": "Lötstellen-Inspektion",
+              "columns": [
+                {
+                  "id": "c-temp",
+                  "name": "Temperatur",
+                  "shortName": "T",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-press",
+                  "name": "Druck",
+                  "shortName": "p",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-defect",
+                  "name": "Defekt",
+                  "shortName": "Y",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                }
+              ],
+              "formulas": {},
+              "data": {
+                "rowCount": 50,
+                "columns": [
+                  [
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225,
+                    230,
+                    235,
+                    240,
+                    245,
+                    250,
+                    255,
+                    220,
+                    225
+                  ],
+                  [
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2,
+                    2.5,
+                    2.5,
+                    3,
+                    3,
+                    3.5,
+                    3.5,
+                    2,
+                    2
+                  ],
+                  [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    1,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ],
+          "sheetCounter": 1,
+          "activeSheetId": "sheet-solder",
+          "gridView": {}
+        },
+        "c70d2798-5e0f-4b00-b1db-96e0295b2ebf": {
+          "_schema": {
+            "name": "worksheet",
+            "version": "1.0"
+          },
+          "sheets": [
+            {
+              "id": "sheet-pizza",
+              "name": "Pizza-Lieferungen",
+              "columns": [
+                {
+                  "id": "c-entfernung",
+                  "name": "Entfernung",
+                  "shortName": "D",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "continuous",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-verkehr",
+                  "name": "Verkehr",
+                  "shortName": "V",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "categorical",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                },
+                {
+                  "id": "c-lieferzeit",
+                  "name": "Lieferzeit",
+                  "shortName": "T",
+                  "type": "numeric",
+                  "unit": null,
+                  "role": "continuous",
+                  "roleManual": false,
+                  "format": {},
+                  "meta": null
+                }
+              ],
+              "formulas": {},
+              "data": {
+                "rowCount": 30,
+                "columns": [
+                  [
+                    2.5578,
+                    7.859,
+                    5.8736,
+                    4.7608,
+                    4.5815,
+                    9.591,
+                    10.9092,
+                    2.5396,
+                    8.007,
+                    3.9305,
+                    11.6201,
+                    11.0783,
+                    7.8125,
+                    9.1564,
+                    6.4243,
+                    9.9978,
+                    5.6564,
+                    4.3963,
+                    3.6958,
+                    3.1028,
+                    6.5469,
+                    5.4555,
+                    8.1266,
+                    0.6477,
+                    5.6486,
+                    4.6996,
+                    2.7471,
+                    7.341,
+                    5.5061,
+                    3.9499
+                  ],
+                  [
+                    5,
+                    2,
+                    5,
+                    5,
+                    5,
+                    4,
+                    3,
+                    4,
+                    2,
+                    2,
+                    3,
+                    5,
+                    4,
+                    3,
+                    3,
+                    3,
+                    3,
+                    5,
+                    1,
+                    2,
+                    3,
+                    4,
+                    3,
+                    2,
+                    1,
+                    2,
+                    1,
+                    4,
+                    3,
+                    2
+                  ],
+                  [
+                    20.283,
+                    28.2354,
+                    27.1234,
+                    27.2689,
+                    20.8221,
+                    38.8963,
+                    42.1747,
+                    19.3857,
+                    29.0718,
+                    15.8986,
+                    39.6391,
+                    37.8103,
+                    29.288,
+                    30.9102,
+                    25.2283,
+                    36.1706,
+                    21.6298,
+                    20.0201,
+                    13.4337,
+                    13.2205,
+                    22.105,
+                    21.6129,
+                    31.503,
+                    7.8325,
+                    20.8356,
+                    16.7152,
+                    13.407,
+                    24.6708,
+                    20.9677,
+                    21.7838
+                  ]
+                ]
+              }
+            }
+          ],
+          "sheetCounter": 1,
+          "activeSheetId": "sheet-pizza",
+          "gridView": {}
+        },
+        "f4309ced-02f5-458f-a437-1d0b99aec268": {
+          "colRefs": [
+            {
+              "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+              "sheetId": "sheet-solder",
+              "columnId": "c-temp"
+            },
+            {
+              "instanceId": "42907b00-e8a7-4743-957f-efa88bb88055",
+              "sheetId": "sheet-solder",
+              "columnId": "c-press"
+            }
+          ],
+          "yKey": "42907b00-e8a7-4743-957f-efa88bb88055|sheet-solder|c-defect",
+          "trialsKey": null,
+          "successClass": null,
+          "method": "binomial",
+          "confLevel": 0.95,
+          "alpha": 0.05,
+          "cutoff": 0.4,
+          "activeTab": "model",
+          "exampleWorksheetId": "42907b00-e8a7-4743-957f-efa88bb88055",
+          "savedModelId": "m-b",
+          "savedModelName": "Defekt — Binomial (logistisch)",
+          "result": {
+            "converged": true,
+            "iterations": 3,
+            "coefficients": [
+              -12.729004138790614,
+              0.06472620709558574,
+              -0.9874161396937433
+            ],
+            "stdErrors": [
+              20.87891068217985,
+              0.11403219114810252,
+              2.328734437593355
+            ],
+            "zValues": [
+              -0.6096584411204373,
+              0.5676134646182565,
+              -0.42401405834586897
+            ],
+            "pValues": [
+              0.5420879871073505,
+              0.5702973922340853,
+              0.6715556376326477
+            ],
+            "ciLower": [
+              -53.65091714528335,
+              -0.15877278081306928,
+              -5.551651770614586
+            ],
+            "ciUpper": [
+              28.192908867702123,
+              0.28822519500424076,
+              3.5768194912270994
+            ],
+            "confLevel": 0.95,
+            "oddsRatios": [
+              {
+                "or": 2.9639013352390225e-06,
+                "lower": 5.008442991093553e-24,
+                "upper": 1753980456731.4424
+              },
+              {
+                "or": 1.0668668838102677,
+                "lower": 0.8531901981294255,
+                "upper": 1.3340576934269586
+              },
+              {
+                "or": 0.37253803473878866,
+                "lower": 0.0038810413560817583,
+                "upper": 35.759625985319
+              }
+            ],
+            "rateRatios": null,
+            "deviance": 68.53990094629452,
+            "nullDeviance": 69.23469670899615,
+            "logLikelihood": -34.26995047314726,
+            "aic": 74.53990094629452,
+            "bic": 80.27596996257896,
+            "pseudoR2": {
+              "mcfadden": 0.010035369485649093,
+              "coxSnell": 0.013799812683048973,
+              "nagelkerke": 0.01840957916935779
+            },
+            "dispersion": 1,
+            "terms": [
+              "Intercept",
+              "Temperatur",
+              "Druck"
+            ],
+            "family": {
+              "name": "binomial",
+              "link": "logit",
+              "theta": null
+            },
+            "n": 50,
+            "p": 3,
+            "separationDetected": false,
+            "separationStrong": false,
+            "thetaEstimated": false,
+            "thetaConverged": true,
+            "thetaReason": null,
+            "_yName": "Defekt",
+            "_xNames": [
+              "Temperatur",
+              "Druck"
+            ],
+            "_quasiActivated": false,
+            "_successClassInfo": {
+              "success": 1,
+              "failure": 0
+            },
+            "_vifs": [
+              21.377344545963926,
+              21.377344545963926
+            ],
+            "_roc": {
+              "fpr": [
+                0,
+                0.11538461538461539,
+                0.23076923076923078,
+                0.3076923076923077,
+                0.4230769230769231,
+                0.5769230769230769,
+                0.7307692307692307,
+                0.7692307692307693,
+                1
+              ],
+              "tpr": [
+                0,
+                0.125,
+                0.25,
+                0.4166666666666667,
+                0.5416666666666666,
+                0.6666666666666666,
+                0.75,
+                0.9583333333333334,
+                1
+              ],
+              "thresholds": [
+                null,
+                0.5793783985662933,
+                0.5415708590706315,
+                0.50327849787275,
+                0.4991477873696754,
+                0.46494763813371287,
+                0.460839653828784,
+                0.42298858518740273,
+                0.38602054881323555
+              ],
+              "auc": 0.5705128205128205
+            },
+            "_classTable": {
+              "tp": 23,
+              "fp": 20,
+              "tn": 6,
+              "fn": 1,
+              "sensitivity": 0.9583333333333334,
+              "specificity": 0.23076923076923078,
+              "accuracy": 0.58,
+              "precision": 0.5348837209302325
+            },
+            "_hl": {
+              "statistic": 7.153200116779996,
+              "df": 6,
+              "pValue": 0.306911545219814,
+              "groups": 8
+            },
+            "_epv": 12,
+            "_slim": true
+          }
+        },
+        "fd4d076e-e27c-4b93-b77a-1d2671d8505c": {
+          "colRefs": [
+            {
+              "instanceId": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf",
+              "sheetId": "sheet-pizza",
+              "columnId": "c-entfernung"
+            },
+            {
+              "instanceId": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf",
+              "sheetId": "sheet-pizza",
+              "columnId": "c-verkehr"
+            }
+          ],
+          "yKey": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf|sheet-pizza|c-lieferzeit",
+          "regType": "polynomial",
+          "polyDegree": 1,
+          "confLevel": 0.95,
+          "alpha": 0.05,
+          "showCI": true,
+          "showPI": false,
+          "result": {
+            "spec": {
+              "predictors": [
+                {
+                  "id": "Entfernung",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "Verkehr",
+                  "kind": "continuous"
+                }
+              ],
+              "terms": [
+                {
+                  "id": "Entfernung",
+                  "factors": [
+                    {
+                      "id": "Entfernung",
+                      "degree": 1
+                    }
+                  ]
+                },
+                {
+                  "id": "Verkehr",
+                  "factors": [
+                    {
+                      "id": "Verkehr",
+                      "degree": 1
+                    }
+                  ]
+                }
+              ]
+            },
+            "blockMap": [
+              {
+                "id": "Intercept",
+                "columnIndices": [
+                  0
+                ],
+                "df": 1,
+                "columnNames": [
+                  "Intercept"
+                ]
+              },
+              {
+                "id": "Entfernung",
+                "columnIndices": [
+                  1
+                ],
+                "df": 1,
+                "columnNames": [
+                  "Entfernung"
+                ]
+              },
+              {
+                "id": "Verkehr",
+                "columnIndices": [
+                  2
+                ],
+                "df": 1,
+                "columnNames": [
+                  "Verkehr"
+                ]
+              }
+            ],
+            "blocks": [
+              {
+                "id": "Entfernung",
+                "df": 1,
+                "ss": 1693.3530816026966,
+                "ms": 1693.3530816026966,
+                "fStat": 259.732700035246,
+                "pValue": 2.2368525070598515e-15
+              },
+              {
+                "id": "Verkehr",
+                "df": 1,
+                "ss": 82.92237392320946,
+                "ms": 82.92237392320946,
+                "fStat": 12.718937536655304,
+                "pValue": 0.0013766786081391205
+              }
+            ],
+            "fit": {
+              "spec": {
+                "predictors": [
+                  {
+                    "id": "Entfernung",
+                    "kind": "continuous"
+                  },
+                  {
+                    "id": "Verkehr",
+                    "kind": "continuous"
+                  }
+                ],
+                "terms": [
+                  {
+                    "id": "Entfernung",
+                    "factors": [
+                      {
+                        "id": "Entfernung",
+                        "degree": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "Verkehr",
+                    "factors": [
+                      {
+                        "id": "Verkehr",
+                        "degree": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              "blockMap": [
+                {
+                  "id": "Intercept",
+                  "columnIndices": [
+                    0
+                  ],
+                  "df": 1,
+                  "columnNames": [
+                    "Intercept"
+                  ]
+                },
+                {
+                  "id": "Entfernung",
+                  "columnIndices": [
+                    1
+                  ],
+                  "df": 1,
+                  "columnNames": [
+                    "Entfernung"
+                  ]
+                },
+                {
+                  "id": "Verkehr",
+                  "columnIndices": [
+                    2
+                  ],
+                  "df": 1,
+                  "columnNames": [
+                    "Verkehr"
+                  ]
+                }
+              ],
+              "termNames": [
+                "Intercept",
+                "Entfernung",
+                "Verkehr"
+              ],
+              "ols": {
+                "beta": [
+                  3.5118550968000193,
+                  2.7489278034515117,
+                  1.3423584236436525
+                ],
+                "predicted": [
+                  17.254854750686558,
+                  27.800395551412755,
+                  26.36974956137108,
+                  23.310742701690238,
+                  22.817859946531385,
+                  35.24625535427808,
+                  37.52753356114421,
+                  15.86246584102009,
+                  28.207236866323576,
+                  17.00123267555349,
+                  39.48174633661789,
+                  40.677094099995166,
+                  30.357287255839566,
+                  32.7092129072544,
+                  25.198867255444522,
+                  35.022160761078496,
+                  23.087965595174104,
+                  22.308758517332166,
+                  15.013700896439769,
+                  14.725945132636674,
+                  25.53588580414768,
+                  23.878064423104348,
+                  29.878367055260032,
+                  7.977052482382868,
+                  20.38180711101988,
+                  19.11543304918805,
+                  12.40579308930532,
+                  29.061167796512176,
+                  22.674801746315346,
+                  17.05456187494045
+                ],
+                "residuals": [
+                  3.028145249313443,
+                  0.4350044485872431,
+                  0.7536504386289202,
+                  3.958157298309761,
+                  -1.9957599465313862,
+                  3.65004464572192,
+                  4.647166438855791,
+                  3.5232341589799105,
+                  0.8645631336764232,
+                  -1.1026326755534885,
+                  0.15735366338211065,
+                  -2.866794099995168,
+                  -1.0692872558395656,
+                  -1.7990129072543972,
+                  0.029432744555478507,
+                  1.1484392389215046,
+                  -1.4581655951741048,
+                  -2.2886585173321663,
+                  -1.5800008964397687,
+                  -1.505445132636675,
+                  -3.430885804147678,
+                  -2.2651644231043484,
+                  1.624632944739968,
+                  -0.14455248238286877,
+                  0.45379288898011794,
+                  -2.4002330491880493,
+                  1.0012069106946804,
+                  -4.390367796512177,
+                  -1.7071017463153453,
+                  4.729238125059549
+                ],
+                "SST": 2143.2049748866666,
+                "SSR": 1967.1757987487815,
+                "SSE": 176.02917613788514,
+                "rSquared": 0.9178663831968785,
+                "rSquaredAdj": 0.9117824115818325,
+                "MSE": 6.519599116217968,
+                "sigma": 2.553350566651193,
+                "seBeta": [
+                  1.5079114087763097,
+                  0.17056896679749647,
+                  0.3763943322666768
+                ],
+                "tValues": [
+                  2.328953197356559,
+                  16.116224745120864,
+                  3.566361946950324
+                ],
+                "pValues": [
+                  0.027591377639119712,
+                  2.2368525070598353e-15,
+                  0.0013766786081391205
+                ],
+                "dfModel": 2,
+                "dfError": 27,
+                "fStatistic": 150.86631583338394,
+                "fPValue": 2.218363921743152e-15,
+                "XtXinv": [
+                  [
+                    0.34876328685018726,
+                    -0.02201374759517167,
+                    -0.05752694284731247
+                  ],
+                  [
+                    -0.022013747595171648,
+                    0.004462509414419764,
+                    -0.0017198906140046275
+                  ],
+                  [
+                    -0.057526942847312496,
+                    -0.0017198906140046227,
+                    0.021730276791107686
+                  ]
+                ]
+              },
+              "blocks": [
+                {
+                  "id": "Entfernung",
+                  "df": 1,
+                  "ss": 1693.3530816026966,
+                  "ms": 1693.3530816026966,
+                  "fStat": 259.732700035246,
+                  "pValue": 2.2368525070598515e-15
+                },
+                {
+                  "id": "Verkehr",
+                  "df": 1,
+                  "ss": 82.92237392320946,
+                  "ms": 82.92237392320946,
+                  "fStat": 12.718937536655304,
+                  "pValue": 0.0013766786081391205
+                }
+              ],
+              "coefDetails": [
+                {
+                  "blockId": "Entfernung",
+                  "columnName": "Entfernung",
+                  "coeff": 2.7489278034515117,
+                  "se": 0.17056896679749647,
+                  "t": 16.116224745120864,
+                  "pval": 2.2368525070598353e-15,
+                  "ciLow": 2.398949192211896,
+                  "ciHigh": 3.098906414691127
+                },
+                {
+                  "blockId": "Verkehr",
+                  "columnName": "Verkehr",
+                  "coeff": 1.3423584236436525,
+                  "se": 0.3763943322666768,
+                  "t": 3.566361946950324,
+                  "pval": 0.0013766786081391205,
+                  "ciLow": 0.5700610464686661,
+                  "ciHigh": 2.114655800818639
+                }
+              ],
+              "diagnostics": {
+                "R2": 0.9178663831968785,
+                "adjR2": 0.9117824115818325,
+                "R2pred": 0.897815586273641,
+                "PRESS": 219.0021438542099,
+                "dw": 1.3963265416165633,
+                "sigma": 2.553350566651193,
+                "fStat": 150.86631583338394,
+                "fPValue": 2.218363921743152e-15,
+                "dfModel": 2,
+                "dfError": 27,
+                "n": 30
+              },
+              "equation": "ŷ = 3.5119 + 2.7489·Entfernung + 1.3424·Verkehr"
+            },
+            "hasCategorical": false,
+            "type": "polynomial",
+            "degree": 1,
+            "multiX": true,
+            "xCount": 2,
+            "xNames": [
+              "Entfernung",
+              "Verkehr"
+            ],
+            "_xNames": [
+              "Entfernung",
+              "Verkehr"
+            ],
+            "_nameY": "Lieferzeit",
+            "_termNames": [
+              "Intercept",
+              "Entfernung",
+              "Verkehr"
+            ],
+            "_coefficients": [
+              3.5118550968000193,
+              2.7489278034515117,
+              1.3423584236436525
+            ],
+            "confLevel": 0.95,
+            "R2": 0.9178663831968785,
+            "adjR2": 0.9117824115818325,
+            "R2pred": 0.897815586273641,
+            "PRESS": 219.0021438542099,
+            "Se": 2.553350566651193,
+            "Fstat": 150.86631583338394,
+            "fPVal": 2.218363921743152e-15,
+            "dw": 1.3963265416165633,
+            "SST": 2143.2049748866666,
+            "SSR": 1967.1757987487815,
+            "SSE": 176.02917613788514,
+            "dfReg": 2,
+            "dfRes": 27,
+            "dfTot": 29,
+            "MSR": 983.5878993743908,
+            "MSE": 6.519599116217968,
+            "df": 27,
+            "yHat": [
+              17.254854750686558,
+              27.800395551412755,
+              26.36974956137108,
+              23.310742701690238,
+              22.817859946531385,
+              35.24625535427808,
+              37.52753356114421,
+              15.86246584102009,
+              28.207236866323576,
+              17.00123267555349,
+              39.48174633661789,
+              40.677094099995166,
+              30.357287255839566,
+              32.7092129072544,
+              25.198867255444522,
+              35.022160761078496,
+              23.087965595174104,
+              22.308758517332166,
+              15.013700896439769,
+              14.725945132636674,
+              25.53588580414768,
+              23.878064423104348,
+              29.878367055260032,
+              7.977052482382868,
+              20.38180711101988,
+              19.11543304918805,
+              12.40579308930532,
+              29.061167796512176,
+              22.674801746315346,
+              17.05456187494045
+            ],
+            "residuals": [
+              3.028145249313443,
+              0.4350044485872431,
+              0.7536504386289202,
+              3.958157298309761,
+              -1.9957599465313862,
+              3.65004464572192,
+              4.647166438855791,
+              3.5232341589799105,
+              0.8645631336764232,
+              -1.1026326755534885,
+              0.15735366338211065,
+              -2.866794099995168,
+              -1.0692872558395656,
+              -1.7990129072543972,
+              0.029432744555478507,
+              1.1484392389215046,
+              -1.4581655951741048,
+              -2.2886585173321663,
+              -1.5800008964397687,
+              -1.505445132636675,
+              -3.430885804147678,
+              -2.2651644231043484,
+              1.624632944739968,
+              -0.14455248238286877,
+              0.45379288898011794,
+              -2.4002330491880493,
+              1.0012069106946804,
+              -4.390367796512177,
+              -1.7071017463153453,
+              4.729238125059549
+            ],
+            "invXtX": [
+              [
+                0.34876328685018726,
+                -0.02201374759517167,
+                -0.05752694284731247
+              ],
+              [
+                -0.022013747595171648,
+                0.004462509414419764,
+                -0.0017198906140046275
+              ],
+              [
+                -0.057526942847312496,
+                -0.0017198906140046227,
+                0.021730276791107686
+              ]
+            ],
+            "n": 30,
+            "p": 3,
+            "ys": [
+              20.283,
+              28.2354,
+              27.1234,
+              27.2689,
+              20.8221,
+              38.8963,
+              42.1747,
+              19.3857,
+              29.0718,
+              15.8986,
+              39.6391,
+              37.8103,
+              29.288,
+              30.9102,
+              25.2283,
+              36.1706,
+              21.6298,
+              20.0201,
+              13.4337,
+              13.2205,
+              22.105,
+              21.6129,
+              31.503,
+              7.8325,
+              20.8356,
+              16.7152,
+              13.407,
+              24.6708,
+              20.9677,
+              21.7838
+            ],
+            "xMatrix": [
+              [
+                2.5578,
+                7.859,
+                5.8736,
+                4.7608,
+                4.5815,
+                9.591,
+                10.9092,
+                2.5396,
+                8.007,
+                3.9305,
+                11.6201,
+                11.0783,
+                7.8125,
+                9.1564,
+                6.4243,
+                9.9978,
+                5.6564,
+                4.3963,
+                3.6958,
+                3.1028,
+                6.5469,
+                5.4555,
+                8.1266,
+                0.6477,
+                5.6486,
+                4.6996,
+                2.7471,
+                7.341,
+                5.5061,
+                3.9499
+              ],
+              [
+                5,
+                2,
+                5,
+                5,
+                5,
+                4,
+                3,
+                4,
+                2,
+                2,
+                3,
+                5,
+                4,
+                3,
+                3,
+                3,
+                3,
+                5,
+                1,
+                2,
+                3,
+                4,
+                3,
+                2,
+                1,
+                2,
+                1,
+                4,
+                3,
+                2
+              ]
+            ],
+            "coefDetails": [
+              {
+                "term": "Intercept",
+                "coeff": 3.5118550968000193,
+                "se": 1.5079114087763097,
+                "t": 2.328953197356559,
+                "pval": 0.027591377639119712,
+                "ciLow": 0.4178764521240135,
+                "ciHigh": 6.605833741476025
+              },
+              {
+                "term": "Entfernung",
+                "coeff": 2.7489278034515117,
+                "se": 0.17056896679749647,
+                "t": 16.116224745120864,
+                "pval": 2.2368525070598353e-15,
+                "ciLow": 2.398949192211896,
+                "ciHigh": 3.098906414691127,
+                "blockId": "Entfernung"
+              },
+              {
+                "term": "Verkehr",
+                "coeff": 1.3423584236436525,
+                "se": 0.3763943322666768,
+                "t": 3.566361946950324,
+                "pval": 0.0013766786081391205,
+                "ciLow": 0.5700610464686661,
+                "ciHigh": 2.114655800818639,
+                "blockId": "Verkehr"
+              }
+            ],
+            "allTerms": [
+              "Intercept",
+              "Entfernung",
+              "Verkehr"
+            ],
+            "excludeTerms": [],
+            "vif": [
+              1.0314638050179121,
+              1.031463805017912
+            ],
+            "vifFull": [
+              1.0314638050179121,
+              1.031463805017912
+            ],
+            "reg": {
+              "coeffs": [
+                3.5118550968000193,
+                2.7489278034515117,
+                1.3423584236436525
+              ],
+              "terms": [
+                "Intercept",
+                "Entfernung",
+                "Verkehr"
+              ],
+              "p": 3,
+              "type": "polynomial"
+            },
+            "equation": "ŷ = 3.5119 + 2.7489·Entfernung + 1.3424·Verkehr"
+          },
+          "perXResults": null,
+          "activeXKey": null,
+          "activeTab": "scatter",
+          "excludedTerms": [],
+          "designTerms": null,
+          "designNotice": null,
+          "coefSortByP": false,
+          "activeImportSource": null,
+          "savedModelId": "m-a",
+          "savedModelName": "Lieferzeit — Modell",
+          "exampleWorksheetId": "c70d2798-5e0f-4b00-b1db-96e0295b2ebf"
+        },
+        "r0e5f6a7-0001-4b2c-8d3e-9f0a1b2c3d4e": {
+          "specs": {
+            "m-a": {
+              "selected": true,
+              "kind": "max",
+              "lower": 7.8325,
+              "upper": 42.1747,
+              "weight": 1
+            },
+            "m-c": {
+              "selected": true,
+              "kind": "max",
+              "lower": 7.8325,
+              "upper": 42.1747,
+              "target": 25.0036,
+              "weight": 1
+            }
+          },
+          "optId": "o1"
+        }
+      }
+    }
+  ]
+}

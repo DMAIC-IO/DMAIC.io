@@ -1,0 +1,410 @@
+{
+  "appVersion": "1.9.6",
+  "exportedAt": "2026-11-27T12:00:00.000Z",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80,
+    "agent": {
+      "consent": {
+        "granted": true,
+        "at": "2026-06-07T12:00:00.000Z",
+        "contract": 3
+      }
+    }
+  },
+  "projects": [
+    {
+      "id": "p-legacy-response-optimization",
+      "status": "active",
+      "projectMeta": {
+        "name": "Altstand Optimierung",
+        "cycle": "dmaic",
+        "created": "2026-06-07T12:00:00.000Z",
+        "modified": "2026-06-07T12:00:00.000Z"
+      },
+      "phases": {
+        "data": [],
+        "define": [],
+        "measure": [],
+        "analyze": [],
+        "improve": [
+          {
+            "instanceId": "d1adb015-b51f-4d6c-8de4-d5fbb56d2aff",
+            "moduleId": "response-optimization",
+            "order": 0,
+            "state": {}
+          },
+          {
+            "instanceId": "r0a1b2c3-2222-4a2b-8c3d-0e1f2a3b4c5d",
+            "moduleId": "response-optimization",
+            "order": 1,
+            "state": {}
+          }
+        ],
+        "control": [],
+        "extras": []
+      },
+      "phaseAchievement": {
+        "define": 0,
+        "measure": 0,
+        "analyze": 0,
+        "improve": 0,
+        "control": 0
+      },
+      "phaseAchievementHistory": {},
+      "models": {
+        "model-pizza-lieferzeit": {
+          "id": "model-pizza-lieferzeit",
+          "name": "Lieferzeit — Modell",
+          "experimentId": null,
+          "responseSpec": {
+            "sourceColumn": "Lieferzeit",
+            "transform": "identity",
+            "aggregateOver": null
+          },
+          "termSet": [
+            "Intercept",
+            "Entfernung",
+            "Verkehr"
+          ],
+          "coef": [
+            3.5118550968000193,
+            2.7489278034515117,
+            1.3423584236436525
+          ],
+          "vcov": null,
+          "sigma2": 6.519599116217969,
+          "df": 27,
+          "rSqAdj": 0.9117824115818325,
+          "lofPValue": null,
+          "factorSpec": [
+            {
+              "name": "Entfernung",
+              "low": 0.6477,
+              "high": 11.6201
+            },
+            {
+              "name": "Verkehr",
+              "low": 1,
+              "high": 5
+            }
+          ],
+          "spec": {
+            "predictors": [
+              {
+                "id": "Entfernung",
+                "kind": "continuous"
+              },
+              {
+                "id": "Verkehr",
+                "kind": "continuous"
+              }
+            ],
+            "terms": [
+              {
+                "id": "Entfernung",
+                "factors": [
+                  {
+                    "id": "Entfernung",
+                    "degree": 1
+                  }
+                ]
+              },
+              {
+                "id": "Verkehr",
+                "factors": [
+                  {
+                    "id": "Verkehr",
+                    "degree": 1
+                  }
+                ]
+              }
+            ]
+          },
+          "dataSnapshot": {
+            "X": [
+              [
+                2.5578,
+                5
+              ],
+              [
+                7.859,
+                2
+              ],
+              [
+                5.8736,
+                5
+              ],
+              [
+                4.7608,
+                5
+              ],
+              [
+                4.5815,
+                5
+              ],
+              [
+                9.591,
+                4
+              ],
+              [
+                10.9092,
+                3
+              ],
+              [
+                2.5396,
+                4
+              ],
+              [
+                8.007,
+                2
+              ],
+              [
+                3.9305,
+                2
+              ],
+              [
+                11.6201,
+                3
+              ],
+              [
+                11.0783,
+                5
+              ],
+              [
+                7.8125,
+                4
+              ],
+              [
+                9.1564,
+                3
+              ],
+              [
+                6.4243,
+                3
+              ],
+              [
+                9.9978,
+                3
+              ],
+              [
+                5.6564,
+                3
+              ],
+              [
+                4.3963,
+                5
+              ],
+              [
+                3.6958,
+                1
+              ],
+              [
+                3.1028,
+                2
+              ],
+              [
+                6.5469,
+                3
+              ],
+              [
+                5.4555,
+                4
+              ],
+              [
+                8.1266,
+                3
+              ],
+              [
+                0.6477,
+                2
+              ],
+              [
+                5.6486,
+                1
+              ],
+              [
+                4.6996,
+                2
+              ],
+              [
+                2.7471,
+                1
+              ],
+              [
+                7.341,
+                4
+              ],
+              [
+                5.5061,
+                3
+              ],
+              [
+                3.9499,
+                2
+              ]
+            ],
+            "y": [
+              20.283,
+              28.2354,
+              27.1234,
+              27.2689,
+              20.8221,
+              38.8963,
+              42.1747,
+              19.3857,
+              29.0718,
+              15.8986,
+              39.6391,
+              37.8103,
+              29.288,
+              30.9102,
+              25.2283,
+              36.1706,
+              21.6298,
+              20.0201,
+              13.4337,
+              13.2205,
+              22.105,
+              21.6129,
+              31.503,
+              7.8325,
+              20.8356,
+              16.7152,
+              13.407,
+              24.6708,
+              20.9677,
+              21.7838
+            ],
+            "factorSpec": [
+              {
+                "name": "Entfernung",
+                "low": 0.6477,
+                "high": 11.6201
+              },
+              {
+                "name": "Verkehr",
+                "low": 1,
+                "high": 5
+              }
+            ],
+            "termSet": [
+              "Intercept",
+              "Entfernung",
+              "Verkehr"
+            ],
+            "trainedAt": "2026-06-07T12:00:00.000Z",
+            "sourceFingerprint": {
+              "experimentId": null,
+              "responseColumn": "Lieferzeit",
+              "workbookHash": "e6ece3b6"
+            }
+          },
+          "dataHash": "e6ece3b6",
+          "createdFromInstanceId": null,
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        }
+      },
+      "optimizations": {
+        "opt-pizza-lieferzeit": {
+          "id": "opt-pizza-lieferzeit",
+          "name": "Optimierung",
+          "modelRefs": [
+            "model-pizza-lieferzeit"
+          ],
+          "desirability": [
+            {
+              "modelId": "model-pizza-lieferzeit",
+              "kind": "min",
+              "lower": 6.6,
+              "upper": 30,
+              "weight": 1
+            }
+          ],
+          "factorOverrides": [],
+          "constraints": [
+            {
+              "kind": "box",
+              "factor": "Entfernung",
+              "low": 0.6477,
+              "high": 11.6201
+            },
+            {
+              "kind": "box",
+              "factor": "Verkehr",
+              "low": 1,
+              "high": 5
+            }
+          ],
+          "result": {
+            "xOpt": [
+              0.6477,
+              1
+            ],
+            "yPredictions": [
+              6.634694058739216
+            ],
+            "dPerResponse": [
+              0.9985173479171277
+            ],
+            "D": 0.9985173479171277,
+            "ciAtOpt": null,
+            "paretoFront": null,
+            "factorNames": [
+              "Entfernung",
+              "Verkehr"
+            ],
+            "modelNames": [
+              "Lieferzeit — Modell"
+            ],
+            "iter": 25
+          },
+          "createdAt": "2026-06-07T12:00:00.000Z",
+          "updatedAt": "2026-06-07T12:00:00.000Z"
+        }
+      },
+      "chartEdits": {},
+      "dashboard": {
+        "layout": null
+      },
+      "version": "1.9.6",
+      "moduleStates": {
+        "d1adb015-b51f-4d6c-8de4-d5fbb56d2aff": {
+          "specs": {
+            "model-pizza-lieferzeit": {
+              "selected": true,
+              "kind": "min",
+              "lower": 6.6,
+              "upper": 30,
+              "weight": 1
+            }
+          },
+          "optId": "opt-pizza-lieferzeit"
+        },
+        "r0a1b2c3-2222-4a2b-8c3d-0e1f2a3b4c5d": {
+          "specs": {
+            "model-pizza-lieferzeit": {
+              "selected": true,
+              "kind": "max",
+              "lower": 30,
+              "upper": 10,
+              "target": 20,
+              "weight": 2
+            }
+          },
+          "optId": null
+        }
+      }
+    }
+  ]
+}

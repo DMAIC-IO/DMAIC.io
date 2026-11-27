@@ -1,0 +1,124 @@
+{
+  "d1adb015-b51f-4d6c-8de4-d5fbb56d2aff": {
+    "specs": {
+      "model-pizza-lieferzeit": {
+        "selected": true,
+        "kind": "min",
+        "lower": 6.6,
+        "upper": 30,
+        "target": 18.3,
+        "weight": 1
+      }
+    },
+    "optId": "opt-pizza-lieferzeit",
+    "selectableModels": [
+      {
+        "id": "model-pizza-lieferzeit",
+        "name": "Lieferzeit — Modell"
+      }
+    ],
+    "canOptimize": true,
+    "diagnosticReasons": [],
+    "result": {
+      "xOpt": [
+        0.6477,
+        1
+      ],
+      "yPredictions": [
+        6.634694058739216
+      ],
+      "dPerResponse": [
+        0.9985173479171277
+      ],
+      "D": 0.9985173479171277,
+      "ciAtOpt": null,
+      "paretoFront": null,
+      "factorNames": [
+        "Entfernung",
+        "Verkehr"
+      ],
+      "modelNames": [
+        "Lieferzeit — Modell"
+      ],
+      "iter": 25
+    },
+    "errorMsg": ""
+  },
+  "r0a1b2c3-2222-4a2b-8c3d-0e1f2a3b4c5d": {
+    "specs": {
+      "model-pizza-lieferzeit": {
+        "selected": true,
+        "kind": "max",
+        "lower": 30,
+        "upper": 10,
+        "target": 20,
+        "weight": 2
+      }
+    },
+    "optId": null,
+    "selectableModels": [
+      {
+        "id": "model-pizza-lieferzeit",
+        "name": "Lieferzeit — Modell"
+      }
+    ],
+    "canOptimize": true,
+    "diagnosticReasons": [],
+    "result": null,
+    "errorMsg": ""
+  },
+  "example:response-optimization-pizza-lieferzeit": {
+    "specs": {
+      "model-pizza-lieferzeit": {
+        "selected": true,
+        "kind": "min",
+        "lower": 6.6,
+        "upper": 30,
+        "target": 18.3,
+        "weight": 1
+      }
+    },
+    "optId": "opt-pizza-lieferzeit",
+    "selectableModels": [
+      {
+        "id": "model-pizza-lieferzeit",
+        "name": "Lieferzeit — Modell"
+      }
+    ],
+    "canOptimize": true,
+    "diagnosticReasons": [],
+    "result": {
+      "xOpt": [
+        0.6477,
+        1
+      ],
+      "yPredictions": [
+        6.634694058739216
+      ],
+      "dPerResponse": [
+        0.9985173479171277
+      ],
+      "D": 0.9985173479171277,
+      "ciAtOpt": null,
+      "paretoFront": null,
+      "factorNames": [
+        "Entfernung",
+        "Verkehr"
+      ],
+      "modelNames": [
+        "Lieferzeit — Modell"
+      ],
+      "iter": 25
+    },
+    "errorMsg": ""
+  },
+  "example:response-optimization-hubschrauber-flyer": {
+    "specs": {},
+    "optId": null,
+    "selectableModels": [],
+    "canOptimize": false,
+    "diagnosticReasons": [],
+    "result": null,
+    "errorMsg": ""
+  }
+}

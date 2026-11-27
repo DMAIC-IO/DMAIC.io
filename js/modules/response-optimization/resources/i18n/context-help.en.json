@@ -1,0 +1,155 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "specs": {
+      "help": "The stored specifications per model, keyed by the model id. An entry holds only the values that were set; what is missing comes from the model data (range of measured values, Maximise, weight 1). A specification for a model that no longer exists stays stored and has no effect.",
+      "selected": {
+        "help": "Whether this model (this response) takes part in the optimisation; the checkbox in the model header. Only included models show their desirability function and contribute to the composite desirability D; initially none is included. Optimising is possible only when at least one model is included and no diagnosis blocks (R²adj below 0.5, significant lack of fit with p below 0.05, or different factors among the selected models)."
+      },
+      "kind": {
+        "help": "The desirability function of the response: Maximise, Minimise or Target value, default Maximise. Maximise: d = 0 for y ≤ Lower, d = (y − Lower) / (Upper − Lower) in between, d = 1 for y ≥ Upper. Minimise mirrors it: d = 1 up to Lower, d = (Upper − y) / (Upper − Lower) in between, d = 0 from Upper on. Target value: d = 1 exactly at the target, falling linearly to 0 towards Lower and Upper, 0 at and beyond the limits. The shape is always linear (exponent 1). If Upper is not above Lower, d jumps straight between 0 and 1 for Maximise and Minimise; for Target value d is then always 0."
+      },
+      "lower": {
+        "help": "The lower limit of the desirability function in the unit of the response: for Maximise d = 0 here, for Minimise d = 1, for Target value d = 0. The default is the smallest measured value in the model data (0 without data). A finite number; if Upper is set as well, it must lie below it."
+      },
+      "upper": {
+        "help": "The upper limit of the desirability function in the unit of the response: for Maximise d = 1 here, for Minimise d = 0, for Target value d = 0. The default is the largest measured value in the model data (1 without data). A finite number; if Lower is set as well, it must lie above it."
+      },
+      "target": {
+        "help": "The target at which the desirability function reaches d = 1. Effective only for the Target value function and shown only then; for Maximise and Minimise it stays stored but has no effect. The default is the midpoint between the smallest and largest measured value, 0.5 without measured values. A finite number; whether it lies between Lower and Upper is not checked."
+      },
+      "weight": {
+        "help": "The weight w of this response in the composite desirability D = (Π dᵢ^wᵢ)^(1/Σwᵢ): a response with weight 2 counts twice as much as one with weight 1. A number greater than 0, default 1."
+      }
+    },
+    "optimization": {
+      "help": "The last computed optimum with the ids of the models it was computed over. Only optimising writes it; it stays when a specification changes afterwards.",
+      "modelRefs": {
+        "help": "The ids of the models of the optimum, in the order of the predictions."
+      },
+      "result": {
+        "help": "The optimum itself: factor settings, predictions, individual desirabilities, composite desirability, factor and model names and the number of iterations.",
+        "xOpt": {
+          "help": "The factor settings of the optimum, one per factor in the order of the factor names: continuous factors as a number (column Value, four decimals), categorical ones as the level name. The search runs inside the box of factor limits of the first selected model (−1 to 1 if none are given) with Nelder-Mead from 8 random starting points (seed 42, at most 400 iterations per start); the start with the highest D wins. With categorical factors every level combination is searched this way on its own and the best one is taken."
+        },
+        "yPredictions": {
+          "help": "The predicted response values at the optimum, each computed from its model’s regression equation, in the order of the model names (column Prediction, four decimals)."
+        },
+        "dPerResponse": {
+          "help": "The individual desirability d per response at the optimum, between 0 and 1: the model’s desirability function applied to its prediction (column d, three decimals). 1 means the specification is fully met, 0 means unacceptable."
+        },
+        "D": {
+          "help": "The composite desirability at the optimum, the weighted geometric mean of the individual desirabilities: D = (Π dᵢ^wᵢ)^(1/Σwᵢ) with the weights wᵢ. If any d is 0, D = 0. The tile shows D with three decimals, green from 0.8, yellow from 0.5, red below. D belongs to the last optimisation run: if a specification is changed afterwards, the result is current again only after optimising anew."
+        },
+        "factorNames": {
+          "help": "The factor names from the first selected model, in the same order as the factor settings (column Factor)."
+        },
+        "modelNames": {
+          "help": "The names of the included models (responses), in the same order as the predictions and individual desirabilities (column Model)."
+        },
+        "iter": {
+          "help": "The number of Nelder-Mead iterations: without categorical factors those of the best of the 8 starts, with categorical factors the sum over all level combinations."
+        }
+      }
+    },
+    "contourEdits": {
+      "help": "The chart editor settings of the response surface (colour scheme, contour lines, labels)."
+    },
+    "models": {
+      "help": "The saved models of the regression and GLM instances of the project in project order, each with id, name, owning instance, adjusted R², lack-of-fit p-value, factors and the range of the training values. Empty while no instance has saved a model; the module then shows a hint."
+    },
+    "unreadOwners": {
+      "help": "Instances of the regression modules whose model could not be read yet because their module is not loaded. The view loads them; while the list is not empty, a model may be missing."
+    },
+    "selectableModels": {
+      "help": "The selectable models as references with id, name and owning instance, without coefficients; read a model in the instance that saved it. Setting a specification takes these ids as the model."
+    },
+    "effectiveSpecs": {
+      "help": "The effective specification per selectable model: the stored values, completed by values from the model data. Optimising computes with these specifications."
+    },
+    "missingModels": {
+      "help": "Ids of stored specifications without a model (the owning instance was deleted or no longer has the model). Empty while an owner is still unread."
+    },
+    "diagnosticReasons": {
+      "help": "The reasons that block the optimisation, as texts: R²adj below 0.5, significant lack of fit (p below 0.05) or a different factor structure among the selected models. Empty when nothing blocks, and also empty while no model is selected (optimisation is still blocked then)."
+    },
+    "canOptimize": {
+      "help": "True only when at least one existing model is included and no reason blocks the optimisation; otherwise optimising is refused with the reasons."
+    },
+    "result": {
+      "help": "The stored optimum; empty while no optimisation has run. It shows the last successful run, not necessarily the current specifications."
+    },
+    "resultStale": {
+      "help": "True when a model of the stored optimum no longer exists; the numbers stay, the response surface is omitted."
+    }
+  },
+  "state": {
+    "contourXId": {
+      "help": "The continuous factor on the X axis of the response surface; selectable only with more than two continuous factors. Reset by the next optimisation and not saved."
+    },
+    "contourYId": {
+      "help": "The continuous factor on the Y axis of the response surface; selectable only with more than two continuous factors. Reset by the next optimisation and not saved."
+    },
+    "contourFixings": {
+      "help": "The level per categorical factor at which the response surface is drawn; initially the level of the optimum. Reset by the next optimisation and not saved."
+    }
+  },
+  "actions": {
+    "setSpec": {
+      "help": "Sets one specification of a model: included, desirability function, lower or upper limit, target or weight. Only this value is stored; nothing is computed, the optimum stays until the next optimisation. A value that does not fit the key and a lower limit not below the stored upper limit are refused. An id without a model is accepted and appears among the missing models.",
+      "params": {
+        "modelId": "The id of a model from the selectable models.",
+        "key": "Which specification: selected, kind, lower, upper, target or weight; any other is refused.",
+        "value": "The value: true or false for selected, max, min or target for kind, otherwise a finite number, greater than 0 for the weight.",
+        "command": "The command as an object with modelId, key and value."
+      }
+    },
+    "runOptimize": {
+      "params": {
+        "command": "The task as an empty object; it takes no arguments."
+      }
+    }
+  },
+  "asyncTasks": {
+    "runOptimize": {
+      "help": "Optimises the included models jointly and stores the optimum in this instance; it appears under “Result”. If optimising is blocked (no model included, R²adj too low, significant lack of fit or different factors), the task is refused with the reasons and the previous result stays. If the computation fails, the result also stays unchanged and the task reports the error.",
+      "cancel": {
+        "help": "Cancels the optimisation while nothing has been written yet."
+      }
+    }
+  },
+  "types": {
+    "ModelRef": {
+      "id": "The id of the model.",
+      "name": "The name of the model.",
+      "instanceId": "The instance that saved the model.",
+      "moduleId": "The module of that instance: Regression or Regression (attribute).",
+      "rSqAdj": "The adjusted coefficient of determination of the model, shown as a badge in the model header: green from 0.8, yellow from 0.5, red below; below 0.5 it blocks the optimisation.",
+      "lofPValue": "The p-value of the lack-of-fit test when the design had replicates; below 0.05 it blocks the optimisation.",
+      "factorNames": "The factors of the model; all included models must have the same.",
+      "yRange": "The smallest and the largest training value of the response, 0 and 1 without data; the defaults of lower and upper limit and target come from it."
+    },
+    "SelectableModel": {
+      "id": "The id of the model.",
+      "name": "The name of the model.",
+      "instanceId": "The instance that saved the model."
+    },
+    "Spec": {
+      "selected": "Whether this model (this response) takes part in the optimisation; the checkbox in the model header. Only included models show their desirability function and contribute to the composite desirability D; initially none is included. Optimising is possible only when at least one model is included and no diagnosis blocks (R²adj below 0.5, significant lack of fit with p below 0.05, or different factors among the selected models).",
+      "kind": "The desirability function of the response: Maximise, Minimise or Target value, default Maximise. Maximise: d = 0 for y ≤ Lower, d = (y − Lower) / (Upper − Lower) in between, d = 1 for y ≥ Upper. Minimise mirrors it: d = 1 up to Lower, d = (Upper − y) / (Upper − Lower) in between, d = 0 from Upper on. Target value: d = 1 exactly at the target, falling linearly to 0 towards Lower and Upper, 0 at and beyond the limits. The shape is always linear (exponent 1). If Upper is not above Lower, d jumps straight between 0 and 1 for Maximise and Minimise; for Target value d is then always 0.",
+      "lower": "The lower limit of the desirability function in the unit of the response: for Maximise d = 0 here, for Minimise d = 1, for Target value d = 0. The default is the smallest measured value in the model data (0 without data). A finite number; if Upper is set as well, it must lie below it.",
+      "upper": "The upper limit of the desirability function in the unit of the response: for Maximise d = 1 here, for Minimise d = 0, for Target value d = 0. The default is the largest measured value in the model data (1 without data). A finite number; if Lower is set as well, it must lie above it.",
+      "target": "The target at which the desirability function reaches d = 1. Effective only for the Target value function and shown only then; for Maximise and Minimise it stays stored but has no effect. The default is the midpoint between the smallest and largest measured value, 0.5 without measured values. A finite number; whether it lies between Lower and Upper is not checked.",
+      "weight": "The weight w of this response in the composite desirability D = (Π dᵢ^wᵢ)^(1/Σwᵢ): a response with weight 2 counts twice as much as one with weight 1. A number greater than 0, default 1."
+    },
+    "Result": {
+      "xOpt": "The factor settings of the optimum, one per factor in the order of the factor names: continuous factors as a number (column Value, four decimals), categorical ones as the level name. The search runs inside the box of factor limits of the first selected model (−1 to 1 if none are given) with Nelder-Mead from 8 random starting points (seed 42, at most 400 iterations per start); the start with the highest D wins. With categorical factors every level combination is searched this way on its own and the best one is taken.",
+      "yPredictions": "The predicted response values at the optimum, each computed from its model’s regression equation, in the order of the model names (column Prediction, four decimals).",
+      "dPerResponse": "The individual desirability d per response at the optimum, between 0 and 1: the model’s desirability function applied to its prediction (column d, three decimals). 1 means the specification is fully met, 0 means unacceptable.",
+      "D": "The composite desirability at the optimum, the weighted geometric mean of the individual desirabilities: D = (Π dᵢ^wᵢ)^(1/Σwᵢ) with the weights wᵢ. If any d is 0, D = 0. The tile shows D with three decimals, green from 0.8, yellow from 0.5, red below. D belongs to the last optimisation run: if a specification is changed afterwards, the result is current again only after optimising anew.",
+      "factorNames": "The factor names from the first selected model, in the same order as the factor settings (column Factor).",
+      "modelNames": "The names of the included models (responses), in the same order as the predictions and individual desirabilities (column Model).",
+      "iter": "The number of Nelder-Mead iterations: without categorical factors those of the best of the 8 starts, with categorical factors the sum over all level combinations."
+    }
+  }
+}
