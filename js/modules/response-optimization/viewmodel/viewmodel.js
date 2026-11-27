@@ -49,21 +49,23 @@ export default createModule({
    * Beispiel mit Modellen: je Datensatz aus `data.models` eine
    * Regressions-Instanz in der Phase dieser Instanz (Reiter = Modellname);
    * trägt schon eine Besitzer-Instanz dieselbe Modell-id, bleibt sie der
-   * Besitzer. Das Optimum steht danach im eigenen Zustand.
+   * Besitzer. Das Optimum steht danach im eigenen Zustand. Gelesen wird über
+   * `ctx.instances` (wie `readOwners`): ein Besitzer, dessen Modul noch nicht
+   * geladen ist, zählt nicht — die Ansicht lädt ungelesene Besitzer gleich
+   * beim Einhängen nach, und eine Doppelung löst `readOwners` (die erste gilt).
    * @this {any}
    * @param {Record<string, any>} data
    * @returns {Record<string, any>} der eigene Zustand
    */
   beforeLoadExample(data) {
     const ctx = this._context;
-    const sm = ctx.stateManager;
     const { owners, state } = exampleParts(data);
-    const phases = sm.get('phases') || {};
-    const entries = Object.keys(phases).flatMap((phase) => (phases[phase] || []).map((/** @type {any} */ r) => ({ ...r, phase })));
-    const phase = entries.find((r) => r.instanceId === ctx.instanceId)?.phase ?? descriptor.phase;
+    const all = ctx.instances?.list() ?? [];
+    const phase = all.find((/** @type {any} */ r) => r.instanceId === ctx.instanceId)?.phase ?? descriptor.phase;
+    const { records } = readOwners({ list: () => all, read: (id, o) => ctx.instances.readSync(id, o), ensureLoaded: async () => false });
+    const taken = new Set(records.map((r) => r.id));
     for (const owner of owners) {
-      const taken = entries.some((r) => OWNER_MODULES.includes(r.moduleId) && sm.getModuleState(r.instanceId)?.savedModelId === owner.id);
-      if (taken) continue;
+      if (taken.has(owner.id)) continue;
       provisionInstance(ctx, { moduleId: 'regression', phase, state: owner.state, customName: owner.name });
     }
     return state;
@@ -72,6 +74,7 @@ export default createModule({
     runOptimize: asyncTask({
       blocked() {
         if (this.canOptimize === true) return null;
+        if (listOr(this.unreadOwners).length > 0) return this.t('modelsLoading');
         return this.reasonTexts.map((/** @type {{ text: string }} */ r) => r.text).join('; ') || this.t('noModelSelected');
       },
       async run() {
@@ -85,14 +88,15 @@ export default createModule({
         const failText = this.t('optimizeFailed');
         const models = ids.map((id) => records.find((r) => r.id === id)).filter((r) => r !== undefined);
         if (models.length === 0) throw new Error(this.t('noModelSelected'));
-        let optimization;
         try {
-          optimization = optimize(models, specs);
+          // Auch das Schreiben: ein nicht endliches Ergebnis (Modell ohne
+          // Koeffizienten, Überlauf der Link-Umkehr) lehnt das Schema ab.
+          setFields(model, { optimization: optimize(models, specs) });
         } catch (err) {
           console.warn('[response-optimization] runOptimize failed', err);
           throw new Error(failText, { cause: err });
         }
-        setFields(model, { optimization });
+        const optimization = model.optimization;
         this.state.contourXId = null;
         this.state.contourYId = null;
         this.state.contourFixings = {};
@@ -119,7 +123,12 @@ export default createModule({
           if (!OWNER_MODULES.includes(inst.moduleId) || loading.has(inst.instanceId)) continue;
           if (!listOr(this.unreadOwners).includes(inst.instanceId)) continue;
           loading.add(inst.instanceId);
-          ctx.source.ensureLoaded(inst.instanceId).catch((err) => console.warn('[response-optimization] loading a model owner failed', err));
+          const id = inst.instanceId;
+          ctx.source.ensureLoaded(id).catch((err) => {
+            // Beim nächsten Anstoß erneut versuchen.
+            loading.delete(id);
+            console.warn('[response-optimization] loading a model owner failed', err);
+          });
         }
       },
 

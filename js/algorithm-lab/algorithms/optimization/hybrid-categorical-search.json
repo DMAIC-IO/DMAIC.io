@@ -67,7 +67,7 @@
     "file_path": "js/engines/response-optimization-engine.js",
     "signature": {
       "parameters": [
-        { "name": "models",        "type": "object[]",        "required": true,  "description": { "de": "Liste gespeicherter Modell-Records (state.models[id])", "en": "List of saved model records (state.models[id])" } },
+        { "name": "models",        "type": "object[]",        "required": true,  "description": { "de": "Liste der gespeicherten Modelle (je Regressions-Instanz ihr savedModel)", "en": "List of saved models (each regression instance's savedModel)" } },
         { "name": "desirSpecs",    "type": "object[]",        "required": true,  "description": { "de": "Eine Wunschfunktion-Spezifikation pro Modell", "en": "One desirability spec per model" } },
         { "name": "factorBounds",  "type": "[number,number][]","required": true, "description": { "de": "Pro Faktor [lo, hi] in Reihenfolge der spec.predictors", "en": "Per-factor [lo, hi] in spec.predictors order" } },
         { "name": "opts",          "type": "object",          "required": false, "description": { "de": "{nStarts, seed, maxIter, tol}", "en": "{nStarts, seed, maxIter, tol}" } }

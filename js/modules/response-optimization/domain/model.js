@@ -232,7 +232,12 @@ export class State extends defineModel({
      */
     canOptimize(_src, d) {
       const models = /** @type {ModelRef[]} */ (d.models);
-      const selected = selectedIdsOf(this.specs, models.map((m) => m.id));
+      const ids = models.map((m) => m.id);
+      // Ein gewähltes Modell, dessen Besitzer noch ungelesen ist, fehlte sonst
+      // still im Optimum der übrigen.
+      if (/** @type {string[]} */ (d.unreadOwners).length > 0
+        && Object.entries(this.specs).some(([id, e]) => e.selected === true && !ids.includes(id))) return false;
+      const selected = selectedIdsOf(this.specs, ids);
       return selected.length > 0 && diagnose(selected, models).length === 0;
     },
     /**

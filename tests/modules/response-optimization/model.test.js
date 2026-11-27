@@ -142,6 +142,16 @@ suite('response-optimization: Ableitungen über die Besitzer', () => {
     assertDeepEqual([d.models, d.unreadOwners, d.missingModels, d.resultStale, d.canOptimize], [[], ['own-0'], [], false, false]);
   });
 
+  test('ein gewähltes Modell mit ungelesenem Besitzer sperrt das Optimieren der übrigen', () => {
+    const doc = docWithModels([rec('m1')]);
+    doc.phases.improve.push({ instanceId: 'glm-0', moduleId: 'glm-regression' });
+    const src = ownersSource(doc, { unloaded: ['glm-regression'] });
+    const both = derived({ _schema: { version: '1.0' }, specs: { m1: { selected: true }, g1: { selected: true } }, optimization: null }, src).d;
+    assertDeepEqual([both.unreadOwners, both.canOptimize], [['glm-0'], false]);
+    const onlyRead = derived({ _schema: { version: '1.0' }, specs: { m1: { selected: true }, g1: { selected: false } }, optimization: null }, src).d;
+    assertEqual(onlyRead.canOptimize, true);
+  });
+
   test('eine kopierte Besitzerinstanz mit derselben Modell-id zählt einmal', () => {
     const doc = docWithModels([rec('m1'), rec('m1', { name: 'Kopie' })]);
     const { d } = derived({}, ownersSource(doc));

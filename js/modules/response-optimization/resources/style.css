@@ -42,7 +42,7 @@
 
 .ro__r2 {
   font-family: var(--font-family-mono);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: var(--border-radius);
 }
@@ -65,7 +65,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-s);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -116,7 +116,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
