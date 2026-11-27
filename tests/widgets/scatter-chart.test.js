@@ -50,3 +50,44 @@ suite('scatter-chart: xDec/yDec', () => {
     assertTrue(yLabels(1).includes('20,0'));
   });
 });
+
+suite('scatter-chart: connectLine.foreground', () => {
+  const cfg = {
+    series: [
+      { name: 'P', x: [1, 2, 3, 4], y: [1, 3, 2, 4], markerSize: 4 },
+      { name: 'L', x: [1, 4], y: [1, 4], markerSize: 0, connectLine: { show: true, dash: 'solid', width: 2, color: 'red', foreground: true } },
+    ],
+  };
+
+  test('Schema nimmt foreground: true an', () => {
+    assertDeepEqual(checkValue(scatterChart.props.config, 'c', cfg), cfg);
+  });
+
+  test('Schema lehnt foreground als Nicht-Wahrheitswert ab', () => {
+    const bad = { series: [{ name: 'L', x: [1], y: [1], connectLine: { show: true, foreground: 'ja' } }] };
+    assertThrows(() => checkValue(scatterChart.props.config, 'c', bad), /foreground/);
+  });
+
+  test('foreground: die Linie liegt im SVG nach den Punkten, ohne davor', () => {
+    /** @param {boolean} foreground @returns {{ line: number, marker: number }} */
+    const order = (foreground) => {
+      const host = document.createElement('div');
+      host.style.width = '600px';
+      host.style.height = '400px';
+      document.body.appendChild(host);
+      const series = cfg.series.map((s) => (s.connectLine ? { ...s, connectLine: { ...s.connectLine, foreground } } : s));
+      const chart = new ScatterChart(host, checkValue(scatterChart.props.config, 'c', { series }), { language: 'de' });
+      chart.render();
+      const nodes = [...chart._svg.querySelectorAll('polyline, circle')];
+      const line = nodes.findIndex((n) => n.tagName === 'polyline');
+      const marker = nodes.findIndex((n) => n.tagName === 'circle');
+      chart.destroy();
+      host.remove();
+      return { line, marker };
+    };
+    const fg = order(true);
+    assertTrue(fg.line > fg.marker, 'Vordergrund: nach den Punkten');
+    const bg = order(false);
+    assertTrue(bg.line < bg.marker, 'Hintergrund: vor den Punkten');
+  });
+});

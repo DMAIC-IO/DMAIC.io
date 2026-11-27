@@ -1,0 +1,113 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Korrelationsanalyse misst die Stärke und Richtung des linearen Zusammenhangs zwischen zwei stetigen Variablen. Sie ist ein erster Schritt der Analyze-Phase, um zu prüfen, ob zwei Größen überhaupt zusammenhängen — und ob sich eine genauere Untersuchung (z. B. {{term:regression|Regression}}) lohnt."
+        },
+        {
+          "type": "definition",
+          "term": "Pearson-Korrelation (r)",
+          "content": "Misst die lineare Stärke zwischen zwei stetigen, normalverteilten Variablen. Werte von −1 bis +1: −1 = perfekter negativer linearer Zusammenhang, 0 = kein linearer Zusammenhang, +1 = perfekter positiver linearer Zusammenhang."
+        },
+        {
+          "type": "definition",
+          "term": "Spearman-Korrelation (ρ)",
+          "content": "Rang-basierte Variante, die monotone (nicht zwingend lineare) Zusammenhänge misst. Robuster gegenüber Ausreißern und nicht-normalverteilten Daten — bei schiefen Verteilungen die bessere Wahl."
+        },
+        {
+          "type": "definition",
+          "term": "Kendall-Tau (τ)",
+          "content": "Ebenfalls rang-basiert, basiert auf konkordanten und diskordanten Paaren. Bei kleinen Stichproben oft stabiler als Spearman."
+        },
+        {
+          "type": "definition",
+          "term": "p-Wert",
+          "content": "Wahrscheinlichkeit, einen Korrelationskoeffizienten dieser Größe (oder größer) zu beobachten, wenn in Wahrheit kein Zusammenhang besteht. p < 0,05 ist die übliche Schwelle für „signifikant\"."
+        },
+        {
+          "type": "definition",
+          "term": "Streudiagramm",
+          "content": "Die wichtigste Begleitgrafik. Eine einzelne Zahl (r oder ρ) kann irreführen — das Diagramm zeigt nichtlineare Muster, Ausreißer und Cluster, die der Koeffizient verschweigt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Zentrale Warnung: Korrelation bedeutet nicht Kausalität. Eine starke Korrelation zwischen zwei Variablen kann auf eine direkte Ursache, eine gemeinsame dritte Ursache, einen Zufall oder eine umgekehrte Wirkung hindeuten. Die Methode beantwortet die Frage „bewegen sie sich gemeinsam?\", nicht „verursacht das eine das andere?\"."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Zwei stetige Variablen auswählen, deren Zusammenhang interessiert.",
+            "{{term:streudiagramm|Streudiagramm}} erstellen — vor jeder Zahl. Sieht das Bild linear aus, gekrümmt, ohne Muster?",
+            "Verteilungsannahme prüfen: bei näherungsweise normalverteilten, linearen Daten Pearson; bei schiefen oder nichtlinearen Daten Spearman/Kendall.",
+            "Koeffizienten berechnen und p-Wert beachten.",
+            "Bei signifikantem Ergebnis prüfen, ob die Größe praktisch relevant ist (r = 0,15 ist signifikant in großen Stichproben, aber inhaltlich wenig wert).",
+            "Ergebnis nie ohne Diagramm präsentieren — und nie mit kausaler Sprache."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "|r| < 0,3: sehr schwacher Zusammenhang",
+            "0,3 ≤ |r| < 0,5: schwacher Zusammenhang",
+            "0,5 ≤ |r| < 0,7: mittlerer Zusammenhang",
+            "0,7 ≤ |r| < 0,9: starker Zusammenhang",
+            "|r| ≥ 0,9: sehr starker Zusammenhang"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Diese Schwellen sind Faustregeln. In präzisionsorientierten Bereichen (Messtechnik, Physik) erwartet man r > 0,95 — in sozialen oder organisatorischen Daten ist r = 0,4 oft schon ein starkes Signal. Kontext schlägt Tabelle."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Korrelation als Kausalität gelesen",
+          "content": "Der Klassiker. „Eiscreme-Verkäufe korrelieren mit Ertrinkungsfällen\" — gemeinsame Ursache (Sommer), keine kausale Verbindung. Vor Schlussfolgerungen nach Drittvariablen suchen."
+        },
+        {
+          "type": "definition",
+          "term": "Nichtlinearen Zusammenhang übersehen",
+          "content": "Pearson erkennt nur lineare Muster. Eine perfekte U-Kurve liefert r ≈ 0 — das Diagramm zeigt sofort, dass ein Zusammenhang besteht."
+        },
+        {
+          "type": "definition",
+          "term": "Ausreißer dominieren das Ergebnis",
+          "content": "Ein einzelner Ausreißer kann r von 0,1 auf 0,8 heben — oder umgekehrt. Vor der Bewertung Ausreißer prüfen und ihre Plausibilität klären."
+        },
+        {
+          "type": "definition",
+          "term": "Signifikant ≠ stark",
+          "content": "Bei n = 10 000 ist r = 0,03 statistisch signifikant — und praktisch belanglos. p-Wert und {{term:effektstaerke|Effektstärke}} immer gemeinsam interpretieren."
+        },
+        {
+          "type": "definition",
+          "term": "Falsche Methode für die Verteilung",
+          "content": "Pearson auf stark schiefe Daten anwenden ist riskant. Bei Zweifel zusätzlich Spearman berechnen — wenn beide Werte stark abweichen, ist Pearson wahrscheinlich nicht gerechtfertigt."
+        },
+        {
+          "type": "definition",
+          "term": "Sub-Gruppen ignoriert",
+          "content": "Ein einzelner {{term:korrelation|Korrelationskoeffizient}} kann zwei gegensätzliche Untergruppen verschmelzen (Simpson-Paradoxon). Bei strukturierten Daten gruppiert plotten und gruppiert berechnen."
+        }
+      ]
+    }
+  }
+}

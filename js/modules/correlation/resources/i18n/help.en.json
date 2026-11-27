@@ -1,0 +1,113 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Correlation analysis measures the strength and direction of the linear relationship between two continuous variables. It is a first step in the Analyze phase, used to check whether two quantities are related at all — and whether a deeper study (e.g. regression) is worthwhile."
+        },
+        {
+          "type": "definition",
+          "term": "Pearson correlation (r)",
+          "content": "Measures linear strength between two continuous, normally distributed variables. Values from −1 to +1: −1 = perfect negative linear, 0 = no linear relation, +1 = perfect positive linear."
+        },
+        {
+          "type": "definition",
+          "term": "Spearman correlation (ρ)",
+          "content": "Rank-based variant measuring monotone (not necessarily linear) relations. More robust to outliers and non-normal data — the better choice for skewed distributions."
+        },
+        {
+          "type": "definition",
+          "term": "Kendall tau (τ)",
+          "content": "Also rank-based, built on concordant and discordant pairs. Often more stable than Spearman for small samples."
+        },
+        {
+          "type": "definition",
+          "term": "p-value",
+          "content": "Probability of observing a correlation coefficient this large (or larger) if in truth no relation exists. p < 0.05 is the usual threshold for \"significant\"."
+        },
+        {
+          "type": "definition",
+          "term": "Scatter plot",
+          "content": "The most important companion chart. A single number (r or ρ) can mislead — the plot reveals nonlinear patterns, outliers, and clusters the coefficient hides."
+        },
+        {
+          "type": "paragraph",
+          "content": "Central warning: correlation does not imply causation. A strong correlation may indicate a direct cause, a shared third cause, chance, or reverse direction. The method answers \"do they move together?\", not \"does one cause the other?\"."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Pick two continuous variables whose relation interests you.",
+            "Make a scatter plot — before any number. Does the picture look linear, curved, or patternless?",
+            "Check assumptions: for approximately normal, linear data use Pearson; for skewed or nonlinear data use Spearman/Kendall.",
+            "Compute the coefficients and note the p-value.",
+            "For a significant result, check whether the magnitude is practically relevant (r = 0.15 is significant in large samples but means little).",
+            "Never present the result without a chart — and never with causal language."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "|r| < 0.3: very weak relation",
+            "0.3 ≤ |r| < 0.5: weak relation",
+            "0.5 ≤ |r| < 0.7: moderate relation",
+            "0.7 ≤ |r| < 0.9: strong relation",
+            "|r| ≥ 0.9: very strong relation"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "These thresholds are rules of thumb. In precision-oriented domains (metrology, physics) one expects r > 0.95 — in social or organizational data, r = 0.4 is often a strong signal already. Context beats table."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Reading correlation as causation",
+          "content": "The classic. \"Ice-cream sales correlate with drownings\" — shared cause (summer), no causal link. Look for confounders before drawing conclusions."
+        },
+        {
+          "type": "definition",
+          "term": "Missing nonlinear relations",
+          "content": "Pearson detects only linear patterns. A perfect U curve gives r ≈ 0 — the plot instantly shows the relation exists."
+        },
+        {
+          "type": "definition",
+          "term": "Outliers dominate the result",
+          "content": "A single outlier can lift r from 0.1 to 0.8 — or vice versa. Inspect outliers and judge their plausibility before evaluating."
+        },
+        {
+          "type": "definition",
+          "term": "Significant ≠ strong",
+          "content": "At n = 10,000, r = 0.03 is statistically significant — and practically irrelevant. Always interpret p-value and effect size together."
+        },
+        {
+          "type": "definition",
+          "term": "Wrong method for the distribution",
+          "content": "Applying Pearson to highly skewed data is risky. When in doubt also compute Spearman — if both differ widely, Pearson is probably not justified."
+        },
+        {
+          "type": "definition",
+          "term": "Subgroups ignored",
+          "content": "A single coefficient can merge two opposing subgroups (Simpson's paradox). For structured data, plot and compute by group."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "$comment": "Altprojekt der F2-Umstellung (Task 0): Arbeitsblatt und drei Altstände ohne _schema.",
+  "worksheetId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+  "worksheet": {
+    "sheets": [
+      {
+        "id": "sheet_corr",
+        "name": "Messung",
+        "state": {
+          "columns": [
+            {
+              "id": "col_druck",
+              "name": "Druck",
+              "shortName": "C1",
+              "type": "numeric",
+              "values": [
+                10,
+                12,
+                8,
+                15,
+                25,
+                20,
+                18,
+                22,
+                30,
+                28
+              ]
+            },
+            {
+              "id": "col_ausbeute",
+              "name": "Ausbeute",
+              "shortName": "C2",
+              "type": "numeric",
+              "values": [
+                20,
+                22,
+                18,
+                30,
+                45,
+                38,
+                35,
+                40,
+                55,
+                50
+              ]
+            },
+            {
+              "id": "col_dauer",
+              "name": "Dauer",
+              "shortName": "C3",
+              "type": "time",
+              "values": [
+                "1:16",
+                "1:19",
+                "1:13",
+                "1:22",
+                "1:37",
+                "1:31",
+                null,
+                "1:34",
+                "1:46",
+                "1:43"
+              ]
+            },
+            {
+              "id": "col_probe_a",
+              "name": "Probe A",
+              "shortName": "C4",
+              "type": "numeric",
+              "values": [
+                10,
+                12,
+                8,
+                15,
+                25,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            },
+            {
+              "id": "col_probe_b",
+              "name": "Probe B",
+              "shortName": "C5",
+              "type": "numeric",
+              "values": [
+                null,
+                null,
+                18,
+                30,
+                45,
+                38,
+                35,
+                null,
+                null,
+                null
+              ]
+            }
+          ],
+          "rowCount": 10,
+          "colWidths": {},
+          "sortCol": null,
+          "sortDir": null,
+          "selection": null
+        }
+      }
+    ],
+    "activeSheetId": "sheet_corr",
+    "sheetCounter": 1
+  },
+  "legacy-a": {
+    "colRefX": {
+      "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+      "sheetId": "sheet_corr",
+      "columnId": "col_druck"
+    },
+    "colRefY": {
+      "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+      "sheetId": "sheet_corr",
+      "columnId": "col_ausbeute"
+    },
+    "confidenceLevel": 0.9
+  },
+  "legacy-b": {
+    "colRefs": [
+      {
+        "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+        "sheetId": "sheet_corr",
+        "columnId": "col_druck"
+      },
+      {
+        "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+        "sheetId": "sheet_corr",
+        "columnId": "col_ausbeute"
+      },
+      {
+        "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+        "sheetId": "sheet_corr",
+        "columnId": "col_dauer"
+      }
+    ],
+    "confidenceLevel": null,
+    "matrixMethod": "kendall",
+    "filterMinR": 0.3,
+    "filterMaxP": 0.05,
+    "exampleWorksheetId": null,
+    "result": {
+      "n": 3,
+      "pearson": {
+        "r": 0.1
+      }
+    },
+    "matrixResult": {
+      "names": [
+        "alt"
+      ],
+      "matrix": {}
+    }
+  },
+  "legacy-c": {
+    "colRefs": [
+      {
+        "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+        "sheetId": "sheet_corr",
+        "columnId": "col_probe_a"
+      },
+      {
+        "instanceId": "5c1e7a20-8d3b-4f6a-9e21-0b7c4d2a6f18",
+        "sheetId": "sheet_corr",
+        "columnId": "col_probe_b"
+      }
+    ],
+    "confidenceLevel": 0.95,
+    "matrixMethod": "pearson",
+    "filterMinR": null,
+    "filterMaxP": null,
+    "exampleWorksheetId": null
+  }
+}

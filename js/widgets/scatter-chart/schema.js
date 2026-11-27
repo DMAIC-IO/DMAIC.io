@@ -13,7 +13,7 @@ export default chartWidget({
     xDec: number({ optional: true, nullable: true, integer: true, min: 0 }), yDec: number({ optional: true, nullable: true, integer: true, min: 0 }) },
   series: {
     name: text(), x: list(number()), y: list(number({ nullable: true })), labels: list(text(), opt),
-    connectLine: object({ show: boolean(), dash: text(opt), width: number(opt), color: text(opt) }, ed),
+    connectLine: object({ show: boolean(), dash: text(opt), width: number(opt), color: text(opt), foreground: boolean(opt) }, ed),
     sizes: list(number({ nullable: true }), opt), sizeValues: list(number(), opt), sizeLabel: text(opt),
     errorBars: object({
       show: boolean(),
