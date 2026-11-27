@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "tab": {
+      "help": "Der angezeigte Bereich: die Übersicht der Versuchspläne mit dem Phasenleitfaden, der geführte Berater oder der Vergleich der zentral zusammengesetzten Pläne. Jeder Wechsel ist ein Schritt, den Rückgängig zurücknimmt."
+    },
+    "currentStep": {
+      "help": "Die id der offenen Frage — phase (DMAIC-Phase), goal (Ziel), screening-curvature (Krümmung beim Screening), factor-count (Zahl der Faktoren), factor-levels (Stufen der Faktoren), robustness-type (Art der Robustheit), limits (Faktorgrenzen) oder corners (Eckpunkte) —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst ist ein übersetzter Text und steht in keinem Feld; die Empfehlung steht unter recommendation. Geschrieben wird das Feld nur über die Kommandos answer, back und restart."
+    },
+    "answers": {
+      "help": "Die gegebenen Antworten, je beantworteter Frage eine. Schlüssel und zulässige Werte: phase: define-measure, analyze, improve oder control; goal: screening, interactions, optimization, robustness oder mixture; screeningCurvature: yes, no oder many-factors; factorCount: few oder many; factorLevels: two oder multi-or-mixed; robustnessType: noise-factors oder dispersion-only; limits: expandable oder hard; corners: allowed, forbidden oder constrained. Fragen ohne Antwort fehlen. Geschrieben wird das Feld nur über die Kommandos answer, back und restart."
+    },
+    "history": {
+      "help": "Die ids der beantworteten Fragen in der Reihenfolge, in der sie beantwortet wurden; der letzte Eintrag ist die Frage, zu der back zurückführt. Geschrieben wird das Feld nur über die Kommandos answer, back und restart."
+    },
+    "currentOptions": {
+      "help": "Die Antwortmöglichkeiten der offenen Frage — genau die Werte, die answer als opt annimmt. Leer, sobald der Berater auf seiner Empfehlung steht."
+    },
+    "recommendation": {
+      "help": "Der empfohlene Versuchsplan mit fünf Angaben: Schlüssel, Bezeichnung, Faktorenspanne, Stufenangabe und Aufwand, die Texte in der aktiven Sprache wie auf der Ergebniskarte. Leer, solange der Berater noch eine Frage stellt oder in dieser Phase noch kein Versuchsplan ansteht."
+    }
+  },
+  "actions": {
+    "answer": {
+      "help": "Beantwortet die offene Frage mit einer ihrer Antwortmöglichkeiten und geht zur nächsten Frage weiter — oder zur Empfehlung, wenn der Weg dort endet. Steht schon eine Empfehlung, ist keine Frage offen; dann wird die Antwort abgelehnt.",
+      "params": {
+        "opt": "Die gewählte Antwortmöglichkeit der offenen Frage. Welche Frage offen ist, steht in currentStep, ihre Möglichkeiten in currentOptions. Eine Möglichkeit, die diese Frage nicht kennt, wird abgelehnt; die Meldung nennt die zulässigen.",
+        "command": "Das Kommando als ein Objekt mit opt. Es liefert den neuen Schritt, also die nächste Frage oder result:<schlüssel>."
+      }
+    },
+    "back": {
+      "help": "Geht eine Frage zurück und verwirft die Antwort, die von dort weggeführt hat. Auf der ersten Frage gibt es nichts zurückzugehen; dann wird abgelehnt.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben. Es liefert den neuen Schritt, also die Frage, zu der es zurückgegangen ist."
+      }
+    },
+    "restart": {
+      "help": "Beginnt den Berater neu: erste Frage, keine Antworten, keine Spur.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben. Es liefert den neuen Schritt, immer phase. Steht der Berater schon auf der ersten Frage ohne Antworten, ändert es nichts."
+      }
+    }
+  },
+  "types": {
+    "Recommendation": {
+      "designId": "Der Schlüssel des empfohlenen Versuchsplans, zum Beispiel „ccd-rotatable“; derselbe, der in der Ergebniskarte als Versuchsplan hinterlegt ist.",
+      "name": "Die Bezeichnung des empfohlenen Versuchsplans als übersetzter Text, wie sie in der Überschrift der Ergebniskarte steht.",
+      "factors": "Die Faktorenspanne, für die der Versuchsplan taugt, als übersetzter Text, zum Beispiel „2–6“, wie sie in der Ergebniskarte unter „Faktoren“ steht.",
+      "levels": "Die Stufenangabe des Versuchsplans als übersetzter Text, zum Beispiel „5“ oder „3+ oder gemischt“, wie sie in der Ergebniskarte unter „Stufen“ steht.",
+      "effort": "Die Aufwandsangabe des Versuchsplans als übersetzter Text, zum Beispiel „2^k Versuche (z. B. 4 Faktoren = 16)“, wie sie in der Ergebniskarte unter „Aufwand“ steht."
+    }
+  }
+}

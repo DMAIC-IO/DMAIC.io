@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "tab": {
+      "help": "The displayed area: the overview of the designs with the phase guide, the guided advisor or the comparison of the central composite designs. Every switch is a step that undo takes back."
+    },
+    "currentStep": {
+      "help": "The id of the open question — phase (DMAIC phase), goal, screening-curvature (curvature in screening), factor-count (number of factors), factor-levels (levels of the factors), robustness-type (kind of robustness), limits (factor limits) or corners (corner points) — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself is a translated text and lives in no field; the recommendation is under recommendation. The field is written only through the commands answer, back and restart."
+    },
+    "answers": {
+      "help": "The answers given, one per answered question. Keys and allowed values: phase: define-measure, analyze, improve or control; goal: screening, interactions, optimization, robustness or mixture; screeningCurvature: yes, no or many-factors; factorCount: few or many; factorLevels: two or multi-or-mixed; robustnessType: noise-factors or dispersion-only; limits: expandable or hard; corners: allowed, forbidden or constrained. Questions without an answer are missing. The field is written only through the commands answer, back and restart."
+    },
+    "history": {
+      "help": "The ids of the answered questions in the order they were answered; the last entry is the question back returns to. The field is written only through the commands answer, back and restart."
+    },
+    "currentOptions": {
+      "help": "The answer options of the open question — exactly the values answer accepts as opt. Empty once the advisor stands on its recommendation."
+    },
+    "recommendation": {
+      "help": "The recommended design with five entries: key, name, range of factors, level specification and effort, the texts in the active language as on the result card. Empty while the advisor is still asking a question or no design is due in this phase yet."
+    }
+  },
+  "actions": {
+    "answer": {
+      "help": "Answers the open question with one of its options and moves on to the next question — or to the recommendation, when the path ends there. Once a recommendation stands, no question is open; then the answer is rejected.",
+      "params": {
+        "opt": "The chosen option of the open question. Which question is open is in currentStep, its options in currentOptions. An option that question does not know is rejected; the message names the allowed ones.",
+        "command": "The command as an object with opt. It returns the new step, that is the next question or result:<key>."
+      }
+    },
+    "back": {
+      "help": "Goes back one question and discards the answer that led away from it. On the first question there is nothing to go back to; then the call is rejected.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments. It returns the new step, that is the question it went back to."
+      }
+    },
+    "restart": {
+      "help": "Starts the advisor over: first question, no answers, no trail.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments. It returns the new step, always phase. If the advisor already stands on the first question without answers, it changes nothing."
+      }
+    }
+  },
+  "types": {
+    "Recommendation": {
+      "designId": "The key of the recommended design, for example \"ccd-rotatable\"; the same one the result card holds for the design.",
+      "name": "The name of the recommended design as a translated text, as it appears in the heading of the result card.",
+      "factors": "The range of factors the design suits, as a translated text, for example \"2–6\", as it appears in the result card under \"Factors\".",
+      "levels": "The level specification of the design as a translated text, for example \"5\" or \"3+ or mixed\", as it appears in the result card under \"Levels\".",
+      "effort": "The effort specification of the design as a translated text, for example \"2^k runs (e.g. 4 factors = 16)\", as it appears in the result card under \"Effort\"."
+    }
+  }
+}

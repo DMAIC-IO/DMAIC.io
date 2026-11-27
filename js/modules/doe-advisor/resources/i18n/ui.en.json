@@ -1,0 +1,391 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "DoE Advisor",
+  "description": "Overview of DoE designs and a guided wizard for design selection",
+  "whenToUse": "When an improvement project still has to settle WHICH design of experiments fits — screening, interactions, optimisation, robustness or mixture — or when the Overview tab with all designs and the comparison of the central composite designs are needed; not for planning or evaluating a concrete experiment, that is what the design planner and its evaluation are for.",
+  "tabOverview": "Overview",
+  "tabWizard": "Advisor",
+  "tabCcd": "CCD comparison",
+  "overviewTitle": "DoE designs in Six Sigma — selection overview",
+  "overviewLead": "Comparison of the most common experimental designs. Number of factors, levels and effort show when each design pays off.",
+  "phaseGuideTitle": "Rule of thumb for selection in the DMAIC cycle",
+  "ccdTitle": "CCD variants compared head-to-head",
+  "ccdLead": "Rotatable (CCC, Circumscribed) versus Face-Centered (CCF) — the two most-used response-surface designs.",
+  "wizardTitle": "Question wizard for design selection",
+  "wizardStepOf": "Step {current} of approx. {total}",
+  "wizardResultLabel": "Recommendation",
+  "wizardBack": "Back",
+  "wizardRestart": "Restart",
+  "resultUseCase": "When to use",
+  "resultStrengthLimit": "Key advantage / limitation",
+  "resultNoneTitle": "No DoE yet — start with data analysis",
+  "resultNoneBody": "In the Define and Measure phases the focus is on sharpening the problem, identifying factors and verifying the measurement system. DoE comes earliest in Analyze (screening) or Improve (optimization). Use Project Charter, SIPOC, Process Map, MSA and Process Capability instead.",
+  "col": {
+    "design": "Design",
+    "factors": "Factors",
+    "levels": "Levels",
+    "effort": "Effort",
+    "note": "Key advantage / limitation",
+    "dmaicPhase": "Phase",
+    "target": "Goal",
+    "recommended": "Recommended designs"
+  },
+  "designs": {
+    "full": {
+      "name": "Full factorial (2^k)",
+      "tip": "DMAIC phase Improve, when all main and interaction effects must be determined reliably",
+      "factors": "2–5",
+      "levels": "2",
+      "effort": "2^k runs (e.g. 4 factors = 16)",
+      "note": "Delivers all effects and interactions completely; effort grows exponentially"
+    },
+    "full-general": {
+      "name": "Full factorial (general)",
+      "tip": "When factors have more than two levels or mixed / categorical levels (e.g. material A/B/C, pressure 1/2/3 bar)",
+      "factors": "2–4",
+      "levels": "3+ or mixed",
+      "effort": "Product of levels (e.g. 3×3×3 = 27 or 2×3×4 = 24)",
+      "note": "Complete information even for multi-level or categorical factors; effort grows quickly with the number of levels"
+    },
+    "fractional": {
+      "name": "Fractional factorial (2^(k-p))",
+      "tip": "Screening with a moderate number of factors when resources are limited",
+      "factors": "5–10",
+      "levels": "2",
+      "effort": "Fraction of a full plan (e.g. 2^(7-3) = 16)",
+      "note": "Very efficient; aliasing — keep an eye on resolution (III, IV, V)"
+    },
+    "plackett-burman": {
+      "name": "Plackett-Burman",
+      "tip": "Early screening with many factors when only main effects are sought",
+      "factors": "8–30",
+      "levels": "2",
+      "effort": "Multiple of 4 (e.g. 12, 20, 24)",
+      "note": "Highly economical; interactions are aliased with main effects"
+    },
+    "dsd": {
+      "name": "Definitive Screening Design (DSD)",
+      "tip": "Modern screening when quadratic effects are also suspected",
+      "factors": "6–20",
+      "levels": "3",
+      "effort": "approx. 2k+1 runs",
+      "note": "Detects main effects, curvature and some 2-factor interactions; a strong compromise"
+    },
+    "ccd-rotatable": {
+      "name": "CCD — Rotatable (CCC, Circumscribed)",
+      "tip": "RSM optimization when factor ranges can be expanded freely and maximum statistical quality is desired",
+      "factors": "2–6",
+      "levels": "5",
+      "effort": "α = (2^k)^(1/4); factorial part + star points outside the cube + center points",
+      "note": "Statistically optimal: direction-independent prediction variance (rotatable). Star points lie OUTSIDE the original factor range — requires expandable limits"
+    },
+    "ccd-face": {
+      "name": "CCD — Face-Centered (CCF)",
+      "tip": "RSM optimization when factor limits are hard (safety, specification, machine limits)",
+      "factors": "2–6",
+      "levels": "3",
+      "effort": "α = 1; star points centered on the cube faces, all runs within the original factor range",
+      "note": "Practical with hard limits; only 3 levels per factor. Not rotatable — prediction quality at the corners weaker than along the axes"
+    },
+    "box-behnken": {
+      "name": "Box-Behnken design",
+      "tip": "Optimization when extreme corner points (e.g. all maxima) are physically not allowed",
+      "factors": "3–7",
+      "levels": "3",
+      "effort": "Less than CCD (e.g. 3 factors = 15)",
+      "note": "Only 3 levels, no extreme combinations; needs at least 3 factors"
+    },
+    "taguchi": {
+      "name": "Taguchi (orthogonal arrays)",
+      "tip": "Robust design, separation of noise and control factors, target-on-spec quality",
+      "factors": "3–13",
+      "levels": "2 or 3",
+      "effort": "L8, L9, L16, L18, L27 …",
+      "note": "Focus on signal-to-noise ratio and robustness; interactions hard to separate"
+    },
+    "dispersion": {
+      "name": "Dispersion DoE",
+      "tip": "Variance itself as the response — find which factors drive variability without explicit noise factors",
+      "factors": "2–6",
+      "levels": "2",
+      "effort": "2^k or 2^(k-p) with replication (e.g. 4 factors × 4 reps = 64)",
+      "note": "Models the mean AND log(s²) as separate responses; identifies variance-reducing settings — requires true replicates, not pseudo-repetitions"
+    },
+    "mixture": {
+      "name": "Mixture designs (Simplex-Lattice / Simplex-Centroid)",
+      "tip": "Recipes / formulations where proportions sum to 100 %",
+      "factors": "3–10 components",
+      "levels": "depending on model degree",
+      "effort": "Depends on polynomial degree",
+      "note": "Specifically for mixtures (pharma, chemistry, food); no independent factors"
+    },
+    "d-optimal": {
+      "name": "D-optimal designs",
+      "tip": "Restrictions in the design space, unequal factor costs, individual model approaches",
+      "factors": "flexible",
+      "levels": "flexible",
+      "effort": "Specified by the user",
+      "note": "Tailored algorithmically; requires a clear model"
+    },
+    "evop": {
+      "name": "EVOP (Evolutionary Operation)",
+      "tip": "DMAIC phase Control / running production: continuous, small improvement on the live process without production downtime",
+      "factors": "2–3",
+      "levels": "2–3 (small steps around the current operating point)",
+      "effort": "Many cycles with minimal variations around the setpoint",
+      "note": "Uses regular production as the experiment; minimal scrap risk; slow learning, only small effects detectable"
+    }
+  },
+  "phaseGuide": {
+    "define-measure": {
+      "phase": "Define / Measure",
+      "goal": "Identify the problem and factors",
+      "designs": "(no DoE yet — start with data analysis)"
+    },
+    "analyze": {
+      "phase": "Analyze",
+      "goal": "Reduce many potential factors to the few relevant ones (screening)",
+      "designs": "Plackett-Burman, fractional factorial, Definitive Screening Design"
+    },
+    "improve": {
+      "phase": "Improve",
+      "goal": "Understand interactions and find the optimum",
+      "designs": "Full factorial (2^k / general), CCD (rotatable / face-centered), Box-Behnken, D-optimal, mixture designs"
+    },
+    "improve-robustness": {
+      "phase": "Improve (robustness)",
+      "goal": "Make the process insensitive to noise",
+      "designs": "Taguchi designs, dispersion DoE"
+    },
+    "control": {
+      "phase": "Control",
+      "goal": "Continuous, small improvements on the live process",
+      "designs": "EVOP"
+    }
+  },
+  "wizard": {
+    "phase": {
+      "question": "Which DMAIC phase is your project in?",
+      "short": "Phase",
+      "options": {
+        "define-measure": {
+          "label": "Define / Measure",
+          "help": "Problem is being scoped, factors collected, measurement system verified."
+        },
+        "analyze": {
+          "label": "Analyze",
+          "help": "Many candidate factors must be filtered down to the few relevant ones (screening)."
+        },
+        "improve": {
+          "label": "Improve",
+          "help": "Factors are known — understand interactions and locate the optimum."
+        },
+        "control": {
+          "label": "Control",
+          "help": "Live serial process is to be improved gently without production downtime."
+        }
+      }
+    },
+    "goal": {
+      "question": "What is the primary goal of the experiment?",
+      "short": "Goal",
+      "options": {
+        "screening": {
+          "label": "Screening",
+          "help": "Identify the few truly important factors out of many."
+        },
+        "interactions": {
+          "label": "Understand interactions",
+          "help": "Cleanly separate main and interaction effects — e.g. with 2^k or resolution V."
+        },
+        "optimization": {
+          "label": "Find the optimum (RSM)",
+          "help": "Build a response-surface model, estimate curvature and the optimum."
+        },
+        "robustness": {
+          "label": "Robustness / signal-to-noise",
+          "help": "Make the process insensitive to noise, minimize variation."
+        },
+        "mixture": {
+          "label": "Mixture / formulation",
+          "help": "Components sum to 100 % — no independent factors."
+        }
+      }
+    },
+    "screening-curvature": {
+      "question": "Do you expect quadratic (curved) effects, and how many factors are you screening?",
+      "short": "Curvature",
+      "options": {
+        "yes": {
+          "label": "Yes — curvature possible, 6–20 factors",
+          "help": "Definitive Screening Design captures main effects, curvature and some interactions in one step."
+        },
+        "no": {
+          "label": "No — only linear effects, 5–10 factors",
+          "help": "Classical fractional factorial with sufficient resolution (at least IV)."
+        },
+        "many-factors": {
+          "label": "Very many factors (>10), main effects only",
+          "help": "Plackett-Burman is highly economical — interactions are deliberately aliased."
+        }
+      }
+    },
+    "factor-count": {
+      "question": "How many factors do you want to vary systematically?",
+      "short": "Factors",
+      "options": {
+        "few": {
+          "label": "Few (2–4 factors)",
+          "help": "Full factorial is feasible and delivers all main and interaction effects in full."
+        },
+        "many": {
+          "label": "Medium to many (5+ factors)",
+          "help": "Full plan becomes too large — use a fractional factorial with sufficient resolution."
+        }
+      }
+    },
+    "factor-levels": {
+      "question": "How many levels should the factors have?",
+      "short": "Levels",
+      "options": {
+        "two": {
+          "label": "Exactly 2 levels per factor",
+          "help": "Classical 2^k plan — high/low per factor, linear effects and interactions fully estimable."
+        },
+        "multi-or-mixed": {
+          "label": "3+ levels or mixed / categorical factors",
+          "help": "General full factorial — e.g. material A/B/C or 3 pressure levels. Effort equals the product of the level counts."
+        }
+      }
+    },
+    "robustness-type": {
+      "question": "How should robustness be investigated?",
+      "short": "Robustness",
+      "options": {
+        "noise-factors": {
+          "label": "With explicit noise factors (inner-outer array)",
+          "help": "Control factors in the inner array, noise factors in the outer array — Taguchi optimizes the signal-to-noise ratio."
+        },
+        "dispersion-only": {
+          "label": "Model variability itself (no explicit noise factors)",
+          "help": "Dispersion DoE: 2^k with replication; mean and log(s²) are analyzed separately to find variance-reducing settings."
+        }
+      }
+    },
+    "limits": {
+      "question": "Can the factor limits be extended beyond the original range?",
+      "short": "Limits",
+      "options": {
+        "expandable": {
+          "label": "Yes, limits are expandable",
+          "help": "Star points may lie outside the cube (α > 1) — rotatable CCD is statistically optimal."
+        },
+        "hard": {
+          "label": "No, limits are hard (safety, specification, machine limits)",
+          "help": "All runs must stay inside the original factor range — star points centered on the cube faces."
+        }
+      }
+    },
+    "corners": {
+      "question": "Are extreme corner combinations (all factors at maximum/minimum at the same time) physically allowed?",
+      "short": "Corners",
+      "options": {
+        "allowed": {
+          "label": "Yes, corners are allowed",
+          "help": "Face-centered CCD uses cube corners for maximum span under hard limits."
+        },
+        "forbidden": {
+          "label": "No, corners are forbidden",
+          "help": "Box-Behnken avoids corner points entirely — all runs lie on midpoints and edges."
+        },
+        "constrained": {
+          "label": "Complex restrictions / individual model terms",
+          "help": "D-optimal design is fitted algorithmically to the constrained space and the chosen model."
+        }
+      }
+    },
+    "reasoning": {
+      "full": "Few factors and the wish for a complete picture of all main and interaction effects argue for a full factorial (2^k). Effort is manageable and the analysis is unambiguous.",
+      "full-general": "Few factors with more than two levels or mixed / categorical levels — the general full factorial covers every factor combination. Effort equals the product of level counts and grows quickly: 3×3×3 = 27 runs, 2×3×4 = 24 runs.",
+      "fractional": "Medium to high number of factors with a limited run budget — fractional factorial samples the design space efficiently. Watch the resolution: III for screening only, IV for clean main effects, V for clean interactions too.",
+      "plackett-burman": "Very many factors and pure main-effect screening — Plackett-Burman is the most economical choice. Follow up with a detailed design (2^k or CCD) on the top factors.",
+      "dsd": "Screening with suspected curvature — Definitive Screening Design captures main effects, quadratic effects and some interactions in approximately 2k+1 runs.",
+      "ccd-rotatable": "RSM optimization with expandable factor limits — rotatable CCD provides direction-independent prediction variance and is statistically optimal. Star points lie outside the cube.",
+      "ccd-face": "RSM optimization with hard factor limits — face-centered CCD stays strictly within the defined range (α = 1) and uses only 3 levels per factor. Not rotatable, but practical.",
+      "box-behnken": "Optimization, but extreme corner combinations are not allowed — Box-Behnken avoids corners entirely and uses only 3 levels per factor. At least 3 factors required.",
+      "taguchi": "Robustness against noise is the goal — Taguchi arrays optimize the signal-to-noise ratio. Interactions are deliberately deprioritized; the focus is on a target-true, low-variation process.",
+      "dispersion": "Variance reduction without explicit noise factors — a 2^k plan with replication models the mean (μ) and the dispersion (log s²) as two separate responses. This identifies factor settings that minimize variance independently of the mean — the core idea of the dual-response approach.",
+      "mixture": "Components sum to 100 % — mixture designs (Simplex-Lattice / Simplex-Centroid) honor that constraint and yield a valid model for recipes, formulations and blends.",
+      "d-optimal": "Complex restrictions or individual model terms — D-optimal designs are fitted algorithmically to the constrained space and the chosen model. Requires a clear model.",
+      "evop": "Live serial production with small, safe variations around the setpoint — EVOP uses regular production as the experiment. No downtime, but slow learning and only small effects detectable."
+    }
+  },
+  "ccd": {
+    "col": {
+      "property": "Property",
+      "rotatable": "Rotatable (CCC, Circumscribed)",
+      "face": "Face-Centered (CCF)"
+    },
+    "rows": {
+      "alpha": {
+        "label": "α (alpha)",
+        "rotatable": "(2^k)^(1/4) ≈ 1.4 – 2.4",
+        "face": "1"
+      },
+      "alpha-k": {
+        "label": "α at k = 2 / 3 / 4 / 5",
+        "rotatable": "1.414 / 1.682 / 2.000 / 2.378",
+        "face": "1 / 1 / 1 / 1"
+      },
+      "star-position": {
+        "label": "Star point location",
+        "rotatable": "outside the cube (on a sphere)",
+        "face": "centered on the cube faces"
+      },
+      "levels": {
+        "label": "Levels per factor",
+        "rotatable": "5",
+        "face": "3"
+      },
+      "rotatable": {
+        "label": "Rotatability",
+        "rotatable": "yes (prediction variance direction-independent)",
+        "face": "no (direction-dependent)"
+      },
+      "prediction": {
+        "label": "Prediction quality",
+        "rotatable": "uniform in all directions",
+        "face": "weaker in corner regions"
+      },
+      "range": {
+        "label": "Factor range",
+        "rotatable": "must be expandable — star points exceed ±1",
+        "face": "stays strictly within the defined range"
+      },
+      "practical": {
+        "label": "Practicality with hard limits",
+        "rotatable": "problematic (pressure, temp., safety)",
+        "face": "very good"
+      },
+      "quality": {
+        "label": "Statistical quality",
+        "rotatable": "optimal",
+        "face": "compromise"
+      },
+      "application": {
+        "label": "Typical application",
+        "rotatable": "lab processes, free parameters, academic studies",
+        "face": "industrial production, specification limits, safety"
+      }
+    },
+    "ruleLabel": "Rule of thumb",
+    "ruleBody": "Choose rotatable when the factor range can be expanded freely and maximum statistical quality is required. Choose face-centered when factor limits cannot be exceeded for physical, safety or regulatory reasons — by far the more common case in industrial Six Sigma."
+  },
+  "hints": {
+    "noOpenQuestion": "The advisor is on its recommendation; no question is open.",
+    "atFirstQuestion": "The advisor is on the first question; there is nothing to go back to."
+  },
+  "invariants": {
+    "wizardConsistent": "Open question, answers and trail must fit together: starting at the first question, the trail leads through the given answers exactly to the open question or recommendation."
+  }
+}
