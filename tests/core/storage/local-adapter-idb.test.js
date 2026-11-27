@@ -52,6 +52,22 @@ suite('LocalAdapter — IndexedDB', () => {
     assertEqual(doc.moduleStates['m1'], undefined);
   });
 
+  test('flush resolves only after a write already in flight committed', async () => {
+    // Der Leading-Edge-Flush des StateManagers startet flush() ohne await; ein
+    // späteres flushNow() findet die Warteschlange leer und muss trotzdem bis
+    // zum Commit dieser Schreibung warten (sonst lädt ein Test oder der
+    // Agent-Settle die Seite neu, bevor IndexedDB den Stand hat).
+    localStorage.removeItem(`${PREFIX}projects`);
+    const a = new LocalAdapter();
+    const id = a.createProject('Inflight', 'dmaic');
+    await a.ready();
+    a.putModule(id, 'm1', { x: 1 });
+    let firstDone = false;
+    a.flush().then(() => { firstDone = true; });
+    await a.flush();
+    assertEqual(firstDone, true, 'zweites flush() kam vor dem Commit der ersten Schreibung zurück');
+  });
+
   test('flushSync persists pending module writes without the async flush (Bug 012)', async () => {
     localStorage.removeItem(`${PREFIX}projects`);
     const a = new LocalAdapter();

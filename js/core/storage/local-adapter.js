@@ -18,6 +18,8 @@ export class LocalAdapter extends StorageAdapter {
     this._pending = new Map();
     /** @type {Map<string, Set<string>>} pending per-project deletes */
     this._pendingDel = new Map();
+    /** @type {Promise<void>} commit of every IDB batch issued so far */
+    this._inflight = Promise.resolve();
     this.migrateLegacyIfNeeded();
     // Warm the IDB connection now. flushSync() is the only write path that
     // survives an immediate reload, and it needs an ALREADY OPEN connection —
@@ -168,7 +170,23 @@ export class LocalAdapter extends StorageAdapter {
     localStorage.setItem(`${this._P}projects`, JSON.stringify(projects));
   }
 
+  /**
+   * Write the queued module states to IndexedDB. Resolves only once every
+   * write handed to IDB so far has committed — also those of an earlier,
+   * not awaited call (the state manager's leading-edge flush). Without that,
+   * `flushNow()` returned on an empty queue while the write was still in
+   * flight, and a reload right after it lost the data.
+   * @returns {Promise<void>}
+   */
   async flush() {
+    const prev = this._inflight;
+    const cur = this._drainPending();
+    this._inflight = Promise.all([prev, cur]).then(() => {});
+    await this._inflight;
+  }
+
+  /** @private Drains the queues; never rejects (failed batches are re-queued). */
+  async _drainPending() {
     const ids = new Set([...this._pending.keys(), ...this._pendingDel.keys()]);
     for (const id of ids) {
       const puts = this._pending.get(id) || new Map();
