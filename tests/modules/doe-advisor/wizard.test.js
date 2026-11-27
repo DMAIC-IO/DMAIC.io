@@ -98,6 +98,23 @@ suite('doe-advisor wizard — Wege', () => {
       assertDeepEqual(from1_0({ tab: 'wizard', ...s }), { tab: 'wizard', ...s }, opts.join('/'));
     }
   });
+  test('der Baum der Migration kennt keine überzählige Möglichkeit (Gegenrichtung)', () => {
+    /** @type {Map<string, ReturnType<typeof walk>>} je offener Schritt ein Stand davor */
+    const before = new Map();
+    for (const [opts] of PATHS) {
+      for (let i = 0; i < opts.length; i++) {
+        const s = walk(opts.slice(0, i));
+        if (!before.has(s.currentStep)) before.set(s.currentStep, s);
+      }
+    }
+    assertEqual(before.size, STEP_IDS.length);
+    for (const [step, s] of before) {
+      for (const opt of ALL_OPTIONS.filter((o) => !optionsOf(step).includes(o))) {
+        const old = { tab: 'wizard', currentStep: step, answers: { ...s.answers, [ANSWER_KEYS[step]]: opt }, history: [...s.history, step] };
+        assertDeepEqual(from1_0(old), { tab: 'wizard', ...s }, `${step}/${opt}`);
+      }
+    }
+  });
   test('nextOf kennt keinen fremden Schritt', () => {
     let err = null;
     try { nextOf('result:none', {}); } catch (e) { err = e; }

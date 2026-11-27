@@ -72,8 +72,8 @@ export default createModule({
       get isNoneResult() { return this.isResult && this.resultDesignId === null; },
       /** Eine Empfehlung mit Versuchsplan. */
       get hasDesignResult() { return this.resultDesignId !== null; },
-      /** „Zurück“ zeigen: es gibt eine Spur oder eine Empfehlung. */
-      get canGoBack() { return this.model.history.length > 0 || this.isResult; },
+      /** „Zurück“ zeigen: es gibt eine Spur (eine Empfehlung hat stets eine). */
+      get canGoBack() { return this.model.history.length > 0; },
       /** Die Spur zeigen. */
       get hasTrail() { return this.model.history.length > 0; },
       /** @returns {string} die Frage des offenen Schritts */
