@@ -107,6 +107,15 @@
   border-radius: var(--border-radius-sm);
 }
 
+/* Maß wie die Altform (Schrift des Browsers, ohne Rahmen): das Bandende
+   bestimmt die Spaltenbreite mit, die Karten darin dürfen dadurch nicht
+   breiter werden (Test „Textfelder wie die Altform“ in viewmodel.test.js). */
+.af__band-add .btn {
+  border: none;
+  font-family: revert;
+  font-weight: revert;
+}
+
 /* The exit at the end of a no-band: where the detour rejoins the main path.
    This is where the branch's target is picked now, not at the diamond — see
    the comment on `.af__branch` below. */
