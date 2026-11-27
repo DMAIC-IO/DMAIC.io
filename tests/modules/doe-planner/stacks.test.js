@@ -1,9 +1,10 @@
 /**
  * Tests for js/modules/doe-planner/domain/stacks.js — the stacks that
- * extend a bound datasheet and keep its response columns in step.
+ * extend a bound datasheet, keep its response columns in step and hand a
+ * response to a new regression.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { augmentStack, responseSyncStack, responseSyncPlan } from '../../../js/modules/doe-planner/domain/stacks.js';
+import { augmentStack, responseSyncStack, responseSyncPlan, regressionHandoverStack } from '../../../js/modules/doe-planner/domain/stacks.js';
 
 const hard = (reason, extra = {}) => ({ lock: 'hard', managedBy: 'doe-planner', managedRef: 'doe:p1', reason, ...extra });
 const soft = { lock: 'soft', managedBy: 'doe-planner', managedRef: 'doe:p1', reason: 'replicate-aggregate' };
@@ -40,7 +41,7 @@ const COLUMNS = Object.freeze([
 const call = (method, cmd) => ({ op: 'instance.call', module: 'worksheet', instance: 'ws1', method, args: [cmd] });
 
 /** @param {any} meta @returns {any} meta without its lock */
-const unlocked = (meta) => { const { lock, ...rest } = meta; return rest; };
+const unlocked = (meta) => { const { lock: _lock, ...rest } = meta; return rest; };
 
 suite('doe-planner domain — augmentStack', () => {
   const rows = [[150, 'Stahl'], [200, 'Kupfer']];
@@ -206,5 +207,36 @@ suite('doe-planner domain — Merkmale ohne Nullwerte', () => {
     assertTrue(all.length > 0);
     for (const m of all) assertTrue(noNull(m), JSON.stringify(m));
     assertTrue(all.every((m) => !('managedRef' in m)));
+  });
+});
+
+suite('doe-planner stacks: regressionHandoverStack', () => {
+  const EXP = {
+    plannedTerms: { linear: true, terms: ['M0', 'M1', 'I0_1'], blockColumn: false },
+    runMatrix: { worksheetRef: { instanceId: 'ws1', sheetId: 'sheet_1' }, columnTags: { factors: ['fa', 'fm'] } },
+    responseColumns: [{ name: 'Yield', columnId: 'y1' }, { name: 'Cost', columnId: 'y2' }],
+  };
+
+  test('module.add in the phase, then importExperiment with factors, raw response, planned terms and source', () => {
+    const stack = regressionHandoverStack({ plannerId: 'p1', phase: 'improve', experiment: /** @type {any} */ (EXP), response: 1 });
+    const at = (columnId) => ({ instanceId: 'ws1', sheetId: 'sheet_1', columnId });
+    assertDeepEqual(stack, [
+      { op: 'module.add', id: 'reg', module: 'regression', phase: 'improve' },
+      {
+        op: 'instance.call', module: 'regression', instance: { $from: 'reg', path: 'instanceId' }, method: 'importExperiment',
+        args: [{
+          colRefs: [at('fa'), at('fm')], yRef: at('y2'), designTerms: ['M0', 'M1', 'I0_1'],
+          source: { experimentId: 'p1', sourceColumn: 'y2', transform: 'identity' },
+        }],
+      },
+    ]);
+  });
+
+  test('the stack is a copy: changing it leaves the experiment as it was', () => {
+    const stack = regressionHandoverStack({ plannerId: 'p1', phase: 'analyze', experiment: /** @type {any} */ (EXP), response: 0 });
+    stack[1].args[0].designTerms.push('Q0');
+    stack[1].args[0].colRefs[0].columnId = 'x';
+    assertDeepEqual(EXP.plannedTerms.terms, ['M0', 'M1', 'I0_1']);
+    assertDeepEqual(EXP.runMatrix.columnTags.factors, ['fa', 'fm']);
   });
 });

@@ -8,6 +8,8 @@
  *   the end — the worksheet rejects every write into a locked column.
  * - `responseSyncStack` carries a renamed, added or removed response into
  *   the sheet.
+ * - `regressionHandoverStack` adds a regression and hands it one response
+ *   of the experiment (model command `importExperiment` of `regression`).
  * Metas go out without null values; the worksheet rejects them.
  */
 import { aggregateFormula } from './columns.js';
@@ -75,7 +77,7 @@ export function augmentStack(ref, columns, newRows, rowCount) {
   const locked = columns.filter((c) => c.meta && c.meta.lock);
   /** @type {WorksheetCall[]} */
   const stack = locked.map((c) => {
-    const { lock, ...rest } = cleanMeta(/** @type {object} */ (c.meta));
+    const { lock: _lock, ...rest } = cleanMeta(/** @type {object} */ (c.meta));
     return call('setColumnMeta', { sheetId: sheet, columnId: c.id, meta: rest });
   });
   stack.push(call('addRows', { sheetId: sheet, count: n }));
@@ -191,7 +193,7 @@ export function responseSyncPlan(ref, before, after, { columns, names }) {
     if (!id) return;
     const meta = metaOf.get(id);
     if (meta && meta.lock) {
-      const { lock, ...rest } = cleanMeta(meta);
+      const { lock: _lock, ...rest } = cleanMeta(meta);
       stack.push(call('setColumnMeta', { sheetId: sheet, columnId: id, meta: rest }));
       stack.push(call('renameColumn', { sheetId: sheet, columnId: id, name }));
       stack.push(call('setColumnMeta', { sheetId: sheet, columnId: id, meta: cleanMeta(meta) }));
@@ -258,4 +260,32 @@ export function responseSyncPlan(ref, before, after, { columns, names }) {
 export function responseSyncStack(ref, before, after, sheet) {
   const res = responseSyncPlan(ref, before, after, sheet);
   return res && res.stack.length ? res.stack : null;
+}
+
+/**
+ * The stack that adds a regression in the planner's phase and hands it one
+ * response of the experiment: factors as X, the raw response as Y, the
+ * planned terms (the regression computes degree and excluded terms from
+ * them once it is mounted with data). A model command of the regression.
+ * @param {{ plannerId: string, phase: string, experiment: import('./experiment.js').Experiment, response: number }} p
+ *   `response` is the index into `experiment.responseColumns`
+ * @returns {object[]}
+ */
+export function regressionHandoverStack({ plannerId, phase, experiment, response }) {
+  const { worksheetRef, columnTags } = experiment.runMatrix;
+  const at = (/** @type {string} */ columnId) => ({ instanceId: worksheetRef.instanceId, sheetId: worksheetRef.sheetId, columnId });
+  const columnId = experiment.responseColumns[response].columnId;
+  return [
+    { op: 'module.add', id: 'reg', module: 'regression', phase },
+    {
+      op: 'instance.call', module: 'regression', instance: { $from: 'reg', path: 'instanceId' },
+      method: 'importExperiment',
+      args: [{
+        colRefs: columnTags.factors.map(at),
+        yRef: at(columnId),
+        designTerms: [...experiment.plannedTerms.terms],
+        source: { experimentId: plannerId, sourceColumn: columnId, transform: 'identity' },
+      }],
+    },
+  ];
 }

@@ -134,7 +134,7 @@ function agentLayer(store) {
             case 'writeColumns': {
               const cols = arg.columns;
               if (cols.some((c) => c.to === 'start')) st.columns = [];
-              value = cols.map(({ to, ...c }) => {
+              value = cols.map(({ to: _to, ...c }) => {
                 const next = { id: uid(), format: {}, meta: null, formulas: [], ...c, values: [...c.values] };
                 st.columns.push(next);
                 return next.id;
@@ -515,15 +515,23 @@ suite('doe-planner tasks: syncResponses', () => {
 });
 
 suite('doe-planner tasks: transferToRegression', () => {
-  test('the stack adds a regression in the planner phase and imports <id>|raw|<response>', async () => {
+  test('the stack adds a regression in the planner phase and hands it the response (model command importExperiment)', async () => {
     const h = await bound(plan({ responses: [{ name: 'Yield', unit: '%' }, { name: 'Kosten', unit: '' }] }));
+    const exp = JSON.parse(JSON.stringify(h.vm().experiment));
     const out = await h.run('transferToRegression', { response: 1 });
     assertEqual(out.status, 'done', JSON.stringify(out));
     const stack = h.layer.stacks.at(-1);
     assertDeepEqual(stack[0], { op: 'module.add', id: 'reg', module: 'regression', phase: 'improve' });
+    const { instanceId, sheetId } = exp.runMatrix.worksheetRef;
+    const at = (columnId) => ({ instanceId, sheetId, columnId });
+    const y = exp.responseColumns[1].columnId;
     assertDeepEqual(stack[1], {
       op: 'instance.call', module: 'regression', instance: { $from: 'reg', path: 'instanceId' },
-      method: 'importExperiment', args: [`${PLANNER}|raw|1`],
+      method: 'importExperiment',
+      args: [{
+        colRefs: exp.runMatrix.columnTags.factors.map(at), yRef: at(y), designTerms: exp.plannedTerms.terms,
+        source: { experimentId: PLANNER, sourceColumn: y, transform: 'identity' },
+      }],
     });
     assertEqual(out.value.instanceId, h.store.phases.improve.at(-1).instanceId);
   });
@@ -562,7 +570,9 @@ suite('doe-planner tasks: transferToRegression', () => {
     await h.settle();
     const out = await h.run('transferToRegression', { response: 0 });
     assertEqual(out.status, 'done', JSON.stringify(out));
-    assertDeepEqual(h.layer.stacks.at(-1)[1].args, [`${PLANNER}|raw|1`]);
+    const sent = h.layer.stacks.at(-1)[1].args[0];
+    assertEqual(sent.source.sourceColumn, vm.experiment.responseColumns[1].columnId);
+    assertEqual(sent.yRef.columnId, vm.experiment.responseColumns[1].columnId);
   });
 
   test('a response renamed after a stale datasheet: transferResponseMissing, nothing sent', async () => {

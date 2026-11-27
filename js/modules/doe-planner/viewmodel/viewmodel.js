@@ -13,7 +13,8 @@
  *   design is built and evaluated before the stack goes out and written
  *   only after it went through.
  * - `transferToRegression` adds a regression in the planner's phase and
- *   hands it the experiment of the datasheet for one response.
+ *   hands it the experiment of the datasheet for one response (model
+ *   command `importExperiment`; the button opens it).
  * - `syncResponses` (auto) carries a renamed, added or removed response
  *   into the bound, current datasheet and updates the snapshot; a change
  *   it cannot carry over is reported once.
@@ -38,7 +39,7 @@ import { snapshotOf, appendedRuns } from '../domain/experiment.js';
 import { designSignature } from '../domain/signatures.js';
 import { applyEdits, codedToActualRows } from '../domain/runtable.js';
 import { augmentRows } from '../domain/generate.js';
-import { augmentStack, responseSyncPlan } from '../domain/stacks.js';
+import { augmentStack, responseSyncPlan, regressionHandoverStack } from '../domain/stacks.js';
 import { UiState } from './state.js';
 import { factorsView } from './factors.js';
 import { designView } from './design.js';
@@ -357,23 +358,20 @@ export default createModule({
         if (hits.length !== 1) {
           throw failure(this.t('transferResponseMissing'), 'transferToRegression', new Error(`response ${response} is not (uniquely) in the datasheet`));
         }
-        const sheetIdx = hits[0];
+        // Everything the stack needs is read before the first await.
         /** @type {any} */
-        const stack = [
-          { op: 'module.add', id: 'reg', module: 'regression', phase },
-          {
-            op: 'instance.call', module: 'regression', instance: { $from: 'reg', path: 'instanceId' },
-            method: 'importExperiment', args: [`${plannerId}|raw|${sheetIdx}`],
-          },
-        ];
+        const stack = regressionHandoverStack({ plannerId, phase, experiment: plain(this.experiment), response: hits[0] });
+        const notify = this._ui.notify;
+        const doneText = this.t('transferSuccess');
+        const failText = this.t('transferFailed');
         let res;
         try {
           res = await services.instances.interact(stack);
         } catch (err) {
-          throw failure(this.t('transferFailed'), 'transferToRegression', err);
+          throw failure(failText, 'transferToRegression', err);
         }
-        if (res?.ok !== true) throw failure(this.t('transferFailed'), 'transferToRegression', res);
-        this._ui.notify(this.t('transferSuccess'), 'success');
+        if (res?.ok !== true) throw failure(failText, 'transferToRegression', res);
+        notify(doneText, 'success');
         return { instanceId: res.results?.[0]?.result?.instanceId ?? null };
       },
     }),
