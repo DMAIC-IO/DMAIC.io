@@ -19,7 +19,8 @@
  *     competing responses.
  *
  * The engine does NOT reach into the worksheet or stateManager. Callers feed
- * it model objects (matching state.models[id]) and factor bound arrays.
+ * it model records (the `savedModel` snapshot a regression / GLM instance
+ * saved, read through the instance reader) and factor bound arrays.
  */
 
 import { compileModelSpec } from './regression-engine.js';
@@ -227,7 +228,7 @@ function applyInverseLink(eta, family) {
  *      and `x` is a positional number array; this is the pre-spec path used
  *      for ad-hoc continuous fits.
  *
- * @param {object} model — record matching state.models[id]
+ * @param {object} model — saved model record (`savedModel` of a regression / GLM instance)
  * @param {number[]|Record<string, number|string>} x
  * @returns {number} predicted ŷ
  */
@@ -421,7 +422,7 @@ export function multiStartNelderMead(fn, bounds, opts = {}) {
  * predictors (detected via `model.spec.predictors[*].kind`); otherwise
  * runs the legacy continuous-only multi-start Nelder–Mead.
  *
- * @param {Array} models — list of model records (state.models[id] shape)
+ * @param {Array} models — list of saved model records (`savedModel` of the owner instances)
  * @param {Array<{kind:'max'|'min'|'target', lower:number, upper:number, target?:number, weight?:number, shape?:number, shapeS?:number, shapeT?:number}>} desirSpecs — one per model, in the same order
  * @param {Array<[number, number]>} factorBounds — per-factor [lo, hi] in the order of model.factorSpec (assumed common across models). For categorical positions the bounds are nominal and ignored — the level set is derived from `model.spec`.
  * @param {{nStarts?: number, seed?: number, maxIter?: number, tol?: number}} [opts]
@@ -564,7 +565,7 @@ function individualDesirability(y, spec) {
  * Returns the grid plus axis-tick arrays so callers can render an SVG
  * heatmap or contour. Grid value at (i, j) corresponds to (xTicks[j], yTicks[i]).
  *
- * @param {object} model - state.models[id] record (must carry `spec`)
+ * @param {object} model - saved model record (`savedModel`, must carry `spec`)
  * @param {object} opts
  * @param {string} opts.xId - predictor id swept on the X axis
  * @param {string} opts.yId - predictor id swept on the Y axis
