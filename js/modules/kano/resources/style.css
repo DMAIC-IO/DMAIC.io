@@ -12,6 +12,13 @@
   color: var(--color-text-secondary);
 }
 
+/* Wirt des Laufs `applySync`: der Knopf füllt die Breite wie in der Altform,
+   wo er selbst Kind der Eingabespalte war. */
+.kano__sync {
+  display: flex;
+  flex-direction: column;
+}
+
 .kano__sync-status {
   margin-top: var(--spacing-xs);
   font-size: var(--font-size-sm);
