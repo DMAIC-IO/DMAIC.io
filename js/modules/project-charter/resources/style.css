@@ -9,7 +9,6 @@
 .project-charter-tile {
   --pc-org-node-shadow: 0 2px 8px rgb(0 0 0 / 15%);
   --pc-org-node-hover-border: color-mix(in srgb, var(--color-accent) 35%, transparent);
-  --pc-org-del-hover-bg: color-mix(in srgb, var(--color-error) 8%, transparent);
 }
 
 /* ===== Sections ===== */
@@ -290,35 +289,15 @@
   overflow: hidden;
 }
 
+/* Werkzeugleiste der Karte: Kern-Rolle icon-sm, hier nur Lage und Maß. */
 .pc__org-node-btn {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: auto;
+  height: auto;
   gap: var(--spacing-2xs);
   padding: var(--spacing-s) var(--spacing-2xs);
   font-size: 0.7rem;
-  font-family: var(--font-family);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-tertiary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background var(--transition-speed), color var(--transition-speed);
-}
-
-.pc__org-node-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-}
-
-.pc__org-node-btn--del:hover {
-  color: var(--color-error);
-  background: var(--pc-org-del-hover-bg);
-}
-
-.pc__org-node-btn + .pc__org-node-btn {
-  border-left: var(--border-width) solid var(--color-border-secondary);
+  border-radius: 0;
 }
 
 .pc__org-node-btn svg {

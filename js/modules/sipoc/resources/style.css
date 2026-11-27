@@ -278,10 +278,6 @@ textarea.sipoc__edit-text {
   font-size: var(--font-size-sm);
 }
 
-.sipoc__item-btn--delete:hover {
-  color: var(--color-error);
-}
-
 /* Process step numbering */
 .sipoc__step-num {
   font-family: var(--font-family-mono);
@@ -351,24 +347,12 @@ textarea.sipoc__edit-text {
 .sipoc__add-input { flex: 1; }
 
 .sipoc__add-btn {
+  flex: none;
   width: 30px;
   height: 30px;
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
+  padding: 0;
   border-radius: var(--border-radius-sm);
-  cursor: pointer;
   font-size: var(--font-size-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-speed);
-  flex-shrink: 0;
-}
-
-.sipoc__add-btn:hover {
-  border-color: var(--color-border-primary);
-  color: var(--color-text-primary);
 }
 
 /* ===== Toolbar ===== */

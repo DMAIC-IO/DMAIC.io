@@ -34,31 +34,13 @@
   user-select: none;
 }
 
+/* Verteilungswahl: Kern-Rolle ghost (aktiv: btn--active), hier nur Lage und Maß. */
 .rg-sidebar__btn {
-  display: block;
+  display: flex;
+  justify-content: flex-start;
   width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
   padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-l);
-  cursor: pointer;
-  transition: all var(--transition-speed);
-  border-left: 3px solid transparent;
-}
-
-.rg-sidebar__btn:hover {
-  color: var(--color-text-primary);
-  background: var(--color-bg-tertiary);
-}
-
-.rg-sidebar__btn--active {
-  color: var(--color-accent);
-  background: var(--color-accent-light);
-  border-left-color: var(--color-accent);
-  font-weight: var(--font-weight-medium);
+  border-radius: 0;
 }
 
 /* ── Main Content ── */
@@ -439,15 +421,14 @@
   gap: var(--spacing-xs);
 }
 
+/* Gezogener Wert als Kern-Chip ohne Klick; die Kategoriefarbe ist Datenfarbe
+   und sitzt nur im Punkt. */
 .rg-attr-chip {
-  font-family: var(--font-family);
-  font-size: var(--font-size-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: 4px;
-  font-weight: var(--font-weight-medium);
-  color: var(--rg-attr-color, var(--color-text-primary));
-  background: color-mix(in srgb, var(--rg-attr-color, var(--color-accent)) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--rg-attr-color, var(--color-accent)) 30%, transparent);
+  cursor: default;
+}
+
+.rg-attr-chip .chip__dot {
+  background: var(--rg-attr-color, currentcolor);
 }
 
 .rg-error {

@@ -150,22 +150,10 @@
 }
 
 .module-calendar__nav-btn {
-  background: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-border-primary);
-  color: var(--color-text-primary);
   width: 24px;
   height: 24px;
+  padding: 0;
   border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--transition-speed);
-}
-
-.module-calendar__nav-btn:hover {
-  background: var(--color-bg-tertiary);
 }
 
 .module-calendar__title {
@@ -200,39 +188,9 @@
   gap: var(--spacing-sm);
 }
 
-.module-calendar__today-btn {
-  padding: var(--spacing-xs) var(--spacing-m);
-  border-radius: var(--border-radius);
-  background: var(--color-accent-light);
-  border: var(--border-width) solid var(--color-accent);
-  color: var(--color-accent);
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  font-weight: var(--font-weight-semibold);
-  transition: background var(--transition-speed);
-}
-
-.module-calendar__today-btn:hover {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-
+/* Ansichtswahl: Kern-Segment (btn-group > btn--segment); hier nur der Anker. */
 .module-calendar__view-toggle {
-  display: flex;
-  background: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius);
-}
-
-/* Kein overflow: hidden — es schnitte den Kontexthilfe-Kreis ab. Die Rundung
-   der Ecken tragen stattdessen die äußeren Knöpfe. */
-.module-calendar__view-toggle button:first-of-type {
-  border-radius: var(--border-radius) 0 0 var(--border-radius);
-}
-
-.module-calendar__view-toggle button:last-of-type {
-  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+  position: relative;
 }
 
 .module-calendar__view-toggle > .context-help__btn {
@@ -243,31 +201,8 @@
   transform: translate(50%, -50%);
 }
 
-.module-calendar__view-toggle button {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
+.module-calendar__view-toggle .btn--segment {
   padding: var(--spacing-xs) var(--spacing-m);
-  cursor: pointer;
-  transition: all 150ms;
-  letter-spacing: 0.04em;
-  font-weight: var(--font-weight-semibold);
-}
-
-.module-calendar__view-toggle button:not(:last-of-type) {
-  border-right: var(--border-width) solid var(--color-border-primary);
-}
-
-.module-calendar__view-toggle button[aria-checked="true"] {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-
-.module-calendar__view-toggle button:hover:not([aria-checked="true"]) {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
 }
 
 /* ─── Month grid ────────────────────────────────────────── */
@@ -666,29 +601,6 @@
   top: 0;
 }
 
-.module-calendar__phase-chip {
-  font: inherit;
-  appearance: none;
-  padding: var(--spacing-xs) var(--spacing-m);
-  border-radius: 20px;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 150ms;
-  opacity: 0.5;
-  background: var(--color-bg-tertiary);
-}
-
-.module-calendar__phase-chip:hover {
-  opacity: 0.8;
-}
-
-.module-calendar__phase-chip[aria-checked="true"] {
-  opacity: 1;
-  border-color: currentcolor;
-}
-
 .module-calendar__phase-chip--foreign {
   font-style: italic;
 }
@@ -697,10 +609,8 @@
    Gehoben, damit der Ring nicht unter dem Nachbarknopf liegt. */
 .module-calendar__phase-chip:focus-visible,
 .module-calendar__view-toggle button:focus-visible {
-  outline: none;
   position: relative;
   z-index: 1;
-  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 .module-calendar__week-day-col--drop-target {

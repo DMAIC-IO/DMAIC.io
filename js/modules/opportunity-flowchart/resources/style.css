@@ -46,18 +46,10 @@
   padding: var(--spacing-xs);
 }
 
-.of__insert-menu button {
-  border: none;
-  background: transparent;
-  text-align: left;
+.of__insert-menu .btn {
+  justify-content: flex-start;
   padding: var(--spacing-xs) var(--spacing-sm);
-  cursor: pointer;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  border-radius: var(--border-radius-sm);
-  white-space: nowrap;
 }
-.of__insert-menu button:hover { background: var(--color-bg-secondary); }
 
 /* ── Step card ──────────────────────────────────────────────────────────
    Surface, header, number badge, title and buttons come from the shared

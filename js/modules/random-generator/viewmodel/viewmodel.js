@@ -85,7 +85,7 @@ export default createModule({
       /** @param {string} key @returns {string} übersetzter Name der Verteilung */
       distName(key) { return key === ATTRIBUTIVE_KEY ? this.t('distAttributive') : this.t(distOf(key)?.nameKey ?? ''); },
       /** @param {string} key @returns {string} Klasse des Knopfs in der Seitenleiste */
-      distBtnClass(key) { return key === this.model.currentDist ? 'rg-sidebar__btn rg-sidebar__btn--active' : 'rg-sidebar__btn'; },
+      distBtnClass(key) { return key === this.model.currentDist ? 'btn btn--ghost btn--active rg-sidebar__btn rg-sidebar__btn--active' : 'btn btn--ghost rg-sidebar__btn'; },
       get title() { return this.distName(this.model.currentDist ?? ''); },
       get formula() {
         return this.isAttributive ? 'X ~ Categorical(p₁, p₂, …, pₖ)' : (distOf(this.model.currentDist)?.formula ?? '');

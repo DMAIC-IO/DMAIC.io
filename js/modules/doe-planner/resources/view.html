@@ -108,11 +108,11 @@
               <option value="continuous" :selected="isKind(f, 'continuous')" x-text="t('factorKindContinuous')"></option>
               <option value="categorical" :selected="isKind(f, 'categorical')" x-text="t('factorKindCategorical')"></option>
             </select>
-            <button class="doe__factor-remove-btn" type="button" :data-factor-id="f.id" data-help-key=""
+            <button class="btn btn--icon-sm btn--danger doe__factor-remove-btn" type="button" :data-factor-id="f.id" data-help-key=""
                     :title="t('removeFactor')" data-confirm-delete x-command="removeFactor" :data-arg-id="f.id">&#10005;</button>
           </div>
           <div class="doe__levels-row">
-            <button class="doe__insert-level-btn" type="button" :data-factor-id="f.id" data-insert-at="0" data-help-key=""
+            <button class="btn btn--icon-sm doe__insert-level-btn" type="button" :data-factor-id="f.id" data-insert-at="0" data-help-key=""
                     :title="t('insertLevel')" x-command="insertLevel" :data-arg-id="f.id" data-arg-at="0">+</button>
             <template x-for="(val, li) in f.levels" :key="li">
               <div class="doe__level-frag">
@@ -123,11 +123,11 @@
                          :value="val" @change="levelChanged(f, li, $event)"
                          :placeholder="levelPlaceholder(f)" />
                   <template x-if="canRemoveLevel(f)">
-                    <button class="doe__remove-level-btn" type="button" :data-factor-id="f.id" :data-level-idx="li" data-help-key=""
+                    <button class="btn btn--icon-sm btn--danger doe__remove-level-btn" type="button" :data-factor-id="f.id" :data-level-idx="li" data-help-key=""
                             :title="t('removeLevel')" data-confirm-delete x-command="removeLevel" :data-arg-id="f.id" :data-arg-index="li">&#10005;</button>
                   </template>
                 </div>
-                <button class="doe__insert-level-btn" type="button" :data-factor-id="f.id" :data-insert-at="afterLevel(li)" data-help-key=""
+                <button class="btn btn--icon-sm doe__insert-level-btn" type="button" :data-factor-id="f.id" :data-insert-at="afterLevel(li)" data-help-key=""
                         :title="t('insertLevel')" x-command="insertLevel" :data-arg-id="f.id" :data-arg-at="afterLevel(li)">+</button>
               </div>
             </template>
@@ -149,7 +149,7 @@
             <input type="text" class="field doe__response-unit doe__factor-unit--narrow" :data-idx="ri"
                    x-model.lazy="r.unit" :placeholder="t('responseUnitPlaceholder')" />
             <template x-if="canRemoveResponse">
-              <button class="doe__response-remove-btn" type="button" :data-idx="ri" data-help-key=""
+              <button class="btn btn--icon-sm btn--danger doe__response-remove-btn" type="button" :data-idx="ri" data-help-key=""
                       :title="t('removeResponse')" data-confirm-delete x-command="removeResponse" :data-arg-index="ri">&#10005;</button>
             </template>
           </div>
@@ -165,7 +165,7 @@
       <div class="doe__recommendation">
         <span class="doe__recommendation-icon icon icon--sm" data-icon="status.insight" aria-hidden="true"></span>
         <span class="doe__recommendation-text" x-text="recommendationText"></span>
-        <button class="doe__recommendation-btn" :data-rec-type="recommendation" type="button"
+        <button class="btn btn--secondary btn--sm doe__recommendation-btn" :data-rec-type="recommendation" type="button"
                 x-command="applyRecommendation" x-text="recommendationLabel"></button>
       </div>
     </template>
@@ -379,7 +379,7 @@
                     <template x-if="isTermGroupOpen(gi, g)">
                       <div class="doe__term-group-items">
                         <template x-for="id in g.ids" :key="id">
-                          <label class="doe__term-chip" :class="termChipClass(g, id)">
+                          <label class="chip doe__term-chip" :class="termChipClass(g, id)">
                             <input type="checkbox" class="doe__term-check"
                                    :data-term-id="id" :checked="termActive(id)"
                                    :disabled="isMainGroup(g)" @change="termChanged(id, $event)" />
@@ -405,7 +405,7 @@
             <template x-for="(rule, ri) in forbiddenList" :key="ri">
               <li class="doe__forbidden-row" :data-rule-idx="ri">
                 <span class="doe__forbidden-rule" x-text="forbiddenRuleText(rule)"></span>
-                <button type="button" class="doe__forbidden-remove-btn" :data-rule-idx="ri" data-help-key=""
+                <button type="button" class="btn btn--icon-sm btn--danger doe__forbidden-remove-btn" :data-rule-idx="ri" data-help-key=""
                         :title="t('forbiddenRemoveTitle')" data-confirm-delete x-command="removeForbiddenVertex" :data-arg-index="ri">&#10005;</button>
               </li>
             </template>

@@ -414,24 +414,6 @@
 
 /* Scatter header row: uses global .dmike-split__output-section-header (css/modules.css) */
 
-.corr__collapse-all-btn {
-  padding: var(--spacing-2xs) var(--spacing-sm);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-tertiary);
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  cursor: pointer;
-  transition: all var(--transition-speed);
-  white-space: nowrap;
-}
-
-.corr__collapse-all-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-text-primary);
-}
-
 /* Matrix scatter plot grid */
 .corr__matrix-plots {
   display: grid;

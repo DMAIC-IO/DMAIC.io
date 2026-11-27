@@ -590,7 +590,7 @@
               <div class="rg-data__grid">
                 <div class="rg-attr-chips">
                   <template x-for="(chip, i) in chips" :key="i">
-                    <span class="rg-attr-chip" :style="chip.style" x-text="chip.value"></span>
+                    <span class="chip rg-attr-chip" :style="chip.style"><span class="chip__dot"></span><span x-text="chip.value"></span></span>
                   </template>
                 </div>
               </div>

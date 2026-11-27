@@ -115,20 +115,20 @@
                   <div class="pc__org-node-desc" x-text="n.desc"></div>
                 </template>
                 <div class="pc__org-node-bar">
-                  <button class="pc__org-node-btn" type="button" data-action="add" data-help-key=""
+                  <button class="btn btn--icon-sm pc__org-node-btn" type="button" data-action="add" data-help-key=""
                     @pointerdown.stop @keydown.enter.stop @keydown.space.stop
                     x-dialog="addNodeForm" :data-arg-parent-id="n.id" :data-dialog-title="t('addChildTo', { name: n.title })"
                     :title="t('addChild')" :aria-label="t('addChild')"><span class="icon pc__org-node-ico" data-icon="action.add" aria-hidden="true"></span></button>
-                  <button class="pc__org-node-btn" type="button" data-action="edit" data-help-key=""
+                  <button class="btn btn--icon-sm pc__org-node-btn" type="button" data-action="edit" data-help-key=""
                     @pointerdown.stop @keydown.enter.stop @keydown.space.stop
                     x-dialog="editNodeForm" :data-arg-id="n.id" :data-dialog-title="t('editNode')"
                     :title="t('editNode')" :aria-label="t('editNode')"><span class="icon pc__org-node-ico" data-icon="action.edit" aria-hidden="true"></span></button>
                   <template x-if="n.childCount > 0">
-                    <button class="pc__org-node-btn" type="button" data-action="toggle"
+                    <button class="btn btn--icon-sm pc__org-node-btn" type="button" data-action="toggle"
                       @pointerdown.stop @keydown.enter.stop @keydown.space.stop @click="toggleCollapse(n.id)"
                       :title="collapseTitle(n)" :aria-label="collapseTitle(n)" :aria-expanded="n.collapsed ? 'false' : 'true'"><span class="icon pc__org-node-ico" :data-icon="n.collapsed ? 'nav.expand-down' : 'nav.collapse-up'" aria-hidden="true"></span><span x-show="n.collapsed" x-text="n.childCount"></span></button>
                   </template>
-                  <button class="pc__org-node-btn pc__org-node-btn--del" type="button" data-action="del" data-help-key=""
+                  <button class="btn btn--icon-sm btn--danger pc__org-node-btn pc__org-node-btn--del" type="button" data-action="del" data-help-key=""
                     @pointerdown.stop @keydown.enter.stop @keydown.space.stop
                     x-command="removeOrgNode" :data-arg-id="n.id"
                     :title="t('common.delete')" :aria-label="t('common.delete')"><span class="icon pc__org-node-ico" data-icon="action.delete" aria-hidden="true"></span></button>

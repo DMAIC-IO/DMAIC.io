@@ -64,8 +64,6 @@ function calendarView(ctx) {
     /** @param {string} p @returns {string} */
     phaseDotStyle(p) { return `background:${phaseVar(p)}`; },
     /** @param {string} p @returns {string} */
-    phaseChipStyle(p) { return `color:${phaseVar(p)}`; },
-    /** @param {string} p @returns {string} */
     phaseTagClass(p) { return this.state.phaseFilter === p ? 'module-calendar__phase-tag--active' : ''; },
     /** Anzeigefilter umschalten (ein zweiter Klick hebt ihn auf). @param {string} p */
     togglePhaseFilter(p) { this.state.phaseFilter = this.state.phaseFilter === p ? null : p; },

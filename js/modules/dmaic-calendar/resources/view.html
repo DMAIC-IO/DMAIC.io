@@ -89,15 +89,15 @@
   </div>
   <div class="dmike-split__output">
     <div class="module-calendar__controls">
-      <button type="button" class="module-calendar__nav-btn" data-ref="prevPeriod" :aria-label="t('previous')" @click="prevPeriod()"><span class="icon icon--sm" data-icon="nav.arrow-left" aria-hidden="true"></span></button>
+      <button type="button" class="btn btn--secondary module-calendar__nav-btn" data-ref="prevPeriod" :aria-label="t('previous')" @click="prevPeriod()"><span class="icon icon--sm" data-icon="nav.arrow-left" aria-hidden="true"></span></button>
       <div class="module-calendar__title" data-ref="calTitle"><span class="module-calendar__title-main" x-text="calTitleMain"></span> <span x-text="calTitleYear"></span></div>
-      <button type="button" class="module-calendar__nav-btn" data-ref="nextPeriod" :aria-label="t('next')" @click="nextPeriod()"><span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span></button>
+      <button type="button" class="btn btn--secondary module-calendar__nav-btn" data-ref="nextPeriod" :aria-label="t('next')" @click="nextPeriod()"><span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span></button>
       <div class="module-calendar__right">
-        <div class="module-calendar__view-toggle" data-ref="viewToggle" role="radiogroup" :aria-label="t('view')" x-set="model.viewMode">
-          <button type="button" role="radio" value="month" data-view="month" x-text="t('month')"></button>
-          <button type="button" role="radio" value="week" data-view="week" x-text="t('week')"></button>
+        <div class="btn-group module-calendar__view-toggle" data-ref="viewToggle" role="radiogroup" :aria-label="t('view')" x-set="model.viewMode">
+          <button type="button" role="radio" class="btn btn--segment" value="month" data-view="month" x-text="t('month')"></button>
+          <button type="button" role="radio" class="btn btn--segment" value="week" data-view="week" x-text="t('week')"></button>
         </div>
-        <button type="button" class="module-calendar__today-btn" data-ref="todayBtn" @click="goToday()" x-text="t('today')"></button>
+        <button type="button" class="btn btn--secondary module-calendar__today-btn" data-ref="todayBtn" @click="goToday()" x-text="t('today')"></button>
       </div>
     </div>
 
@@ -237,11 +237,11 @@
         <label data-help-key="modules.dmaic-calendar.fields.events.phase.help" x-text="t('phase')"></label>
         <div class="module-calendar__phase-select" data-ref="phaseSelect" role="radiogroup" x-param="phase">
           <template x-for="p in phaseIds" :key="p">
-            <button type="button" role="radio" class="module-calendar__phase-chip" :data-phase="p" :value="p" :style="phaseChipStyle(p)" x-text="phaseName(p)"></button>
+            <button type="button" role="radio" class="chip module-calendar__phase-chip" :data-phase="p" :value="p"><span class="chip__dot" :style="phaseDotStyle(p)"></span><span x-text="phaseName(p)"></span></button>
           </template>
           <template x-if="isForeignPhase(form.phase)">
-            <button type="button" role="radio" class="module-calendar__phase-chip module-calendar__phase-chip--foreign"
-              :data-phase="form.phase" :value="form.phase" :style="phaseChipStyle(form.phase)" x-text="foreignPhaseLabel(form.phase)"></button>
+            <button type="button" role="radio" class="chip module-calendar__phase-chip module-calendar__phase-chip--foreign"
+              :data-phase="form.phase" :value="form.phase"><span class="chip__dot" :style="phaseDotStyle(form.phase)"></span><span x-text="foreignPhaseLabel(form.phase)"></span></button>
           </template>
         </div>
       </div>

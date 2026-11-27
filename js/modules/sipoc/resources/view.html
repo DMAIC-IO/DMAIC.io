@@ -44,7 +44,7 @@
                     x-dialog="editForm" :data-arg-col="col.key" :data-arg-idx="i"
                     :data-dialog-title="t('col.' + col.key) + ' — ' + t('common.edit')"
                     :data-col="col.key" :data-idx="i" :title="t('common.edit')"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
-                  <button type="button" class="btn btn--icon-sm sipoc__item-btn sipoc__item-btn--delete" data-action="delete"
+                  <button type="button" class="btn btn--icon-sm btn--danger sipoc__item-btn sipoc__item-btn--delete" data-action="delete"
                     x-command="removeItem" :data-arg-col="col.key" :data-arg-idx="i"
                     :data-col="col.key" :data-idx="i" :title="t('common.delete')"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
@@ -60,7 +60,7 @@
             <form class="sipoc__add-row" x-command-form="addItem" :data-arg-col="col.key">
               <input class="field sipoc__add-input" type="text" x-param="text" :data-col="col.key"
                 :placeholder="t('placeholder.' + col.key)" :aria-label="t('placeholder.' + col.key)">
-              <button type="submit" class="sipoc__add-btn" :data-col="col.key" :title="t('common.add')">+</button>
+              <button type="submit" class="btn btn--secondary sipoc__add-btn" :data-col="col.key" :title="t('common.add')">+</button>
             </form>
           </div>
         </div>

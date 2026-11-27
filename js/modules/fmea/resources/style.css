@@ -378,41 +378,8 @@
   min-width: 56px;
 }
 
-.fmea__action-del-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-tertiary);
-  font-size: 14px;
-  padding: var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-  transition: color 0.15s;
-}
-
-.fmea__action-del-btn:hover {
-  color: var(--color-error);
-}
-
 .fmea__add-action-btn {
-  font-family: var(--font-family);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  background: none;
-  border: 1px dashed var(--color-border-primary);
-  border-radius: var(--border-radius);
-  color: var(--color-text-tertiary);
-  padding: var(--spacing-s) var(--spacing-m);
-  cursor: pointer;
   margin-top: var(--spacing-s);
-  transition: all 0.15s;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-s);
-}
-
-.fmea__add-action-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
 }
 
 .fmea__done-check {

@@ -9,7 +9,6 @@
    sich per color-mix aus den globalen Statusfarben ab. */
 .doe {
   --doe-on-fill: #fff;
-  --doe-error-tint: color-mix(in srgb, var(--color-error) 8%, transparent);
   --doe-warning-tint: color-mix(in srgb, var(--color-warning) 8%, transparent);
   --doe-sig-tint: color-mix(in srgb, var(--color-success) 8%, transparent);
   --doe-rec-repeat-tint: color-mix(in srgb, var(--color-warning) 10%, transparent);
@@ -223,39 +222,8 @@
 }
 
 .doe__insert-level-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-tertiary);
-  font-size: 11px;
-  padding: 0 var(--spacing-2xs);
-  opacity: 0.4;
-  transition: opacity var(--transition-speed);
-}
-
-.doe__insert-level-btn:hover {
-  opacity: 1;
-  color: var(--color-accent);
-}
-
-.doe__remove-level-btn,
-.doe__factor-remove-btn,
-.doe__response-remove-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-tertiary);
-  font-size: 12px;
-  padding: var(--spacing-2xs) var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-  transition: all var(--transition-speed);
-}
-
-.doe__remove-level-btn:hover,
-.doe__factor-remove-btn:hover,
-.doe__response-remove-btn:hover {
-  color: var(--color-error);
-  background: var(--doe-error-tint);
+  width: 16px;
+  font-size: var(--font-size-xs);
 }
 
 /* ===== Response Rows ===== */
@@ -634,24 +602,6 @@
   flex: 1;
 }
 
-.doe__recommendation-btn {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: var(--border-width) solid var(--color-accent);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-primary);
-  color: var(--color-accent);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-speed);
-}
-
-.doe__recommendation-btn:hover {
-  background: var(--color-accent);
-  color: var(--color-bg-primary);
-}
-
 /* ===== Box-Behnken Info ===== */
 .doe__bb-info-body {
   padding: var(--spacing-sm);
@@ -866,28 +816,8 @@
   display: none;
 }
 
-.doe__term-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-2xs) var(--spacing-sm);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-secondary);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  user-select: none;
-  color: var(--color-text-tertiary);
-}
-
 .doe__term-chip input[type="checkbox"] {
   margin: 0;
-}
-
-.doe__term-chip--on {
-  background: var(--color-bg-elevated);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
 }
 
 .doe__term-chip--locked {
@@ -961,21 +891,6 @@
 .doe__forbidden-sep {
   color: var(--color-text-tertiary);
   margin: 0 var(--spacing-2xs);
-}
-
-.doe__forbidden-remove-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  font-size: 14px;
-  padding: var(--spacing-2xs) var(--spacing-s);
-  border-radius: var(--border-radius);
-}
-
-.doe__forbidden-remove-btn:hover {
-  color: var(--color-error);
-  background: var(--color-bg-tertiary);
 }
 
 .doe__forbidden-add {
@@ -1786,12 +1701,4 @@
 
 .doe__augment-runs-input {
   width: 80px;
-}
-
-/* ─── Dark mode adjustments ─── */
-
-/* ─── Preview-grid download icon: use primary text colour instead of the
-       datagrid-global tertiary (grey) so it matches surrounding table text ─── */
-.doe__preview-grid .datagrid__export-btn .icon {
-  background-color: var(--color-text-primary);
 }

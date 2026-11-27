@@ -22,17 +22,17 @@
                    :placeholder="t('criterionPlaceholder')"
                    maxlength="60"
                    :disabled="atMax">
-            <button class="pairwise__btn pairwise__btn--accent" type="submit"
+            <button class="btn btn--secondary pairwise__btn pairwise__btn--accent" type="submit"
                     data-help-key="modules.pairwise-comparison.actions.addCriterion.help"
                     data-action="add" :disabled="atMax"
                     x-text="addBtnLabel"></button>
           </form>
           <div class="pairwise__chips" data-help-key="modules.pairwise-comparison.actions.removeCriterion.help">
             <template x-for="(c, i) in model.criteria" :key="c + ':' + i">
-              <span class="pairwise__chip">
-                <span class="pairwise__chip-num" x-text="chipNum(i)"></span>
+              <span class="chip pairwise__chip">
+                <span class="chip__count pairwise__chip-num" x-text="chipNum(i)"></span>
                 <span class="pairwise__chip-label" x-text="c"></span>
-                <button class="pairwise__chip-remove" type="button"
+                <button class="btn btn--icon-sm btn--danger pairwise__chip-remove" type="button"
                         data-action="remove" :data-idx="i" data-help-key=""
                         :title="t('removeCriterion')" :aria-label="t('removeCriterion')"
                         data-confirm-delete
@@ -49,7 +49,7 @@
           <template x-if="atMax">
             <div class="pairwise__hint" x-text="maxReachedText"></div>
           </template>
-          <button class="pairwise__btn pairwise__btn--start" type="button"
+          <button class="btn btn--primary pairwise__btn pairwise__btn--start" type="button"
                   data-action="start" :disabled="!isStartReady"
                   data-help-key="modules.pairwise-comparison.actions.startComparison.help" x-command="startComparison">
             <span x-text="startLabel"></span>
@@ -86,7 +86,7 @@
             </button>
           </div>
           <div class="pairwise__compare-actions" role="radiogroup" :aria-label="t('backToInput')" x-set="model.viewPhase">
-            <button class="pairwise__btn pairwise__btn--outline" type="button" role="radio" value="input"
+            <button class="btn btn--secondary pairwise__btn pairwise__btn--outline" type="button" role="radio" value="input"
                     data-action="back-to-input">
               <span class="icon icon--sm icon--text" data-icon="nav.back" aria-hidden="true"></span><span x-text="t('backToInput')"></span>
             </button>

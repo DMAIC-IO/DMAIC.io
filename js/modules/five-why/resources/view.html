@@ -42,7 +42,7 @@
               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
                       data-action="add-child" :data-id="n1.id" :title="t('addSubQuestion')"
                       x-command="addChild" :data-arg-parent-id="n1.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
-              <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
+              <button class="btn btn--icon-sm btn--danger five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
                       data-action="delete" :data-id="n1.id" :title="t('common.delete')"
                       x-command="removeNode" :data-arg-node-id="n1.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
             </div>
@@ -67,7 +67,7 @@
                     <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
                             data-action="add-child" :data-id="n2.id" :title="t('addSubQuestion')"
                             x-command="addChild" :data-arg-parent-id="n2.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
-                    <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
+                    <button class="btn btn--icon-sm btn--danger five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
                             data-action="delete" :data-id="n2.id" :title="t('common.delete')"
                             x-command="removeNode" :data-arg-node-id="n2.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                   </div>
@@ -92,7 +92,7 @@
                           <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
                                   data-action="add-child" :data-id="n3.id" :title="t('addSubQuestion')"
                                   x-command="addChild" :data-arg-parent-id="n3.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
-                          <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
+                          <button class="btn btn--icon-sm btn--danger five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
                                   data-action="delete" :data-id="n3.id" :title="t('common.delete')"
                                   x-command="removeNode" :data-arg-node-id="n3.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                         </div>
@@ -117,7 +117,7 @@
                                 <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button" data-help-key=""
                                         data-action="add-child" :data-id="n4.id" :title="t('addSubQuestion')"
                                         x-command="addChild" :data-arg-parent-id="n4.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
-                                <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
+                                <button class="btn btn--icon-sm btn--danger five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
                                         data-action="delete" :data-id="n4.id" :title="t('common.delete')"
                                         x-command="removeNode" :data-arg-node-id="n4.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                               </div>
@@ -137,29 +137,29 @@
                                               :placeholder="answerPlaceholder(n5)"
                                               x-model="n5.answer"></textarea>
                                     <div class="five-why__card-actions">
-                                      <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
+                                      <button class="btn btn--icon-sm btn--danger five-why__icon-btn five-why__icon-btn--delete" type="button" data-help-key=""
                                               data-action="delete" :data-id="n5.id" :title="t('common.delete')"
                                               x-command="removeNode" :data-arg-node-id="n5.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                                     </div>
                                   </div>
                                 </div>
                               </template>
-                              <button class="five-why__add-child-btn" type="button" :data-parent="n4.id" data-help-key=""
+                              <button class="btn btn--secondary btn--sm five-why__add-child-btn" type="button" :data-parent="n4.id" data-help-key=""
                                       x-command="addChild" :data-arg-parent-id="n4.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n4)"></span></button>
                             </div>
                           </div>
                         </template>
-                        <button class="five-why__add-child-btn" type="button" :data-parent="n3.id" data-help-key=""
+                        <button class="btn btn--secondary btn--sm five-why__add-child-btn" type="button" :data-parent="n3.id" data-help-key=""
                                 x-command="addChild" :data-arg-parent-id="n3.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n3)"></span></button>
                       </div>
                     </div>
                   </template>
-                  <button class="five-why__add-child-btn" type="button" :data-parent="n2.id" data-help-key=""
+                  <button class="btn btn--secondary btn--sm five-why__add-child-btn" type="button" :data-parent="n2.id" data-help-key=""
                           x-command="addChild" :data-arg-parent-id="n2.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n2)"></span></button>
                 </div>
               </div>
             </template>
-            <button class="five-why__add-child-btn" type="button" :data-parent="n1.id" data-help-key=""
+            <button class="btn btn--secondary btn--sm five-why__add-child-btn" type="button" :data-parent="n1.id" data-help-key=""
                     x-command="addChild" :data-arg-parent-id="n1.id"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n1)"></span></button>
           </div>
         </div>
@@ -167,7 +167,7 @@
     </div>
 
     <!-- Add root button -->
-    <button class="five-why__add-root-btn" type="button"
+    <button class="btn btn--primary five-why__add-root-btn" type="button"
             data-help-key="modules.five-why.actions.addRoot.help"
             data-ref="addRoot" x-command="addRoot">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>

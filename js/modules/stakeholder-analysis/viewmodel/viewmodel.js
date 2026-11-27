@@ -129,9 +129,9 @@ export default createModule({
       /** @param {string} q @returns {Entry[]} die Beteiligten eines Quadranten */
       chipsFor(q) { return this.model.stakeholders.filter((s) => quadrantOf(s) === q); },
       /** @param {Entry} sh @returns {string} Klasse des Chips, hervorgehoben für Schlüssel-Kritiker */
-      chipClass(sh) { return isKeyCritic(sh) ? 'sha__chip sha__chip--alert' : 'sha__chip'; },
+      chipClass(sh) { return isKeyCritic(sh) ? 'chip sha__chip sha__chip--alert' : 'chip sha__chip'; },
       /** @param {string} s Haltung @returns {string} Klasse des Haltungspunkts */
-      chipDotClass(s) { return `sha__chip-dot sha__chip-dot--${toneOf(s)}`; },
+      chipDotClass(s) { return `chip__dot sha__chip-dot sha__chip-dot--${toneOf(s)}`; },
       /** Die Kritiker im Quadranten „eng managen“. */
       get keyCritics() { return criticalCritics(this.model.stakeholders); },
       /** Gibt es Schlüssel-Kritiker? */

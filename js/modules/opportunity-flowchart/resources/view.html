@@ -40,9 +40,9 @@
                   <span class="fc-connector__arrow">&raquo;</span>
                   <template x-if="isInsertOpen(i)">
                     <div class="of__insert-menu">
-                      <button type="button" x-command="addStep" :data-arg-index="i" data-arg-side="va"
+                      <button type="button" class="btn btn--ghost" x-command="addStep" :data-arg-index="i" data-arg-side="va"
                               @click.stop="closeInsertMenu()" x-text="t('insertVA')"></button>
-                      <button type="button" x-command="addStep" :data-arg-index="i" data-arg-side="nva" data-help-key=""
+                      <button type="button" class="btn btn--ghost" x-command="addStep" :data-arg-index="i" data-arg-side="nva" data-help-key=""
                               @click.stop="closeInsertMenu()" x-text="t('insertNVA')"></button>
                     </div>
                   </template>

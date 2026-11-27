@@ -309,12 +309,12 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__col--del"><button type="button" class="fmea__action-del-btn" data-action="del-action" :data-risk-id="risk.id" :data-action-idx="ai" :title="t('common.delete')" :aria-label="t('common.delete')" data-help-key="" x-command="removeRiskAction" :data-arg-risk-id="risk.id" :data-arg-action-id="act.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button></td>
+                      <td class="fmea__col--del"><button type="button" class="btn btn--icon-sm btn--danger fmea__action-del-btn" data-action="del-action" :data-risk-id="risk.id" :data-action-idx="ai" :title="t('common.delete')" :aria-label="t('common.delete')" data-help-key="" x-command="removeRiskAction" :data-arg-risk-id="risk.id" :data-arg-action-id="act.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button></td>
                     </tr>
                   </template>
                 </tbody>
               </table>
-              <button type="button" class="fmea__add-action-btn" data-help-key="modules.fmea.actions.addRiskAction.help" data-action="add-action" :data-risk-id="risk.id" x-command="addRiskAction" :data-arg-risk-id="risk.id">
+              <button type="button" class="btn btn--secondary btn--sm fmea__add-action-btn" data-help-key="modules.fmea.actions.addRiskAction.help" data-action="add-action" :data-risk-id="risk.id" x-command="addRiskAction" :data-arg-risk-id="risk.id">
                 <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addAction')"></span>
               </button>

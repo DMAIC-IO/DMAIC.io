@@ -143,7 +143,7 @@
 }
 
 /* Segmented control — group of .btn--segment children forming a tab-like switch.
-   One child carries .btn--active to indicate the selection. */
+   One child carries .btn--active (or aria-checked/aria-pressed="true") to indicate the selection. */
 .btn-group {
   display: flex;
   gap: var(--spacing-2xs);
@@ -170,7 +170,9 @@
   color: var(--color-text-primary);
 }
 
-.btn--segment.btn--active {
+.btn--segment.btn--active,
+.btn--segment[aria-checked="true"],
+.btn--segment[aria-pressed="true"] {
   background: var(--color-bg-primary);
   color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
@@ -212,8 +214,13 @@
   box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
+/* Aktiv per Klasse oder per ARIA-Zustand (Filter: aria-pressed, Gruppe: role="radio"). */
 .chip--active,
-.chip--active:hover:where(:not(:disabled, .chip--disabled)) {
+.chip[aria-pressed="true"],
+.chip[aria-checked="true"],
+.chip--active:hover:where(:not(:disabled, .chip--disabled)),
+.chip[aria-pressed="true"]:hover:where(:not(:disabled, .chip--disabled)),
+.chip[aria-checked="true"]:hover:where(:not(:disabled, .chip--disabled)) {
   background: var(--color-accent-light);
   border-color: var(--color-accent);
   color: var(--chip-active-text);

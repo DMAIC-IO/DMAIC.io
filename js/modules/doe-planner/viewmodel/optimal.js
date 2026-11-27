@@ -141,7 +141,7 @@ export const optimalView = (ctx) => ({
 
   /** @param {TermGroup} g @param {string} id @returns {string} */
   termChipClass(g, id) {
-    const on = this.termActive(id) ? ' doe__term-chip--on' : '';
+    const on = this.termActive(id) ? ' chip--active' : '';
     const locked = g.kind === 'main' ? ' doe__term-chip--locked' : '';
     return `doe__term-chip${on}${locked}`;
   },
