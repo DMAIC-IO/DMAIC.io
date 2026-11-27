@@ -1,0 +1,1465 @@
+{
+  "1e9f66c8-6e81-47f1-876b-8796bbf550a5": {
+    "colRefs": [
+      {
+        "instanceId": "47b47da9-f80e-46cb-a277-184a2be85a29",
+        "sheetId": "sheet-pizza",
+        "columnId": "c-entfernung"
+      },
+      {
+        "instanceId": "47b47da9-f80e-46cb-a277-184a2be85a29",
+        "sheetId": "sheet-pizza",
+        "columnId": "c-verkehr"
+      }
+    ],
+    "yKey": "47b47da9-f80e-46cb-a277-184a2be85a29|sheet-pizza|c-lieferzeit",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 2,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [
+      "Entfernung·Verkehr"
+    ],
+    "terms": [
+      "Entfernung",
+      "Verkehr",
+      "Entfernung²",
+      "Verkehr²",
+      "Entfernung·Verkehr"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = 6.1534 + 1.7910·Entfernung + 1.2191·Verkehr + 0.0739·Entfernung² + 0.0238·Verkehr²",
+      "n": 30,
+      "R2": 0.9234083447117413,
+      "adjR2": 0.9111536798656199,
+      "R2pred": 0.8800336222221807,
+      "Se": 2.5624333485856816,
+      "Fstat": 75.35157887275884,
+      "fPVal": 1.4146725142722096e-13,
+      "dw": 1.4343783367911151,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 6.1533926102019905,
+          "se": 3.3304481254799376,
+          "t": 1.8476170107934797,
+          "pval": 0.07652429808843414,
+          "ciLow": -0.7057937021688856,
+          "ciHigh": 13.012578922572867,
+          "vif": null
+        },
+        {
+          "term": "Entfernung",
+          "coeff": 1.7909989601412093,
+          "se": 0.7454103478029114,
+          "t": 2.402702035758101,
+          "pval": 0.02402257314266996,
+          "ciLow": 0.25579761121987055,
+          "ciHigh": 3.326200309062548,
+          "vif": 1.0314638050179121
+        },
+        {
+          "term": "Verkehr",
+          "coeff": 1.2190552042864056,
+          "se": 2.1449823008349367,
+          "t": 0.5683287940473387,
+          "pval": 0.5748816469620366,
+          "ciLow": -3.1986185392566133,
+          "ciHigh": 5.6367289478294245,
+          "vif": 1.031463805017912
+        },
+        {
+          "term": "Entfernung²",
+          "coeff": 0.07390366673674797,
+          "se": 0.05512988108404132,
+          "t": 1.340537387049456,
+          "pval": 0.19212624791704547,
+          "ciLow": -0.03963844876453977,
+          "ciHigh": 0.1874457822380357,
+          "vif": null
+        },
+        {
+          "term": "Verkehr²",
+          "coeff": 0.02377081414650206,
+          "se": 0.3286575850068009,
+          "t": 0.07232699085892136,
+          "pval": 0.9429172293373439,
+          "ciLow": -0.6531121528297978,
+          "ciHigh": 0.700653781122802,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [
+        "Entfernung·Verkehr"
+      ],
+      "anova": {
+        "regression": {
+          "ss": 1979.0533582380658,
+          "df": 4,
+          "ms": 494.76333955951645,
+          "f": 75.35157887275884,
+          "p": 1.4146725142722096e-13
+        },
+        "terms": [
+          {
+            "term": "Entfernung",
+            "ss": 37.905740773941055,
+            "df": 1,
+            "ms": 37.905740773941055,
+            "f": 5.772977072636124,
+            "p": 0.02402257314266996
+          },
+          {
+            "term": "Verkehr",
+            "ss": 2.12082324767482,
+            "df": 1,
+            "ms": 2.12082324767482,
+            "f": 0.32299761814330236,
+            "p": 0.5748816469620366
+          },
+          {
+            "term": "Entfernung²",
+            "ss": 11.799484038903586,
+            "df": 1,
+            "ms": 11.799484038903586,
+            "f": 1.7970404860773825,
+            "p": 0.19212624791704547
+          },
+          {
+            "term": "Verkehr²",
+            "ss": 0.03434835550170782,
+            "df": 1,
+            "ms": 0.03434835550170782,
+            "f": 0.0052311936067064935,
+            "p": 0.9429172293373439
+          }
+        ],
+        "error": {
+          "ss": 164.15161664860074,
+          "df": 25,
+          "ms": 6.56606466594403
+        },
+        "total": {
+          "ss": 2143.2049748866666,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Entfernung",
+        "label": "Entfernung",
+        "kind": "numeric"
+      },
+      {
+        "id": "Verkehr",
+        "label": "Verkehr",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": "e2fa7357-af8c-4092-9128-a5510acc08e4"
+  },
+  "d10fc479-6ba2-4f14-9d65-424142cd9b19": {
+    "colRefs": [
+      {
+        "instanceId": "dfb8c967-d435-4c9c-889e-cf11a0904c33",
+        "sheetId": "sheet-expo",
+        "columnId": "c-zeit"
+      }
+    ],
+    "yKey": "dfb8c967-d435-4c9c-889e-cf11a0904c33|sheet-expo|c-keime",
+    "regType": "exponential",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.9,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [
+      "dfb8c967-d435-4c9c-889e-cf11a0904c33|sheet-expo|c-zeit"
+    ],
+    "activeXKey": "dfb8c967-d435-4c9c-889e-cf11a0904c33|sheet-expo|c-zeit",
+    "activeParams": [
+      "regType",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "exponential",
+      "equation": "ŷ = 49.8552 · e^(0.2204·x)",
+      "n": 30,
+      "R2": 0.9891501749054699,
+      "adjR2": 0.9887626811520938,
+      "R2pred": null,
+      "Se": 39.09110235223117,
+      "Fstat": 2552.686762786259,
+      "fPVal": 4.705575951935108e-29,
+      "dw": 1.6372367345705894,
+      "coefficients": [
+        {
+          "term": "a",
+          "coeff": 49.85516072482048,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        },
+        {
+          "term": "b",
+          "coeff": 0.22044264053833937,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 3900797.1025261814,
+          "df": 1,
+          "ms": 3900797.1025261814,
+          "f": 2552.686762786259,
+          "p": 4.705575951935108e-29
+        },
+        "terms": [],
+        "error": {
+          "ss": 42787.199927153175,
+          "df": 28,
+          "ms": 1528.1142831126133
+        },
+        "total": {
+          "ss": 3943584.3024533344,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "single",
+        "label": "Zeit (h)",
+        "kind": "single"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": false,
+    "savedModelId": null
+  },
+  "4074bc8b-f117-45b0-9f19-5f5548131036": {
+    "colRefs": [
+      {
+        "instanceId": "40318e07-ec6e-4bab-b46a-0271ccb80555",
+        "sheetId": "sheet-doe",
+        "columnId": "c-temp"
+      },
+      {
+        "instanceId": "40318e07-ec6e-4bab-b46a-0271ccb80555",
+        "sheetId": "sheet-doe",
+        "columnId": "c-druck"
+      }
+    ],
+    "yKey": "40318e07-ec6e-4bab-b46a-0271ccb80555|sheet-doe|c-ausb",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 2,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [
+      "Temperatur (°C)²",
+      "Druck (bar)²"
+    ],
+    "terms": [
+      "Temperatur (°C)",
+      "Druck (bar)",
+      "Temperatur (°C)²",
+      "Druck (bar)²",
+      "Temperatur (°C)·Druck (bar)"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": {
+      "aliased": [],
+      "saturated": []
+    },
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = 58.1154 − 0.0419·Temperatur (°C) − 1.3414·Druck (bar) + 0.0112·Temperatur (°C)·Druck (bar)",
+      "n": 12,
+      "R2": 0.9478513040028717,
+      "adjR2": 0.9282955430039486,
+      "R2pred": 0.8826654340064681,
+      "Se": 1.140300154199177,
+      "Fstat": 48.46915975579097,
+      "fPVal": 1.7816261470437224e-05,
+      "dw": 1.900281360550953,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 58.115408333316736,
+          "se": 8.909070067076584,
+          "t": 6.523173338604877,
+          "pval": 0.00018357145644443178,
+          "ciLow": 37.57105591781448,
+          "ciHigh": 78.659760748819,
+          "vif": null
+        },
+        {
+          "term": "Temperatur (°C)",
+          "coeff": -0.04190249999996354,
+          "se": 0.052047343065129134,
+          "t": -0.8050843238535557,
+          "pval": 0.44403804646701084,
+          "ciLow": -0.16192388833454116,
+          "ciHigh": 0.07811888833461408,
+          "vif": 1
+        },
+        {
+          "term": "Druck (bar)",
+          "coeff": -1.3413916666668229,
+          "se": 0.5634590649198218,
+          "t": -2.380637299459719,
+          "pval": 0.04450138937148145,
+          "ciLow": -2.6407306003902042,
+          "ciHigh": -0.04205273294344147,
+          "vif": 1
+        },
+        {
+          "term": "Temperatur (°C)·Druck (bar)",
+          "coeff": 0.01123483333332942,
+          "se": 0.003291763004919549,
+          "t": 3.413014034284646,
+          "pval": 0.00918216998946234,
+          "ciLow": 0.003644014231872849,
+          "ciHigh": 0.01882565243478599,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [
+        "Temperatur (°C)²",
+        "Druck (bar)²"
+      ],
+      "anova": {
+        "regression": {
+          "ss": 189.07108299333342,
+          "df": 3,
+          "ms": 63.02369433111114,
+          "f": 48.46915975579097,
+          "p": 1.7816261470437224e-05
+        },
+        "terms": [
+          {
+            "term": "Temperatur (°C)",
+            "ss": 0.8427933629984223,
+            "df": 1,
+            "ms": 0.8427933629984223,
+            "f": 0.6481607685147369,
+            "p": 0.44403804646701084
+          },
+          {
+            "term": "Druck (bar)",
+            "ss": 7.369276191411433,
+            "df": 1,
+            "ms": 7.369276191411433,
+            "f": 5.667433951578863,
+            "p": 0.04450138937148148
+          },
+          {
+            "term": "Temperatur (°C)·Druck (bar)",
+            "ss": 15.14657760332079,
+            "df": 1,
+            "ms": 15.14657760332079,
+            "f": 11.648664798223955,
+            "p": 0.00918216998946234
+          }
+        ],
+        "error": {
+          "ss": 10.402275533333334,
+          "df": 8,
+          "ms": 1.3002844416666668
+        },
+        "total": {
+          "ss": 199.47335852666674,
+          "df": 11
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Temperatur (°C)",
+        "label": "Temperatur (°C)",
+        "kind": "numeric"
+      },
+      {
+        "id": "Druck (bar)",
+        "label": "Druck (bar)",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": null
+  },
+  "b7d4e2a0-4444-4c1d-9e2f-0a1b2c3d4e5f": {
+    "colRefs": [
+      {
+        "instanceId": "40318e07-ec6e-4bab-b46a-0271ccb80555",
+        "sheetId": "sheet-doe",
+        "columnId": "c-temp"
+      },
+      {
+        "instanceId": "40318e07-ec6e-4bab-b46a-0271ccb80555",
+        "sheetId": "sheet-doe",
+        "columnId": "c-druck"
+      }
+    ],
+    "yKey": null,
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": null,
+    "errorMsg": "",
+    "predictors": [],
+    "prediction": null,
+    "canSaveModel": false,
+    "savedModelId": null
+  },
+  "example:regression-pizza-delivery": {
+    "colRefs": [
+      {
+        "instanceId": "e9bd03d2-2f86-47f9-a425-29227a2ba423",
+        "sheetId": "sheet-pizza",
+        "columnId": "c-entfernung"
+      },
+      {
+        "instanceId": "e9bd03d2-2f86-47f9-a425-29227a2ba423",
+        "sheetId": "sheet-pizza",
+        "columnId": "c-verkehr"
+      }
+    ],
+    "yKey": "e9bd03d2-2f86-47f9-a425-29227a2ba423|sheet-pizza|c-lieferzeit",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [
+      "Entfernung",
+      "Verkehr"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = 3.5119 + 2.7489·Entfernung + 1.3424·Verkehr",
+      "n": 30,
+      "R2": 0.9178663831968785,
+      "adjR2": 0.9117824115818325,
+      "R2pred": 0.897815586273641,
+      "Se": 2.553350566651193,
+      "Fstat": 150.86631583338394,
+      "fPVal": 2.218363921743152e-15,
+      "dw": 1.3963265416165633,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 3.5118550968000193,
+          "se": 1.5079114087763097,
+          "t": 2.328953197356559,
+          "pval": 0.027591377639119712,
+          "ciLow": 0.4178764521240135,
+          "ciHigh": 6.605833741476025,
+          "vif": null
+        },
+        {
+          "term": "Entfernung",
+          "coeff": 2.7489278034515117,
+          "se": 0.17056896679749647,
+          "t": 16.116224745120864,
+          "pval": 2.2368525070598353e-15,
+          "ciLow": 2.398949192211896,
+          "ciHigh": 3.098906414691127,
+          "vif": 1.0314638050179121
+        },
+        {
+          "term": "Verkehr",
+          "coeff": 1.3423584236436525,
+          "se": 0.3763943322666768,
+          "t": 3.566361946950324,
+          "pval": 0.0013766786081391205,
+          "ciLow": 0.5700610464686661,
+          "ciHigh": 2.114655800818639,
+          "vif": 1.031463805017912
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 1967.1757987487815,
+          "df": 2,
+          "ms": 983.5878993743908,
+          "f": 150.86631583338394,
+          "p": 2.218363921743152e-15
+        },
+        "terms": [
+          {
+            "term": "Entfernung",
+            "ss": 1693.3530816026966,
+            "df": 1,
+            "ms": 1693.3530816026966,
+            "f": 259.732700035246,
+            "p": 2.2368525070598515e-15
+          },
+          {
+            "term": "Verkehr",
+            "ss": 82.92237392320946,
+            "df": 1,
+            "ms": 82.92237392320946,
+            "f": 12.718937536655304,
+            "p": 0.0013766786081391205
+          }
+        ],
+        "error": {
+          "ss": 176.02917613788514,
+          "df": 27,
+          "ms": 6.519599116217968
+        },
+        "total": {
+          "ss": 2143.2049748866666,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Entfernung",
+        "label": "Entfernung",
+        "kind": "numeric"
+      },
+      {
+        "id": "Verkehr",
+        "label": "Verkehr",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": null
+  },
+  "example:regression-collinear": {
+    "colRefs": [
+      {
+        "instanceId": "c156e407-ea9b-4b28-8208-0342bea794cc",
+        "sheetId": "sheet-collinear",
+        "columnId": "c-rpm"
+      },
+      {
+        "instanceId": "c156e407-ea9b-4b28-8208-0342bea794cc",
+        "sheetId": "sheet-collinear",
+        "columnId": "c-torque"
+      }
+    ],
+    "yKey": "c156e407-ea9b-4b28-8208-0342bea794cc|sheet-collinear|c-power",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [
+      "Drehzahl",
+      "Drehmoment"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = -0.3816 − 0.0100·Drehzahl + 0.8038·Drehmoment",
+      "n": 30,
+      "R2": 0.9889466013076722,
+      "adjR2": 0.9881278310341663,
+      "R2pred": 0.9866053676688276,
+      "Se": 1.3245205628181456,
+      "Fstat": 1207.8438034557062,
+      "fPVal": 3.865394057479225e-27,
+      "dw": 2.222943695838282,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": -0.38160983672059956,
+          "se": 0.8670742052738659,
+          "t": -0.4401120854472517,
+          "pval": 0.6633591264290781,
+          "ciLow": -2.1606991511544065,
+          "ciHigh": 1.3974794777132071,
+          "vif": null
+        },
+        {
+          "term": "Drehzahl",
+          "coeff": -0.010006011635169898,
+          "se": 0.004873562989645457,
+          "t": -2.0531204082986148,
+          "pval": 0.04986605215461685,
+          "ciLow": -0.020005736901313326,
+          "ciHigh": -6.286369026470284e-06,
+          "vif": 119.82735225262215
+        },
+        {
+          "term": "Drehmoment",
+          "coeff": 0.8037603995139762,
+          "se": 0.12307650122012723,
+          "t": 6.530575630163703,
+          "pval": 5.294290774476178e-07,
+          "ciLow": 0.5512282784488964,
+          "ciHigh": 1.0562925205790559,
+          "vif": 119.82735225262215
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 4237.972958438809,
+          "df": 2,
+          "ms": 2118.9864792194044,
+          "f": 1207.8438034557062,
+          "p": 3.865394057479225e-27
+        },
+        "terms": [
+          {
+            "term": "Drehzahl",
+            "ss": 7.395137440869634,
+            "df": 1,
+            "ms": 7.395137440869634,
+            "f": 4.21530341097227,
+            "p": 0.04986605215461698
+          },
+          {
+            "term": "Drehmoment",
+            "ss": 74.8204535829952,
+            "df": 1,
+            "ms": 74.8204535829952,
+            "f": 42.648418061288055,
+            "p": 5.294290774476178e-07
+          }
+        ],
+        "error": {
+          "ss": 47.367577475858624,
+          "df": 27,
+          "ms": 1.7543547213280972
+        },
+        "total": {
+          "ss": 4285.340535914667,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Drehzahl",
+        "label": "Drehzahl",
+        "kind": "numeric"
+      },
+      {
+        "id": "Drehmoment",
+        "label": "Drehmoment",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": null
+  },
+  "example:regression-outliers": {
+    "colRefs": [
+      {
+        "instanceId": "2a528466-4f21-4823-af38-a2f7db576c1a",
+        "sheetId": "sheet-outliers",
+        "columnId": "c-speed"
+      }
+    ],
+    "yKey": "2a528466-4f21-4823-af38-a2f7db576c1a|sheet-outliers|c-consum",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [
+      "Geschwindigkeit"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = 5.2694 + 0.0494·Geschwindigkeit",
+      "n": 30,
+      "R2": 0.2629256453118538,
+      "adjR2": 0.23660156121584863,
+      "R2pred": 0.207280767194433,
+      "Se": 2.2960163766675095,
+      "Fstat": 9.98802633941417,
+      "fPVal": 0.0037634052752295484,
+      "dw": 2.0477417224884533,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 5.269442047267461,
+          "se": 1.5033186292935492,
+          "t": 3.5052063778014357,
+          "pval": 0.0015552672194030803,
+          "ciLow": 2.1900334306287124,
+          "ciHigh": 8.348850663906209,
+          "vif": null
+        },
+        {
+          "term": "Geschwindigkeit",
+          "coeff": 0.04935951080696577,
+          "se": 0.015618200986674996,
+          "t": 3.160383891145843,
+          "pval": 0.003763405275229591,
+          "ciLow": 0.017367076363867126,
+          "ciHigh": 0.08135194525006441,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 52.65379057808883,
+          "df": 1,
+          "ms": 52.65379057808883,
+          "f": 9.98802633941417,
+          "p": 0.0037634052752295484
+        },
+        "terms": [
+          {
+            "term": "Geschwindigkeit",
+            "ss": 52.65379057808868,
+            "df": 1,
+            "ms": 52.65379057808868,
+            "f": 9.98802633941414,
+            "p": 0.003763405275229591
+          }
+        ],
+        "error": {
+          "ss": 147.6073536539112,
+          "df": 28,
+          "ms": 5.2716912019254
+        },
+        "total": {
+          "ss": 200.26114423200002,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Geschwindigkeit",
+        "label": "Geschwindigkeit",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": null
+  },
+  "example:regression-exponential": {
+    "colRefs": [
+      {
+        "instanceId": "dec9d023-6821-426e-b048-7f1eea903bf5",
+        "sheetId": "sheet-expo",
+        "columnId": "c-zeit"
+      }
+    ],
+    "yKey": "dec9d023-6821-426e-b048-7f1eea903bf5|sheet-expo|c-keime",
+    "regType": "exponential",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [
+      "dec9d023-6821-426e-b048-7f1eea903bf5|sheet-expo|c-zeit"
+    ],
+    "activeXKey": "dec9d023-6821-426e-b048-7f1eea903bf5|sheet-expo|c-zeit",
+    "activeParams": [
+      "regType",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "exponential",
+      "equation": "ŷ = 49.8552 · e^(0.2204·x)",
+      "n": 30,
+      "R2": 0.9891501749054699,
+      "adjR2": 0.9887626811520938,
+      "R2pred": null,
+      "Se": 39.09110235223117,
+      "Fstat": 2552.686762786259,
+      "fPVal": 4.705575951935108e-29,
+      "dw": 1.6372367345705894,
+      "coefficients": [
+        {
+          "term": "a",
+          "coeff": 49.85516072482048,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        },
+        {
+          "term": "b",
+          "coeff": 0.22044264053833937,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 3900797.1025261814,
+          "df": 1,
+          "ms": 3900797.1025261814,
+          "f": 2552.686762786259,
+          "p": 4.705575951935108e-29
+        },
+        "terms": [],
+        "error": {
+          "ss": 42787.199927153175,
+          "df": 28,
+          "ms": 1528.1142831126133
+        },
+        "total": {
+          "ss": 3943584.3024533344,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "single",
+        "label": "Zeit (h)",
+        "kind": "single"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": false,
+    "savedModelId": null
+  },
+  "example:regression-logarithmic": {
+    "colRefs": [
+      {
+        "instanceId": "44d81aa0-81ea-4ccf-9ea6-140762838f6f",
+        "sheetId": "sheet-log",
+        "columnId": "c-wdh"
+      }
+    ],
+    "yKey": "44d81aa0-81ea-4ccf-9ea6-140762838f6f|sheet-log|c-leist",
+    "regType": "logarithmic",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [
+      "44d81aa0-81ea-4ccf-9ea6-140762838f6f|sheet-log|c-wdh"
+    ],
+    "activeXKey": "44d81aa0-81ea-4ccf-9ea6-140762838f6f|sheet-log|c-wdh",
+    "activeParams": [
+      "regType",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "logarithmic",
+      "equation": "ŷ = 11.7222 + 9.1367·ln(x)",
+      "n": 30,
+      "R2": 0.9909937970670472,
+      "adjR2": 0.9906721469622989,
+      "R2pred": null,
+      "Se": 0.7538559597227149,
+      "Fstat": 3080.9683641871543,
+      "fPVal": 3.466582176017478e-30,
+      "dw": 1.586101835645394,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 11.722166002052855,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        },
+        {
+          "term": "ln(x)",
+          "coeff": 9.136741681805114,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 1750.9106488824018,
+          "df": 1,
+          "ms": 1750.9106488824018,
+          "f": 3080.9683641871543,
+          "p": 3.466582176017478e-30
+        },
+        "terms": [],
+        "error": {
+          "ss": 15.912366624264756,
+          "df": 28,
+          "ms": 0.5682988080094555
+        },
+        "total": {
+          "ss": 1766.8230155066665,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "single",
+        "label": "Wiederholungen",
+        "kind": "single"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": false,
+    "savedModelId": null
+  },
+  "example:regression-power": {
+    "colRefs": [
+      {
+        "instanceId": "8592bc85-d0a9-44ad-bdb6-d7a0d4ab4fbc",
+        "sheetId": "sheet-pow",
+        "columnId": "c-flow"
+      }
+    ],
+    "yKey": "8592bc85-d0a9-44ad-bdb6-d7a0d4ab4fbc|sheet-pow|c-dp",
+    "regType": "power",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 1,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [],
+    "terms": [],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": null,
+    "perXKeys": [
+      "8592bc85-d0a9-44ad-bdb6-d7a0d4ab4fbc|sheet-pow|c-flow"
+    ],
+    "activeXKey": "8592bc85-d0a9-44ad-bdb6-d7a0d4ab4fbc|sheet-pow|c-flow",
+    "activeParams": [
+      "regType",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "power",
+      "equation": "ŷ = 2.3706 · x^1.8139",
+      "n": 30,
+      "R2": 0.9909929434740693,
+      "adjR2": 0.9906712628838575,
+      "R2pred": null,
+      "Se": 1.2229725127057232,
+      "Fstat": 3080.6737292466214,
+      "fPVal": 3.471186202098515e-30,
+      "dw": 2.0358379768875383,
+      "coefficients": [
+        {
+          "term": "a",
+          "coeff": 2.3705967094206186,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        },
+        {
+          "term": "b",
+          "coeff": 1.813941256882536,
+          "se": null,
+          "t": null,
+          "pval": null,
+          "ciLow": null,
+          "ciHigh": null,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [],
+      "anova": {
+        "regression": {
+          "ss": 4607.645912923321,
+          "df": 1,
+          "ms": 4607.645912923321,
+          "f": 3080.6737292466214,
+          "p": 3.471186202098515e-30
+        },
+        "terms": [],
+        "error": {
+          "ss": 41.87852947134501,
+          "df": 28,
+          "ms": 1.4956617668337504
+        },
+        "total": {
+          "ss": 4649.524442394666,
+          "df": 29
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "single",
+        "label": "Durchfluss (m/s)",
+        "kind": "single"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": false,
+    "savedModelId": null
+  },
+  "example:regression-doe-preset": {
+    "colRefs": [
+      {
+        "instanceId": "618ed2b4-fbd1-4e54-adb0-c06d458da6ae",
+        "sheetId": "sheet-doe",
+        "columnId": "c-temp"
+      },
+      {
+        "instanceId": "618ed2b4-fbd1-4e54-adb0-c06d458da6ae",
+        "sheetId": "sheet-doe",
+        "columnId": "c-druck"
+      }
+    ],
+    "yKey": "618ed2b4-fbd1-4e54-adb0-c06d458da6ae|sheet-doe|c-ausb",
+    "regType": "polynomial",
+    "regTypes": [
+      "polynomial",
+      "exponential",
+      "logarithmic",
+      "power"
+    ],
+    "polyDegree": 2,
+    "activeDegrees": [
+      1,
+      2,
+      3
+    ],
+    "confLevel": 0.95,
+    "alpha": 0.05,
+    "excludedTerms": [
+      "Temperatur (°C)²",
+      "Druck (bar)²"
+    ],
+    "terms": [
+      "Temperatur (°C)",
+      "Druck (bar)",
+      "Temperatur (°C)²",
+      "Druck (bar)²",
+      "Temperatur (°C)·Druck (bar)"
+    ],
+    "experimentImports": [],
+    "activeImportSource": null,
+    "designNotice": {
+      "aliased": [],
+      "saturated": []
+    },
+    "perXKeys": [],
+    "activeXKey": null,
+    "activeParams": [
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha"
+    ],
+    "activeColumnSlots": [
+      "y"
+    ],
+    "activeMultiSlots": [
+      "x"
+    ],
+    "result": {
+      "type": "polynomial",
+      "equation": "ŷ = 58.1154 − 0.0419·Temperatur (°C) − 1.3414·Druck (bar) + 0.0112·Temperatur (°C)·Druck (bar)",
+      "n": 12,
+      "R2": 0.9478513040028717,
+      "adjR2": 0.9282955430039486,
+      "R2pred": 0.8826654340064681,
+      "Se": 1.140300154199177,
+      "Fstat": 48.46915975579097,
+      "fPVal": 1.7816261470437224e-05,
+      "dw": 1.900281360550953,
+      "coefficients": [
+        {
+          "term": "Intercept",
+          "coeff": 58.115408333316736,
+          "se": 8.909070067076584,
+          "t": 6.523173338604877,
+          "pval": 0.00018357145644443178,
+          "ciLow": 37.57105591781448,
+          "ciHigh": 78.659760748819,
+          "vif": null
+        },
+        {
+          "term": "Temperatur (°C)",
+          "coeff": -0.04190249999996354,
+          "se": 0.052047343065129134,
+          "t": -0.8050843238535557,
+          "pval": 0.44403804646701084,
+          "ciLow": -0.16192388833454116,
+          "ciHigh": 0.07811888833461408,
+          "vif": 1
+        },
+        {
+          "term": "Druck (bar)",
+          "coeff": -1.3413916666668229,
+          "se": 0.5634590649198218,
+          "t": -2.380637299459719,
+          "pval": 0.04450138937148145,
+          "ciLow": -2.6407306003902042,
+          "ciHigh": -0.04205273294344147,
+          "vif": 1
+        },
+        {
+          "term": "Temperatur (°C)·Druck (bar)",
+          "coeff": 0.01123483333332942,
+          "se": 0.003291763004919549,
+          "t": 3.413014034284646,
+          "pval": 0.00918216998946234,
+          "ciLow": 0.003644014231872849,
+          "ciHigh": 0.01882565243478599,
+          "vif": null
+        }
+      ],
+      "excludedTerms": [
+        "Temperatur (°C)²",
+        "Druck (bar)²"
+      ],
+      "anova": {
+        "regression": {
+          "ss": 189.07108299333342,
+          "df": 3,
+          "ms": 63.02369433111114,
+          "f": 48.46915975579097,
+          "p": 1.7816261470437224e-05
+        },
+        "terms": [
+          {
+            "term": "Temperatur (°C)",
+            "ss": 0.8427933629984223,
+            "df": 1,
+            "ms": 0.8427933629984223,
+            "f": 0.6481607685147369,
+            "p": 0.44403804646701084
+          },
+          {
+            "term": "Druck (bar)",
+            "ss": 7.369276191411433,
+            "df": 1,
+            "ms": 7.369276191411433,
+            "f": 5.667433951578863,
+            "p": 0.04450138937148148
+          },
+          {
+            "term": "Temperatur (°C)·Druck (bar)",
+            "ss": 15.14657760332079,
+            "df": 1,
+            "ms": 15.14657760332079,
+            "f": 11.648664798223955,
+            "p": 0.00918216998946234
+          }
+        ],
+        "error": {
+          "ss": 10.402275533333334,
+          "df": 8,
+          "ms": 1.3002844416666668
+        },
+        "total": {
+          "ss": 199.47335852666674,
+          "df": 11
+        }
+      }
+    },
+    "errorMsg": "",
+    "predictors": [
+      {
+        "id": "Temperatur (°C)",
+        "label": "Temperatur (°C)",
+        "kind": "numeric"
+      },
+      {
+        "id": "Druck (bar)",
+        "label": "Druck (bar)",
+        "kind": "numeric"
+      }
+    ],
+    "prediction": null,
+    "canSaveModel": true,
+    "savedModelId": null
+  }
+}

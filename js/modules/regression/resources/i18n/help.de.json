@@ -1,0 +1,108 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die {{term:regression|Regression}} beschreibt den Zusammenhang zwischen einer abhängigen Variable (Y, {{term:zielgroesse|Zielgröße}}) und einer oder mehreren unabhängigen Variablen (X, Einflussgrößen) durch ein mathematisches Modell. Während die {{term:korrelation|Korrelation}} nur fragt „bewegen sie sich gemeinsam?\", liefert die Regression eine Gleichung, mit der Y vorhergesagt oder verstanden werden kann."
+        },
+        {
+          "type": "definition",
+          "term": "Einfache lineare Regression",
+          "content": "{{term:lineare-regression|Einfache lineare Regression}} — eine X-Variable, ein Y. Modell: Y = β₀ + β₁·X + ε. β₀ ist der Achsenabschnitt, β₁ die Steigung, ε der Restfehler. Der häufigste Einstieg."
+        },
+        {
+          "type": "definition",
+          "term": "Multiple Regression",
+          "content": "Bei der multiplen {{term:lineare-regression|linearen Regression}} kommen mehrere X-Variablen hinzu: Y = β₀ + β₁·X₁ + β₂·X₂ + … + ε. Erlaubt es, den Effekt jeder Variable bei Konstanthalten der anderen zu schätzen."
+        },
+        {
+          "type": "definition",
+          "term": "R² (Bestimmtheitsmaß)",
+          "content": "{{term:r-quadrat|R²}} ist der Anteil der Streuung in Y, der durch das Modell erklärt wird. 0 = Modell erklärt nichts, 1 = perfekte Erklärung. R² = 0,85 heißt: 85 % der Y-Variation lässt sich auf die X erklären."
+        },
+        {
+          "type": "definition",
+          "term": "Adjustiertes R²",
+          "content": "{{term:adjustiertes-r-quadrat|Adjustiertes R²}} korrigiert R² für die Anzahl der Variablen. Wichtig bei multipler Regression: zusätzliche X erhöhen R² immer, das adjustierte R² nur, wenn sie wirklich beitragen."
+        },
+        {
+          "type": "definition",
+          "term": "p-Wert pro Koeffizient",
+          "content": "Testet, ob ein Koeffizient signifikant von 0 verschieden ist. p < 0,05 → die Variable trägt nachweisbar zum Modell bei."
+        },
+        {
+          "type": "definition",
+          "term": "Residuen",
+          "content": "{{term:residuen|Residuen}} sind die Differenz zwischen tatsächlichem Y und vorhergesagtem Y. Eine gute Regression hat zufällig verteilte Residuen ohne Muster — Muster deuten auf nicht erfasste Effekte hin."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Vor der Regression Streudiagramme erstellen — passen die Daten zu einem linearen Modell?",
+            "Modell anpassen (Y und X auswählen, Software laufen lassen).",
+            "R² und p-Werte prüfen — ist das Modell überhaupt sinnvoll?",
+            "Residuen prüfen: zufällige Streuung um null, keine Muster, keine Trichter.",
+            "Modell auf neue Daten anwenden — sagt es wirklich vorher, was es soll?",
+            "Bei multipler Regression auf {{term:multikollinearitaet|Multikollinearität}} prüfen (VIF) und überflüssige X entfernen."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein hoher R²-Wert ist nicht automatisch ein gutes Modell. Wichtiger sind: passen die Vorhersagen für Werte außerhalb der Trainingsdaten, sind die Residuen unauffällig, und macht das Modell inhaltlich Sinn? Ein Modell mit R² = 0,99 und systematischen Residuen ist wertloser als eines mit R² = 0,7 und sauberen Residuen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Vorhersagen außerhalb des beobachteten X-Bereichs (Extrapolation) sind riskant. Das Modell „weiß\" nichts über das, was es nicht gesehen hat — die lineare Beziehung könnte dort längst zu Ende sein."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Lineares Modell für nichtlineare Daten",
+          "content": "Ein gekrümmter Zusammenhang wird durch eine Gerade nur grob beschrieben. Die Residuen zeigen eine deutliche Krümmung — das ist das Signal, ein nichtlineares oder transformiertes Modell zu probieren."
+        },
+        {
+          "type": "definition",
+          "term": "Multikollinearität",
+          "content": "Bei {{term:multikollinearitaet|Multikollinearität}} sind zwei X stark korreliert und das Modell kann ihre Einzelbeiträge nicht trennen — die Koeffizienten werden instabil und schwer interpretierbar. VIF-Werte > 5 sind ein Warnsignal."
+        },
+        {
+          "type": "definition",
+          "term": "Overfitting",
+          "content": "{{term:overfitting|Overfitting}} — ein Modell mit zu vielen X für zu wenige Beobachtungen passt sich an Zufallsrauschen an. R² wirkt großartig, neue Daten enttäuschen. Faustregel: mindestens 10 Beobachtungen pro Koeffizient."
+        },
+        {
+          "type": "definition",
+          "term": "Heteroskedastizität ignoriert",
+          "content": "Bei {{term:heteroskedastizitaet|Heteroskedastizität}} wächst die Streuung der Residuen mit X (Trichter), die Standardfehler sind verzerrt — p-Werte und Konfidenzintervalle stimmen nicht mehr. Transformation oder gewichtete Regression hilft."
+        },
+        {
+          "type": "definition",
+          "term": "Extrapolation",
+          "content": "Das Modell für Werte außerhalb des Trainingsbereichs einsetzen — riskant, weil dort nichts geprüft wurde. Vorhersagen nur im Bereich der beobachteten X als belastbar betrachten."
+        },
+        {
+          "type": "definition",
+          "term": "Kausale Sprache bei beobachteten Daten",
+          "content": "Eine Regression auf Beobachtungsdaten beschreibt Zusammenhänge, beweist aber keine Ursache. Kausale Aussagen brauchen ein Experiment ({{term:doe|DoE}}) oder sehr starke Argumente."
+        }
+      ]
+    }
+  }
+}

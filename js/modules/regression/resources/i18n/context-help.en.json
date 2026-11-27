@@ -1,0 +1,226 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "colRefs": {
+      "help": "The predictors X in the order chosen, label X variables. Columns of type number, currency, percent, date or time with at least one value can be chosen; date counts in milliseconds, time in seconds, categorical factor columns of the DoE planner with their levels. One X gives a single regression, several X a combined model. If the response is among the X, it is cleared. If a chosen column is deleted, it stays chosen and nothing is fitted."
+    },
+    "yRef": {
+      "help": "The response Y, label Y variable; the same column types as for X, without the columns chosen as X. Without a response there is no result."
+    },
+    "regType": {
+      "help": "The model form: polynomial (main effects, from degree 2 also squares and interactions, with one or several X), exponential (y = a · eᵇˣ), logarithmic (y = a + b·ln(x)) or power (y = a · xᵇ). The last three fit a separate single model per X and use only suitable rows: exponential y > 0, logarithmic x > 0, power x > 0 and y > 0. A change fits again."
+    },
+    "polyDegree": {
+      "help": "The polynomial degree, 1, 2 or 3, default 1: degree 1 takes only the main effects, degree 2 adds squares and interactions, degree 3 adds cubic terms and higher interactions. A degree can only be chosen when there are more paired rows than terms; otherwise it is locked and the hint below the selection gives the number needed. Only used with the polynomial regression type."
+    },
+    "confLevel": {
+      "help": "The confidence level as a fraction between 0 and 1, so 0.95 instead of 95; the input field shows it in percent. It sets the confidence limits of the coefficients, the confidence and prediction bands in the chart and the prediction interval. The default is the project confidence level; it is independent of the significance level, the two are set separately."
+    },
+    "alpha": {
+      "help": "The significance level α as a fraction between 0 and 1, so 0.05 instead of 5; the input field shows it in percent. It changes no number, only the colouring: rows of the ANOVA and coefficient tables with p < α count as significant, the p-value (F) tile is green below α and yellow below 2α. The default is 1 − the project confidence level; after that it is independent of the confidence level, the two are set separately."
+    },
+    "excludedTerms": {
+      "help": "The terms taken out of the polynomial (check boxes in the coefficient table), as term name without level. A term the model does not know stays and has no effect."
+    },
+    "designNotice": {
+      "help": "The notice from taking over an experiment: aliased terms and terms excluded for saturation, plus the state of the takeover. It only holds while X, Y and degree match it; including or excluding a term drops it. Empty without a takeover."
+    },
+    "activeImportSource": {
+      "help": "The response of the DoE plan the inputs came from: planner instance, response column and variant (raw value, mean or ln variance); empty without a takeover. When the planner or its experiment no longer exists, the entry stays and the module shows “no longer available”."
+    },
+    "savedModelId": {
+      "help": "The id of the polynomial saved as a model; “Update model” keeps it. Empty while no model is saved."
+    },
+    "savedModelName": {
+      "help": "The name of the saved model as response optimization shows it; default “<response> — Model”."
+    },
+    "modelRecord": {
+      "help": "The snapshot of the saved model: coefficients, error variance, factor ranges, model specification and the training data. It stays when the data change afterwards, until the model is saved again."
+    },
+    "activeTab": {
+      "help": "The chart tab shown. If the result lacks it (main effects and interactions exist only with several X), the first one applies."
+    },
+    "activeXKey": {
+      "help": "With single models for several X the model shown (buttons above the figures); if the result lacks it, the first one applies."
+    },
+    "coefSortByP": {
+      "help": "The coefficient table is sorted by p-value, highest first; otherwise in term order."
+    },
+    "showCI": {
+      "help": "The confidence band in the regression chart of a polynomial with one X."
+    },
+    "showPI": {
+      "help": "The prediction band in the regression chart of a polynomial with one X."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example sheet this module was loaded from; empty when it does not come from an example."
+    },
+    "scatterEdits": {
+      "help": "The settings from the chart editor of the regression chart (title, axis titles, font sizes, background, series); empty while nothing is changed."
+    },
+    "residualsEdits": {
+      "help": "The settings from the chart editor of the residuals versus fitted values chart; empty while nothing is changed."
+    },
+    "orderEdits": {
+      "help": "The settings from the chart editor of the residuals versus order chart; empty while nothing is changed."
+    },
+    "qqEdits": {
+      "help": "The settings from the chart editor of the Q-Q plot; empty while nothing is changed."
+    },
+    "histogramEdits": {
+      "help": "The settings from the chart editor of the residual histogram; empty while nothing is changed."
+    },
+    "pieEdits": {
+      "help": "The settings from the chart editor of the sum-of-squares pie chart; empty while nothing is changed."
+    },
+    "barEdits": {
+      "help": "The settings from the chart editor of the sum-of-squares bar chart; empty while nothing is changed."
+    },
+    "mainEffectsEdits": {
+      "help": "The settings from the chart editor per main effects chart, per chart in display order; empty while nothing is changed."
+    },
+    "interactionEdits": {
+      "help": "The settings from the chart editor per interaction chart, per chart in display order; empty while nothing is changed."
+    },
+    "result": {
+      "help": "The fitted regression model with coefficients and analysis of variance; empty without X or Y or when the fit fails (the error then gives the reason). For a categorical term the coefficient name carries the level (Material B), while the term list and including or excluding use the term name without the level (Material)."
+    },
+    "error": {
+      "help": "Why there is no result — too few value pairs, too few degrees of freedom, aliased terms, a deleted column — with the text the error box shows. With single models per X, also next to a result. Empty without a reason."
+    },
+    "aliased": {
+      "help": "The aliased terms of a failed polynomial, each with the terms it is aliased with; the button “Exclude term” takes them out."
+    },
+    "terms": {
+      "help": "The terms that can now be included or excluded with effect: those of the model shown without the intercept, and the aliased ones."
+    },
+    "perXKeys": {
+      "help": "The single models with a result, each by the key of its X column; empty for the polynomial."
+    },
+    "activeX": {
+      "help": "The single model shown, by the key of its X column; empty for the polynomial."
+    },
+    "activeDegrees": {
+      "help": "The degrees the data support: a degree with too few paired rows for its number of terms is missing. A locked degree does not fit."
+    },
+    "activeParams": {
+      "help": "The settings that apply in the current state; the degree only for the polynomial."
+    },
+    "experimentImports": {
+      "help": "The responses of the DoE plans the takeover offers, each with key and label; the key is <planner instance>|raw|<i> (|mean|, |lnvar| for mean and ln variance)."
+    },
+    "importMissing": {
+      "help": "True when the DoE plan the model came from no longer exists or no longer has an experiment."
+    },
+    "predictors": {
+      "help": "The inputs of the prediction for the model shown, each with id, label, kind and, for categorical factors, the levels; empty without a result."
+    },
+    "canSaveModel": {
+      "help": "True when saving as a model is possible now: polynomial type with one or several X and a fitted result."
+    },
+    "effectiveDesignNotice": {
+      "help": "The notice of the experiment takeover as the module shows it: only for the polynomial and while X, Y and degree match the state of the takeover."
+    },
+    "savedModel": {
+      "help": "The saved model with id and name, as response optimization reads it: coefficients, error variance, factor ranges, model specification and training data. Empty while no model is saved."
+    }
+  },
+  "actions": {
+    "setTerm": {
+      "help": "Includes or excludes a term of the polynomial; the notice of an experiment takeover is dropped. The model is fitted again.",
+      "params": {
+        "term": "The term name without level, one of the effective terms; an unknown one is stored and has no effect.",
+        "included": "True includes the term, false excludes it.",
+        "command": "The command as one object with term and included."
+      }
+    }
+  },
+  "types": {
+    "Result": {
+      "type": "The model form actually fitted: polynomial for the polynomial type (with one or several X), otherwise exponential, logarithmic or power for the single-X model shown.",
+      "equation": "The model equation as text, as shown below the figures, with coefficients rounded to four decimals.",
+      "n": "Number of rows used: rows with finite values in all X and in Y; for exponential, logarithmic and power only the rows that meet the condition of the model form (y > 0 or x > 0).",
+      "R2": "Coefficient of determination R² = 1 − SSE/SST: the share of the variation in Y the model explains, from 0 to 1. The tile is green from 0.8 and yellow from 0.5, red below.",
+      "adjR2": "Adjusted coefficient of determination, tile Adj. R²: 1 − (1 − R²) · (n − 1)/(n − p) with p coefficients including the intercept. It drops when a term costs more degrees of freedom than it explains, so it suits comparing models. The tile takes the colour of R².",
+      "R2pred": "Predicted coefficient of determination, tile R²(pred): 1 − PRESS/SST, where PRESS is the sum of the squared leave-one-out residuals eᵢ/(1 − hᵢᵢ). It measures how well the model predicts new data; well below R² it points to overfitting. Empty for exponential, logarithmic and power; the tile is then missing as well.",
+      "Se": "Standard error of the regression, tile Std. Error: S = √MSE, the typical deviation of the observations from the model, in the units of Y.",
+      "Fstat": "F statistic of the overall model, F = MSR/MSE from the Regression row of the ANOVA table; 0 when MSE is 0. The tile shows two decimals.",
+      "fPVal": "p-value of the F test, tile p-value (F): the probability of an F at least this large if all coefficients except the intercept were 0, from the F distribution with the degrees of freedom of regression and residuals. Below α the model counts as significant and the tile is green, below 2α yellow. 1 when the model has no degree of freedom or MSE is 0.",
+      "dw": "Durbin-Watson statistic Σ(eᵢ − eᵢ₋₁)²/SSE over the residuals in data order, between 0 and 4: around 2 no autocorrelation, below 1.5 positive, above 2.5 negative. 0 when SSE is 0; the tile shows three decimals.",
+      "coefficients": "The coefficient table, one row per estimated coefficient: for the polynomial first Intercept, then the terms; for exponential and power a and b, for logarithmic Intercept and ln(x).",
+      "excludedTerms": "The terms left out of the polynomial, by hand or because of aliasing, each as term name without level.",
+      "anova": "The analysis of variance of the model with the rows Regression, one per term, Residuals and Total; the same numbers as in the ANOVA table. For exponential, logarithmic and power there are no term rows."
+    },
+    "Coefficient": {
+      "term": "The coefficient name: Intercept, a column name or a square or interaction term. A categorical predictor gets one row per level, whose name carries the level; including and excluding uses the term name without level.",
+      "coeff": "The estimated coefficient b. The Coefficient column also shows the confidence interval next to it, from the lower to the upper confidence limit.",
+      "se": "Standard error of the coefficient, column Std. Error: √(MSE · ((XᵀX)⁻¹)ⱼⱼ). Empty for exponential, logarithmic and power.",
+      "t": "t-value b / Std. Error, tested against 0 with the degrees of freedom of the residuals. Empty for exponential, logarithmic and power.",
+      "pval": "Two-sided p-value of the t test of b = 0; below α the term counts as significant and the row is highlighted. Empty for exponential, logarithmic and power.",
+      "ciLow": "Lower confidence limit b − t · Std. Error, with t the (1 + confidence level)/2 quantile of the t distribution with the degrees of freedom of the residuals. Empty for exponential, logarithmic and power.",
+      "ciHigh": "Upper confidence limit b + t · Std. Error, with the same t as the lower limit. Empty for exponential, logarithmic and power.",
+      "vif": "Variance inflation factor 1/(1 − R²ⱼ), with R²ⱼ from regressing the predictor on the other continuous predictors that still have a term in the model. Only main effects of continuous predictors have a value, and only with at least two continuous predictors; otherwise empty. If only one of them still has a term in the model, the value is exactly 1. Above 5 the cell turns yellow, above 10 red; if the value over all chosen predictors differs, it is shown next to it in parentheses."
+    },
+    "Anova": {
+      "regression": "The Regression row: the variation SSR explained by the model, with the F test of the overall model; degrees of freedom equal to the number of coefficients, not counting the constant term (the intercept for polynomial and logarithmic, the prefactor a for exponential and power).",
+      "terms": "One indented row per term. When the polynomial is fitted with term blocks, this is the Type III decomposition per term block: the sum of squares the block explains in addition to all others, with the F test of the block. Otherwise one row per coefficient with SS = t² · MSE and one degree of freedom. Empty for exponential, logarithmic and power.",
+      "error": "The Residuals row: the unexplained variation SSE with n − p degrees of freedom and MSE = SSE/(n − p).",
+      "total": "The Total row: the total variation SST = Σ(yᵢ − ȳ)² with n − 1 degrees of freedom, the sum of Regression and Residuals."
+    },
+    "AnovaRow": {
+      "term": "The term name; only the term rows carry it.",
+      "ss": "Sum of squares of the row, column SS: the variation this source explains, that is left over (Residuals) or that is present in total (Total).",
+      "df": "Degrees of freedom of the row, column DF.",
+      "ms": "Mean square of the row, column MS = SS/DF. Missing in the Total row.",
+      "f": "F value of the row, column F: MS of the row divided by MS of the residuals. Only in the Regression row and the term rows.",
+      "p": "p-value of the F test of the row, from the F distribution with the DF of the row and the DF of the residuals; below α the row is highlighted as significant. Only in the Regression row and the term rows; empty where no p-value can be computed."
+    },
+    "DesignNotice": {
+      "aliased": "The terms the experimental design cannot separate from others and that were therefore excluded, each with the terms it is aliased with.",
+      "saturated": "The terms excluded because the model would otherwise be saturated, leaving no degree of freedom for the residuals."
+    },
+    "AliasedTerm": {
+      "term": "The excluded term.",
+      "with": "The terms it is aliased with."
+    },
+    "FitError": {
+      "reason": "The reason as key: too few value pairs, too few degrees of freedom, aliased terms, a computation error, a deleted column or reasons per X.",
+      "params": "The details of the reason, such as the number of value pairs.",
+      "perX": "For single models the reason per X.",
+      "message": "The reason as text in the app language, as the error box shows it."
+    },
+    "PerXError": {
+      "name": "The name of the X column.",
+      "reason": "The reason as key.",
+      "params": "The details of the reason."
+    },
+    "ImportChoice": {
+      "key": "The key of the takeover.",
+      "label": "DoE plan and response as the selection shows them."
+    },
+    "Predictor": {
+      "id": "The id of the input.",
+      "label": "The label of the input field.",
+      "kind": "continuous (numeric), categorical (categorical) or the one X of a single model (single).",
+      "levels": "The levels of a categorical factor."
+    },
+    "SavedModel": {
+      "id": "The id of the model.",
+      "name": "The name of the model.",
+      "experimentId": "The DoE plan the model came from.",
+      "responseSpec": "The source of the response and its variant.",
+      "termSet": "The terms including the intercept.",
+      "coef": "The coefficients in term order.",
+      "sigma2": "The error variance.",
+      "df": "The residual degrees of freedom.",
+      "rSqAdj": "The adjusted coefficient of determination.",
+      "lofPValue": "The p-value of the lack-of-fit test, only with replicates in the experiment.",
+      "factorSpec": "Per X the range of the training data.",
+      "spec": "The model specification: predictors and terms.",
+      "dataSnapshot": "The training data with time and origin.",
+      "dataHash": "The checksum of the training data.",
+      "createdAt": "Time of the first save.",
+      "updatedAt": "Time of the last save."
+    }
+  }
+}

@@ -321,6 +321,7 @@ const SKIP = new Set([
   'widgets/histogram-chart.test.js',
   'widgets/rich-text.test.js',
   'widgets/scatter-chart.test.js',
+  'widgets/bar-chart.test.js',
   'widgets/stats-table.test.js',
 ]);
 
