@@ -22,7 +22,7 @@ const contextHelp = (/** @type {string} */ lang) => fetchJson(`${MOD}resources/i
 const nonEmpty = (/** @type {unknown} */ v) => typeof v === 'string' && v.trim().length > 0;
 
 /** Die computed des view-Blocks (Gate: fields.<computed>.help). */
-export const VIEW_COMPUTED = [];
+export const VIEW_COMPUTED = ['contour'];
 
 suite('response-optimization Texte in ui.<lang>.json', () => {
   test('Name, Beschreibung, Einsatz, Gründe und neue Texte; keine Agentenblöcke', async () => {

@@ -1,0 +1,230 @@
+<section class="module-container ro" x-data="responseOptimization">
+  <!-- data-help-key="" an Eingaben und Knöpfen ist gewollt: die Beschriftung trägt den Anker fields.specs.*. -->
+  <div class="module-container__body">
+
+    <!-- Leerzustand: keine gespeicherten Modelle -->
+    <template x-if="showEmpty">
+      <div class="dmike-split">
+        <div class="ro__empty" data-ref="empty-state">
+          <p><span data-help-key="modules.response-optimization.fields.models.help" x-text="t('emptyState')"></span></p>
+        </div>
+      </div>
+    </template>
+
+    <!-- Modelle werden geladen -->
+    <template x-if="showLoading">
+      <div class="dmike-split">
+        <div class="ro__empty" data-ref="models-loading">
+          <p><span data-help-key="modules.response-optimization.fields.unreadOwners.help" x-text="t('modelsLoading')"></span></p>
+        </div>
+      </div>
+    </template>
+
+    <!-- Modelle vorhanden -->
+    <template x-if="hasModels">
+      <div class="dmike-split">
+
+        <!-- Eingabe -->
+        <div class="ro__input dmike-split__input">
+          <div class="dmike-split__section-title"><span data-help-key="modules.response-optimization.fields.selectableModels.help" x-text="t('sectionModels')"></span></div>
+
+          <div class="ro__model-list">
+            <template x-for="row in rows" :key="row.id">
+              <div class="ro__model-row" :data-model-id="row.id">
+                <label class="ro__model-head">
+                  <input type="checkbox" data-action="toggle-model" data-help-key=""
+                         :checked="row.selected"
+                         @change="toggleModel(row.id, $event)">
+                  <span class="ro__model-name" data-help-key="modules.response-optimization.fields.specs.selected.help" x-text="row.name"></span>
+                  <span :class="row.r2Class" :title="t('adjR2')" data-help-key="modules.response-optimization.types.ModelRef.rSqAdj" x-text="row.r2Text"></span>
+                </label>
+
+                <!-- Vorgabe: nur bei einbezogenem Modell -->
+                <div class="ro__spec" x-show="row.selected">
+                  <label>
+                    <span data-help-key="modules.response-optimization.fields.specs.kind.help" x-text="t('kind')"></span>
+                    <select class="field ro__spec-kind" data-action="kind" data-help-key=""
+                            @change="setKind(row.id, $event)">
+                      <template x-for="o in kindOptions" :key="o.value">
+                        <option :value="o.value" :selected="isKind(row, o.value)" x-text="o.label"></option>
+                      </template>
+                    </select>
+                  </label>
+
+                  <label>
+                    <span data-help-key="modules.response-optimization.fields.specs.lower.help" x-text="t('lower')"></span>
+                    <input class="field field--num" type="text" inputmode="decimal" data-action="lower" data-help-key=""
+                           :value="row.lower"
+                           @change="commitNumber(row.id, 'lower', $event)" @keydown="numberKeydown($event)">
+                  </label>
+
+                  <label x-show="row.isTarget">
+                    <span data-help-key="modules.response-optimization.fields.specs.target.help" x-text="t('target')"></span>
+                    <input class="field field--num" type="text" inputmode="decimal" data-action="target" data-help-key=""
+                           :value="row.target"
+                           @change="commitNumber(row.id, 'target', $event)" @keydown="numberKeydown($event)">
+                  </label>
+
+                  <label>
+                    <span data-help-key="modules.response-optimization.fields.specs.upper.help" x-text="t('upper')"></span>
+                    <input class="field field--num" type="text" inputmode="decimal" data-action="upper" data-help-key=""
+                           :value="row.upper"
+                           @change="commitNumber(row.id, 'upper', $event)" @keydown="numberKeydown($event)">
+                  </label>
+
+                  <label>
+                    <span data-help-key="modules.response-optimization.fields.specs.weight.help" x-text="t('weight')"></span>
+                    <input class="field field--num" type="text" inputmode="decimal" data-action="weight" data-help-key=""
+                           :value="row.weight"
+                           @change="commitNumber(row.id, 'weight', $event)" @keydown="numberKeydown($event)">
+                  </label>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Vorgaben ohne Modell -->
+          <template x-if="missingText">
+            <div class="ro__hint" data-ref="missing-models"><span data-help-key="modules.response-optimization.fields.missingModels.help" x-text="missingText"></span></div>
+          </template>
+
+          <!-- Sperrgründe -->
+          <template x-if="hasReasons">
+            <div class="ro__diagnostic" data-ref="diagnostic">
+              <strong data-help-key="modules.response-optimization.fields.diagnosticReasons.help" x-text="blockedLabel"></strong>
+              <ul>
+                <template x-for="reason in reasonTexts" :key="reason.key">
+                  <li x-text="reason.text"></li>
+                </template>
+              </ul>
+            </div>
+          </template>
+
+          <div class="ro__run" x-async-task="runOptimize">
+            <p class="ro__diagnostic" role="alert" data-ref="error-msg" x-async-task-error></p>
+            <button class="btn btn--primary ro__optimize-btn" type="button" data-action="optimize"
+                    data-help-key="modules.response-optimization.asyncTasks.runOptimize.help"
+                    x-async-task-start>
+              <span x-text="t('optimizeButton')"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ausgabe -->
+        <div class="ro__output dmike-split__output">
+
+          <!-- Platzhalter vor dem ersten Optimum -->
+          <div class="ro__placeholder" data-ref="placeholder" x-show="!hasResult" x-text="t('placeholderResult')"></div>
+
+          <template x-if="hasResult">
+            <div data-ref="result">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.response-optimization.fields.result.help" x-text="t('resultTitle')"></span></div>
+
+              <template x-if="staleText">
+                <div class="ro__hint" data-ref="result-stale"><span data-help-key="modules.response-optimization.fields.resultStale.help" x-text="staleText"></span></div>
+              </template>
+
+              <!-- Gesamtwunschbarkeit -->
+              <div class="dmike-kpi-strip">
+                <div :class="dClassName" :title="t('tipD')">
+                  <div class="dmike-kpi-value" data-ref="d-value" x-text="dText"></div>
+                  <div class="dmike-kpi-label" data-help-key="modules.response-optimization.types.Result.D" x-text="t('compositeD')"></div>
+                </div>
+              </div>
+
+              <!-- Optimaler Faktorpunkt -->
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('optimumPoint')"></span></div>
+              <table class="dmike-table" data-ref="optimum-table">
+                <thead>
+                  <tr>
+                    <th><span data-help-key="modules.response-optimization.types.Result.factorNames" x-text="t('factor')"></span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.xOpt" x-text="t('value')"></span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="row in optimumTable" :key="row.key">
+                    <tr>
+                      <td x-text="row.name"></td>
+                      <td class="num" x-text="row.value"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+
+              <!-- Vorhersagen -->
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('predictions')"></span></div>
+              <table class="dmike-table" data-ref="prediction-table">
+                <thead>
+                  <tr>
+                    <th><span data-help-key="modules.response-optimization.types.Result.modelNames" x-text="t('model')"></span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.yPredictions" x-text="t('prediction')"></span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.dPerResponse" x-text="t('individualD')"></span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="row in predictionTable" :key="row.key">
+                    <tr>
+                      <td x-text="row.model"></td>
+                      <td class="num" x-text="row.prediction"></td>
+                      <td class="num" x-text="row.d"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+
+              <!-- Wirkungsfläche -->
+              <template x-if="hasContour">
+                <div>
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.response-optimization.fields.contour.help" x-text="t('contourTitle')"></span></div>
+
+                  <div class="ro__contour-controls">
+                    <template x-if="showAxisControls">
+                      <div class="ro__contour-axes">
+                        <label class="ro__contour-fix">
+                          <span data-help-key="modules.response-optimization.state.contourXId.help" x-text="t('axisX')"></span>
+                          <select class="field" data-action="contour-axis" data-axis="x" data-help-key=""
+                                  @change="setContourAxis('x', $event)">
+                            <template x-for="p in axisFactors" :key="p">
+                              <option :value="p" :selected="isAxis('x', p)" x-text="p"></option>
+                            </template>
+                          </select>
+                        </label>
+                        <label class="ro__contour-fix">
+                          <span data-help-key="modules.response-optimization.state.contourYId.help" x-text="t('axisY')"></span>
+                          <select class="field" data-action="contour-axis" data-axis="y" data-help-key=""
+                                  @change="setContourAxis('y', $event)">
+                            <template x-for="p in axisFactors" :key="p">
+                              <option :value="p" :selected="isAxis('y', p)" x-text="p"></option>
+                            </template>
+                          </select>
+                        </label>
+                      </div>
+                    </template>
+
+                    <template x-for="fix in fixingRows" :key="fix.id">
+                      <label class="ro__contour-fix">
+                        <span data-help-key="modules.response-optimization.state.contourFixings.help" x-text="fix.id"></span>
+                        <select class="field" data-action="contour-fix" data-help-key="" :data-predictor="fix.id"
+                                @change="setContourFix(fix.id, $event)">
+                          <template x-for="lv in fix.levels" :key="lv">
+                            <option :value="lv" :selected="isLevel(fix, lv)" x-text="lv"></option>
+                          </template>
+                        </select>
+                      </label>
+                    </template>
+                  </div>
+
+                  <div class="ro__contour-host" data-ref="contour-host"
+                       x-widget="contour-chart" x-widget-config="contourChart" x-widget-value="model.contourEdits"></div>
+                </div>
+              </template>
+
+            </div>
+          </template>
+
+        </div>
+      </div>
+    </template>
+
+  </div>
+</section>

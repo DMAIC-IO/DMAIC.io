@@ -81,6 +81,9 @@
     },
     "resultStale": {
       "help": "True when a model of the stored optimum no longer exists; the numbers stay, the response surface is omitted."
+    },
+    "contour": {
+      "help": "The response surface of the first model of the optimum over two continuous factors (the other continuous ones at the middle of their range, the categorical ones at the chosen level), with the optimum as a point when the levels match. It is omitted with fewer than two continuous factors and when a model of the optimum is missing; it belongs to the view and is not part of the read surface."
     }
   },
   "state": {

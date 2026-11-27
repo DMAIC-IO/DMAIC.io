@@ -81,6 +81,9 @@
     },
     "resultStale": {
       "help": "Wahr, wenn ein Modell des gespeicherten Optimums nicht mehr vorhanden ist; die Zahlen bleiben stehen, die Wirkungsfläche entfällt."
+    },
+    "contour": {
+      "help": "Die Wirkungsfläche des ersten Modells des Optimums über zwei stetige Faktoren (die übrigen stetigen auf der Mitte ihres Bereichs, die kategorialen auf der gewählten Stufe), das Optimum als Punkt, wenn die Stufen passen. Sie entfällt mit weniger als zwei stetigen Faktoren und wenn ein Modell des Optimums fehlt; sie gehört zur Ansicht und steht nicht in der Lesefläche."
     }
   },
   "state": {
