@@ -1,0 +1,482 @@
+{
+  "de": {
+    "a": {
+      "steps": [
+        {
+          "id": "a1",
+          "title": "Anfrage erfassen",
+          "description": "Per E-Mail oder Telefon.",
+          "kind": "activity",
+          "decision": null,
+          "expanded": true,
+          "owner": "Vertrieb",
+          "substeps": [
+            {
+              "id": "a1-1",
+              "title": "Kundendaten prüfen"
+            },
+            {
+              "id": "a1-2",
+              "title": "Termin notieren"
+            }
+          ],
+          "branchId": "main"
+        },
+        {
+          "id": "a2",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Anfrage vollständig?",
+            "noTarget": "a1"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a2b",
+          "title": "Rückfrage stellen",
+          "description": "",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [],
+          "branchId": "no:a2"
+        },
+        {
+          "id": "a3",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Machbar?",
+            "noTarget": "end"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a3b",
+          "title": "Absage senden",
+          "description": "",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [
+            {
+              "id": "a3b-1",
+              "title": "Begründung formulieren"
+            }
+          ],
+          "branchId": "no:a3"
+        },
+        {
+          "id": "a4",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Sonderpreis?",
+            "noTarget": "a4"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a5",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Eilauftrag?",
+            "noTarget": "zz-weg"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a6",
+          "title": "Angebot versenden",
+          "description": "Mit Lieferzeit.",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a7",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Angenommen?",
+            "noTarget": "a8"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a7b",
+          "title": "Nachfassen",
+          "description": "",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [],
+          "branchId": "no:a7"
+        },
+        {
+          "id": "a8",
+          "title": "Auftrag anlegen",
+          "description": "",
+          "expanded": false,
+          "substeps": [],
+          "kind": "activity",
+          "decision": null,
+          "branchId": "main"
+        }
+      ],
+      "bands": [
+        {
+          "id": "main",
+          "ownerId": null,
+          "label": "Hauptpfad",
+          "depth": 0
+        },
+        {
+          "id": "no:a2",
+          "ownerId": "a2",
+          "label": "Nein: Anfrage vollständig?",
+          "depth": 1
+        },
+        {
+          "id": "no:a3",
+          "ownerId": "a3",
+          "label": "Nein: Machbar?",
+          "depth": 1
+        },
+        {
+          "id": "no:a4",
+          "ownerId": "a4",
+          "label": "Nein: Sonderpreis?",
+          "depth": 1
+        },
+        {
+          "id": "no:a5",
+          "ownerId": "a5",
+          "label": "Nein: Eilauftrag?",
+          "depth": 1
+        },
+        {
+          "id": "no:a7",
+          "ownerId": "a7",
+          "label": "Nein: Angenommen?",
+          "depth": 1
+        }
+      ]
+    },
+    "b": {
+      "steps": [
+        {
+          "title": "Ohne Kennung",
+          "description": "Altstand",
+          "kind": "activity",
+          "decision": null,
+          "substeps": [
+            {
+              "id": "s<uid>",
+              "title": "Unterpunkt ohne Kennung"
+            }
+          ],
+          "id": "s<uid>",
+          "expanded": false,
+          "branchId": "main"
+        },
+        {
+          "id": "s<uid>",
+          "title": "Leere Kennung",
+          "kind": "decision",
+          "decision": {
+            "label": "",
+            "noTarget": "end"
+          },
+          "description": "",
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "b3",
+          "title": "Mit Kennung",
+          "kind": "activity",
+          "branchId": "main",
+          "description": "",
+          "expanded": false,
+          "substeps": [],
+          "decision": null
+        }
+      ],
+      "bands": [
+        {
+          "id": "main",
+          "ownerId": null,
+          "label": "Hauptpfad",
+          "depth": 0
+        },
+        {
+          "id": "no:s<uid>",
+          "ownerId": "s<uid>",
+          "label": "Nein: (ohne Frage)",
+          "depth": 1
+        }
+      ]
+    }
+  },
+  "en": {
+    "a": {
+      "steps": [
+        {
+          "id": "a1",
+          "title": "Anfrage erfassen",
+          "description": "Per E-Mail oder Telefon.",
+          "kind": "activity",
+          "decision": null,
+          "expanded": true,
+          "owner": "Vertrieb",
+          "substeps": [
+            {
+              "id": "a1-1",
+              "title": "Kundendaten prüfen"
+            },
+            {
+              "id": "a1-2",
+              "title": "Termin notieren"
+            }
+          ],
+          "branchId": "main"
+        },
+        {
+          "id": "a2",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Anfrage vollständig?",
+            "noTarget": "a1"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a2b",
+          "title": "Rückfrage stellen",
+          "description": "",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [],
+          "branchId": "no:a2"
+        },
+        {
+          "id": "a3",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Machbar?",
+            "noTarget": "end"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a3b",
+          "title": "Absage senden",
+          "description": "",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [
+            {
+              "id": "a3b-1",
+              "title": "Begründung formulieren"
+            }
+          ],
+          "branchId": "no:a3"
+        },
+        {
+          "id": "a4",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Sonderpreis?",
+            "noTarget": "a4"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a5",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Eilauftrag?",
+            "noTarget": "zz-weg"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a6",
+          "title": "Angebot versenden",
+          "description": "Mit Lieferzeit.",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a7",
+          "title": "",
+          "description": "",
+          "kind": "decision",
+          "decision": {
+            "label": "Angenommen?",
+            "noTarget": "a8"
+          },
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "a7b",
+          "title": "Nachfassen",
+          "description": "",
+          "kind": "activity",
+          "decision": null,
+          "expanded": false,
+          "substeps": [],
+          "branchId": "no:a7"
+        },
+        {
+          "id": "a8",
+          "title": "Auftrag anlegen",
+          "description": "",
+          "expanded": false,
+          "substeps": [],
+          "kind": "activity",
+          "decision": null,
+          "branchId": "main"
+        }
+      ],
+      "bands": [
+        {
+          "id": "main",
+          "ownerId": null,
+          "label": "Main path",
+          "depth": 0
+        },
+        {
+          "id": "no:a2",
+          "ownerId": "a2",
+          "label": "No: Anfrage vollständig?",
+          "depth": 1
+        },
+        {
+          "id": "no:a3",
+          "ownerId": "a3",
+          "label": "No: Machbar?",
+          "depth": 1
+        },
+        {
+          "id": "no:a4",
+          "ownerId": "a4",
+          "label": "No: Sonderpreis?",
+          "depth": 1
+        },
+        {
+          "id": "no:a5",
+          "ownerId": "a5",
+          "label": "No: Eilauftrag?",
+          "depth": 1
+        },
+        {
+          "id": "no:a7",
+          "ownerId": "a7",
+          "label": "No: Angenommen?",
+          "depth": 1
+        }
+      ]
+    },
+    "b": {
+      "steps": [
+        {
+          "title": "Ohne Kennung",
+          "description": "Altstand",
+          "kind": "activity",
+          "decision": null,
+          "substeps": [
+            {
+              "id": "s<uid>",
+              "title": "Unterpunkt ohne Kennung"
+            }
+          ],
+          "id": "s<uid>",
+          "expanded": false,
+          "branchId": "main"
+        },
+        {
+          "id": "s<uid>",
+          "title": "Leere Kennung",
+          "kind": "decision",
+          "decision": {
+            "label": "",
+            "noTarget": "end"
+          },
+          "description": "",
+          "expanded": false,
+          "substeps": [],
+          "branchId": "main"
+        },
+        {
+          "id": "b3",
+          "title": "Mit Kennung",
+          "kind": "activity",
+          "branchId": "main",
+          "description": "",
+          "expanded": false,
+          "substeps": [],
+          "decision": null
+        }
+      ],
+      "bands": [
+        {
+          "id": "main",
+          "ownerId": null,
+          "label": "Main path",
+          "depth": 0
+        },
+        {
+          "id": "no:s<uid>",
+          "ownerId": "s<uid>",
+          "label": "No: (no question)",
+          "depth": 1
+        }
+      ]
+    }
+  }
+}
