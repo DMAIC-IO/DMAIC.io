@@ -1,0 +1,145 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "goal": {
+      "title": "Ziel des Verfahrens",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "MSA Verfahren 4 ({{term:linearitaet|Linearität}}) prüft, ob ein Messsystem *über seinen gesamten Arbeitsbereich* gleichmäßig misst — oder ob die {{term:bias|systematische Abweichung}} mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab."
+        },
+        {
+          "type": "definition",
+          "term": "Linearität",
+          "content": "Änderung des Bias über den Messbereich. Ein lineares Messsystem hat an jedem Referenzpunkt denselben (idealerweise null) Bias. Ein nichtlineares System zeigt eine Drift: kleine Werte werden z. B. zu klein, große Werte zu groß gemessen."
+        },
+        {
+          "type": "definition",
+          "term": "Bias",
+          "content": "Systematische Abweichung an einem einzelnen Referenzpunkt: {{term:mittelwert|Mittelwert}} der Wiederholmessungen minus Referenzwert. Wird für jeden Referenzpunkt separat berechnet."
+        },
+        {
+          "type": "definition",
+          "term": "Prozessvarianz (PV)",
+          "content": "Bezugsgröße, gegen die die Linearitätsabweichung normiert wird. Zwei Modi: *Toleranz* (PV = USL − LSL) für Fähigkeitsstudien oder 6·$σ_{P}$ aus einer laufenden Prozessstreuung. AIAG bevorzugt PV, VDA 5 stets die Toleranz."
+        },
+        {
+          "type": "paragraph",
+          "content": "Ein Typ-4-Fehler ist tückisch: Das Messsystem kann in der Mitte des Bereichs (z. B. am Kalibrierpunkt) fehlerfrei sein, während es an den Rändern der Spezifikation systematisch daneben liegt. Klassische Ursachen sind nichtlineare Sensoren, Verschleiß der Skala oder Software-Kalibrierungen, die nur einen Punkt berücksichtigen."
+        }
+      ]
+    },
+    "data": {
+      "title": "Datenanforderungen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Zwei Spalten aus der Datensammlung, long/tidy: eine Spalte **Referenz**, eine Spalte **Messwert. Jede Zeile ist eine Einzelmessung.",
+            "Mindestens fünf unterschiedliche Referenzwerte, die den gesamten Messbereich abdecken — bevorzugt gleichmäßig zwischen LSL und USL verteilt.",
+            "Mindestens drei Wiederholmessungen pro Referenzwert; üblich sind 10–12. Mehr Wiederholungen stabilisieren die {{term:standardabweichung|Standardabweichung}} pro Punkt.",
+            "Ein Prüfer, ein Messmittel, kurze Zeitspanne — Wiederholbedingungen wie in Typ 1.",
+            "Rückführbare Referenzteile (zertifiziertes Master-Set), sonst ist die Bias-Bewertung blind."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Long/tidy statt wide",
+          "content": "Nicht eine Spalte je Referenzpunkt anlegen, sondern zwei lange Spalten: eine für die Referenz, eine für den Messwert. Diese Struktur ist die einzige, die das Modul verarbeitet, und entspricht dem Vorgehen von Minitab und JMP."
+        },
+        {
+          "type": "definition",
+          "term": "Toleranz vs. σ_P",
+          "content": "Bei Fähigkeitsstudien (Freigabe eines neuen Messmittels) LSL/USL eintragen. Bei Prozessunsicherheitsbudgets (VDA 5, laufende Serie) statt der Toleranz die Prozessstreuung $σ_{P}$ nutzen; die Formel wechselt intern zu PV = 6·$σ_{P}$."
+        }
+      ]
+    },
+    "formulas": {
+      "title": "Formeln (AIAG + VDA 5)",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Kern von Typ 4 ist eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte $b_{ij} = y_{ij} − x_{ref,i}$ gegen den Referenzwert $x_{ref,i}$. Aus dieser {{term:regression|Regression}} leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab."
+        },
+        {
+          "type": "definition",
+          "term": "Regressionsmodell",
+          "content": "$b_{ij}$ = a · $x_{ref,i}$ + b̂ + ε. Steigung a ≠ 0 heißt: der Bias wächst systematisch mit dem Referenzwert (Linearitätsfehler). Achsenabschnitt b̂ ≠ 0 heißt: über den ganzen Bereich verschobenes Messsystem (konstanter Offset)."
+        },
+        {
+          "type": "definition",
+          "term": "Bias je Referenzpunkt",
+          "content": "Für jeden Referenzwert $x_{ref,i}$ mit $n_i$ Wiederholungen: $b_i = ȳ_i − x_{ref,i}$. Der Einstichproben-t-Test $t = b_i \\sqrt{n_i} / s_i$ prüft $H_0: b_i = 0$. Ist der p-Wert < α, ist der Bias an diesem Punkt statistisch signifikant."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG %Linearität",
+          "content": "%Lin = 100 · |a| · Range($x_{ref}$) / PV. Range ist die Differenz zwischen dem größten und kleinsten Referenzwert. PV ist entweder die Toleranz T = USL − LSL oder 6·$σ_{P}$."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG %Bias-Peak",
+          "content": "$\\%\\text{Bias}_{\\max} = 100 \\cdot \\max_i |b_i| / PV$. Zeigt den schlimmsten einzelnen Bias-Punkt normiert auf die Bezugsgröße."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 Unsicherheitsbeitrag u_BI",
+          "content": "$u_{BI} = \\sqrt{\\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2}$. Kombiniert den größten beobachteten Bias-Betrag mit der Unsicherheit der Steigung, hochgerechnet über den Messbereich."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 erweiterte Unsicherheit U",
+          "content": "U = 2 · $u_{BI}$ (Erweiterungsfaktor k = 2 für ca. 95 % Überdeckung). U wird direkt für die Ampelbewertung gegen die Toleranz verwendet."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 Q_MS,BI",
+          "content": "$Q_{MS,BI}$ = U / T · 100 % — Anteil der Toleranz T, den der Bias-/Linearitätsbeitrag aufbraucht. Zusammen mit den anderen Q-Anteilen ({{term:wiederholbarkeit|Wiederholbarkeit}}, Vergleich, Auflösung) ergibt sich das gesamte $Q_{MS}$."
+        }
+      ]
+    },
+    "verdict": {
+      "title": "Bewertung & Ampeln",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Modul zeigt eine Ampel für die aktive Norm. AIAG bewertet %Linearität und %Bias-Peak, VDA 5 bewertet $Q_{MS,BI}$. Beide Normen führen häufig zum selben Ergebnis, können bei grenzwertigen Fällen aber divergieren — dann entscheidet der Kunde bzw. die Freigabespezifikation."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG-Ampel — grün",
+          "content": "%Linearität und %Bias-Peak beide unter 5 %, und weder Steigung noch Achsenabschnitt sind statistisch signifikant (p ≥ α). Das Messsystem misst linear und unverzerrt über den gesamten Bereich."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG-Ampel — gelb",
+          "content": "Der schlechtere der beiden Werte (%Linearität oder %Bias-Peak) liegt zwischen 5 % und 10 %, und keine Regressionskennzahl ist signifikant. Bedingt einsetzbar; Ursache untersuchen, bevor die Studie in eine Freigabe mündet."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG-Ampel — rot",
+          "content": "Mindestens einer der beiden Werte übersteigt 10 %, oder Steigung / Achsenabschnitt sind signifikant (p < α). Das Messsystem ist nicht linear oder systematisch verschoben — nicht freigeben, Kalibrierung oder Sensortausch prüfen."
+        },
+        {
+          "type": "definition",
+          "term": "VDA-5-Ampel — grün",
+          "content": "$Q_{MS,BI}$ ≤ 15 %. Der Bias-Beitrag zur {{term:messunsicherheit|Messunsicherheit}} ist so klein, dass er die Prozessfähigkeit nicht relevant belastet."
+        },
+        {
+          "type": "definition",
+          "term": "VDA-5-Ampel — gelb",
+          "content": "$Q_{MS,BI}$ zwischen 15 % und 30 %. Bedingt tauglich; das Messsystem darf verwendet werden, wenn die restlichen Q-Anteile und die Prozessreserve dies zulassen."
+        },
+        {
+          "type": "definition",
+          "term": "VDA-5-Ampel — rot",
+          "content": "$Q_{MS,BI}$ > 30 %. Der Linearitäts-/Bias-Beitrag frisst mehr als 30 % der Toleranz — nicht tauglich, Messmittel überarbeiten oder ersetzen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Ergänzend markiert die Tabelle je Referenzpunkt eine Zeilen-Ampel: grün wenn der t-Test nicht signifikant ist, gelb bei signifikantem Bias unter 10 % PV, rot bei signifikantem Bias über 10 % PV. So sieht man auf einen Blick, welcher konkrete Referenzpunkt die Ampel kippt."
+        }
+      ]
+    }
+  }
+}

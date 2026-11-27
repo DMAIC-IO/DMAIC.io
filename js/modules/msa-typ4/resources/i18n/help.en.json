@@ -1,0 +1,145 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "goal": {
+      "title": "Purpose of the Study",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "MSA Type 4 ({{term:linearitaet|linearity}}) checks whether a measurement system reads consistently *across its entire operating range* — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper {{term:spezifikationsgrenzen|specification limits}}."
+        },
+        {
+          "type": "definition",
+          "term": "Linearity",
+          "content": "Change of bias across the measurement range. A linear measurement system shows the same (ideally zero) bias at every reference point. A non-linear system exhibits drift: small values may read too low, large values too high."
+        },
+        {
+          "type": "definition",
+          "term": "Bias",
+          "content": "Systematic deviation at a single reference point: {{term:mittelwert|mean}} of the repeat measurements minus the reference value. Computed separately for each reference point."
+        },
+        {
+          "type": "definition",
+          "term": "Process Variation (PV)",
+          "content": "Reference figure used to normalize the linearity deviation. Two modes: *Tolerance* (PV = USL − LSL) for capability studies, or 6·$σ_{P}$ derived from ongoing process spread. AIAG prefers PV, VDA 5 always uses the tolerance."
+        },
+        {
+          "type": "paragraph",
+          "content": "A Type 4 failure is insidious: the system may be flawless in the middle of the range (e.g. at the calibration point) while systematically off near the specification edges. Classic causes are non-linear sensors, worn scales or single-point software calibrations."
+        }
+      ]
+    },
+    "data": {
+      "title": "Data Requirements",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Two columns from the worksheet, long/tidy layout: one reference** column, one **measured** column. Each row is one individual measurement.",
+            "At least five distinct reference values that cover the whole measurement range — ideally evenly spaced between LSL and USL.",
+            "At least three repeat measurements per reference; 10–12 are common. More repeats stabilize the {{term:standardabweichung|standard deviation}} per point.",
+            "One operator, one instrument, short time frame — repeatability conditions as in Type 1.",
+            "Traceable reference parts (certified master set); otherwise bias assessment is blind."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Long/tidy layout instead of wide",
+          "content": "Do not create one column per reference point. Instead create two long columns: one for the reference, one for the measured value. This is the only layout the module accepts and matches how Minitab and JMP handle Type 4 data."
+        },
+        {
+          "type": "definition",
+          "term": "Tolerance vs. σ_P",
+          "content": "For capability studies (release of a new gage) enter LSL/USL. For process-uncertainty budgets (VDA 5, running production) use the process spread $σ_{P}$ instead of the tolerance; the formula switches internally to PV = 6·$σ_{P}$."
+        }
+      ]
+    },
+    "formulas": {
+      "title": "Formulas (AIAG + VDA 5)",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Type 4 boils down to a {{term:lineare-regression|linear regression}} of individual bias values $b_{ij} = y_{ij} − x_{ref,i}$ against the reference value $x_{ref,i}$. Both the AIAG KPIs and the VDA 5 uncertainty contribution are derived from this regression."
+        },
+        {
+          "type": "definition",
+          "term": "Regression model",
+          "content": "$b_{ij}$ = a · $x_{ref,i}$ + b̂ + ε. Slope a ≠ 0 means the bias grows systematically with the reference (linearity error). Intercept b̂ ≠ 0 means a constant offset across the whole range."
+        },
+        {
+          "type": "definition",
+          "term": "Per-reference bias",
+          "content": "For each reference $x_{ref,i}$ with $n_i$ repeats: $b_i = ȳ_i − x_{ref,i}$. The one-sample {{term:t-test|t-test}} $t = b_i \\sqrt{n_i} / s_i$ tests $H_0: b_i = 0$. If the p-value < α, bias at that point is statistically significant."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG %Linearity",
+          "content": "%Lin = 100 · |a| · Range($x_{ref}$) / PV. Range is the difference between the largest and smallest reference. PV is either the tolerance T = USL − LSL or 6·$σ_{P}$."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG peak %Bias",
+          "content": "$\\%\\text{Bias}_{\\max} = 100 \\cdot \\max_i |b_i| / PV$. Shows the worst individual bias point normalized to the reference figure."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 uncertainty contribution u_BI",
+          "content": "$u_{BI} = \\sqrt{\\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2}$. Combines the largest observed bias magnitude with the slope uncertainty extrapolated across the measurement range."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 expanded uncertainty U",
+          "content": "U = 2 · $u_{BI}$ (coverage factor k = 2 for approximately 95 % coverage). U is used directly against the tolerance in the traffic-light verdict."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 Q_MS,BI",
+          "content": "$Q_{MS,BI}$ = U / T · 100 % — share of the tolerance T consumed by the bias/linearity contribution. Together with the other Q-shares (repeatability, reproducibility, resolution) it makes up the total $Q_{MS}$."
+        }
+      ]
+    },
+    "verdict": {
+      "title": "Verdict & Traffic Lights",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The module displays one traffic light for the active standard. AIAG evaluates %Linearity and peak %Bias, VDA 5 evaluates $Q_{MS,BI}$. The two standards typically agree, but may diverge in borderline cases — the customer or release specification then decides."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG light — green",
+          "content": "Both %Linearity and peak %Bias below 5 %, and neither slope nor intercept is statistically significant (p ≥ α). The system reads linearly and without bias across the entire range."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG light — yellow",
+          "content": "The worse of the two values (%Linearity or peak %Bias) lies between 5 % and 10 %, with no significant regression coefficient. Conditionally usable; investigate the cause before releasing the system."
+        },
+        {
+          "type": "definition",
+          "term": "AIAG light — red",
+          "content": "At least one of the two values exceeds 10 %, or slope / intercept are significant (p < α). The system is non-linear or systematically shifted — do not release; check calibration or replace the sensor."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 light — green",
+          "content": "$Q_{MS,BI}$ ≤ 15 %. The bias contribution to measurement uncertainty is small enough not to burden {{term:prozessfaehigkeit|process capability}}."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 light — yellow",
+          "content": "$Q_{MS,BI}$ between 15 % and 30 %. Conditionally usable; the system may be used if the remaining Q-shares and the process margin allow it."
+        },
+        {
+          "type": "definition",
+          "term": "VDA 5 light — red",
+          "content": "$Q_{MS,BI}$ > 30 %. The linearity/bias contribution eats more than 30 % of the tolerance — not usable, rework or replace the gage."
+        },
+        {
+          "type": "paragraph",
+          "content": "The per-reference table additionally shades each row: green when the t-test is not significant, yellow when bias is significant but below 10 % PV, red when bias is significant and above 10 % PV. This makes it obvious at a glance which reference point tips the light."
+        }
+      ]
+    }
+  }
+}

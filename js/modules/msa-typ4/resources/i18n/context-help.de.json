@@ -1,0 +1,147 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "params": {
+      "help": "Die sieben Eingaben der Studie: name und unit frei, norm (AIAG oder VDA5), pvMode (tolerance oder sixSigma), tolerance mit LSL und USL je als Zahl oder leer, sigmaP als Zahl oder leer, alpha als 0,01, 0,05 oder 0,1. Geschrieben wird das ganze Objekt.",
+      "norm": {
+        "help": "Die Bewertungsnorm, Beschriftung „Norm“: AIAG MSA oder VDA 5. Gerechnet werden beide; die Norm bestimmt Kacheln, Ampel und Deutung."
+      },
+      "pvMode": {
+        "help": "Die Bezugsgröße der Prozentwerte, Beschriftung „Bezugsstreuung“: die Toleranz oder 6 · σP."
+      },
+      "tolerance": {
+        "help": "Die Toleranzgrenzen des Merkmals, untere und obere, je als Zahl oder leer; die untere muss kleiner als die obere sein.",
+        "LSL": {
+          "help": "Die untere Toleranzgrenze, Beschriftung „USG (LSL)“, als Zahl; sie muss kleiner als die obere sein."
+        },
+        "USL": {
+          "help": "Die obere Toleranzgrenze, Beschriftung „OSG (USL)“, als Zahl; sie muss größer als die untere sein."
+        }
+      },
+      "sigmaP": {
+        "help": "Die Prozessstandardabweichung, Beschriftung „σₚ (Prozess-Sigma)“, als Zahl größer 0. Sie wirkt nur bei der Bezugsstreuung 6 · σP."
+      },
+      "alpha": {
+        "help": "Das Signifikanzniveau, Beschriftung „Signifikanzniveau α“: 0,01, 0,05 oder 0,1, voreingestellt 0,05."
+      }
+    },
+    "refColumn": {
+      "help": "Die Spalte einer Datensammlung mit den Referenzwerten, numerisch; je Zeile gehört der Wert zum Messwert derselben Zeile. Nach einer Änderung wird neu gerechnet."
+    },
+    "measColumn": {
+      "help": "Die Spalte einer Datensammlung mit den Messwerten, numerisch; je Zeile gehört der Wert zum Referenzwert derselben Zeile. Nach einer Änderung wird neu gerechnet."
+    },
+    "exampleWorksheetId": {
+      "help": "Die id des Beispiel-Arbeitsblatts, aus dem dieses Modul befüllt wurde; leer, wenn keines geladen wurde."
+    },
+    "linearityChart": {
+      "help": "Die Einstellungen des Linearitäts-Plots aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
+    },
+    "pctBiasChart": {
+      "help": "Die Einstellungen des Diagramms „%Bias über Referenz“ aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
+    },
+    "perRefChart": {
+      "help": "Die Einstellungen des Diagramms „Messwerte je Referenz“ aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
+    },
+    "residualChart": {
+      "help": "Die Einstellungen des Residuen-Diagramms aus dem Diagramm-Editor (Titel, Achsen, Reihen)."
+    },
+    "result": {
+      "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; leer, solange eine Spalte oder lesbare Wertepaare fehlen. Lehnt die Rechnung die Eingaben ab, steht nur der Grund da."
+    },
+    "activeParams": {
+      "help": "Die Schlüssel der Eingaben, die im aktuellen Zustand wirken, die Toleranz in Punktform (tolerance.LSL); sigmaP fehlt bei pvMode tolerance. Geschrieben werden alle immer."
+    },
+    "activeColumnSlots": {
+      "help": "Die Spalten-Slots, die im aktuellen Zustand wirken: reference (Referenzwerte) und measured (Messwerte), immer beide."
+    }
+  },
+  "types": {
+    "Params": {
+      "name": "Bezeichnung des untersuchten Merkmals, zum Beispiel „Schichtdicke“. Sie dient der Beschriftung und hat auf die Rechnung keinen Einfluss.",
+      "unit": "Maßeinheit der Referenz- und Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+      "norm": "Bewertungsnorm: AIAG MSA bewertet %Linearität, größten %Bias und die Signifikanz von Steigung und Achsenabschnitt, VDA 5 bewertet den Eignungskennwert Q_MS_BI. Gerechnet werden beide; die Norm bestimmt Kacheln, Ampel und Deutung.",
+      "pvMode": "Bezugsgröße der Prozentwerte %Linearität und %Bias: die Toleranz T = OSG − USG oder die Prozessstreuung 6 · σP.",
+      "tolerance": {
+        "LSL": "Untere Toleranzgrenze (USG) des Merkmals, als Zahl oder leer. Mit der oberen ergibt sie die Toleranz T = OSG − USG. Im Toleranzmodus ist T die Bezugsgröße; nach VDA 5 geht T immer in Q_MS_BI ein, auch im Modus 6 · σP.",
+        "USL": "Obere Toleranzgrenze (OSG) des Merkmals, als Zahl oder leer; sie muss größer als die untere sein. Mit der unteren ergibt sie die Toleranz T = OSG − USG. Im Toleranzmodus ist T die Bezugsgröße; nach VDA 5 geht T immer in Q_MS_BI ein, auch im Modus 6 · σP."
+      },
+      "sigmaP": "Standardabweichung des Prozesses σP, als Zahl oder leer. Sie wirkt nur im Modus 6 · σP; die Bezugsgröße ist dann 6 · σP.",
+      "alpha": "Signifikanzniveau der t-Tests je Referenzwert und für Steigung und Achsenabschnitt; es legt auch das Niveau der Konfidenzintervalle fest (1 − α). Zur Wahl stehen 0,01, 0,05 (üblich) und 0,1."
+    },
+    "Result": {
+      "ok": "Immer wahr: ein Ergebnis entsteht nur, wenn die Rechnung gelungen ist.",
+      "perReference": "Je Referenzwert ein Eintrag, aufsteigend sortiert, mit Mittelwert, Bias, t-Test und Ampel. Gefordert sind mindestens 5 verschiedene Referenzwerte mit je mindestens 3 Wiederholungen.",
+      "regression": "Ausgleichsgerade der Einzelabweichungen (Messwert minus Referenzwert) über dem Referenzwert, nach der Methode der kleinsten Quadrate. Eine Steigung ungleich 0 heißt, dass sich der Bias über den Messbereich ändert.",
+      "kpi": "Die Kennzahlen beider Normen, AIAG MSA und VDA 5; beide werden immer gerechnet.",
+      "pv": "Die Bezugsgröße, auf die sich %Linearität und %Bias beziehen.",
+      "interpretation": "Die Deutung des Ergebnisses als Satz, abhängig von Norm und Ampelfarbe, mit den eingesetzten Kennzahlen.",
+      "invalid": "Der Grund, wenn die Rechnung die Eingaben ablehnt: Textschlüssel und die Werte für den Fehlertext. Alle Kennzahlen fehlen dann."
+    },
+    "ReferencePoint": {
+      "xRef": "Der Referenzwert (Sollwert des Normals), zu dem die Wiederholmessungen gehören.",
+      "n": "Anzahl der Wiederholmessungen an diesem Referenzwert, mindestens 3.",
+      "mean": "Mittelwert der Wiederholmessungen an diesem Referenzwert.",
+      "bias": "Systematische Abweichung an diesem Referenzwert: Mittelwert minus Referenzwert. Positiv heißt, es wird im Mittel zu hoch gemessen.",
+      "sd": "Standardabweichung der Wiederholmessungen an diesem Referenzwert (Stichprobe, n − 1).",
+      "tStat": "Prüfgröße des t-Tests auf Bias = 0: t = Bias / (s / √n). Leer, wenn alle Wiederholungen gleich sind und der Bias nicht 0 ist.",
+      "pValue": "Zweiseitiger p-Wert des t-Tests auf Bias = 0 mit n − 1 Freiheitsgraden. Unter α gilt der Bias als signifikant.",
+      "percentBias": "Betrag des Bias in Prozent der Bezugsgröße: %Bias = |Bias| · 100 / Bezugsgröße.",
+      "verdict": "Ampel je Referenzwert: grün, wenn der Bias nicht signifikant ist (p ≥ α); gelb, wenn er signifikant ist, aber höchstens 10 % der Bezugsgröße beträgt; sonst rot."
+    },
+    "Regression": {
+      "slope": "Steigung der Ausgleichsgeraden des Bias über dem Referenzwert: um so viel ändert sich der Bias je Einheit des Referenzwerts. Ideal ist 0; ist sie signifikant (p < α), ist das Messsystem nicht linear.",
+      "intercept": "Achsenabschnitt der Ausgleichsgeraden: der Bias, den die Gerade beim Referenzwert 0 hätte. Ideal ist 0; ist er signifikant (p < α), liegt ein konstanter Bias vor.",
+      "seSlope": "Standardfehler der Steigung: √(MSE / Sxx), wobei Sxx die Summe der quadrierten Abstände der Referenzwerte aller Einzelmessungen von ihrem Mittel ist.",
+      "seIntercept": "Standardfehler des Achsenabschnitts: √(MSE · (1 / N + x̄² / Sxx)), mit x̄ dem Mittel der Referenzwerte aller Einzelmessungen.",
+      "tSlope": "Prüfgröße für Steigung = 0: Steigung geteilt durch ihren Standardfehler.",
+      "tIntercept": "Prüfgröße für Achsenabschnitt = 0: Achsenabschnitt geteilt durch seinen Standardfehler.",
+      "pSlope": "Zweiseitiger p-Wert für Steigung = 0 mit N − 2 Freiheitsgraden. Unter α gilt die Steigung als signifikant.",
+      "pIntercept": "Zweiseitiger p-Wert für Achsenabschnitt = 0 mit N − 2 Freiheitsgraden. Unter α gilt der Achsenabschnitt als signifikant.",
+      "MSE": "Mittleres Fehlerquadrat: Summe der quadrierten Abstände der Einzelabweichungen von der Geraden, geteilt durch N − 2.",
+      "N": "Anzahl aller Einzelmessungen, die in die Regression eingehen.",
+      "dfResid": "Freiheitsgrade der Residuen: N − 2, mindestens 1.",
+      "ciSlope": "Konfidenzintervall der Steigung zum Niveau 1 − α, als untere und obere Grenze. Schließt es 0 ein, ist die Steigung nicht signifikant.",
+      "ciIntercept": "Konfidenzintervall des Achsenabschnitts zum Niveau 1 − α, als untere und obere Grenze. Schließt es 0 ein, ist der Achsenabschnitt nicht signifikant."
+    },
+    "Kpi": {
+      "aiag": "Kennzahlen und Urteil nach AIAG MSA.",
+      "vda5": "Kennzahlen und Urteil nach VDA 5."
+    },
+    "KpiAiag": {
+      "percentLinearity": "%Linearität: Änderung des Bias über den Messbereich in Prozent der Bezugsgröße, 100 · |Steigung| · (größter − kleinster Referenzwert) / Bezugsgröße. Der größere Wert aus %Linearität und größtem %Bias entscheidet: bis 5 % annehmbar, bis 10 % bedingt annehmbar, darüber nicht annehmbar.",
+      "maxPercentBias": "Größter %Bias über alle Referenzwerte: 100 · größter |Bias| / Bezugsgröße. Der größere Wert aus %Linearität und größtem %Bias entscheidet: bis 5 % annehmbar, bis 10 % bedingt annehmbar, darüber nicht annehmbar.",
+      "slopeSignificant": "Wahr, wenn die Steigung signifikant von 0 abweicht (p < α). Dann ist das Urteil nach AIAG rot.",
+      "interceptSignificant": "Wahr, wenn der Achsenabschnitt signifikant von 0 abweicht (p < α). Dann ist das Urteil nach AIAG rot.",
+      "verdict": "Urteil nach AIAG MSA: rot, wenn Steigung oder Achsenabschnitt signifikant sind oder der größere Wert aus %Linearität und größtem %Bias 10 % übersteigt; gelb, wenn er 5 % übersteigt; sonst grün."
+    },
+    "KpiVda5": {
+      "u_BI": "Standardunsicherheit aus Bias und Linearität: u_BI = √(größter |Bias|² + (Standardfehler der Steigung · Messbereich)²); der Messbereich ist größter minus kleinster Referenzwert.",
+      "U": "Erweiterte Unsicherheit aus Bias und Linearität: U = 2 · u_BI.",
+      "Q_MS_BI": "Eignungskennwert nach VDA 5: Q_MS_BI = U / T · 100 % mit der Toleranz T = OSG − USG, auch im Modus 6 · σP. Bis 15 % geeignet, bis 30 % bedingt geeignet, darüber nicht geeignet. Leer, wenn T nicht positiv ist.",
+      "verdict": "Urteil nach VDA 5: grün bis Q_MS_BI 15 %, gelb bis 30 %, darüber rot."
+    },
+    "Verdict": {
+      "color": "Ampelfarbe des Urteils: grün, gelb oder rot. Die Grenzen hängen von der Norm ab.",
+      "key": "Schlüssel des Urteilstexts in der Übersetzungsdatei, je Norm und Ampelfarbe."
+    },
+    "ProcessVariation": {
+      "mode": "Wie die Bezugsgröße bestimmt wurde: aus der Toleranz oder aus 6 · σP.",
+      "value": "Die Bezugsgröße: T = OSG − USG im Toleranzmodus, 6 · σP im Modus 6 · σP. Sie muss positiv sein, sonst wird nicht gerechnet.",
+      "source": "Herkunft der Bezugsgröße; stets gleich der Bezugsart."
+    },
+    "Interpretation": {
+      "textKey": "Schlüssel des Deutungssatzes in der Übersetzungsdatei, je Norm und Ampelfarbe.",
+      "params": "Die Kennzahlen, die der Deutungssatz einsetzt, als Text mit zwei Nachkommastellen."
+    },
+    "InterpretationParams": {
+      "pctLin": "%Linearität als Text mit zwei Nachkommastellen; nur nach AIAG MSA.",
+      "maxPctBias": "Größter %Bias als Text mit zwei Nachkommastellen; nur nach AIAG MSA.",
+      "qMsBi": "Q_MS_BI als Text mit zwei Nachkommastellen; nur nach VDA 5."
+    },
+    "Invalid": {
+      "key": "Schlüssel des Fehlertexts, zum Beispiel modules.msa-typ4.errTooFewReferences (weniger als 5 Referenzwerte) oder modules.msa-typ4.errInvalidPv (Bezugsgröße nicht positiv).",
+      "vars": "Werte, die der Fehlertext einsetzt, etwa die Zahl der Referenzwerte; sonst leer."
+    }
+  }
+}

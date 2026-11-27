@@ -1,0 +1,147 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "params": {
+      "help": "The seven inputs of the study: name and unit free, norm (AIAG or VDA5), pvMode (tolerance or sixSigma), tolerance with LSL and USL each as a number or empty, sigmaP as a number or empty, alpha as 0.01, 0.05 or 0.1. The whole object is written.",
+      "norm": {
+        "help": "The assessment standard, label “Standard”: AIAG MSA or VDA 5. Both are computed; the standard decides the tiles, the traffic light and the interpretation."
+      },
+      "pvMode": {
+        "help": "The reference quantity of the percentages, label “Process variation basis”: the tolerance or 6 · σP."
+      },
+      "tolerance": {
+        "help": "The specification limits of the feature, lower and upper, each as a number or empty; the lower must be less than the upper.",
+        "LSL": {
+          "help": "The lower specification limit, label “LSL”, as a number; it must be less than the upper."
+        },
+        "USL": {
+          "help": "The upper specification limit, label “USL”, as a number; it must be greater than the lower."
+        }
+      },
+      "sigmaP": {
+        "help": "The process standard deviation, label “σₚ (process sigma)”, as a number greater than 0. It applies only with the reference spread 6 · σP."
+      },
+      "alpha": {
+        "help": "The significance level, label “Significance level α”: 0.01, 0.05 or 0.1, default 0.05."
+      }
+    },
+    "refColumn": {
+      "help": "The column of a data collection with the reference values, numeric; each value belongs to the measured value in the same row. The study recomputes after a change."
+    },
+    "measColumn": {
+      "help": "The column of a data collection with the measured values, numeric; each value belongs to the reference value in the same row. The study recomputes after a change."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was filled from; empty when none was loaded."
+    },
+    "linearityChart": {
+      "help": "The settings of the linearity plot from the chart editor (title, axes, series)."
+    },
+    "pctBiasChart": {
+      "help": "The settings of the chart “%Bias over reference” from the chart editor (title, axes, series)."
+    },
+    "perRefChart": {
+      "help": "The settings of the chart “Measurements per reference” from the chart editor (title, axes, series)."
+    },
+    "residualChart": {
+      "help": "The settings of the residual chart from the chart editor (title, axes, series)."
+    },
+    "result": {
+      "help": "The computed result, each figure described individually under keys; empty while a column or readable value pairs are missing. When the computation rejects the inputs, only the reason is given."
+    },
+    "activeParams": {
+      "help": "The keys of the inputs that apply in the current state, the tolerance in dotted form (tolerance.LSL); sigmaP is missing with pvMode tolerance. All of them can always be written."
+    },
+    "activeColumnSlots": {
+      "help": "The column slots that apply in the current state: reference (reference values) and measured (measured values), always both."
+    }
+  },
+  "types": {
+    "Params": {
+      "name": "Name of the studied feature, for example “coating thickness”. It labels the result and has no effect on the computation.",
+      "unit": "Unit of the reference and measured values, for example mm. It is only used for labels.",
+      "norm": "Assessment standard: AIAG MSA assesses %linearity, the largest %bias and the significance of slope and intercept; VDA 5 assesses the capability figure Q_MS_BI. Both are computed; the standard decides the tiles, the traffic light and the interpretation.",
+      "pvMode": "Reference quantity for the percentages %linearity and %bias: the tolerance T = USL − LSL or the process spread 6 · σP.",
+      "tolerance": {
+        "LSL": "Lower specification limit (LSL) of the feature, as a number or empty. Together with the upper limit it gives the tolerance T = USL − LSL. In tolerance mode T is the reference quantity; under VDA 5, T always enters Q_MS_BI, also in 6 · σP mode.",
+        "USL": "Upper specification limit (USL) of the feature, as a number or empty; it must be greater than the lower. Together with the lower limit it gives the tolerance T = USL − LSL. In tolerance mode T is the reference quantity; under VDA 5, T always enters Q_MS_BI, also in 6 · σP mode."
+      },
+      "sigmaP": "Process standard deviation σP, as a number or empty. It applies only in 6 · σP mode; the reference quantity is then 6 · σP.",
+      "alpha": "Significance level of the t-tests per reference value and for slope and intercept; it also sets the level of the confidence intervals (1 − α). The choices are 0.01, 0.05 (usual) and 0.1."
+    },
+    "Result": {
+      "ok": "Always true: a result exists only when the computation succeeded.",
+      "perReference": "One entry per reference value, sorted ascending, with mean, bias, t-test and traffic light. At least 5 distinct reference values with at least 3 repeats each are required.",
+      "regression": "Least-squares line of the individual deviations (measured minus reference value) over the reference value. A slope other than 0 means the bias changes over the measuring range.",
+      "kpi": "The figures of both standards, AIAG MSA and VDA 5; both are always computed.",
+      "pv": "The reference quantity that %linearity and %bias refer to.",
+      "interpretation": "The interpretation of the result as a sentence, depending on standard and traffic-light colour, with the figures filled in.",
+      "invalid": "The reason when the computation rejects the inputs: text key and the values for the error text. All figures are then missing."
+    },
+    "ReferencePoint": {
+      "xRef": "The reference value (nominal value of the master part) the repeated measurements belong to.",
+      "n": "Number of repeated measurements at this reference value, at least 3.",
+      "mean": "Mean of the repeated measurements at this reference value.",
+      "bias": "Systematic deviation at this reference value: mean minus reference value. Positive means the system measures too high on average.",
+      "sd": "Standard deviation of the repeated measurements at this reference value (sample, n − 1).",
+      "tStat": "Test statistic of the t-test for bias = 0: t = bias / (s / √n). Empty when all repeats are equal and the bias is not 0.",
+      "pValue": "Two-sided p-value of the t-test for bias = 0 with n − 1 degrees of freedom. Below α the bias counts as significant.",
+      "percentBias": "Absolute bias in percent of the reference quantity: %bias = |bias| · 100 / reference quantity.",
+      "verdict": "Traffic light per reference value: green when the bias is not significant (p ≥ α); yellow when it is significant but at most 10 % of the reference quantity; red otherwise."
+    },
+    "Regression": {
+      "slope": "Slope of the fitted line of bias over reference value: how much the bias changes per unit of the reference value. Ideally 0; if it is significant (p < α), the measurement system is not linear.",
+      "intercept": "Intercept of the fitted line: the bias the line would have at reference value 0. Ideally 0; if it is significant (p < α), there is a constant bias.",
+      "seSlope": "Standard error of the slope: √(MSE / Sxx), where Sxx is the sum of squared distances of the reference values of all individual measurements from their mean.",
+      "seIntercept": "Standard error of the intercept: √(MSE · (1 / N + x̄² / Sxx)), with x̄ the mean of the reference values of all individual measurements.",
+      "tSlope": "Test statistic for slope = 0: the slope divided by its standard error.",
+      "tIntercept": "Test statistic for intercept = 0: the intercept divided by its standard error.",
+      "pSlope": "Two-sided p-value for slope = 0 with N − 2 degrees of freedom. Below α the slope counts as significant.",
+      "pIntercept": "Two-sided p-value for intercept = 0 with N − 2 degrees of freedom. Below α the intercept counts as significant.",
+      "MSE": "Mean squared error: sum of the squared distances of the individual deviations from the line, divided by N − 2.",
+      "N": "Number of all individual measurements that enter the regression.",
+      "dfResid": "Residual degrees of freedom: N − 2, at least 1.",
+      "ciSlope": "Confidence interval of the slope at level 1 − α, as lower and upper limit. If it contains 0, the slope is not significant.",
+      "ciIntercept": "Confidence interval of the intercept at level 1 − α, as lower and upper limit. If it contains 0, the intercept is not significant."
+    },
+    "Kpi": {
+      "aiag": "Figures and verdict according to AIAG MSA.",
+      "vda5": "Figures and verdict according to VDA 5."
+    },
+    "KpiAiag": {
+      "percentLinearity": "%Linearity: change of the bias over the measuring range in percent of the reference quantity, 100 · |slope| · (largest − smallest reference value) / reference quantity. The larger of %linearity and largest %bias decides: up to 5 % acceptable, up to 10 % conditionally acceptable, above that not acceptable.",
+      "maxPercentBias": "Largest %bias over all reference values: 100 · largest |bias| / reference quantity. The larger of %linearity and largest %bias decides: up to 5 % acceptable, up to 10 % conditionally acceptable, above that not acceptable.",
+      "slopeSignificant": "True when the slope differs significantly from 0 (p < α). The AIAG verdict is then red.",
+      "interceptSignificant": "True when the intercept differs significantly from 0 (p < α). The AIAG verdict is then red.",
+      "verdict": "Verdict according to AIAG MSA: red when slope or intercept is significant or the larger of %linearity and largest %bias exceeds 10 %; yellow when it exceeds 5 %; green otherwise."
+    },
+    "KpiVda5": {
+      "u_BI": "Standard uncertainty from bias and linearity: u_BI = √(largest |bias|² + (standard error of the slope · measuring range)²); the measuring range is the largest minus the smallest reference value.",
+      "U": "Expanded uncertainty from bias and linearity: U = 2 · u_BI.",
+      "Q_MS_BI": "Capability figure according to VDA 5: Q_MS_BI = U / T · 100 % with the tolerance T = USL − LSL, also in 6 · σP mode. Up to 15 % capable, up to 30 % conditionally capable, above that not capable. Empty when T is not positive.",
+      "verdict": "Verdict according to VDA 5: green up to Q_MS_BI 15 %, yellow up to 30 %, red above that."
+    },
+    "Verdict": {
+      "color": "Traffic-light colour of the verdict: green, yellow or red. The limits depend on the standard.",
+      "key": "Key of the verdict text in the translation file, per standard and traffic-light colour."
+    },
+    "ProcessVariation": {
+      "mode": "How the reference quantity was determined: from the tolerance or from 6 · σP.",
+      "value": "The reference quantity: T = USL − LSL in tolerance mode, 6 · σP in 6 · σP mode. It must be positive, otherwise nothing is computed.",
+      "source": "Origin of the reference quantity; always the same as the mode."
+    },
+    "Interpretation": {
+      "textKey": "Key of the interpretation sentence in the translation file, per standard and traffic-light colour.",
+      "params": "The figures filled into the interpretation sentence, as text with two decimals."
+    },
+    "InterpretationParams": {
+      "pctLin": "%Linearity as text with two decimals; AIAG MSA only.",
+      "maxPctBias": "Largest %bias as text with two decimals; AIAG MSA only.",
+      "qMsBi": "Q_MS_BI as text with two decimals; VDA 5 only."
+    },
+    "Invalid": {
+      "key": "Key of the error text, for example modules.msa-typ4.errTooFewReferences (fewer than 5 reference values) or modules.msa-typ4.errInvalidPv (reference quantity not positive).",
+      "vars": "Values the error text inserts, such as the number of reference values; otherwise empty."
+    }
+  }
+}
