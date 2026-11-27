@@ -94,11 +94,9 @@
   "warnThetaUnstable": "θ-Schätzung nicht konvergiert (θ = {theta}). Die Daten liegen vermutlich nahe Poisson — wechseln Sie die Methode auf Poisson, oder fixieren Sie θ manuell.",
   "columnTrials": "Trials (optional)",
   "columnTrialsHint": "Anzahl der Versuche pro Beobachtung (gruppierte Binomial-Regression). Y wird dann als Erfolgsanteil interpretiert.",
-  "trialsNone": "— (keine, Y direkt verwenden)",
   "errorProportionRange": "Y muss als Anteil im Bereich [0, 1] vorliegen, wenn eine Trials-Spalte gewählt ist.",
   "errorTrialsInvalid": "Trials-Werte müssen positive endliche Zahlen sein (≥ 1).",
   "predictCiUnavailable": "Konfidenzintervall nicht verfügbar — Designmatrix singulär.",
-  "chartError": "Diagramm konnte nicht gezeichnet werden",
   "successClass": "Erfolgsklasse",
   "swapSuccessTitle": "Klassen tauschen — Erfolg/Fehler umkehren und neu fitten",
   "saveAsModel": "Als Modell speichern",
@@ -109,5 +107,9 @@
   "confRejected": "Bitte einen Wert zwischen 0 und 100 eingeben.",
   "saveBlocked": "Ohne konvergierte Anpassung lässt sich kein Modell speichern.",
   "saveFailed": "Das Modell konnte nicht gespeichert werden.",
-  "savedModelStatus": "Gespeichertes Modell: {name}"
+  "savedModelStatus": "Gespeichertes Modell: {name}",
+  "predictCi": "KI {level} %:",
+  "referenceLine": "Referenz",
+  "swapUnavailable": "Ohne binäre Zielgröße gibt es keine Erfolgsklasse zu tauschen.",
+  "noWorksheet": "Kein Arbeitsblatt im Projekt. Bitte zuerst ein Arbeitsblatt mit Daten anlegen."
 }

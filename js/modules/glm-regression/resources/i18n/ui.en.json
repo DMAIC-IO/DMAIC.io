@@ -94,11 +94,9 @@
   "warnThetaUnstable": "θ estimate did not converge (θ = {theta}). Data are likely near-Poisson — switch the method to Poisson, or fix θ manually.",
   "columnTrials": "Trials (optional)",
   "columnTrialsHint": "Number of trials per observation (grouped binomial regression). Y is then read as success proportion.",
-  "trialsNone": "— (none, use Y directly)",
   "errorProportionRange": "Y must be a proportion in [0, 1] when a trials column is provided.",
   "errorTrialsInvalid": "Trial counts must be positive finite numbers (≥ 1).",
   "predictCiUnavailable": "Confidence interval unavailable — design matrix is singular.",
-  "chartError": "Chart could not be rendered",
   "successClass": "Success class",
   "swapSuccessTitle": "Swap classes — flip success/failure and refit",
   "saveAsModel": "Save as model",
@@ -109,5 +107,9 @@
   "confRejected": "Please enter a value between 0 and 100.",
   "saveBlocked": "Without a converged fit no model can be saved.",
   "saveFailed": "The model could not be saved.",
-  "savedModelStatus": "Saved model: {name}"
+  "savedModelStatus": "Saved model: {name}",
+  "predictCi": "CI {level} %:",
+  "referenceLine": "Reference",
+  "swapUnavailable": "Without a binary response there is no success class to swap.",
+  "noWorksheet": "No worksheet in the project. Please create a worksheet with data first."
 }

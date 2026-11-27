@@ -1,0 +1,383 @@
+<div class="glm dmike-split" x-data="glmRegression">
+  <!-- data-help-key="" an Wählerwirten, Eingaben und Knöpfen ist gewollt: Beschriftung bzw. Gruppe tragen die Anker fields.*. -->
+  <!-- ─── Eingabe (links) ─────────────────────────────────────── -->
+  <div class="glm__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <template x-if="showNoWorksheet">
+      <div class="glm__hint" data-ref="no-worksheet" x-text="t('noWorksheet')"></div>
+    </template>
+
+    <div class="field-group">
+      <label><span data-help-key="modules.glm-regression.fields.colRefs.help" x-text="t('selectColumns')"></span></label>
+      <div data-ref="picker-cols" data-help-key="" x-field="model.colRefs"></div>
+    </div>
+
+    <div class="field-group">
+      <label><span data-help-key="modules.glm-regression.fields.yRef.help" x-text="t('columnY')"></span></label>
+      <div data-ref="y-select" data-help-key="" x-field="model.yRef" x-widget-exclude="yExclude"></div>
+    </div>
+
+    <div class="field-group">
+      <label><span data-help-key="modules.glm-regression.fields.trialsRef.help" x-text="t('columnTrials')"></span> <span class="field-hint" x-text="t('columnTrialsHint')"></span></label>
+      <div data-ref="trials-select" data-help-key="" x-field="model.trialsRef" x-widget-exclude="trialsExclude"></div>
+    </div>
+
+    <div class="glm__hint" data-ref="selected-info" x-show="selectedInfoText" x-text="selectedInfoText"></div>
+
+    <div class="dmike-split__section-title"><span data-help-key="modules.glm-regression.fields.method.help" x-text="t('sectionMethod')"></span></div>
+
+    <div class="btn-group glm__methods" data-ref="method-group" role="radiogroup" data-help-key="" x-set="model.method">
+      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="auto" data-method="auto" :class="methodClass('auto')" x-text="t('methodAuto')"></button>
+      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="binomial" data-method="binomial" :class="methodClass('binomial')" x-text="t('methodBinomial')"></button>
+      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="poisson" data-method="poisson" :class="methodClass('poisson')" x-text="t('methodPoisson')"></button>
+      <button type="button" role="radio" class="btn--segment glm__method-btn" data-help-key="" value="negbin" data-method="negbin" :class="methodClass('negbin')" x-text="t('methodNegbin')"></button>
+    </div>
+
+    <div class="glm__detect-info" data-ref="detect-info" x-show="detectText"><span data-help-key="modules.glm-regression.fields.detection.help" x-text="detectText"></span></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label><span data-help-key="modules.glm-regression.fields.confLevel.help" x-text="t('confLevel')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="conf-level" data-help-key="" inputmode="decimal"
+          :value="confDisplay" placeholder="95" @change="commitConf($event)" @keydown="percentKeydown($event)">
+      </div>
+      <div class="field-group">
+        <label><span data-help-key="modules.glm-regression.fields.alpha.help" x-text="t('alphaRisk')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="alpha-level" data-help-key="" inputmode="decimal"
+          :value="alphaDisplay" placeholder="5" @change="commitAlpha($event)" @keydown="percentKeydown($event)">
+      </div>
+    </div>
+
+    <div class="field-error glm__error" data-ref="error-box" x-show="hasError" x-text="errorText"></div>
+  </div>
+
+  <!-- ─── Ausgabe (rechts) ────────────────────────────────────── -->
+  <div class="glm__output dmike-split__output">
+    <template x-if="orphanModelText">
+      <p class="glm__model-status" data-ref="saved-model-status"><span data-help-key="modules.glm-regression.fields.savedModel.help" x-text="orphanModelText"></span></p>
+    </template>
+
+    <div data-ref="results" x-show="hasFit">
+      <template x-if="hasFit">
+        <div>
+          <!-- Reiter -->
+          <div class="glm__tabs dmike-tabs" data-ref="tabs" role="tablist" x-tablist x-set="model.activeTab"
+            data-help-key="modules.glm-regression.fields.activeTab.help">
+            <template x-for="tb in tabs" :key="tb.id">
+              <button class="dmike-tab" type="button" role="tab" data-action="tab" data-help-key="" :value="tb.id" :data-tab="tb.id"
+                :class="tabClass(tb.id)" x-text="tb.label"></button>
+            </template>
+          </div>
+
+          <!-- ── Reiter Modell ── -->
+          <template x-if="isTab('model')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="model">
+              <template x-for="(w, wi) in warnings" :key="wi">
+                <div class="glm__warning" x-text="w"></div>
+              </template>
+
+              <div class="glm__model-actions" x-async-task="saveAsModel">
+                <button class="btn btn--primary" type="button" data-action="save-as-model"
+                  data-help-key="modules.glm-regression.asyncTasks.saveAsModel.help"
+                  :title="t('saveAsModelHint')" x-async-task-start x-text="saveLabel"></button>
+                <span class="glm__model-status" data-ref="model-status" x-text="modelStatusText"></span>
+                <p class="field-error" data-ref="save-error" x-async-task-error></p>
+              </div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('modelSummary')"></span></div>
+              <div class="glm__quality-grid" data-ref="summary">
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Family.name" x-text="t('family')"></span>
+                  <span class="glm__quality-value" x-text="summary.family"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Family.link" x-text="t('linkFunction')"></span>
+                  <span class="glm__quality-value" x-text="summary.link"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.n" x-text="t('common.sym.n')"></span>
+                  <span class="glm__quality-value" x-text="summary.n"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.iterations" x-text="t('iterations')"></span>
+                  <span class="glm__quality-value" x-text="summary.iterations"></span>
+                </div>
+                <template x-if="summary.theta">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Family.theta" x-text="t('thetaDispersion')"></span>
+                    <span class="glm__quality-value" x-text="summary.theta"></span>
+                  </div>
+                </template>
+                <template x-if="successText">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.fields.successClassInfo.help" x-text="t('successClass')"></span>
+                    <span class="glm__quality-value">
+                      <span data-ref="success-class" x-text="successText"></span>
+                      <button class="btn btn--xs" type="button" data-action="swap-success"
+                        data-help-key="modules.glm-regression.actions.swapSuccess.help"
+                        :title="t('swapSuccessTitle')" x-command="swapSuccess" x-text="swapText"></button>
+                    </span>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Kennzahlen -->
+              <div class="dmike-kpi-strip" data-ref="kpis">
+                <div :class="kpiClass('mcfadden')">
+                  <div class="dmike-kpi-value" x-text="kpi('mcfadden').value"></div>
+                  <div class="dmike-kpi-label" data-help-key="modules.glm-regression.types.PseudoR2.mcfadden">McFadden <span x-text="t('common.sym.r2')"></span></div>
+                </div>
+                <div :class="kpiClass('nagelkerke')">
+                  <div class="dmike-kpi-value" x-text="kpi('nagelkerke').value"></div>
+                  <div class="dmike-kpi-label" data-help-key="modules.glm-regression.types.PseudoR2.nagelkerke">Nagelkerke <span x-text="t('common.sym.r2')"></span></div>
+                </div>
+                <div :class="kpiClass('aic')">
+                  <div class="dmike-kpi-value" x-text="kpi('aic').value"></div>
+                  <div class="dmike-kpi-label" data-help-key="modules.glm-regression.types.Result.aic" x-text="t('aic')"></div>
+                </div>
+                <div :class="kpiClass('bic')">
+                  <div class="dmike-kpi-value" x-text="kpi('bic').value"></div>
+                  <div class="dmike-kpi-label" data-help-key="modules.glm-regression.types.Result.bic" x-text="t('bic')"></div>
+                </div>
+                <template x-if="hasAuc">
+                  <div :class="kpiClass('auc')">
+                    <div class="dmike-kpi-value" x-text="kpi('auc').value"></div>
+                    <div class="dmike-kpi-label" data-help-key="modules.glm-regression.types.Result.auc" x-text="t('common.sym.auc')"></div>
+                  </div>
+                </template>
+              </div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('modelQuality')"></span></div>
+              <div class="glm__quality-grid" data-ref="quality">
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.deviance" x-text="t('deviance')"></span>
+                  <span class="glm__quality-value" x-text="quality.deviance"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.nullDeviance" x-text="t('nullDeviance')"></span>
+                  <span class="glm__quality-value" x-text="quality.nullDeviance"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.logLikelihood" x-text="t('logLikelihood')"></span>
+                  <span class="glm__quality-value" x-text="quality.logLikelihood"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.PseudoR2.coxSnell">Cox-Snell <span x-text="t('common.sym.r2')"></span></span>
+                  <span class="glm__quality-value" x-text="quality.coxSnell"></span>
+                </div>
+                <template x-if="quality.hosmerLemeshow">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.hosmerLemeshow" x-text="t('hosmerLemeshow')"></span>
+                    <span class="glm__quality-value" x-text="quality.hosmerLemeshow"></span>
+                  </div>
+                </template>
+                <template x-if="quality.overdispersionRatio">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.overdispersionRatio" x-text="t('overdispersionRatio')"></span>
+                    <span class="glm__quality-value" x-text="quality.overdispersionRatio"></span>
+                  </div>
+                </template>
+              </div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.glm-regression.types.Result.equation" x-text="t('equation')"></span></div>
+              <div class="glm__equation" data-ref="equation" x-text="equation"></div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
+              <table class="dmike-table glm__coef-table" data-ref="coef-table">
+                <thead><tr>
+                  <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th>
+                  <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.estimate" x-text="t('coefficient')"></span></th>
+                  <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.se" x-text="t('common.sym.se')"></span></th>
+                  <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.z" x-text="t('common.sym.z')"></span></th>
+                  <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.p" x-text="t('pValue')"></span></th>
+                  <template x-if="coefs.ratioHeader">
+                    <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.ratio" x-text="coefs.ratioHeader"></span></th>
+                  </template>
+                  <th></th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="row in coefs.rows" :key="row.term">
+                    <tr>
+                      <td x-text="row.term"></td>
+                      <td x-text="row.coef"></td>
+                      <td x-text="row.se"></td>
+                      <td x-text="row.z"></td>
+                      <td :class="row.pClass" x-text="row.p"></td>
+                      <template x-if="coefs.ratioHeader">
+                        <td x-text="row.ratio"></td>
+                      </template>
+                      <td :class="row.pClass" x-text="row.stars"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <!-- ── Reiter Diagnostik ── -->
+          <template x-if="isTab('diagnostics')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="diagnostics">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('residualsVsFitted')"></span></div>
+              <div class="glm__chart" data-ref="chart-residuals"
+                x-widget="scatter-chart" x-widget-config="residualsChart"
+                x-widget-value="model.residualsEdits" x-widget-legacy-edit-key="'scatter'"></div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('qqTitle')"></span></div>
+              <div class="glm__chart" data-ref="chart-qq"
+                x-widget="scatter-chart" x-widget-config="qqChart"
+                x-widget-value="model.qqEdits" x-widget-legacy-edit-key="'scatter#2'"></div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('cooksTitle')"></span></div>
+              <div class="glm__chart glm__chart--cooks" data-ref="chart-cooks"
+                x-widget="scatter-chart" x-widget-config="cooksChart"
+                x-widget-value="model.cooksEdits" x-widget-legacy-edit-key="'scatter#3'"></div>
+
+              <template x-if="vif.length">
+                <div>
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('common.sym.vif')"></span></div>
+                  <table class="dmike-table glm__coef-table" data-ref="vif-table">
+                    <thead><tr>
+                      <th><span data-help-key="modules.glm-regression.types.Result.vifTerms" x-text="t('term')"></span></th>
+                      <th><span data-help-key="modules.glm-regression.types.Result.vif" x-text="t('common.sym.vif')"></span></th>
+                      <th></th>
+                    </tr></thead>
+                    <tbody>
+                      <template x-for="row in vif" :key="row.term">
+                        <tr>
+                          <td x-text="row.term"></td>
+                          <td x-text="row.vif"></td>
+                          <td :class="row.warnClass">
+                            <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true" x-show="row.warnIcon"></span>
+                            <span x-show="!row.warnIcon" x-text="row.warnText"></span>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
+
+              <template x-if="overdispersion">
+                <div data-ref="overdispersion">
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('overdispersionTitle')"></span></div>
+                  <div class="glm__quality-grid">
+                    <div class="glm__quality-item">
+                      <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Overdispersion.pearsonChi2">Pearson <span x-text="t('symChi2')"></span></span>
+                      <span class="glm__quality-value" x-text="overdispersion.pearsonChi2"></span>
+                    </div>
+                    <div class="glm__quality-item">
+                      <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Overdispersion.df" x-text="t('common.sym.df')"></span>
+                      <span class="glm__quality-value" x-text="overdispersion.df"></span>
+                    </div>
+                    <div class="glm__quality-item">
+                      <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Overdispersion.ratio"><span x-text="t('symChi2')"></span>/<span x-text="t('common.sym.df')"></span></span>
+                      <span class="glm__quality-value" x-text="overdispersion.ratio"></span>
+                    </div>
+                  </div>
+                  <template x-if="overdispersion.overdispersed">
+                    <div class="glm__warning" x-text="t('overdispersionHint')"></div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ── Reiter ROC (nur binomial) ── -->
+          <template x-if="isTab('roc')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="roc">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('rocCurve')"></span></div>
+              <div class="glm__chart glm__chart--roc" data-ref="chart-roc"
+                x-widget="scatter-chart" x-widget-config="rocChart" x-widget-value="model.rocEdits"></div>
+
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('classificationTitle')"></span></div>
+
+              <div class="glm__cutoff-row">
+                <label><span data-help-key="modules.glm-regression.fields.cutoff.help" x-text="t('cutoff')"></span></label>
+                <input type="range" min="0" max="1" step="0.01" data-ref="cutoff-slider" data-help-key=""
+                  x-field="model.cutoff" :value="cutoffValue">
+                <span class="glm__cutoff-value" data-ref="cutoff-display" x-text="cutoffText"></span>
+              </div>
+
+              <table class="glm__class-table" data-ref="class-table">
+                <thead>
+                  <tr><th></th><th><span data-help-key="modules.glm-regression.types.Classification.cutoff"><span x-text="t('predicted')"></span> 1</span></th><th><span data-help-key="modules.glm-regression.types.Classification.cutoff"><span x-text="t('predicted')"></span> 0</span></th></tr>
+                </thead>
+                <tbody>
+                  <tr><th><span data-help-key="modules.glm-regression.types.Classification.tp"><span x-text="t('actual')"></span> 1</span></th><td class="glm__tp" x-text="classTable.tp"></td><td class="glm__fn" x-text="classTable.fn"></td></tr>
+                  <tr><th><span data-help-key="modules.glm-regression.types.Classification.tn"><span x-text="t('actual')"></span> 0</span></th><td class="glm__fp" x-text="classTable.fp"></td><td class="glm__tn" x-text="classTable.tn"></td></tr>
+                </tbody>
+              </table>
+
+              <div class="glm__quality-grid" data-ref="class-metrics">
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Classification.sensitivity" x-text="t('sensitivity')"></span>
+                  <span class="glm__quality-value" x-text="classTable.sensitivity"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Classification.specificity" x-text="t('specificity')"></span>
+                  <span class="glm__quality-value" x-text="classTable.specificity"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Classification.accuracy" x-text="t('accuracy')"></span>
+                  <span class="glm__quality-value" x-text="classTable.accuracy"></span>
+                </div>
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Classification.precision" x-text="t('precision')"></span>
+                  <span class="glm__quality-value" x-text="classTable.precision"></span>
+                </div>
+              </div>
+
+              <template x-if="aucText">
+                <div class="glm__quality-grid">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.auc" x-text="t('common.sym.auc')"></span>
+                    <span class="glm__quality-value" data-ref="auc" x-text="aucText"></span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ── Reiter Prognose ── -->
+          <template x-if="isTab('prediction')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="prediction">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.glm-regression.actions.predict.help" x-text="t('predictionTitle')"></span></div>
+
+              <div class="glm__predict-inputs" data-ref="predict-inputs">
+                <template x-for="field in predictFields" :key="field.term">
+                  <div class="glm__predict-row">
+                    <label><span data-help-key="modules.glm-regression.fields.predictionTerms.help" x-text="field.term"></span></label>
+                    <input type="text" class="field field--num" data-help-key="" :data-ref="field.ref" inputmode="decimal" placeholder="0"
+                      :value="field.value" @input="onPredictInput(field.term, $event)">
+                  </div>
+                </template>
+              </div>
+
+              <button class="btn btn--xs" type="button" data-action="predict" data-help-key="modules.glm-regression.actions.predict.help"
+                @click="runPrediction" x-text="t('predictCalc')"></button>
+              <div class="glm__predict-result" data-ref="predict-result" x-show="showPredictBox">
+                <template x-if="predictResult">
+                  <div>
+                    <div><strong x-text="t('linearPredictor')"></strong>: <span data-ref="predict-linear" x-text="predictResult.linear"></span></div>
+                    <div><strong x-text="predictResult.respLabel"></strong>: <span data-ref="predict-response" x-text="predictResult.response"></span></div>
+                    <div><strong x-text="predictResult.ciLabel"></strong> <span data-ref="predict-ci" x-text="predictResult.ci"></span>
+                      <template x-if="predictResult.ciHint">
+                        <span class="dmike-hint" x-text="predictResult.ciHint"></span>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="predictError">
+                  <span x-text="predictError"></span>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

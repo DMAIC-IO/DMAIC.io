@@ -1,0 +1,241 @@
+/* ============================================================
+   GLM-Regression (resources/style.css)
+   BEM: .glm__ — Aufteilung über .dmike-split (css/modules.css),
+   Felder über .field/.field-group, Kennzahlen über .dmike-kpi-strip,
+   Reiter über .dmike-tabs, Tabellen über .dmike-table (components.css).
+   Keine festen Farben: Flächen über color-mix aus den App-Farben.
+   ============================================================ */
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* ─── Auto-detect info box ────────────────────────────────────── */
+
+.glm__detect-info {
+  margin-top: var(--spacing-s);
+  padding: var(--spacing-s) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--border-radius);
+  line-height: 1.4;
+}
+
+
+/* ─── Error / warning boxes ───────────────────────────────────── */
+
+.glm__warning {
+  padding: var(--spacing-s) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+  border: var(--border-width) solid var(--color-warning);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ─── KPI strip ───────────────────────────────────────────────── */
+
+/* Uses global .dmike-kpi-strip / .dmike-kpi from components.css */
+
+/* ─── Coefficient table ───────────────────────────────────────── */
+
+.glm__coef-table {
+  font-size: var(--font-size-xs);
+}
+
+.glm__coef-table th {
+  padding: var(--spacing-s) var(--spacing-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-border-secondary);
+  white-space: nowrap;
+}
+
+.glm__coef-table td {
+  border-bottom: var(--border-width) solid var(--color-border-primary);
+}
+
+.glm__coef-table td:first-child {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Significance coloring */
+.glm__sig--high   { color: var(--color-success); font-weight: var(--font-weight-bold); }
+.glm__sig--med    { color: var(--color-accent); }
+.glm__sig--low    { color: var(--color-warning); }
+.glm__sig--none   { color: var(--color-text-tertiary); }
+
+/* ─── Model quality block ─────────────────────────────────────── */
+
+.glm__quality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-s) var(--spacing-ml);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-sm) 0;
+}
+
+.glm__quality-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.glm__quality-label {
+  color: var(--color-text-secondary);
+}
+
+.glm__quality-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* ─── Classification table ────────────────────────────────────── */
+
+/* Confusion matrix: all-side borders and centred cells, so it is not a
+   .dmike-table and is excluded from the .dmike-split fallback. */
+
+.glm__class-table {
+  width: auto;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  margin: var(--spacing-sm) 0;
+}
+
+.glm__class-table th,
+.glm__class-table td {
+  padding: var(--spacing-xs) var(--spacing-m);
+  border: var(--border-width) solid var(--color-border-secondary);
+  text-align: center;
+}
+
+.glm__class-table th {
+  background: var(--color-bg-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.glm__class-table .glm__tp,
+.glm__class-table .glm__tn {
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  font-weight: var(--font-weight-bold);
+}
+
+.glm__class-table .glm__fp,
+.glm__class-table .glm__fn {
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+}
+
+/* ─── Cutoff slider ───────────────────────────────────────────── */
+
+.glm__cutoff-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-xs) 0;
+}
+
+.glm__cutoff-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-accent);
+}
+
+.glm__cutoff-value {
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─── Prediction form ─────────────────────────────────────────── */
+
+.glm__predict-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-sm);
+}
+
+.glm__predict-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.glm__predict-row label {
+  min-width: 90px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.glm__predict-row input {
+  flex: 1;
+}
+
+.glm__predict-result {
+  padding: var(--spacing-sm) var(--spacing-m);
+  font-size: var(--font-size-xs);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+  margin-top: var(--spacing-s);
+}
+
+.glm__predict-result strong {
+  color: var(--color-accent);
+}
+
+/* ─── Equation display ────────────────────────────────────────── */
+
+.glm__equation {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-family-mono);
+  font-size: 15px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  color: var(--color-accent);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* ─── Save-as-Model action (transfer to Response Optimizer) ───── */
+
+.glm__model-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.glm__model-status {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ─── Verfahren als Knopfgruppe (role="radiogroup") ───────────── */
+
+.glm__methods { flex-direction: column; }
+
+.glm__method-btn { text-align: left; }
+
+/* ─── Diagramme ───────────────────────────────────────────────── */
+
+.glm__chart { height: 280px; }
+.glm__chart--cooks { height: 250px; }
+.glm__chart--roc { height: 320px; }
+
+.glm__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.glm__error { white-space: pre-line; }

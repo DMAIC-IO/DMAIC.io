@@ -15,7 +15,7 @@ import { defineModel, command, text, number, oneOf, list, object, columnRef } fr
 import { roundTo } from '../../../core/number-format.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
 import {
-  analyze, agentResult, classificationOf, predictionTermsOf, complement, METHODS,
+  analyze, agentResult, classificationOf, predictionTermsOf, complement,
 } from './analyze.js';
 import { from0 } from './migrations.js';
 
@@ -24,9 +24,6 @@ import { from0 } from './migrations.js';
  * @param {number} v @returns {number}
  */
 const clampFraction = (v) => Math.min(0.9999, Math.max(0.0001, v));
-
-/** Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α). */
-const fraction = () => number({ exclusiveMin: 0, exclusiveMax: 1 });
 
 /** Ein Faktorbereich: stetig mit Grenzen, kategorial mit Stufen und Referenz. */
 const factorRange = () => object({
@@ -230,7 +227,7 @@ export class State extends defineModel({
     yRef: columnRef({ minCount: 1 }),
     trialsRef: columnRef({ minCount: 1 }),
     successClass: number({ nullable: true }),
-    method: oneOf([...METHODS], { default: 'auto' }),
+    method: oneOf(['auto', 'binomial', 'poisson', 'negbin'], { default: 'auto' }),
     confLevel: number({ exclusiveMin: 0, exclusiveMax: 1, agentWrite: false, default: (c) => clampFraction(roundTo(c.confidenceLevel / 100, 4)) }),
     alpha: number({ exclusiveMin: 0, exclusiveMax: 1, agentWrite: false, default: (c) => clampFraction(roundTo(1 - c.confidenceLevel / 100, 4)) }),
     cutoff: number({ min: 0, max: 1, default: 0.5 }),
@@ -248,7 +245,7 @@ export class State extends defineModel({
   },
   commands: {
     setConfLevel: command({
-      params: { value: fraction() },
+      params: { value: number({ exclusiveMin: 0, exclusiveMax: 1 }) },
       /**
        * Das Konfidenzniveau setzen; α wird 1 minus diesem Wert.
        * @param {{ value: number }} p
@@ -259,7 +256,7 @@ export class State extends defineModel({
       },
     }),
     setAlpha: command({
-      params: { value: fraction() },
+      params: { value: number({ exclusiveMin: 0, exclusiveMax: 1 }) },
       /**
        * Das Signifikanzniveau setzen; das Konfidenzniveau wird 1 minus diesem Wert.
        * @param {{ value: number }} p
