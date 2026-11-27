@@ -135,6 +135,11 @@
     "description": "Messmittelanalyse Typ 2 (mit Prüfer, Gage R&R) und Typ 3 (ohne Prüfer, automatisierte Messsysteme)",
     "whenToUse": "Wenn ein Messsystem mit mehreren Teilen (und meist mehreren Prüfern) bewertet werden soll: eine gekreuzte Studie liefert Wiederholbarkeit und Reproduzierbarkeit (Gage R&R) per ANOVA; ohne Prüferspalte rechnet das Modul als Typ 3 für automatisierte Messsysteme — nicht für die Eignung eines einzelnen Messmittels an einem Normal, dafür ist Typ 1 da. Setzt Teile, optional Prüfer und die Messwerte als Spalten einer Datensammlung voraus."
   },
+  "msa-typ4": {
+    "name": "MSA Typ 4 (Linearität)",
+    "description": "Messmittelanalyse Typ 4 — Linearität und Bias über den Messbereich (AIAG %Lin, VDA 5 Q_MS,BI)",
+    "whenToUse": "Wenn geprüft werden soll, ob ein Messsystem über den ganzen Messbereich gleich richtig misst: Referenzwerte und gemessene Werte als Spalten liefern Bias je Referenzpunkt und eine Regression des Bias über den Bereich (AIAG %Linearität oder VDA 5 Q_MS,BI) — nicht für die Eignung an einem einzelnen Normal, dafür ist Typ 1 da. Setzt eine Referenz- und eine Messwertspalte einer Datensammlung voraus."
+  },
   "msa-typ5": {
     "name": "MSA Typ 5 (attributiv)",
     "description": "Attributive Prüfmittel-Fähigkeit — mehrere Prüfer, Kappa-basierte Übereinstimmung (Cohen, Fleiss, weighted)",

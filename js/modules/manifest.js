@@ -61,17 +61,6 @@ export default [
       eightd: { phase: 'problem', allowedPhases: ['problem', 'rootcause'] },
     },
   },
-  {
-    id: 'msa-typ4',
-    phase: 'measure',
-    group: 'msa',
-    load: () => import('./msa-typ4/msa-typ4.js'),
-    cycles: {
-      dmaic:  { phase: 'measure' },
-      dmadv:  { phase: 'measure' },
-      eightd: { phase: 'problem' },
-    },
-  },
 
   // ─── Analyze ──────────────────────────────────────────────────
   {

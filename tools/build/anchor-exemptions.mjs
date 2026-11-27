@@ -62,8 +62,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('thLimit')", reason: 'Spalte der Zeilennamen UCL, CL, LCL; die Sätze stehen an den beiden Wertspalten', count: 1 },
   ],
   'msa-typ4': [
-    { match: 'name="msa4-norm"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
-    { match: 'name="msa4-pv"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
+    { match: 'class="msa-typ4__choice"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 4 },
   ],
   'msa-typ6': [
     { match: 'class="msa-typ6__choice"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 4 },

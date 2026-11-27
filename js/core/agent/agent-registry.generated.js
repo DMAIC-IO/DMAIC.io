@@ -11019,6 +11019,7 @@ export const AGENT_REGISTRY = {
   "msa-typ4": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -11033,135 +11034,35 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'name'|'unit'|'norm'|'pvMode'|'tolerance.LSL'|'tolerance.USL'|'sigmaP'|'alpha'",
-            "optional": false,
-            "help": "welcher Parameter; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "Bezeichnung des Merkmals"
-          },
-          "unit": {
-            "type": "string",
-            "help": "Maßeinheit"
-          },
-          "norm": {
-            "type": "'AIAG'|'VDA5'",
-            "help": "Bewertungsnorm"
-          },
-          "pvMode": {
-            "type": "'tolerance'|'sixSigma'",
-            "help": "Bezugsgröße der Prozessstreuung"
-          },
-          "tolerance.LSL": {
-            "type": "string",
-            "help": "untere Toleranzgrenze"
-          },
-          "tolerance.USL": {
-            "type": "string",
-            "help": "obere Toleranzgrenze"
-          },
-          "sigmaP": {
-            "type": "string",
-            "help": "Prozessstandardabweichung, nur im Modus sixSigma",
-            "optional": true
-          },
-          "alpha": {
-            "type": "'0.01'|'0.05'|'0.10'",
-            "help": "Signifikanzniveau"
-          }
-        }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'reference'|'measured'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Run analysis if both columns are selected; otherwise silently clear results (mirrors msa-typ1/msa-typ2 auto-analysis behaviour)."
-      },
-      "scheduleAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
-      },
-      "clearResults": {
-        "params": [],
-        "returns": "void",
-        "help": "Das Ergebnis und die Diagramme verwerfen."
       }
     },
     "fields": {
       "params": {
-        "type": "object",
-        "help": "the entered parameters (name, unit, norm, pvMode, tolerance { LSL, USL }, sigmaP, alpha), values as text as entered",
-        "bulk": false,
-        "derived": true
+        "type": "{ name: string, unit: string, norm: 'AIAG'|'VDA5', pvMode: 'tolerance'|'sixSigma', tolerance: { LSL: number|null, USL: number|null }, sigmaP: number|null, alpha: 0.01|0.05|0.1 }",
+        "help": "",
+        "bulk": false
       },
       "refColumn": {
-        "type": "object|null",
-        "help": "the chosen reference column, `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric"
+        ]
       },
       "measColumn": {
-        "type": "object|null",
-        "help": "the chosen measured column, `{ instanceId, sheetId, columnId }`, or null",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state (`sigmaP` only outside the tolerance mode)",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric"
+        ]
       },
       "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null while the inputs are incomplete or invalid",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -11402,10 +11303,54 @@ export const AGENT_REGISTRY = {
                 }
               }
             }
+          },
+          "invalid": {
+            "type": "Invalid",
+            "help": "Ablehnung der Engine",
+            "optional": true,
+            "keysOf": "Invalid",
+            "keys": {
+              "key": {
+                "type": "string",
+                "help": "Textschlüssel des Grunds"
+              },
+              "vars": {
+                "type": "object|null",
+                "help": "Werte im Text"
+              }
+            }
           }
         }
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "linearityChart",
+      "pctBiasChart",
+      "perRefChart",
+      "residualChart"
+    ],
+    "settable": [
+      "params",
+      "refColumn",
+      "measColumn"
+    ],
+    "invariants": [
+      "limitsOrder"
+    ]
   },
   "msa-typ5": {
     "tagged": true,

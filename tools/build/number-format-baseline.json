@@ -64,12 +64,6 @@
   "js/modules/model-data-generator/model-data-generator.js": {
     "count": 1
   },
-  "js/modules/msa-typ4/msa-typ4-model.js": {
-    "count": 2
-  },
-  "js/modules/msa-typ4/msa-typ4.js": {
-    "count": 2
-  },
   "js/modules/process-capability/domain/migrations.js": {
     "count": 1,
     "reason": "Migration alter Stände: Ganzzahltext der Untergruppengröße lesen wie das alte Model (parseFloat), wie bisher"

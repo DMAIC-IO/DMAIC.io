@@ -7,11 +7,10 @@ import h4 from '../modules/glm-regression/glm-regression-help.js';
 import h5 from '../modules/kano/kano-help.js';
 import h6 from '../modules/makigami/makigami-help.js';
 import h7 from '../modules/model-data-generator/model-data-generator-help.js';
-import h8 from '../modules/msa-typ4/msa-typ4-help.js';
-import h9 from '../modules/process-map/process-map-help.js';
-import h10 from '../modules/regression/regression-help.js';
-import h11 from '../modules/response-optimization/response-optimization-help.js';
-import h12 from '../modules/rest-api/rest-api-help.js';
+import h8 from '../modules/process-map/process-map-help.js';
+import h9 from '../modules/regression/regression-help.js';
+import h10 from '../modules/response-optimization/response-optimization-help.js';
+import h11 from '../modules/rest-api/rest-api-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -22,9 +21,8 @@ export const HELP = {
   "kano": h5,
   "makigami": h6,
   "model-data-generator": h7,
-  "msa-typ4": h8,
-  "process-map": h9,
-  "regression": h10,
-  "response-optimization": h11,
-  "rest-api": h12,
+  "process-map": h8,
+  "regression": h9,
+  "response-optimization": h10,
+  "rest-api": h11,
 };
