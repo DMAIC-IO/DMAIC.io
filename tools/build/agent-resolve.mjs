@@ -338,8 +338,8 @@ export function isFunctionLike(node) {
 
 /**
  * Die Deklaration eines Namens innerhalb einer Datei — auch verschachtelt.
- * Das `_core`-Muster von `process-map` liegt INNERHALB von `data()`, eine
- * Suche nur über `sf.statements` würde es übersehen.
+ * Ein Muster wie `const _core = mix()` kann INNERHALB von `data()` liegen,
+ * eine Suche nur über `sf.statements` würde es übersehen.
  *
  * Klassendeklarationen zählen mit, seit die Model-Seite die `extends`-Kette
  * verfolgt (`export class State extends FlowchartState`). Für die

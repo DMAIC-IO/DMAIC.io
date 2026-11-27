@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "process-map-pizza-lieferung",
+      "type": "project",
+      "title": {
+        "de": "Process Map Pizza-Lieferung",
+        "en": "Process Map Pizza Delivery"
+      },
+      "description": {
+        "de": "8 Prozessschritte mit Value-Type-Klassifikation (VA / BNVA) und Input-Typen (Parameter x / Störgröße n). Bestellung → Küche → Backen → Verpacken → Auslieferung → Übergabe.",
+        "en": "8 process steps with value-type classification (VA / BNVA) and input types (parameter x / noise n). Order → kitchen → bake → pack → deliver → handover."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/process-map-pizza-lieferung.json",
+      "format": "json",
+      "tags": [
+        "measure",
+        "process-map",
+        "value-stream",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "process-map-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Prozess-Map",
+        "en": "Paper Helicopter — Process Map"
+      },
+      "description": {
+        "de": "8 Prozessschritte vom Ausschneiden bis zum Blockwechsel, inklusive exakter Faltmaße (Rotor 80×47 mm, Body 130 mm, Faltlinien x = 30/47/63 mm) und Rework-Loop bei Falzfehler zurück zum Falt-Schritt.",
+        "en": "8 process steps from cutting to block change, including exact fold dimensions (rotor 80×47 mm, body 130 mm, fold lines x = 30/47/63 mm) and a rework loop back to the folding step on a fold defect."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/process-map-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    }
+  ]
+}

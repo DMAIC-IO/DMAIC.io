@@ -54,7 +54,7 @@ test('returnObjectLiteral: handles a parenthesised arrow body', () => {
 });
 
 test('findLocalDeclaration: finds a const declared inside a function body', () => {
-  // Das `_core`-Muster von process-map liegt INNERHALB von `data()`.
+  // Ein `_core`-Muster kann INNERHALB von `data()` liegen.
   const sf = sourceOf('function data() { const _core = mix(); return { ..._core }; }');
   assert.ok(findLocalDeclaration('_core', sf));
   assert.equal(findLocalDeclaration('nope', sf), null);

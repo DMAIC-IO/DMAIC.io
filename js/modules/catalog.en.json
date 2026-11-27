@@ -225,6 +225,11 @@
     "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",
     "whenToUse": "When it must be shown how well a process keeps a measured characteristic inside its specification limits: Cp and Cpk (short term, from the within-subgroup spread), Pp and Ppk (long term), PPM and sigma level, with confidence intervals. Works with one-sided or two-sided limits, individual values or subgroups. Needs at least one limit (lower or upper) and at least 2 numeric values from a data collection column or from loaded example data."
   },
+  "process-map": {
+    "name": "Process Map",
+    "description": "Visual process flow with inputs and outputs per step",
+    "whenToUse": "When an existing process needs documenting as a horizontal step chain with inputs, outputs, value-add classification and rework loops — not for a pure role or decision view, that is Deployment resp. Activity Flowchart."
+  },
   "project-charter": {
     "name": "Project Charter",
     "description": "Project mandate: problem statement and measurable goals",

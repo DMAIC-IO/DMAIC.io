@@ -445,7 +445,7 @@ test('collectAgentData: a spread of an imported object constant resolves its met
 });
 
 test('collectAgentData: a spread of a local constant holding a factory call resolves', async () => {
-  // Das Muster von process-map: `const _core = chainViewMixin(…)` im `data()`,
+  // Das Muster `const _core = chainViewMixin(…)` im `data()`,
   // danach `..._core` plus Aufrufe von `_core.x.call(this)`.
   const vm = vmWith('..._core,').replace('  data(module, _t) {\n    return {',
     '  data(module, _t) {\n    const _core = mixFactory(module, { mountPicker() {} });\n    return {');

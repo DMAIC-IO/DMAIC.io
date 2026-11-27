@@ -279,7 +279,6 @@ const SKIP = new Set([
   'modules/ishikawa/causes-view.test.js',
   'modules/ishikawa/snapshots-view.test.js',
   'modules/ishikawa/experiments-view.test.js',
-  'modules/process-map-export.test.js',
   'modules/process-map/view.test.js',
   'core/rich-text.test.js',
   'core/rich-text-directive.test.js',

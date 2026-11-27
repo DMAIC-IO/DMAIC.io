@@ -177,9 +177,7 @@
   --color-action-bar-border: var(--color-border-primary);
 
   /* Flowchart family (Process Map, Activity, Opportunity, Deployment) —
-     shared step-card accent, consumed by js/core/flowchart/flowchart.css.
-     The --color-pmap-* aliases below keep Process Map's existing selectors
-     working unchanged. */
+     shared step-card accent, consumed by js/core/flowchart/flowchart.css. */
   --color-flowchart-step-accent: var(--color-accent);
   --color-flowchart-step-accent-bg: rgb(0 102 204 / 10%);
 
@@ -187,28 +185,6 @@
      chart's only reading direction, and as borders they disappeared against
      the card outlines they sit between. */
   --color-flowchart-connector: var(--color-text-tertiary);
-
-  /* Process Map colors */
-  --color-pmap-input: #34c759;
-  --color-pmap-input-bg: rgb(52 199 89 / 10%);
-  --color-pmap-output: #ff9500;
-  --color-pmap-output-bg: rgb(255 149 0 / 10%);
-  --color-pmap-step-accent: var(--color-flowchart-step-accent);
-  --color-pmap-step-accent-bg: var(--color-flowchart-step-accent-bg);
-  --color-pmap-connector: var(--color-flowchart-connector);
-  --color-pmap-va: #34c759;
-  --color-pmap-va-bg: rgb(52 199 89 / 12%);
-  --color-pmap-bnva: #ff9f0a;
-  --color-pmap-bnva-bg: rgb(255 159 10 / 12%);
-  --color-pmap-nva: #ff3b30;
-  --color-pmap-nva-bg: rgb(255 59 48 / 12%);
-  --color-pmap-param: #007aff;
-  --color-pmap-param-bg: rgb(0 122 255 / 12%);
-  --color-pmap-noise: #af52de;
-  --color-pmap-noise-bg: rgb(175 82 222 / 12%);
-  --color-pmap-loop: #e67e22;
-  --color-pmap-loop-bg: rgb(230 126 34 / 8%);
-  --color-pmap-loop-border: rgb(230 126 34 / 30%);
 
   /* VoC → CTx Tree colors */
   --color-vct-voc: #e67e22;
@@ -297,6 +273,7 @@
   --chart-cost-money: #16a34a;
   --chart-cost-hours: #2563eb;
   --chart-bar-default: #94a3b8;
+
   /* Randfarbe der Punkte im Streudiagramm: folgt dem Seitenhintergrund (hell weiß). */
   --chart-marker-stroke: var(--color-bg-primary);
 }

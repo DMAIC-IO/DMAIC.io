@@ -6,13 +6,12 @@ import { createInstances } from '../../js/core/instances.js';
 import { defineModel, number, command, setCommandObserver } from '../../js/core/model.js';
 import { initialModel } from '../../js/core/initial-model.js';
 import { StateManager } from '../../js/core/state-manager.js';
-import { MIXIN_READ_MODULES } from '../../js/core/agent/agent-read-mixin.js';
 
 /**
- * Ein Modul der Altform mit dem geteilten read() — irgendeins aus der Liste,
+ * Ein Modul der Altform (kein `createModule`, kein `readStored`) — synthetisch,
  * damit die Tests nicht an einem Modul hängen, das bald umgestellt wird.
  */
-export const LEGACY_MODULE_ID = MIXIN_READ_MODULES[MIXIN_READ_MODULES.length - 1];
+export const LEGACY_MODULE_ID = 'legacy-module';
 
 export const Doc = defineModel({
   version: '1.0',

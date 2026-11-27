@@ -225,6 +225,11 @@
     "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",
     "whenToUse": "Wenn gezeigt werden soll, wie gut ein Prozess ein Merkmal innerhalb seiner Spezifikationsgrenzen hält: Cp und Cpk (kurzfristig, aus der Streuung innerhalb der Untergruppen), Pp und Ppk (langfristig), PPM und Sigma-Level, jeweils mit Konfidenzintervallen. Geht mit einseitigen und zweiseitigen Grenzen, Einzelwerten und Untergruppen. Braucht mindestens eine Grenze (untere oder obere) und mindestens 2 numerische Werte aus einer Spalte einer Datensammlung oder aus geladenen Beispieldaten."
   },
+  "process-map": {
+    "name": "Process Map",
+    "description": "Visueller Prozessfluss mit Inputs und Outputs je Schritt",
+    "whenToUse": "Wenn ein bestehender Prozess als horizontale Schrittkette mit Inputs, Outputs, Wertschöpfungs-Klassifizierung und Rework-Loops dokumentiert werden soll — nicht für eine reine Rollen- oder Entscheidungssicht, dafür gibt es Deployment- bzw. Activity Flowchart."
+  },
   "project-charter": {
     "name": "Projektauftrag",
     "description": "Projektauftrag: Problembeschreibung und messbare Ziele",

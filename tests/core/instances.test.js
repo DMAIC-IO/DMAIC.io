@@ -6,10 +6,8 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertRejects } from '../test-utils.js';
 import { createInstances } from '../../js/core/instances.js';
 import { initialModel, loadModel } from '../../js/core/initial-model.js';
-import { readAgentState } from '../../js/core/agent/agent-read-mixin.js';
-import { AGENT_REGISTRY } from '../../js/core/agent/agent-registry.generated.js';
 import { Workspace } from '../../js/ui/workspace.js';
-import { Doc, makeBus, makeState, targetModule, makeWorkspace, PHASES, setup, LEGACY_MODULE_ID } from '../helpers/instances-setup.js';
+import { Doc, makeBus, makeState, targetModule, makeWorkspace, PHASES, setup } from '../helpers/instances-setup.js';
 
 const noRemote = (bus) => assertEqual(bus.emitted.filter(([n]) => n === 'state:remote-changed').length, 0,
   'state:remote-changed darf instances nie senden');
@@ -85,16 +83,6 @@ suite('instances.read', () => {
     const { svc, sm } = setup({ completed: true });
     assertEqual((await svc.read('d2')).n, 1);
     assertEqual(sm.writes.length, 0);
-  });
-
-  test('Altform mit Mixin: readAgentState über den gespeicherten Stand', async () => {
-    // Je erklärtes Feld ein Wert: der Lesestand ist nicht leer.
-    const saved = Object.fromEntries(Object.keys(AGENT_REGISTRY[LEGACY_MODULE_ID].fields).map((k) => [k, []]));
-    const { svc, sm } = setup({ states: { dx: saved } });
-    const out = await svc.read('dx', { fields: [] });
-    assertTrue(Object.keys(out).length > 0, 'Lesestand leer — der Fall prüfte nichts');
-    assertDeepEqual(out, readAgentState(LEGACY_MODULE_ID, saved, { fields: [] }));
-    assertEqual(sm.writes.length, 0, 'Altform wird beim Lesen nicht zurückgeschrieben');
   });
 
   test('Altform mit eigenem read(): needs_mount', async () => {

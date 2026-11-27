@@ -29,19 +29,6 @@ export default [
     load: () => import('./rest-api/rest-api.js'),
   },
 
-  // ─── Measure ──────────────────────────────────────────────────
-  {
-    id: 'process-map',
-    phase: 'measure',
-    group: 'flowcharts',
-    load: () => import('./process-map/process-map.js'),
-    cycles: {
-      dmaic:  { phase: 'measure' },
-      dmadv:  { phase: 'measure' },
-      eightd: { phase: 'problem', allowedPhases: ['problem', 'rootcause'] },
-    },
-  },
-
   // ─── Analyze ──────────────────────────────────────────────────
   {
     id: 'activity-flowchart',

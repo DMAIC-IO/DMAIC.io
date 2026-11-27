@@ -21,7 +21,6 @@
  * bleibt dem Kern vorbehalten. `interact` schickt einen Stapel der
  * Agentenfläche an andere Instanzen; die Workspace bindet den Aufrufer.
  */
-import { readAgentState, MIXIN_READ_MODULES } from './agent/agent-read-mixin.js';
 import { AGENT_REGISTRY } from './agent/agent-registry.generated.js';
 import { stripPaths } from './view-fields.js';
 
@@ -242,9 +241,6 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
         stateManager.setModuleState(instanceId, json);
       }
       return stripPaths(m.readDetached(model, createSource(), options, i18n), viewFields);
-    }
-    if (MIXIN_READ_MODULES.includes(moduleId)) {
-      return stripPaths(readAgentState(moduleId, saved ?? {}, options), viewFields);
     }
     throw codeError('needs_mount');
   }

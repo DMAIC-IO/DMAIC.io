@@ -14878,563 +14878,484 @@ export const AGENT_REGISTRY = {
   "process-map": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
-      "setSubstepsExpanded": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the step whose substeps are shown or hidden"
-          },
-          {
-            "name": "expanded",
-            "type": "boolean",
-            "optional": false,
-            "help": "whether the substep list should be shown"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a step's substep disclosure absolutely."
-      },
-      "moveStep": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des zu verschiebenden Schritts"
-          },
-          {
-            "name": "gapIndex",
-            "type": "number",
-            "optional": false,
-            "help": "Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in der Kette VOR dem Verschieben."
-      },
-      "moveSubstep": {
-        "params": [
-          {
-            "name": "parentId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "substepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des zu verschiebenden Unter-Schritts"
-          },
-          {
-            "name": "targetSubstepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Unter-Schritts, dessen Platz er einnimmt"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts."
-      },
-      "addSubstep": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          }
-        ],
-        "returns": "string",
-        "help": "Legt unter einem Schritt einen Teilschritt an."
-      },
-      "removeSubstep": {
-        "params": [
-          {
-            "name": "parentId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "substepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Teilschritts"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt einen Teilschritt."
-      },
-      "setSubstepTitle": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the step holding the substep"
-          },
-          {
-            "name": "substepId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the substep"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "the new title"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a substep's title."
-      },
       "read": {
         "params": [
           {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addStep": {
+        "target": "model",
         "params": [
           {
-            "name": "atIndex",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Fügt einen neuen, leeren Schritt an einer Lücke der Kette ein und liefert seine id."
+        "help": "",
+        "keysOf": "addStep",
+        "keysHelp": "actions.addStep.params",
+        "keys": {
+          "atIndex": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
       },
       "removeStep": {
+        "target": "model",
         "params": [
           {
-            "name": "id",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Schritt aus der Kette. Jeder Loop, der ihn als Ziel trägt, wird dabei ebenfalls gelöscht."
+        "help": "",
+        "keysOf": "removeStep",
+        "keysHelp": "actions.removeStep.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "addIO": {
+      "moveStep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveStep",
+        "keysHelp": "actions.moveStep.params",
+        "keys": {
+          "id": {
             "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
+            "help": ""
           },
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "appendSteps": {
+        "target": "model",
+        "params": [
           {
-            "name": "type",
-            "type": "'inputs'|'outputs'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die Liste, an die angehängt wird"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "appendSteps",
+        "keysHelp": "actions.appendSteps.params",
+        "keys": {
+          "steps": {
+            "type": "{ title: string }[]",
+            "help": ""
+          }
+        }
+      },
+      "cycleValueType": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "cycleValueType",
+        "keysHelp": "actions.cycleValueType.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addIO": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Hängt einen Input oder Output an einen Schritt an und liefert seine id."
+        "help": "",
+        "keysOf": "addIO",
+        "keysHelp": "actions.addIO.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "type": {
+            "type": "'inputs'|'outputs'",
+            "help": ""
+          }
+        }
       },
       "removeIO": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "type",
-            "type": "'inputs'|'outputs'",
-            "optional": false,
-            "help": "die Liste, aus der entfernt wird"
-          },
-          {
-            "name": "ioId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Eintrags"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Input oder Output von einem Schritt."
+        "help": "",
+        "keysOf": "removeIO",
+        "keysHelp": "actions.removeIO.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "type": {
+            "type": "'inputs'|'outputs'",
+            "help": ""
+          },
+          "ioId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "moveIO": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "type",
-            "type": "'inputs'|'outputs'",
-            "optional": false,
-            "help": "die Liste, in der verschoben wird"
-          },
-          {
-            "name": "ioId",
-            "type": "string",
-            "optional": false,
-            "help": "id des zu verschiebenden Eintrags"
-          },
-          {
-            "name": "targetIoId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Eintrags, dessen Platz er einnimmt"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Verschiebt einen Input oder Output innerhalb seiner Liste an den Platz eines anderen Eintrags derselben Liste."
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveIO",
+        "keysHelp": "actions.moveIO.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "type": {
+            "type": "'inputs'|'outputs'",
+            "help": ""
+          },
+          "ioId": {
+            "type": "string",
+            "help": ""
+          },
+          "targetIoId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "cycleInputType": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "ioId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Inputs"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter (x) → Störgröße (n) → kein Typ."
+        "help": "",
+        "keysOf": "cycleInputType",
+        "keysHelp": "actions.cycleInputType.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "ioId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "cycleValueType": {
+      "addSubstep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "void",
-        "help": "Schaltet den Wertschöpfungstyp eines Schritts weiter: nicht klassifiziert → wertschöpfend (VA) → geschäftlich notwendig (BNVA) → nicht wertschöpfend (NVA) → nicht klassifiziert."
+        "returns": "string",
+        "help": "",
+        "keysOf": "addSubstep",
+        "keysHelp": "actions.addSubstep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "setStepTitle": {
+      "removeSubstep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Titel"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Schritts."
+        "help": "",
+        "keysOf": "removeSubstep",
+        "keysHelp": "actions.removeSubstep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "substepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "setStepDescription": {
+      "moveSubstep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die neue Beschreibung"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts."
+        "help": "",
+        "keysOf": "moveSubstep",
+        "keysHelp": "actions.moveSubstep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "substepId": {
+            "type": "string",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
       },
-      "setIOName": {
+      "setExpanded": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "type",
-            "type": "'inputs'|'outputs'",
-            "optional": false,
-            "help": "die Liste, in der der Eintrag steht"
-          },
-          {
-            "name": "ioId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Eintrags"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Setzt den Namen eines Inputs oder Outputs."
+        "help": "",
+        "keysOf": "setExpanded",
+        "keysHelp": "actions.setExpanded.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "expanded": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
       },
       "setLoop": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": "true legt den Loop an, false entfernt ihn"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Legt den Loop eines Schritts an oder entfernt ihn. Ein neu angelegter Loop ist leer — ohne Bedingung, Ziel oder Rework-Schritte; ein entfernter nimmt diese Angaben mit."
-      },
-      "setLoopCondition": {
-        "params": [
-          {
-            "name": "stepId",
+        "help": "",
+        "keysOf": "setLoop",
+        "keysHelp": "actions.setLoop.params",
+        "keys": {
+          "stepId": {
             "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
+            "help": ""
           },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die neue Bedingung"
+          "on": {
+            "type": "boolean",
+            "help": ""
           }
-        ],
-        "returns": "boolean",
-        "help": "Setzt die Auslösebedingung eines Loops."
-      },
-      "setLoopTarget": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "targetStepId",
-            "type": "string|null",
-            "optional": false,
-            "help": "id eines vorhandenen Schritts, oder `null`/leerer String, um das Ziel zu löschen"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt)."
+        }
       },
       "removeLoop": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt den Loop eines Schritts."
+        "help": "",
+        "keysOf": "removeLoop",
+        "keysHelp": "actions.removeLoop.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setLoopTarget": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setLoopTarget",
+        "keysHelp": "actions.setLoopTarget.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "targetStepId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
       },
       "addLoopStep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "string|null",
-        "help": "Hängt einen Rework-Schritt an den Loop eines Schritts an und liefert seine id."
+        "returns": "string",
+        "help": "",
+        "keysOf": "addLoopStep",
+        "keysHelp": "actions.addLoopStep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeLoopStep": {
+        "target": "model",
         "params": [
           {
-            "name": "stepId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "loopStepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Rework-Schritts"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Rework-Schritt aus dem Loop eines Schritts."
-      },
-      "setLoopStepTitle": {
-        "params": [
-          {
-            "name": "stepId",
+        "help": "",
+        "keysOf": "removeLoopStep",
+        "keysHelp": "actions.removeLoopStep.params",
+        "keys": {
+          "stepId": {
             "type": "string",
-            "optional": false,
-            "help": "id des Schritts, der den Loop trägt"
+            "help": ""
           },
-          {
-            "name": "loopStepId",
+          "loopStepId": {
             "type": "string",
-            "optional": false,
-            "help": "id des Rework-Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Titel"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Setzt den Titel eines Rework-Schritts."
+        }
       }
     },
     "fields": {
       "steps": {
-        "type": "PmStep[]",
-        "help": "die Kette in Reihenfolge, jede Angabe unter keys beschrieben",
-        "bulk": false,
-        "keysOf": "PmStep",
-        "keys": {
-          "id": {
-            "type": "string",
-            "help": "Kennung"
-          },
-          "title": {
-            "type": "string",
-            "help": "Titel"
-          },
-          "description": {
-            "type": "string",
-            "help": "Beschreibung"
-          },
-          "valueType": {
-            "type": "'va'|'bnva'|'nva'|null",
-            "help": "Wertart, null solange keine gewählt ist"
-          },
-          "inputs": {
-            "type": "PmIO[]",
-            "help": "Inputs",
-            "keysOf": "PmIO",
-            "keys": {
-              "id": {
-                "type": "string",
-                "help": "Kennung"
-              },
-              "name": {
-                "type": "string",
-                "help": "Bezeichnung"
-              },
-              "inputType": {
-                "type": "'param'|'noise'",
-                "help": "Art eines Inputs; nur bei Inputs",
-                "optional": true
-              }
-            }
-          },
-          "outputs": {
-            "type": "PmIO[]",
-            "help": "Outputs",
-            "keysOf": "PmIO",
-            "keys": {
-              "id": {
-                "type": "string",
-                "help": "Kennung"
-              },
-              "name": {
-                "type": "string",
-                "help": "Bezeichnung"
-              },
-              "inputType": {
-                "type": "'param'|'noise'",
-                "help": "Art eines Inputs; nur bei Inputs",
-                "optional": true
-              }
-            }
-          },
-          "expanded": {
-            "type": "boolean",
-            "help": "Unter-Schritte aufgeklappt"
-          },
-          "substeps": {
-            "type": "FlowSubstep[]",
-            "help": "Unter-Schritte",
-            "keysOf": "FlowSubstep",
-            "keys": {
-              "id": {
-                "type": "string",
-                "help": "Kennung"
-              },
-              "title": {
-                "type": "string",
-                "help": "Titel"
-              }
-            }
-          },
-          "loop": {
-            "type": "PmLoop|null",
-            "help": "die Schleife des Schritts, oder null",
-            "keysOf": "PmLoop",
-            "keys": {
-              "targetStepId": {
-                "type": "string|null",
-                "help": "Schritt, zu dem die Schleife zurückführt"
-              },
-              "condition": {
-                "type": "string",
-                "help": "Bedingung der Schleife"
-              },
-              "steps": {
-                "type": "FlowSubstep[]",
-                "help": "Schritte innerhalb der Schleife",
-                "keysOf": "FlowSubstep",
-                "keys": {
-                  "id": {
-                    "type": "string",
-                    "help": "Kennung"
-                  },
-                  "title": {
-                    "type": "string",
-                    "help": "Titel"
-                  }
-                }
-              }
-            }
-          }
-        }
+        "type": "Array<{ id: string, title: string, description: string, valueType: 'va'|'bnva'|'nva'|null, inputs: Array<{ id: string, name: string, inputType: 'param'|'noise'|null }>, outputs: { id: string, name: string }[], substeps: { id: string, title: string }[], loop: { targetStepId: string|null, condition: string, steps: { id: string, title: string }[] }|null }>",
+        "help": "",
+        "bulk": false
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "expanded"
+    ],
+    "settable": [
+      "steps"
+    ],
+    "invariants": [
+      "uniqueStepIds",
+      "uniqueSubstepIds",
+      "uniqueIoIds",
+      "uniqueLoopStepIds",
+      "validExpanded",
+      "loopTargetBefore"
+    ]
   },
   "project-charter": {
     "tagged": true,

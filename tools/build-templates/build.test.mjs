@@ -18,7 +18,7 @@ assert.equal(KEY_PREFIX, 'js/');
 {
   const parts = new Map([['js/core/flowchart/substeps.part.html', '<div class="fc-substeps"></div>']]);
   const out = expandIncludes(
-    'js/modules/process-map/process-map.html',
+    'js/modules/activity-flowchart/activity-flowchart.html',
     '<div class="card">\n  <!-- @include js/core/flowchart/substeps.part.html -->\n</div>',
     (key) => parts.get(key),
   );

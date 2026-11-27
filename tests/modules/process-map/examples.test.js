@@ -29,7 +29,7 @@ function asTarget(steps) {
 suite('Process Map Beispiele', () => {
   for (const id of ['process-map-pizza-lieferung', 'process-map-hubschrauber-flyer']) {
     test(`${id}: lädt ohne Reparatur, Zustand wie das read() der Altform`, async () => {
-      const ex = await fetchJson(`../../../examples/projects/${id}.json`);
+      const ex = await fetchJson(`../../../js/modules/process-map/resources/examples/projects/${id}.json`);
       const old = (await fetchJson('./legacy-read.json'))[id];
       const repaired = [];
       const m = /** @type {any} */ (State.fromJSON(plain(ex), { onRepair: (f) => repaired.push(f) }));
