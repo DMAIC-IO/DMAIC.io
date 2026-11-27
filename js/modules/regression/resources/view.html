@@ -1,0 +1,417 @@
+<div class="reg dmike-split" x-data="regression">
+  <!-- data-help-key="" an Wählerwirten, Eingaben und Knöpfen ist gewollt: Beschriftung bzw. Gruppe tragen die Anker fields.*. -->
+  <!-- ─── Eingabe (links) ─────────────────────────────────────── -->
+  <div class="reg__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <template x-if="showImport">
+      <div class="field-group">
+        <label><span data-help-key="modules.regression.fields.activeImportSource.help" x-text="t('importFromExperiment')"></span></label>
+        <template x-if="hasImportOptions">
+          <select class="field" data-ref="doe-import" data-help-key="" @change="onImportChange($event)">
+            <option value="" x-text="t('importPlaceholder')"></option>
+            <template x-for="o in importOptions" :key="o.key">
+              <option :value="o.key" x-text="o.label"></option>
+            </template>
+          </select>
+        </template>
+        <template x-if="showImportMissing">
+          <p class="reg__hint" data-ref="import-missing" x-text="t('importSourceMissing')"></p>
+        </template>
+      </div>
+    </template>
+
+    <template x-if="showNoWorksheet">
+      <div class="reg__hint" data-ref="no-worksheet" x-text="t('noWorksheet')"></div>
+    </template>
+
+    <div class="field-group">
+      <label><span data-help-key="modules.regression.fields.colRefs.help" x-text="t('selectColumns')"></span></label>
+      <div data-ref="picker-cols" data-help-key="" x-field="model.colRefs"></div>
+    </div>
+
+    <div class="field-group">
+      <label><span data-help-key="modules.regression.fields.yRef.help" x-text="t('columnY')"></span></label>
+      <div data-ref="y-select" data-help-key="" x-field="model.yRef" x-widget-exclude="yExclude"></div>
+    </div>
+
+    <div class="reg__selected-info" data-ref="selected-info">
+      <span :class="selectedInfoClass" x-text="selectedInfoText"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+
+    <div class="field-group">
+      <label><span data-help-key="modules.regression.fields.regType.help" x-text="t('regType')"></span></label>
+      <select class="field" data-ref="reg-type" data-help-key="" x-field="model.regType">
+        <option value="polynomial" x-text="t('typePolynomial')"></option>
+        <option value="exponential" x-text="t('typeExponential')"></option>
+        <option value="logarithmic" x-text="t('typeLogarithmic')"></option>
+        <option value="power" x-text="t('typePower')"></option>
+      </select>
+    </div>
+
+    <div class="field-group" data-ref="degree-field" x-show="isPolynomial">
+      <label><span data-help-key="modules.regression.fields.polyDegree.help" x-text="t('polyDegree')"></span></label>
+      <select class="field" data-ref="poly-degree" data-help-key="" x-field="model.polyDegree">
+        <option value="1" :disabled="degreeDisabled(1)" :title="degreeTitle(1)" x-text="t('degree1')"></option>
+        <option value="2" :disabled="degreeDisabled(2)" :title="degreeTitle(2)" x-text="t('degree2')"></option>
+        <option value="3" :disabled="degreeDisabled(3)" :title="degreeTitle(3)" x-text="t('degree3')"></option>
+      </select>
+      <div class="reg__degree-hint" data-ref="degree-hint" x-show="degreeHint" x-text="degreeHint"></div>
+    </div>
+
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label><span data-help-key="modules.regression.fields.confLevel.help" x-text="t('confLevel')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="conf-level" data-help-key="" inputmode="decimal"
+          :value="confDisplay" placeholder="95" @change="commitConf($event)" @keydown="percentKeydown($event)">
+      </div>
+      <div class="field-group">
+        <label><span data-help-key="modules.regression.fields.alpha.help" x-text="t('alphaRisk')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="alpha-level" data-help-key="" inputmode="decimal"
+          :value="alphaDisplay" placeholder="5" @change="commitAlpha($event)" @keydown="percentKeydown($event)">
+      </div>
+    </div>
+
+    <div class="field-checks">
+      <label class="field-check">
+        <input type="checkbox" data-action="toggle-ci" data-help-key="" x-model="model.showCI">
+        <span data-help-key="modules.regression.fields.showCI.help" x-text="t('showCI')"></span>
+      </label>
+      <label class="field-check">
+        <input type="checkbox" data-action="toggle-pi" data-help-key="" x-model="model.showPI">
+        <span data-help-key="modules.regression.fields.showPI.help" x-text="t('showPI')"></span>
+      </label>
+    </div>
+
+    <div class="field-error reg__error" data-ref="error-box" x-show="hasError" x-text="errorText"></div>
+    <div class="reg__aliased" data-ref="aliased-list" x-show="aliasedRows.length">
+      <template x-for="row in aliasedRows" :key="row.term">
+        <div class="reg__aliased-row">
+          <span x-text="row.term"></span>
+          <button type="button" class="btn btn--secondary btn--sm" data-action="exclude-aliased"
+            data-help-key="modules.regression.actions.setTerm.help"
+            x-command="setTerm" :data-arg-term="row.term" data-arg-included="false"
+            x-text="t('excludeAliasedTerm')"></button>
+        </div>
+      </template>
+    </div>
+
+    <template x-if="hasFit">
+      <div>
+        <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title"><span data-help-key="modules.regression.actions.predict.help" x-text="t('prediction')"></span></div>
+        <div class="reg__predict" data-ref="predict-section">
+          <div class="reg__predict-inputs" data-ref="predict-inputs">
+            <template x-for="field in predictFields" :key="field.id">
+              <div class="field-group">
+                <label><span data-help-key="modules.regression.types.Predictor.label" x-text="field.label"></span></label>
+                <template x-if="field.kind === 'categorical'">
+                  <select class="field" data-help-key="" :data-predict-id="field.id" @change="onPredictInput(field.id, $event)">
+                    <template x-for="lv in field.levels" :key="lv">
+                      <option :value="lv" :selected="isLevel(field, lv)" x-text="lv"></option>
+                    </template>
+                  </select>
+                </template>
+                <template x-if="field.kind === 'numeric'">
+                  <input type="text" inputmode="decimal" class="field field--num" data-help-key="" :data-predict-id="field.id"
+                    :value="field.value" @input="onPredictInput(field.id, $event)">
+                </template>
+                <template x-if="field.kind === 'single'">
+                  <input type="text" inputmode="decimal" class="field field--num" data-ref="predict-x" data-help-key=""
+                    :value="field.value" @input="onPredictInput(field.id, $event)">
+                </template>
+              </div>
+            </template>
+          </div>
+          <div class="reg__predict-result" data-ref="predict-result" x-show="hasPrediction">
+            <span x-text="predictText"></span>
+            <template x-if="hasPredictInterval">
+              <span class="reg__predict-ci" x-text="predictInterval"></span>
+            </template>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- ─── Ausgabe (rechts) ────────────────────────────────────── -->
+  <div class="reg__output dmike-split__output">
+    <template x-if="orphanModelText">
+      <p class="reg__model-status reg__model-status--orphan" data-ref="saved-model-status"><span data-help-key="modules.regression.fields.savedModel.help" x-text="orphanModelText"></span></p>
+    </template>
+
+    <div data-ref="results" x-show="hasFit">
+      <template x-if="hasFit">
+        <div>
+          <!-- Wahl des Einzelmodells (nur bei mehreren X ohne Polynom) -->
+          <template x-if="xButtons.length">
+            <div class="reg__x-selector" data-ref="x-selector" role="radiogroup"
+              data-help-key="modules.regression.fields.activeXKey.help" x-set="model.activeXKey">
+              <template x-for="b in xButtons" :key="b.key">
+                <button type="button" role="radio" class="reg__x-btn" data-help-key="" :value="b.key" :data-x-key="b.key"
+                  :class="xButtonClass(b.key)" x-text="b.label"></button>
+              </template>
+            </div>
+          </template>
+
+          <!-- Kennzahlen -->
+          <div class="dmike-kpi-strip" data-ref="kpis">
+            <div :class="kpiClass('r2')" :title="kpi('r2').tip">
+              <div class="dmike-kpi-value" x-text="kpi('r2').value"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.R2" x-text="t('common.sym.r2')"></div>
+            </div>
+            <div :class="kpiClass('adjR2')" :title="kpi('adjR2').tip">
+              <div class="dmike-kpi-value" x-text="kpi('adjR2').value"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.adjR2" x-text="t('adjR2')"></div>
+            </div>
+            <template x-if="hasR2pred">
+              <div :class="kpiClass('r2pred')" :title="kpi('r2pred').tip">
+                <div class="dmike-kpi-value" x-text="kpi('r2pred').value"></div>
+                <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.R2pred" x-text="t('predR2')"></div>
+              </div>
+            </template>
+            <div :class="kpiClass('se')" :title="kpi('se').tip">
+              <div class="dmike-kpi-value" x-text="kpi('se').value"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.Se" x-text="t('stdError')"></div>
+            </div>
+            <div :class="kpiClass('f')" :title="kpi('f').tip">
+              <div class="dmike-kpi-value" x-text="kpi('f').value"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.Fstat" x-text="t('fStat')"></div>
+            </div>
+            <div :class="kpiClass('p')" :title="kpi('p').tip">
+              <div class="dmike-kpi-value" x-text="kpi('p').value"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.fPVal" x-text="t('pValueF')"></div>
+            </div>
+            <div :class="kpiClass('dw')" :title="kpi('dw').tip">
+              <div class="dmike-kpi-value" x-text="kpi('dw').value"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.regression.types.Result.dw" x-text="t('durbinWatson')"></div>
+            </div>
+          </div>
+
+          <div class="reg__equation" data-ref="equation" x-text="equation"></div>
+
+          <template x-if="showSave">
+            <div class="reg__model-actions" x-async-task="saveAsModel">
+              <button class="btn btn--primary" type="button" data-action="save-as-model"
+                data-help-key="modules.regression.asyncTasks.saveAsModel.help" x-async-task-start x-text="saveLabel"></button>
+              <span class="reg__model-status" data-ref="model-status" x-text="modelStatusText"></span>
+              <p class="field-error reg__save-error" data-ref="save-error" x-async-task-error></p>
+            </div>
+          </template>
+
+          <!-- Reiter -->
+          <div class="dmike-tabs" data-ref="tabs" role="tablist" x-tablist x-set="model.activeTab"
+            data-help-key="modules.regression.fields.activeTab.help">
+            <template x-for="tb in tabs" :key="tb.id">
+              <button class="dmike-tab" type="button" role="tab" data-help-key="" :value="tb.id" :data-tab="tb.id"
+                :class="tabClass(tb.id)" x-text="tb.label"></button>
+            </template>
+          </div>
+
+          <template x-if="isTab('scatter')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="scatter">
+              <div class="reg__chart-wrap" data-ref="chart-scatter"
+                x-widget="scatter-chart" x-widget-config="scatterChart"
+                x-widget-value="model.scatterEdits" x-widget-legacy-edit-key="'scatter:scatter'"></div>
+            </div>
+          </template>
+          <template x-if="isTab('residuals')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="residuals">
+              <div class="reg__chart-wrap" data-ref="chart-residuals"
+                x-widget="scatter-chart" x-widget-config="residualsChart"
+                x-widget-value="model.residualsEdits" x-widget-legacy-edit-key="'residuals:scatter'"></div>
+            </div>
+          </template>
+          <template x-if="isTab('order')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="order">
+              <div class="reg__chart-wrap" data-ref="chart-order"
+                x-widget="scatter-chart" x-widget-config="orderChart"
+                x-widget-value="model.orderEdits" x-widget-legacy-edit-key="'order:scatter'"></div>
+            </div>
+          </template>
+          <template x-if="isTab('qq')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="qq">
+              <div class="reg__chart-wrap" data-ref="chart-qq"
+                x-widget="scatter-chart" x-widget-config="qqChart"
+                x-widget-value="model.qqEdits" x-widget-legacy-edit-key="'qq:scatter'"></div>
+            </div>
+          </template>
+          <template x-if="isTab('histogram')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="histogram">
+              <div class="reg__chart-wrap" data-ref="chart-histogram"
+                x-widget="histogram-chart" x-widget-config="histogramChart"
+                x-widget-value="model.histogramEdits" x-widget-legacy-edit-key="'histogram:histogram'"></div>
+            </div>
+          </template>
+          <template x-if="isTab('ss-pie')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="ss-pie">
+              <div class="reg__chart-wrap reg__chart-wrap--auto" data-ref="chart-ss-pie">
+                <div class="reg__ss-pie-wrap">
+                  <div class="reg__ss-pie-list">
+                    <template x-for="(item, i) in ssItems" :key="i">
+                      <label class="reg__ss-pie-item">
+                        <input type="checkbox" data-help-key="" :checked="item.checked" :data-ss-idx="i" @change="toggleSSPie(i, $event)">
+                        <span class="reg__ss-pie-swatch" :style="item.swatchStyle"></span>
+                        <span class="reg__ss-pie-label" x-text="item.label"></span>
+                        <span class="reg__ss-pie-val" x-text="item.val"></span>
+                      </label>
+                    </template>
+                  </div>
+                  <div class="reg__ss-pie-chart" data-ref="ss-pie-chart"
+                    x-widget="pie-chart" x-widget-config="pieChart"
+                    x-widget-value="model.pieEdits" x-widget-legacy-edit-key="'ss-pie:pie'"></div>
+                  <div class="reg__ss-pie-bars" data-ref="ss-pie-bars"
+                    x-widget="bar-chart" x-widget-config="barChart"
+                    x-widget-value="model.barEdits" x-widget-legacy-edit-key="'ss-pie:bar'"></div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template x-if="isTab('main-effects')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="main-effects">
+              <div class="reg__effects-grid" data-ref="chart-main-effects">
+                <template x-for="(cell, key) in mainEffects" :key="key">
+                  <div class="reg__effects-cell" :data-cell="key"
+                    x-widget="scatter-chart" x-widget-config="cell.config"
+                    x-widget-value="model.mainEffectsEdits[key]" x-widget-legacy-edit-key="cell.legacyKey"></div>
+                </template>
+              </div>
+            </div>
+          </template>
+          <template x-if="isTab('interaction')">
+            <div class="dmike-tab-content dmike-tab-content--active" data-tab-content="interaction">
+              <div class="reg__effects-grid" data-ref="chart-interaction">
+                <template x-for="(cell, key) in interactions" :key="key">
+                  <div class="reg__effects-cell" :data-cell="key"
+                    x-widget="scatter-chart" x-widget-config="cell.config"
+                    x-widget-value="model.interactionEdits[key]" x-widget-legacy-edit-key="cell.legacyKey"></div>
+                </template>
+              </div>
+            </div>
+          </template>
+
+          <!-- ANOVA-Tabelle -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('anovaTable')"></span></div>
+          <div class="reg__table-wrap">
+            <table class="dmike-table reg__table" data-ref="anova-table">
+              <thead><tr>
+                <th><span data-help-key="modules.regression.types.Result.anova" x-text="t('source')"></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.ss">SS</span> <span x-widget="algo-lab-link" x-widget-algo-id="'regression-anova'"></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.df">DF</span> <span x-widget="algo-lab-link" x-widget-algo-id="'regression-anova'"></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.ms">MS</span> <span x-widget="algo-lab-link" x-widget-algo-id="'regression-anova'"></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.f">F</span> <span x-widget="algo-lab-link" x-widget-algo-id="'regression-anova'"></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.p" x-text="t('pValue')"></span> <span x-widget="algo-lab-link" x-widget-algo-id="'regression-anova'"></span></th>
+              </tr></thead>
+              <tbody>
+                <tr :class="anova.regRowClass">
+                  <td x-text="t('sourceRegression')"></td>
+                  <td x-text="anova.ssr"></td><td x-text="anova.dfReg"></td><td x-text="anova.msr"></td>
+                  <td x-text="anova.fstat"></td><td :class="anova.pSig" x-text="anova.fp"></td>
+                </tr>
+                <template x-for="row in anova.termRows" :key="row.id">
+                  <tr :class="row.trClass">
+                    <td class="reg__td--term-indent" x-text="row.label"></td>
+                    <td x-text="row.ss"></td><td x-text="row.df"></td><td x-text="row.ms"></td>
+                    <td x-text="row.f"></td><td :class="row.pSig" x-text="row.p"></td>
+                  </tr>
+                </template>
+                <tr class="reg__tr--error">
+                  <td x-text="t('sourceResiduals')"></td>
+                  <td x-text="anova.sse"></td><td x-text="anova.dfRes"></td><td x-text="anova.mse"></td>
+                  <td></td><td></td>
+                </tr>
+                <tr class="reg__tr--total">
+                  <td x-text="t('sourceTotal')"></td>
+                  <td x-text="anova.sst"></td><td x-text="anova.dfTot"></td><td></td><td></td><td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Hinweis der Versuchsvorgabe -->
+          <div class="reg__notice" data-ref="design-notice" x-show="hasNotice">
+            <template x-for="line in noticeLines" :key="line">
+              <p class="reg__notice-line" x-text="line"></p>
+            </template>
+          </div>
+
+          <!-- Koeffiziententabelle -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
+          <div class="reg__table-wrap">
+            <table class="dmike-table reg__table" data-ref="coef-table">
+              <thead><tr>
+                <template x-if="coefs.canExclude">
+                  <th class="reg__th--cb"></th>
+                </template>
+                <th class="reg__th--term"><span data-help-key="modules.regression.types.Coefficient.term" x-text="t('term')"></span></th>
+                <th><span data-help-key="modules.regression.types.Coefficient.coeff" x-text="t('coefficient')"></span></th>
+                <template x-if="coefs.hasDetails">
+                  <th><span data-help-key="modules.regression.types.Coefficient.se" x-text="t('stdErrorCoef')"></span></th>
+                </template>
+                <template x-if="coefs.hasDetails">
+                  <th><span data-help-key="modules.regression.types.Coefficient.t" x-text="t('tValue')"></span> <span x-widget="algo-lab-link" x-widget-algo-id="'regression-coefficients'"></span></th>
+                </template>
+                <template x-if="coefs.hasDetails">
+                  <th>
+                    <span data-help-key="modules.regression.types.Coefficient.pval" x-text="t('pValue')"></span>
+                    <span x-widget="algo-lab-link" x-widget-algo-id="'regression-coefficients'"></span>
+                    <label class="reg__sort-btn" data-action="sort-coef-p" data-help-key="modules.regression.fields.coefSortByP.help"
+                      :class="sortClass" :title="t('sortByPValue')"><input type="checkbox" role="switch" class="reg__sort-input" data-ref="sort-coef-p" data-help-key=""
+                      :aria-label="t('sortByPValue')" x-model="model.coefSortByP"><span class="icon icon--sm" data-icon="action.sort" aria-hidden="true"></span></label>
+                  </th>
+                </template>
+                <template x-if="coefs.hasVIF">
+                  <th><span data-help-key="modules.regression.types.Coefficient.vif">VIF</span> <span x-widget="algo-lab-link" x-widget-algo-id="'vif'"></span></th>
+                </template>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in coefs.rows" :key="row.key">
+                  <tr :class="rowClass(row)">
+                    <template x-if="coefs.canExclude">
+                      <td class="reg__td--cb">
+                        <input type="checkbox" class="reg__term-cb" data-help-key="" :checked="row.checked"
+                          :disabled="row.cbDisabled" :data-term="row.dataTerm" @change="toggleTerm(row.dataTerm, $event)">
+                      </td>
+                    </template>
+                    <td class="reg__td--term" :class="row.termClass">
+                      <template x-if="row.blockHeader">
+                        <span><strong x-text="row.label"></strong> <span class="reg__block-df" x-text="row.blockDf"></span></span>
+                      </template>
+                      <template x-if="!row.blockHeader">
+                        <span x-text="row.label"></span>
+                      </template>
+                    </td>
+                    <td>
+                      <span x-text="row.coef"></span>
+                      <template x-if="row.ci">
+                        <span class="reg__ci-inline" x-text="row.ci"></span>
+                      </template>
+                    </td>
+                    <template x-if="coefs.hasDetails">
+                      <td x-text="row.se"></td>
+                    </template>
+                    <template x-if="coefs.hasDetails">
+                      <td x-text="row.t"></td>
+                    </template>
+                    <template x-if="coefs.hasDetails">
+                      <td :class="row.pSig" x-text="row.p"></td>
+                    </template>
+                    <template x-if="coefs.hasVIF">
+                      <td :class="row.vifClass">
+                        <span x-text="row.vif"></span>
+                        <template x-if="row.vifFull">
+                          <span class="reg__vif-full" x-text="row.vifFull"></span>
+                        </template>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

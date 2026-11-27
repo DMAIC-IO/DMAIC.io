@@ -123,6 +123,9 @@
     },
     "savedModel": {
       "help": "The saved model with id and name, as response optimization reads it: coefficients, error variance, factor ranges, model specification and training data. Empty while no model is saved."
+    },
+    "degrees": {
+      "help": "Which polynomial degrees the data support: per degree the number of terms and whether it is locked because the usable rows do not exceed the number of terms; plus the number of these rows."
     }
   },
   "actions": {
@@ -132,6 +135,26 @@
         "term": "The term name without level, one of the effective terms; an unknown one is stored and has no effect.",
         "included": "True includes the term, false excludes it.",
         "command": "The command as one object with term and included."
+      }
+    },
+    "predict": {
+      "help": "Predicts the response for values of the predictors on the shown model and enters the values into the prediction fields; with the prediction interval where the model gives one. If a predictor is missing there is no prediction. The prediction belongs to the view and is not saved.",
+      "params": {
+        "values": "One value per predictor id from read().predictors: a number, for categorical predictors one of their levels.",
+        "command": "The command as an object with values."
+      }
+    },
+    "saveAsModel": {
+      "params": {
+        "command": "The run as an empty object; it takes no input."
+      }
+    }
+  },
+  "asyncTasks": {
+    "saveAsModel": {
+      "help": "Saves the fitted polynomial as the model of this instance: coefficients, error variance, factor ranges, training data and, for an experiment with replicates, the lack of fit. A model saved before is updated and keeps its id and name. Other modules, such as response optimization, read it from here. Without a fitted polynomial the run refuses; the agent receives the id of the model.",
+      "cancel": {
+        "help": "Cancels saving as long as nothing has been written yet."
       }
     }
   },

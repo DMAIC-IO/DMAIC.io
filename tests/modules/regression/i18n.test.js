@@ -40,8 +40,9 @@ suite('regression Texte in ui.<lang>.json', () => {
 });
 
 suite('regression Kontexthilfe in context-help.<lang>.json', () => {
-  test('jedes Feld und jede Ableitung hat einen Hilfetext', async () => {
-    const top = [...Object.keys(State.schema.fields), ...Object.keys(State.schema.view), ...Object.keys(State.schema.derived)];
+  test('jedes Feld, jede Ableitung und jedes computed der Ansicht hat einen Hilfetext', async () => {
+    // `degrees` ist das computed des view-Blocks (Gate: fields.<computed>.help).
+    const top = [...Object.keys(State.schema.fields), ...Object.keys(State.schema.view), ...Object.keys(State.schema.derived), 'degrees'];
     for (const lang of LANGS) {
       const { fields } = await contextHelp(lang);
       assertDeepEqual(Object.keys(fields).sort(), [...top].sort(), lang);

@@ -123,6 +123,9 @@
     },
     "savedModel": {
       "help": "Das gespeicherte Modell mit Kennung und Name, wie die Antwortoptimierung es liest: Koeffizienten, Fehlervarianz, Faktorbereiche, Modellspezifikation und Trainingsdaten. Leer, solange kein Modell gespeichert ist."
+    },
+    "degrees": {
+      "help": "Welche Polynomgrade die Daten tragen: je Grad die Zahl der Terme und ob er gesperrt ist, weil die verwertbaren Zeilen die Termzahl nicht übersteigen; dazu die Zahl dieser Zeilen."
     }
   },
   "actions": {
@@ -132,6 +135,26 @@
         "term": "Der Termname ohne Stufe, einer aus den wirksamen Termen; ein unbekannter bleibt gespeichert und wirkt nicht.",
         "included": "Wahr schließt den Term ein, falsch aus.",
         "command": "Das Kommando als ein Objekt mit term und included."
+      }
+    },
+    "predict": {
+      "help": "Sagt die Zielgröße für Werte der Einflussgrößen am gezeigten Modell vorher und trägt die Werte in die Prognosefelder ein; mit dem Prognoseintervall, wo das Modell eines liefert. Fehlt ein Prädiktor, gibt es keine Vorhersage. Die Prognose gehört zur Ansicht und wird nicht gespeichert.",
+      "params": {
+        "values": "Je Prädiktor-id aus read().predictors ein Wert: eine Zahl, bei kategorialen Prädiktoren eine ihrer Stufen.",
+        "command": "Das Kommando als ein Objekt mit values."
+      }
+    },
+    "saveAsModel": {
+      "params": {
+        "command": "Der Lauf als ein leeres Objekt; er nimmt keine Angaben."
+      }
+    }
+  },
+  "asyncTasks": {
+    "saveAsModel": {
+      "help": "Speichert das gerechnete Polynom als Modell dieser Instanz: Koeffizienten, Fehlervarianz, Faktorbereiche, Trainingsdaten und, bei einem Versuch mit Wiederholungen, den Lack-of-Fit. Ein schon gespeichertes Modell wird aktualisiert und behält Kennung und Namen. Andere Module, etwa die Response-Optimierung, lesen es von hier. Ohne gerechnetes Polynom lehnt der Lauf ab; der Agent erhält die Kennung des Modells.",
+      "cancel": {
+        "help": "Bricht das Speichern ab, solange noch nichts geschrieben ist."
       }
     }
   },
