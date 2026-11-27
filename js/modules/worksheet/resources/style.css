@@ -35,6 +35,16 @@
   border-radius: var(--border-radius-sm);
 }
 
+/* Gesperrte Leistenknöpfe nehmen keine Treffer an. Die Knöpfe stehen ohne
+   Abstand nebeneinander, das Fragezeichen ragt über die rechte Knopfkante
+   in den Nachbarn. Ein gesperrter Knopf ist durch `opacity` ein eigener
+   Stapelkontext, der das `z-index` seines Fragezeichens einschließt — ein
+   gesperrter Nachbar (etwa „Wiederholen“ neben „Rückgängig“) liegt dann
+   darüber und finge den Alt-Klick ab. */
+.worksheet-toolbar .toolbar__btn:disabled {
+  pointer-events: none;
+}
+
 .worksheet-toolbar .toolbar__sep {
   width: 1px;
   height: 18px;
