@@ -28,6 +28,9 @@
     "activeImportSource": {
       "help": "The response of the DoE plan the inputs came from: planner instance, response column and variant (raw value, mean or ln variance); empty without a takeover. When the planner or its experiment no longer exists, the entry stays and the module shows “no longer available”."
     },
+    "pendingDesignTerms": {
+      "help": "The planned terms of a taken-over DoE response while the module has not yet computed the preset (it does so as soon as it is shown with readable data); empty afterwards. Including or excluding a term drops them."
+    },
     "savedModelId": {
       "help": "The id of the polynomial saved as a model; “Update model” keeps it. Empty while no model is saved."
     },
@@ -129,6 +132,22 @@
     }
   },
   "actions": {
+    "importExperiment": {
+      "help": "Takes over a response of a DoE plan: factors as X, response as Y, polynomial without excluded terms, plus the source and the planned terms as a pending preset. The module computes degree, excluded terms and notice of the preset as soon as it is shown with readable data. The list of offered takeovers carries the ready arguments of each option.",
+      "params": {
+        "colRefs": "The factor columns as references, at least one, each once.",
+        "yRef": "The response column as a reference; not among the factor columns.",
+        "designTerms": "The planned terms as canonical ids (M0, Q1, I0_1).",
+        "source": "Planner instance, column id of the response and variant (identity, mean or lnvar).",
+        "command": "The command as one object with colRefs, yRef, designTerms and source."
+      }
+    },
+    "releaseImport": {
+      "help": "Releases the takeover of a DoE plan: source, notice and pending preset are dropped, columns and settings stay.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
+      }
+    },
     "setTerm": {
       "help": "Includes or excludes a term of the polynomial; the notice of an experiment takeover is dropped. The model is fitted again.",
       "params": {
@@ -219,7 +238,14 @@
     },
     "ImportChoice": {
       "key": "The key of the takeover.",
-      "label": "DoE plan and response as the selection shows them."
+      "label": "DoE plan and response as the selection shows them.",
+      "args": "The arguments with which the importExperiment command takes over this response."
+    },
+    "ImportArgs": {
+      "colRefs": "The factor columns as references.",
+      "yRef": "The response column as a reference.",
+      "designTerms": "The planned terms as canonical ids.",
+      "source": "Planner instance, column id of the response and variant."
     },
     "Predictor": {
       "id": "The id of the input.",

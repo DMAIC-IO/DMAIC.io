@@ -6,7 +6,9 @@
  * Ablehnung, Reiter, Terme und Sortierung, vermengte Terme, Einzelmodelle,
  * Prognose samt Viewmodel-Kommando `predict`, den Lauf `saveAsModel`, das
  * Altprojekt ohne Verlaufsschritt (alte chartEdits auch in den Zellen der
- * Haupteffekte), zwei Instanzen und die gelöschte Spalte.
+ * Haupteffekte), zwei Instanzen, die gelöschte Spalte und die offene
+ * Versuchsvorgabe aus `importExperiment` (beim Einhängen ohne Schritt, an
+ * der angezeigten Instanz im Schritt des Imports, ohne Daten offen).
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertAlmostEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
@@ -411,6 +413,63 @@ suite('regression: Viewmodel im Browser', () => {
     await until(() => vm.model.pieEdits.title === 'Alt Kreis' && vm.model.barEdits.title === 'Alt Balken');
     h.q('[data-ref="tabs"] [data-tab="scatter"]').click();
     await until(() => vm.model.scatterEdits.title === 'Alt Streuung A');
+  });
+
+  test('offene Versuchsvorgabe beim Einhängen: gerechnet, Teil der Grundlage, kein Schritt', async () => {
+    const h = await mount(saved({
+      colRefs: [ref('a'), ref('b')], yRef: ref('y'), pendingDesignTerms: ['M0', 'M1', 'I0_1'],
+      activeImportSource: { experimentId: 'p1', sourceColumn: 'y', transform: 'identity' },
+    }));
+    const vm = h.vm();
+    await until(() => vm.model.pendingDesignTerms.length === 0);
+    assertEqual(vm.model.polyDegree, 2);
+    assertDeepEqual([...plain(vm.model.excludedTerms)].sort(), ['A²', 'B²']);
+    assertDeepEqual(plain(vm.effectiveDesignNotice), { aliased: [], saturated: [] });
+    assertEqual(mod.historyCan('undo'), false);
+    await until(() => h.states[INST]?.pendingDesignTerms?.length === 0);
+    assertEqual(h.states[INST].polyDegree, 2);
+  });
+
+  test('importExperiment an der angezeigten Instanz: Vorgabe im selben Schritt, ein Rückgängig nimmt beides', async () => {
+    const h = await mount(saved({ colRefs: [ref('g')], yRef: ref('y'), regType: 'power' }));
+    const vm = h.vm();
+    await settle();
+    vm.model.importExperiment({
+      colRefs: [ref('a'), ref('b')], yRef: ref('y'), designTerms: ['M0', 'M1', 'I0_1'],
+      source: { experimentId: 'p1', sourceColumn: 'y', transform: 'identity' },
+    });
+    await until(() => vm.model.pendingDesignTerms.length === 0 && vm.model.polyDegree === 2);
+    await settle();
+    assertTrue(mod.historyCan('undo'));
+    assertTrue(mod.historyStep('undo'));
+    await until(() => vm.model.regType === 'power');
+    assertDeepEqual(plain(vm.model.colRefs), [ref('g')]);
+    assertEqual(vm.model.polyDegree, 1);
+    assertEqual(vm.model.activeImportSource, null);
+    assertEqual(mod.historyCan('undo'), false);
+    assertTrue(mod.historyStep('redo'));
+    await until(() => vm.model.polyDegree === 2);
+    assertDeepEqual(plain(vm.model.pendingDesignTerms), []);
+  });
+
+  test('ohne rechenbare Daten bleibt die Vorgabe offen; unbekannter Schlüssel der Auswahl: Hinweis, nichts geschrieben', async () => {
+    const h = await mount(saved({
+      colRefs: [ref('a'), ref('b')], yRef: ref('weg'), pendingDesignTerms: ['M0', 'M1'],
+      activeImportSource: { experimentId: 'p1', sourceColumn: 'weg', transform: 'identity' },
+    }));
+    const vm = h.vm();
+    await settle();
+    assertDeepEqual(plain(vm.model.pendingDesignTerms), ['M0', 'M1']);
+    assertEqual(vm.model.polyDegree, 1);
+    const before = JSON.stringify(vm.model.toJSON());
+    vm.importChoice('p9|raw|0');
+    await settle();
+    assertEqual(JSON.stringify(vm.model.toJSON()), before);
+    assertEqual(h.notes.at(-1)?.message, tr('importUnknown'));
+    // Wird Y lesbar, geht die Vorgabe auf.
+    setFields(vm.model, { yRef: ref('y'), activeImportSource: { experimentId: 'p1', sourceColumn: 'y', transform: 'identity' } });
+    await until(() => vm.model.pendingDesignTerms.length === 0);
+    assertEqual(vm.model.polyDegree, 1);
   });
 
   test('zwei Instanzen: Typ, Reiter und Prognose bleiben je Instanz', async () => {

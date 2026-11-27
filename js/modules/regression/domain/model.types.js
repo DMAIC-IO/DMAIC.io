@@ -12,6 +12,7 @@
  * @property {string[]} excludedTerms
  * @property {{ aliased: { term: string, with: string[] }[], saturated: string[], basis: string }|null} designNotice
  * @property {{ experimentId: string, sourceColumn: string, transform: 'identity'|'mean'|'lnvar' }|null} activeImportSource
+ * @property {string[]} pendingDesignTerms
  * @property {string|null} savedModelId
  * @property {string|null} savedModelName
  * @property {{ experimentId?: string|null, responseSpec?: { sourceColumn: string|null, transform: string, aggregateOver: string|null }, termSet?: string[], coef?: Array<number|null>|null, vcov?: Array<Array<number|null>>|null, sigma2?: number|null, df?: number|null, rSqAdj?: number|null, lofPValue?: number|null, factorSpec?: Array<{ name: string, low: number|null, high: number|null, kind?: string }>, spec?: { predictors: { id: string, kind: string, levels?: string[], reference?: string }[], terms: { id: string, factors: { id: string, degree: number }[] }[] }|null, dataSnapshot?: { X: Array<Array<number|null>>, y: Array<number|null>, factorSpec: Array<{ name: string, low: number|null, high: number|null, kind?: string }>, termSet: string[], trainedAt?: string, sourceFingerprint?: { experimentId: string|null, responseColumn: string|null, workbookHash: string|null } }|null, dataHash?: string|null, createdAt?: string, updatedAt?: string }|null} modelRecord
@@ -37,6 +38,18 @@
  */
 
 /**
+ * @typedef {object} ImportExperimentCommand
+ * @property {{ instanceId: string, sheetId?: string, columnId: string }[]} colRefs
+ * @property {{ instanceId: string, sheetId?: string, columnId: string }} yRef
+ * @property {string[]} designTerms
+ * @property {{ experimentId: string, sourceColumn: string, transform: 'identity'|'mean'|'lnvar' }} source
+ */
+
+/**
+ * @typedef {{}} ReleaseImportCommand
+ */
+
+/**
  * @typedef {object} SetTermCommand
  * @property {string} term
  * @property {boolean} included
@@ -44,8 +57,10 @@
 
 /**
  * @typedef {StateFields & StateView & {
+ *   importExperiment(cmd: ImportExperimentCommand): void,
+ *   releaseImport(cmd: ReleaseImportCommand): void,
  *   setTerm(cmd: SetTermCommand): void,
- *   execute(cmd: ({ type: 'setTerm' } & SetTermCommand)): unknown,
+ *   execute(cmd: ({ type: 'importExperiment' } & ImportExperimentCommand) | ({ type: 'releaseImport' } & ReleaseImportCommand) | ({ type: 'setTerm' } & SetTermCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,

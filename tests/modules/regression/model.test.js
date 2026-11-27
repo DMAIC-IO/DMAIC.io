@@ -1,6 +1,7 @@
 /**
  * Regression: Model (domain/model.js) und Rechnung (domain/analyze.js) —
- * Schema und Vorgaben, Kommando setTerm, Ableitungen, Heilung des Hinweises
+ * Schema und Vorgaben, Kommandos setTerm und importExperiment (offene
+ * Vorgabe, Invariante, Rechnen der Vorgabe), Ableitungen, Heilung des Hinweises
  * beim Lesen, gelöschte Spalte, Merker, Vorhersage.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue, assertAlmostEqual } from '../../test-utils.js';
@@ -9,6 +10,7 @@ import {
   analyze, engineRuns, REG_TYPES, DEGREES, polyTermCount, predictAt, activeResultOf, degreeAvailability,
 } from '../../../js/modules/regression/domain/analyze.js';
 import { noticeBasis, toNumeric, numericOf, descriptorOf } from '../../../js/modules/regression/domain/columns.js';
+import { pendingPresetFields } from '../../../js/modules/regression/domain/design-preset.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { setFields } from '../../../js/core/model.js';
 import { storedSource } from '../../helpers/stored-source.js';
@@ -104,6 +106,125 @@ suite('regression: Kommando setTerm', () => {
     const d = derived(m, ['result', 'terms']);
     assertDeepEqual(d.terms, ['X1', 'X2']);
     assertEqual(d.result.coefficients.length, 3);
+  });
+});
+
+suite('regression: Kommando importExperiment (Planer-Übergabe)', () => {
+  const SOURCE = { experimentId: 'p1', sourceColumn: 'y', transform: 'identity' };
+  const ARGS = { colRefs: [ref('x1'), ref('x2')], yRef: ref('y'), designTerms: ['M0', 'M1', 'I0_1', 'M0'], source: SOURCE };
+
+  test('schreibt X, Y, Polynom, Quelle und die offene Vorgabe; Grad, Terme und Hinweis von vorher entfallen', () => {
+    const m = make(['x1'], 'ey', { regType: 'power', excludedTerms: ['X1'], designNotice: { aliased: [], saturated: [], basis: 'b' } });
+    m.execute({ type: 'importExperiment', ...ARGS });
+    assertDeepEqual(plain(m.colRefs), [ref('x1'), ref('x2')]);
+    assertDeepEqual(plain(m.yRef), ref('y'));
+    assertEqual(m.regType, 'polynomial');
+    assertDeepEqual(plain(m.excludedTerms), []);
+    assertEqual(m.designNotice, null);
+    assertDeepEqual(plain(m.activeImportSource), SOURCE);
+    assertDeepEqual(plain(m.pendingDesignTerms), ['M0', 'M1', 'I0_1']);
+    assertEqual(m.polyDegree, 1);
+  });
+
+  test('lehnt ab, ohne zu schreiben: keine X, doppelte X, Y unter den X, unbekannte Term-id, falsche Variante', () => {
+    const cases = [
+      [{ ...ARGS, colRefs: [] }, /colRefs/],
+      [{ ...ARGS, colRefs: [ref('x1'), ref('x1')] }, /colRefs/],
+      [{ ...ARGS, yRef: ref('x2') }, /yRef/],
+      [{ ...ARGS, designTerms: ['M0', 'X9'] }, /designTerms/],
+      [{ ...ARGS, source: { ...SOURCE, transform: 'log' } }, /transform/],
+      [{ ...ARGS, source: { ...SOURCE, experimentId: '' } }, /experimentId/],
+    ];
+    for (const [args, re] of cases) {
+      const m = make(['x1'], 'ey');
+      const before = JSON.stringify(m.toJSON());
+      assertThrows(() => m.execute({ type: 'importExperiment', ...args }), re);
+      assertEqual(JSON.stringify(m.toJSON()), before);
+    }
+  });
+
+  test('pendingDesignTerms ist für den Agenten nicht schreibbar und steht im gespeicherten Stand', () => {
+    assertEqual(State.schema.fields.pendingDesignTerms.agentWrite, false);
+    const m = make([], null);
+    m.execute({ type: 'importExperiment', ...ARGS });
+    const back = State.fromJSON(plain(m.toJSON()), { context: CTX });
+    assertDeepEqual(plain(back.pendingDesignTerms), ['M0', 'M1', 'I0_1']);
+  });
+
+  test('Invariante: eine offene Vorgabe ohne Quelle — strenges Laden wirft, Heilen verwirft sie, Schreiben lehnt ab', () => {
+    const bad = { _schema: { version: '1.0' }, colRefs: [ref('x1')], yRef: ref('y'), pendingDesignTerms: ['M0'], activeImportSource: null };
+    assertThrows(() => State.fromJSON(plain(bad), { context: CTX }), /pendingNeedsSource/);
+    const m = State.fromJSON(plain(bad), { repair: true, context: CTX });
+    assertDeepEqual(plain(m.pendingDesignTerms), []);
+    const n = make([], null);
+    n.execute({ type: 'importExperiment', ...ARGS });
+    assertThrows(() => setFields(n, { activeImportSource: null }), /activeImportSource|pendingNeedsSource/);
+    assertDeepEqual(plain(n.activeImportSource), SOURCE);
+  });
+
+  test('releaseImport löst Quelle, Hinweis und offene Vorgabe; Spalten bleiben', () => {
+    const m = make([], null);
+    m.execute({ type: 'importExperiment', ...ARGS });
+    m.execute({ type: 'releaseImport' });
+    assertEqual(m.activeImportSource, null);
+    assertDeepEqual(plain(m.pendingDesignTerms), []);
+    assertEqual(m.colRefs.length, 2);
+  });
+
+  test('setTerm verwirft die offene Vorgabe', () => {
+    const m = make([], null);
+    m.execute({ type: 'importExperiment', ...ARGS });
+    m.execute({ type: 'setTerm', term: 'X1²', included: false });
+    assertDeepEqual(plain(m.pendingDesignTerms), []);
+  });
+
+  test('die offene Vorgabe geht mit lesbaren Daten auf: Grad, Terme, Hinweis mit Basis, Vorgabe leer', () => {
+    const m = make([], null);
+    m.execute({ type: 'importExperiment', ...ARGS });
+    const f = pendingPresetFields(m, SRC);
+    assertEqual(f.polyDegree, 2);
+    assertDeepEqual([...f.excludedTerms].sort(), ['X1²', 'X2²']);
+    assertDeepEqual(f.pendingDesignTerms, []);
+    assertEqual(f.designNotice.basis, noticeBasis(m.colRefs, m.yRef, 2));
+    setFields(m, f);
+    assertDeepEqual(plain(derived(m, ['effectiveDesignNotice']).effectiveDesignNotice), { aliased: [], saturated: [] });
+    assertEqual(derived(m, ['result']).result.coefficients.length, 4);
+    assertEqual(pendingPresetFields(m, SRC), null);
+  });
+
+  test('ohne rechenbare Daten oder als Nicht-Polynom bleibt die Vorgabe offen', () => {
+    const m = make([], null);
+    m.execute({ type: 'importExperiment', ...ARGS, yRef: ref('few') });
+    assertEqual(pendingPresetFields(m, SRC), null);
+    const gone = make([], null);
+    gone.execute({ type: 'importExperiment', ...ARGS, yRef: ref('weg') });
+    assertEqual(pendingPresetFields(gone, SRC), null);
+    const n = make([], null);
+    n.execute({ type: 'importExperiment', ...ARGS });
+    setFields(n, { regType: 'power' });
+    assertEqual(pendingPresetFields(n, SRC), null);
+    setFields(n, { regType: 'polynomial' });
+    assertEqual(pendingPresetFields(n, SRC).polyDegree, 2);
+  });
+
+  test('experimentImports trägt je Option die Angaben des Kommandos', () => {
+    const src = {
+      ...SRC,
+      list: () => [...SRC.list(), { instanceId: 'p1', moduleId: 'doe-planner' }],
+      read: (id, o) => (id === 'p1' ? {
+        experiment: {
+          name: 'E', plannedTerms: { terms: ['M0', 'M1'] }, factors: [],
+          runMatrix: { worksheetRef: { instanceId: 'ws1', sheetId: 's1' }, columnTags: { factors: ['x1', 'x2'] } },
+          responseColumns: [{ name: 'Y', columnId: 'y' }],
+        },
+      } : SRC.read(id, o)),
+    };
+    const [opt] = derived(make([], null), ['experimentImports'], src).experimentImports;
+    assertEqual(opt.key, 'p1|raw|0');
+    assertDeepEqual(opt.args, { colRefs: [ref('x1'), ref('x2')], yRef: ref('y'), designTerms: ['M0', 'M1'], source: SOURCE });
+    const m = make([], null);
+    m.execute({ type: 'importExperiment', ...opt.args });
+    assertDeepEqual(plain(m.pendingDesignTerms), ['M0', 'M1']);
   });
 });
 

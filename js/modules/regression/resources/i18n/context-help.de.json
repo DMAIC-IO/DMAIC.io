@@ -28,6 +28,9 @@
     "activeImportSource": {
       "help": "Die Antwort des Versuchsplans, aus der die Eingaben stammen: Planer-Instanz, Antwortspalte und Variante (Rohwert, Mittelwert oder ln-Varianz); leer ohne Übernahme. Gibt es den Planer oder seinen Versuch nicht mehr, bleibt die Angabe stehen und das Modul zeigt „nicht mehr vorhanden“."
     },
+    "pendingDesignTerms": {
+      "help": "Die geplanten Terme einer übernommenen Versuchsantwort, solange das Modul die Vorgabe noch nicht gerechnet hat (es rechnet sie, sobald es mit lesbaren Daten angezeigt ist); danach leer. Ein ein- oder ausgeschlossener Term verwirft sie."
+    },
     "savedModelId": {
       "help": "Die Kennung des als Modell gespeicherten Polynoms; „Modell aktualisieren“ behält sie. Leer, solange kein Modell gespeichert ist."
     },
@@ -129,6 +132,22 @@
     }
   },
   "actions": {
+    "importExperiment": {
+      "help": "Übernimmt eine Antwort eines Versuchsplans: Faktoren als X, Antwort als Y, Polynom ohne ausgeschlossene Terme, dazu Quelle und geplante Terme als offene Vorgabe. Grad, ausgeschlossene Terme und Hinweis der Vorgabe rechnet das Modul, sobald es mit lesbaren Daten angezeigt ist. Die fertigen Angaben je Option liefert die Liste der angebotenen Übernahmen.",
+      "params": {
+        "colRefs": "Die Faktorspalten als Bezüge, mindestens eine, jede einmal.",
+        "yRef": "Die Antwortspalte als Bezug; nicht unter den Faktorspalten.",
+        "designTerms": "Die geplanten Terme als kanonische ids (M0, Q1, I0_1).",
+        "source": "Planer-Instanz, Spalten-id der Antwort und Variante (identity, mean oder lnvar).",
+        "command": "Das Kommando als ein Objekt mit colRefs, yRef, designTerms und source."
+      }
+    },
+    "releaseImport": {
+      "help": "Löst die Übernahme eines Versuchsplans: Quelle, Hinweis und offene Vorgabe entfallen, Spalten und Einstellungen bleiben.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
+    },
     "setTerm": {
       "help": "Schließt einen Term des Polynoms ein oder aus; der Hinweis einer Versuchsübernahme entfällt. Danach wird neu gerechnet.",
       "params": {
@@ -219,7 +238,14 @@
     },
     "ImportChoice": {
       "key": "Der Schlüssel der Übernahme.",
-      "label": "Versuchsplan und Antwort, wie die Auswahl sie zeigt."
+      "label": "Versuchsplan und Antwort, wie die Auswahl sie zeigt.",
+      "args": "Die Angaben, mit denen das Kommando importExperiment diese Antwort übernimmt."
+    },
+    "ImportArgs": {
+      "colRefs": "Die Faktorspalten als Bezüge.",
+      "yRef": "Die Antwortspalte als Bezug.",
+      "designTerms": "Die geplanten Terme als kanonische ids.",
+      "source": "Planer-Instanz, Spalten-id der Antwort und Variante."
     },
     "Predictor": {
       "id": "Die Kennung der Eingabe.",

@@ -2,8 +2,8 @@
  * D.Mike — Regression: Model.
  *
  * Gespeichert werden die Einflussgrößen X und die Zielgröße Y, Modellform,
- * Grad, Konfidenz und α als Anteil, ausgeschlossene Terme, Hinweis und Quelle
- * einer Versuchsübernahme sowie das gespeicherte Modell (id, Name,
+ * Grad, Konfidenz und α als Anteil, ausgeschlossene Terme, Hinweis, Quelle und
+ * offene Vorgabe einer Versuchsübernahme (`importExperiment`) sowie das gespeicherte Modell (id, Name,
  * Momentaufnahme). Ansicht: Reiter, gezeigtes Einzelmodell, Sortierung,
  * Bänder, Beispielblatt und die Editor-Einstellungen der Diagramme.
  * Ergebnis, Fehlergrund, Terme, Grade, Übernahme-Optionen und das Modell für
@@ -17,9 +17,11 @@ import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import pieChart from '../../../widgets/pie-chart/schema.js';
 import barChart from '../../../widgets/bar-chart/schema.js';
 import { analyze, activeResultOf, activeXOf, agentResult, predictorsOf, degreeAvailability } from './analyze.js';
-import { experimentOptions } from './design-preset.js';
+import { experimentOptions, importArgsOf } from './design-preset.js';
+import { requireForm } from '../../../core/validate.js';
+import { parseTermId } from '../../../engines/doe-terms.js';
 import { plannerExperiments } from './record.js';
-import { noticeBasis } from './columns.js';
+import { noticeBasis, refKey } from './columns.js';
 import { from0 } from './migrations.js';
 
 /**
@@ -107,6 +109,7 @@ const clampFraction = (v) => Math.min(0.9999, Math.max(0.0001, v));
  * @typedef {object} ImportChoice
  * @property {string} key  Schlüssel der Übernahme
  * @property {string} label  Versuch und Antwort
+ * @property {ImportArgs} args  die Angaben für `importExperiment`
  */
 
 /**
@@ -137,14 +140,26 @@ const clampFraction = (v) => Math.min(0.9999, Math.max(0.0001, v));
  * @property {string} [updatedAt]  zuletzt gespeichert
  */
 
+/**
+ * Die Angaben des Kommandos `importExperiment` zu einer Übernahme-Option.
+ * @typedef {object} ImportArgs
+ * @property {Array<{ instanceId: string, sheetId: string, columnId: string }>} colRefs  Faktorspalten als X
+ * @property {{ instanceId: string, sheetId: string, columnId: string }} yRef  Antwortspalte als Y
+ * @property {string[]} designTerms  geplante Terme (kanonische ids)
+ * @property {{ experimentId: string, sourceColumn: string, transform: string }} source  Planer, Antwortspalte und Variante
+ */
+
 /** @typedef {import('../../../core/source-reader.js').Source} Source */
+
+/** Spaltenarten der Eingaben X und Y. */
+const COLUMN_TYPES = ['numeric', 'currency', 'percent', 'date', 'time'];
 
 export class State extends defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
   fields: {
-    colRefs: list(columnRef({ nullable: false, types: ['numeric', 'currency', 'percent', 'date', 'time'], minCount: 1 }), { default: [] }),
-    yRef: columnRef({ types: ['numeric', 'currency', 'percent', 'date', 'time'], minCount: 1 }),
+    colRefs: list(columnRef({ nullable: false, types: COLUMN_TYPES, minCount: 1 }), { default: [] }),
+    yRef: columnRef({ types: COLUMN_TYPES, minCount: 1 }),
     regType: oneOf(['polynomial', 'exponential', 'logarithmic', 'power'], { default: 'polynomial' }),
     polyDegree: oneOf([1, 2, 3], { default: 1 }),
     confLevel: number({ exclusiveMin: 0, exclusiveMax: 1, default: (c) => clampFraction(roundTo(c.confidenceLevel / 100, 4)) }),
@@ -160,6 +175,7 @@ export class State extends defineModel({
       sourceColumn: text(),
       transform: oneOf(['identity', 'mean', 'lnvar']),
     }, { nullable: true, agentWrite: false }),
+    pendingDesignTerms: list(text(), { default: [], agentWrite: false }),
     savedModelId: text({ nullable: true, agentWrite: false }),
     savedModelName: text({ nullable: true, agentWrite: false }),
     modelRecord: object({
@@ -219,12 +235,67 @@ export class State extends defineModel({
     mainEffectsEdits: map(text(), scatterChart.edits()),
     interactionEdits: map(text(), scatterChart.edits()),
   },
+  invariants: {
+    pendingNeedsSource: {
+      fields: ['pendingDesignTerms', 'activeImportSource'],
+      /** Eine offene Vorgabe gehört zu einer Übernahme. @param {any} m */
+      test(m) { return m.pendingDesignTerms.length === 0 || m.activeImportSource != null; },
+      /** Ohne Übernahme entfällt die offene Vorgabe. @param {any} m */
+      repair(m) { m.pendingDesignTerms = []; },
+    },
+  },
   commands: {
+    importExperiment: command({
+      params: {
+        colRefs: list(columnRef({ nullable: false })),
+        yRef: columnRef({ nullable: false }),
+        designTerms: list(text({ nonEmpty: true })),
+        source: object({
+          experimentId: text({ nonEmpty: true }),
+          sourceColumn: text({ nonEmpty: true }),
+          transform: oneOf(['identity', 'mean', 'lnvar']),
+        }),
+      },
+      /**
+       * Eine Antwort des Versuchsplans übernehmen: Faktoren als X, Antwort
+       * als Y, Polynom, keine ausgeschlossenen Terme, die Quelle und die
+       * geplanten Terme als offene Vorgabe. Die Vorgabe (Grad, ausgeschlossene
+       * Terme, Hinweis) rechnet die Instanz, sobald sie mit lesbaren Daten
+       * angezeigt ist (`pendingPresetFields`); bis dahin rechnet sie mit Grad
+       * und Termen von vorher.
+       * @param {ImportArgs} p
+       */
+      run({ colRefs, yRef, designTerms, source }) {
+        const keys = colRefs.map(refKey);
+        requireForm('colRefs', colRefs, keys.length > 0 && new Set(keys).size === keys.length, 'at least one column, each once');
+        requireForm('yRef', yRef, !keys.includes(refKey(yRef)), 'a column that is not among colRefs');
+        const bad = designTerms.find((t) => parseTermId(t) == null);
+        requireForm('designTerms', bad ?? designTerms, bad === undefined, 'term ids like M0, Q1, I0_1');
+        this.colRefs = colRefs;
+        this.yRef = yRef;
+        this.regType = 'polynomial';
+        this.excludedTerms = [];
+        this.designNotice = null;
+        this.activeImportSource = { ...source };
+        this.pendingDesignTerms = [...new Set(designTerms)];
+      },
+    }),
+    releaseImport: command({
+      /**
+       * Die Übernahme lösen: Quelle, Hinweis und offene Vorgabe entfallen;
+       * Spalten und Einstellungen bleiben.
+       */
+      run() {
+        this.activeImportSource = null;
+        this.designNotice = null;
+        this.pendingDesignTerms = [];
+      },
+    }),
     setTerm: command({
       params: { term: text({ nonEmpty: true }), included: boolean() },
       /**
        * Einen Term ein- oder ausschließen; der Hinweis einer Versuchsvorgabe
-       * entfällt (Altform). Ein Term, den die Daten nicht kennen, bleibt
+       * und eine offene Vorgabe entfallen (Altform). Ein Term, den die Daten nicht kennen, bleibt
        * gespeichert und wirkt nicht.
        * @param {{ term: string, included: boolean }} p
        */
@@ -232,6 +303,7 @@ export class State extends defineModel({
         const rest = this.excludedTerms.filter((t) => t !== term);
         this.excludedTerms = included ? rest : [...rest, term];
         this.designNotice = null;
+        this.pendingDesignTerms = [];
       },
     }),
   },
@@ -331,7 +403,7 @@ export class State extends defineModel({
      * @returns {ImportChoice[]}
      */
     experimentImports(src) {
-      return experimentOptions(plannerExperiments(src)).map((o) => ({ key: o.key, label: o.label }));
+      return experimentOptions(plannerExperiments(src)).map((o) => ({ key: o.key, label: o.label, args: importArgsOf(o) }));
     },
     /**
      * Die übernommene Quelle gibt es nicht mehr: der Planer fehlt oder hat

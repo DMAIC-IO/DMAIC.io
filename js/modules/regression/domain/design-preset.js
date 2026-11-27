@@ -8,11 +8,14 @@
  * Grad = höchste Termordnung; ausgeschlossen sind erzeugte Terme außerhalb
  * des Plans, Terme, die die Daten nicht schätzen können (vermengt), und —
  * ließe das Modell keinen Restfreiheitsgrad — die letzten Terme in
- * hierarchischer Folge.
+ * hierarchischer Folge. `importArgsOf` macht aus einer Option die Angaben des
+ * Kommandos `importExperiment`; `pendingPresetFields` rechnet die offene
+ * Vorgabe, die das Kommando hinterlässt, sobald die Daten lesbar sind.
  */
 import { generatePolynomialTerms, compileModelSpec, estimableTerms } from '../../../engines/regression-engine.js';
 import { defaultActiveTerms, quadTermId, parseTermId, compareTermIds } from '../../../engines/doe-terms.js';
 import { readInputs, polyData } from './analyze.js';
+import { noticeBasis } from './columns.js';
 
 /**
  * Der Versuch einer Planer-Instanz; `experiment` ist `null`, solange der
@@ -147,4 +150,40 @@ export function presetFromColumns(designTerms, src, refs) {
   const { predictors, data } = polyData(cols.xs, cols.y);
   if (data.y.length < 3) return null;
   return designPreset(designTerms, predictors, data);
+}
+
+/**
+ * Die Angaben des Kommandos `importExperiment` zu einer Option.
+ * @param {ImportOption} o
+ * @returns {import('./model.js').ImportArgs}
+ */
+export function importArgsOf(o) {
+  return {
+    colRefs: o.factorRefs.map((r) => ({ ...r })),
+    yRef: { ...o.yRef },
+    designTerms: [...o.designTerms],
+    source: { experimentId: o.experimentId, sourceColumn: o.sourceColumn, transform: o.transform },
+  };
+}
+
+/**
+ * Die Felder, mit denen eine offene Vorgabe aufgeht: Grad, ausgeschlossene
+ * Terme, Hinweis (mit `basis` zum neuen Grad) und die geleerte Vorgabe;
+ * `null`, solange keine offen ist, die Form kein Polynom ist oder die Daten
+ * sie nicht tragen (Spalte fehlt, unter drei Zeilen) — dann bleibt sie offen.
+ * @param {{ pendingDesignTerms: readonly string[], regType: string, colRefs: readonly any[], yRef: any }} model
+ * @param {import('../../../core/source-reader.js').Source} src
+ * @returns {{ polyDegree: 1|2|3, excludedTerms: string[], designNotice: { aliased: Array<{ term: string, with: string[] }>, saturated: string[], basis: string }, pendingDesignTerms: string[] }|null}
+ */
+export function pendingPresetFields(model, src) {
+  const terms = model.pendingDesignTerms;
+  if (!terms || terms.length === 0 || model.regType !== 'polynomial') return null;
+  const p = presetFromColumns([...terms], src, { colRefs: model.colRefs, yRef: model.yRef });
+  if (!p) return null;
+  return {
+    polyDegree: p.polyDegree,
+    excludedTerms: p.excludedTerms,
+    designNotice: { ...p.notice, basis: noticeBasis(model.colRefs, model.yRef, p.polyDegree) },
+    pendingDesignTerms: [],
+  };
 }

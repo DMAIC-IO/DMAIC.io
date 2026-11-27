@@ -8,8 +8,9 @@
  * Diagrammkonfiguration), die Handler der Prozentfelder (Prozenttext →
  * Anteil, das bildet `x-field` nicht ab), die Prognose (flüchtig wie in der
  * Altform: UI-State und das Viewmodel-Kommando `predict`), der Lauf
- * `saveAsModel` (Momentaufnahme ins eigene Model) und das Leeren von Y, wenn
- * Y unter die X gerät.
+ * `saveAsModel` (Momentaufnahme ins eigene Model), das Leeren von Y, wenn
+ * Y unter die X gerät, und das Rechnen einer offenen Versuchsvorgabe
+ * (`pendingDesignTerms`), sobald die Daten sie tragen.
  */
 import { createModule } from '../../../core/template-module.js';
 import { asyncTask } from '../../../core/async-task.js';
@@ -23,6 +24,7 @@ import { State } from '../domain/model.js';
 import { analyze, activeResultOf, degreeAvailability, predictAt, DEGREES } from '../domain/analyze.js';
 import { refKey } from '../domain/columns.js';
 import { plannerExperiments, buildRecord } from '../domain/record.js';
+import { experimentOptions, importArgsOf, pendingPresetFields } from '../domain/design-preset.js';
 import { UiState } from './state.js';
 import { kpisOf, tabsOf, anovaView, coefView, designNoticeLines, predictLine, fmt } from './present.js';
 import {
@@ -164,6 +166,7 @@ export default createModule({
        * Der Reiterwechsel steht in der Adresse, wenn diese Instanz angezeigt ist.
        */
       init() {
+        this.watchPendingPreset();
         this.$watch(
           () => [this.model.colRefs.map(keyOf).join(','), keyOf(this.model.yRef)],
           (now, before) => {
@@ -181,6 +184,26 @@ export default createModule({
           if (!route || route.instanceId !== ctx.instanceId) return;
           if (!Array.isArray(route.sub) || route.sub[0] !== tab) this.changeRoute(tab);
         });
+      },
+
+      /**
+       * Eine offene Versuchsvorgabe (`importExperiment` aus dem Planer, vom
+       * Agenten oder aus der Auswahl hier) rechnet die angezeigte Instanz,
+       * sobald die Daten sie tragen: beim Einhängen, nach dem Import oder wenn
+       * die Spalten lesbar werden. Kein eigener Verlaufsschritt — sie faltet
+       * sich in den Schritt davor (den Import, wenn er in dieser angezeigten
+       * Instanz geschah); beim Einhängen wird sie Teil der Grundlage, wie eine
+       * Migration.
+       */
+      watchPendingPreset() {
+        const apply = () => {
+          const fields = pendingPresetFields(this.model, ctx.source);
+          if (!fields) return;
+          ctx.history?.amend(() => setFields(this.model, fields));
+        };
+        const due = () => pendingPresetFields(this.model, ctx.source) != null;
+        this.$watch(due, (now) => { if (now) queueMicrotask(apply); });
+        if (due()) queueMicrotask(apply);
       },
 
       /**
@@ -247,16 +270,28 @@ export default createModule({
         const el = /** @type {HTMLSelectElement} */ (event.target);
         const key = el.value;
         el.value = '';
-        if (key) void this.importChoice(key);
+        if (key) this.importChoice(key);
       },
       /**
-       * Die eine Stelle der Versuchsübernahme aus der Oberfläche. Der Lauf
-       * `importExperiment` folgt mit der Planer-Übergabe; bis dahin übernimmt
-       * die Auswahl nichts.
-       * @param {string} _key ein Schlüssel aus `experimentImports`
-       * @returns {Promise<void>}
+       * Die eine Stelle der Versuchsübernahme aus der Oberfläche: die Option
+       * zum Schlüssel als Model-Kommando `importExperiment` (ein Schritt;
+       * die Vorgabe faltet sich hinein). Unbekannter Schlüssel oder
+       * abgelehnte Angaben: ein Hinweis, nichts geschrieben.
+       * @param {string} key ein Schlüssel aus `experimentImports`
        */
-      async importChoice(_key) {},
+      importChoice(key) {
+        const option = experimentOptions(plannerExperiments(ctx.source)).find((o) => o.key === key);
+        if (!option) {
+          ctx.notify(this.t('importUnknown'), 'error');
+          return;
+        }
+        try {
+          this.model.importExperiment(importArgsOf(option));
+        } catch (err) {
+          console.warn('[regression] importExperiment rejected', err);
+          ctx.notify(this.t('importFailed'), 'error');
+        }
+      },
 
       // ── Einstellungen ───────────────────────────────────────
       computed: {
