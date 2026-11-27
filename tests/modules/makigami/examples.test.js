@@ -20,7 +20,7 @@ async function fetchJson(url) {
   return res.json();
 }
 
-const exampleUrl = (id) => new URL(`../../../examples/projects/${id}.json`, import.meta.url);
+const exampleUrl = (id) => new URL(`../../../js/modules/makigami/resources/examples/projects/${id}.json`, import.meta.url);
 
 suite('makigami Beispiele', () => {
   for (const id of EXAMPLES) {

@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
-import { defineModel, command, text, number, list, index, recordInverse } from '../../js/core/model.js';
+import { defineModel, command, text, number, boolean, list, index, recordInverse } from '../../js/core/model.js';
 
 const Doc = defineModel({
   fields: { name: text({ default: '' }), n: number({ default: 0 }) },
@@ -465,5 +465,20 @@ suite('createModule onCommand und ctx.history', () => {
     let hist;
     await mount(undefined, { ...opts, base: { view(ctx) { return { init() { hist = ctx.history; } }; } } });
     assertEqual(hist, null);
+  });
+  test('Ansichtsfeld: im Abzugsverlauf gespeichert und ein eigener Schritt (kein Weg ohne Schritt)', async () => {
+    const WithView = defineModel({
+      fields: { name: text({ default: '' }) },
+      view: { open: boolean({ default: false }) },
+    });
+    const { mod, context, data } = await mount(true, { Model: WithView, html: '<span x-text="model.name"></span>', initial: { name: 'start' } });
+    assertEqual(mod.historyCan('undo'), false);
+    data().model.open = true;
+    await flush();
+    assertEqual(stored[context.instanceId].open, true, 'Ansichtsfeld wird gespeichert');
+    assertEqual(mod.historyCan('undo'), true, 'Ansichtsfeld ist ein Verlaufsschritt (makigami-Spec, Nachtrag 2b)');
+    assertTrue(mod.historyStep('undo'));
+    await flush();
+    assertEqual(data().model.open, false, 'Rückgängig nimmt das Ansichtsfeld zurück');
   });
 });

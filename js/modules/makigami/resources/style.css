@@ -678,13 +678,6 @@
   cursor: not-allowed;
 }
 
-/* Knöpfe ohne Variante: auf die App-Flächen setzen (sonst hell im Dunkeln). */
-.makigami__settings-btn {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-primary);
-}
-
 /* Löschsymbol der Köpfe und Einstellungszeilen: `.icon` ist 1em groß. */
 .makigami__remove-icon {
   font-size: 12px;

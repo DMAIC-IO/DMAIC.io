@@ -21,7 +21,7 @@ const FILES = [
   'js/modules/dmaic-calendar/domain/migrations.js',
   'js/modules/fmea/domain/model.js',
   'js/modules/lessons-learned/domain/model.js',
-  'js/modules/makigami/makigami-model.js',
+  'js/modules/makigami/domain/model.js',
   'js/modules/process-map/process-map-model.js',
   'js/modules/random-generator/domain/model.js',
   'js/modules/rest-api/rest-api-model.js',

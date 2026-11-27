@@ -9048,6 +9048,7 @@ export const AGENT_REGISTRY = {
   "makigami": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -9057,374 +9058,620 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addRole": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Legt eine Rolle ohne Namen an."
+        "help": "",
+        "keysOf": "addRole",
+        "keysHelp": "actions.addRole.params",
+        "keys": {}
       },
       "addStep": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Legt einen Prozessschritt ohne Titel am Ende der Kette an."
-      },
-      "setParticipation": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "roleId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Rolle"
-          },
-          {
-            "name": "participates",
-            "type": "boolean",
-            "optional": false,
-            "help": "true setzt die Mitwirkung, false nimmt sie zurück"
-          }
-        ],
-        "returns": "void",
-        "help": "Bestimmt, ob eine Rolle an einem Schritt mitwirkt."
-      },
-      "setMuda": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "mudaId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Verschwendungsart"
-          },
-          {
-            "name": "marked",
-            "type": "boolean",
-            "optional": false,
-            "help": "true setzt die Kennzeichnung, false nimmt sie zurück"
-          }
-        ],
-        "returns": "void",
-        "help": "Bestimmt, ob eine Verschwendungsart einen Schritt kennzeichnet."
-      },
-      "setStepExpanded": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "expanded",
-            "type": "boolean",
-            "optional": false,
-            "help": "true klappt sie auf, false klappt sie zu"
-          }
-        ],
-        "returns": "void",
-        "help": "Klappt die Karte eines Schritts auf oder zu."
-      },
-      "setTitle": {
-        "params": [
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Name; die leere Zeichenkette löscht ihn"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Namen des betrachteten Prozesses."
-      },
-      "setRoleLabel": {
-        "params": [
-          {
-            "name": "roleId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Rolle"
-          },
-          {
-            "name": "label",
-            "type": "string",
-            "optional": false,
-            "help": "der Name; die leere Zeichenkette löscht ihn"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Namen einer Rolle."
-      },
-      "setStepTitle": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "der Titel; die leere Zeichenkette löscht ihn"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Titel eines Prozessschritts."
-      },
-      "setStepDescription": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Beschreibung; die leere Zeichenkette löscht sie"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Beschreibung eines Prozessschritts."
-      },
-      "setStepNotes": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Notiz; die leere Zeichenkette löscht sie"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Notiz eines Prozessschritts."
-      },
-      "setStepProcessTime": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Dauer als Text, etwa `30 min` oder `1 d 2 h`; die leere Zeichenkette löscht sie"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Setzt die Bearbeitungszeit eines Prozessschritts."
-      },
-      "setStepWaitTime": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          },
-          {
-            "name": "text",
-            "type": "string",
-            "optional": false,
-            "help": "die Dauer als Text, etwa `30 min` oder `1 d 2 h`; die leere Zeichenkette löscht sie"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Setzt die Wartezeit eines Prozessschritts."
-      },
-      "removeStep": {
-        "params": [
-          {
-            "name": "stepId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt einen Prozessschritt."
-      },
-      "removeRole": {
-        "params": [
-          {
-            "name": "roleId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Rolle"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt eine Rolle und ihre Mitwirkungen."
-      },
-      "reorderSteps": {
-        "params": [
-          {
-            "name": "draggedId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts, der umziehen soll"
-          },
-          {
-            "name": "targetId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Schritts, vor den er soll; dieselbe id wie `draggedId` lässt die Reihenfolge unverändert"
-          }
-        ],
-        "returns": "void",
-        "help": "Stellt einen Prozessschritt vor einen anderen."
-      },
-      "reorderRoles": {
-        "params": [
-          {
-            "name": "draggedId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Rolle, die umziehen soll"
-          },
-          {
-            "name": "targetId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Rolle, vor die sie soll; dieselbe id wie `draggedId` lässt die Reihenfolge unverändert"
-          }
-        ],
-        "returns": "void",
-        "help": "Stellt eine Rolle vor eine andere."
+        "help": "",
+        "keysOf": "addStep",
+        "keysHelp": "actions.addStep.params",
+        "keys": {}
       },
       "addMudaCategory": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Legt eine Verschwendungsart ohne Kürzel und Namen an."
+        "help": "",
+        "keysOf": "addMudaCategory",
+        "keysHelp": "actions.addMudaCategory.params",
+        "keys": {}
       },
       "addTimeUnit": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Legt eine Zeiteinheit ohne Kürzel mit der Länge einer Sekunde an."
+        "help": "",
+        "keysOf": "addTimeUnit",
+        "keysHelp": "actions.addTimeUnit.params",
+        "keys": {}
       },
-      "removeMudaCategory": {
+      "setParticipation": {
+        "target": "model",
         "params": [
           {
-            "name": "mudaId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Verschwendungsart"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt eine Verschwendungsart und ihre Kennzeichnungen an den Schritten."
+        "help": "",
+        "keysOf": "setParticipation",
+        "keysHelp": "actions.setParticipation.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "roleId": {
+            "type": "string",
+            "help": ""
+          },
+          "participates": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
       },
-      "removeTimeUnit": {
+      "setMuda": {
+        "target": "model",
         "params": [
           {
-            "name": "unitId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id der Zeiteinheit"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt eine Zeiteinheit. Dauertexte, die nur sie benutzen, sind danach nicht mehr lesbar und gehen nicht in die Kennzahlen ein."
+        "help": "",
+        "keysOf": "setMuda",
+        "keysHelp": "actions.setMuda.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "mudaId": {
+            "type": "string",
+            "help": ""
+          },
+          "marked": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "setRoleLabel": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setRoleLabel",
+        "keysHelp": "actions.setRoleLabel.params",
+        "keys": {
+          "roleId": {
+            "type": "string",
+            "help": ""
+          },
+          "label": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setStepTitle": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setStepTitle",
+        "keysHelp": "actions.setStepTitle.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setStepDescription": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setStepDescription",
+        "keysHelp": "actions.setStepDescription.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setStepNotes": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setStepNotes",
+        "keysHelp": "actions.setStepNotes.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setStepProcessTime": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "setStepProcessTime",
+        "keysHelp": "actions.setStepProcessTime.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setStepWaitTime": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "setStepWaitTime",
+        "keysHelp": "actions.setStepWaitTime.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "normalizeStepTime": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "normalizeStepTime",
+        "keysHelp": "actions.normalizeStepTime.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'processTime'|'waitTime'",
+            "help": ""
+          }
+        }
       },
       "setMudaCategory": {
+        "target": "model",
         "params": [
           {
-            "name": "mudaId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Verschwendungsart"
-          },
-          {
-            "name": "data",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "die zu ändernden Felder — `code` (das Kürzel in der Matrix), `label` (der Name) oder `color` (ein Hexwert wie `#4a90e2`)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Ändert die genannten Felder einer Verschwendungsart; alle übrigen bleiben stehen."
+        "help": "",
+        "keysOf": "setMudaCategory",
+        "keysHelp": "actions.setMudaCategory.params",
+        "keys": {
+          "mudaId": {
+            "type": "string",
+            "help": ""
+          },
+          "code": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "label": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "color": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          }
+        }
       },
       "setTimeUnit": {
+        "target": "model",
         "params": [
           {
-            "name": "unitId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Zeiteinheit"
-          },
-          {
-            "name": "data",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "die zu ändernden Felder — `label` (das Kürzel, das in einem Dauertext erkannt wird) oder `factorSeconds` (ihre Länge in Sekunden, eine Zahl größer als 0)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Ändert die genannten Felder einer Zeiteinheit; alle übrigen bleiben stehen."
+        "help": "",
+        "keysOf": "setTimeUnit",
+        "keysHelp": "actions.setTimeUnit.params",
+        "keys": {
+          "unitId": {
+            "type": "string",
+            "help": ""
+          },
+          "label": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "factorSeconds": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "removeStep": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeStep",
+        "keysHelp": "actions.removeStep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeRole": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeRole",
+        "keysHelp": "actions.removeRole.params",
+        "keys": {
+          "roleId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeMudaCategory": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeMudaCategory",
+        "keysHelp": "actions.removeMudaCategory.params",
+        "keys": {
+          "mudaId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeTimeUnit": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeTimeUnit",
+        "keysHelp": "actions.removeTimeUnit.params",
+        "keys": {
+          "unitId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveStep": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveStep",
+        "keysHelp": "actions.moveStep.params",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": ""
+          },
+          "to": {
+            "type": "number",
+            "help": "",
+            "rules": [
+              "afterRemovalFrom:steps"
+            ]
+          }
+        }
+      },
+      "moveRole": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveRole",
+        "keysHelp": "actions.moveRole.params",
+        "keys": {
+          "roleId": {
+            "type": "string",
+            "help": ""
+          },
+          "to": {
+            "type": "number",
+            "help": "",
+            "rules": [
+              "afterRemovalFrom:roles"
+            ]
+          }
+        }
       },
       "resetSettingsToDefaults": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Stellt die mitgelieferten Verschwendungsarten und Zeiteinheiten wieder her; Kennzeichnungen auf entfallene Arten fallen weg."
+        "help": "",
+        "keysOf": "resetSettingsToDefaults",
+        "keysHelp": "actions.resetSettingsToDefaults.params",
+        "keys": {}
       }
     },
     "fields": {
       "title": {
         "type": "string",
-        "help": "der Name des betrachteten Prozesses",
+        "help": "",
         "bulk": false
       },
       "roles": {
-        "type": "Array<{id:string,label:string}>",
-        "help": "die beteiligten Rollen in Anzeigereihenfolge — je Rolle `id` (zum Ansprechen) und `label`",
+        "type": "{ id: string, label: string }[]",
+        "help": "",
         "bulk": false
       },
       "steps": {
-        "type": "Array<{id:string,title:string,description:string,roleIds:string[],processTime:string,waitTime:string,mudaIds:string[],notes:string,expanded:boolean}>",
-        "help": "die Prozessschritte in Ablaufreihenfolge; je Schritt `id` (zum Ansprechen), `title`, `description`, `notes`, `roleIds` (die mitwirkenden Rollen), `mudaIds` (die zugeordneten Verschwendungsarten), `processTime` und `waitTime` als Dauertext (etwa `30 min`, `1 d 2 h`) sowie `expanded` (ob die Karte aufgeklappt ist)",
-        "bulk": true,
-        "bulkKind": "table"
+        "type": "{ id: string, title: string, description: string, roleIds: string[], processTime: string, waitTime: string, mudaIds: string[], notes: string }[]",
+        "help": "",
+        "bulk": true
       },
       "mudaCategories": {
-        "type": "Array<{id:string,code:string,labelKey?:string,label:string,color:string}>",
-        "help": "die Verschwendungsarten, auf die ein Schritt zeigen kann — je Art `id` (zum Ansprechen), `code` (das Kürzel in der Matrix), `label` (eigener Name; leer heißt, es gilt der mitgelieferte aus `labelKey`) und `color` als Hexwert. Vorbelegt mit den acht Arten von TIMWOODS+S",
+        "type": "Array<{ id: string, code: string, labelKey?: 'muda.transport'|'muda.inventory'|'muda.motion'|'muda.waiting'|'muda.overproduction'|'muda.overprocessing'|'muda.defects'|'muda.skills', label: string, color: string }>",
+        "help": "",
         "bulk": false
       },
       "timeUnits": {
-        "type": "Array<{id:string,label:string,factorSeconds:number}>",
-        "help": "die Zeiteinheiten, die in einem Dauertext erkannt werden — je Einheit `id` (zum Ansprechen), `label` (das Kürzel im Text, etwa `min`) und `factorSeconds` (ihre Länge in Sekunden; ein Arbeitstag zählt 28800)",
+        "type": "{ id: string, label: string, factorSeconds: number }[]",
+        "help": "",
         "bulk": false
+      },
+      "kpi": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "MakigamiKpi",
+        "keys": {
+          "process": {
+            "type": "number",
+            "help": "Summe der lesbaren Bearbeitungszeiten in Sekunden"
+          },
+          "wait": {
+            "type": "number",
+            "help": "Summe der lesbaren Wartezeiten in Sekunden"
+          },
+          "lead": {
+            "type": "number",
+            "help": "Lead Time: Bearbeitung plus Warten, in Sekunden"
+          },
+          "pce": {
+            "type": "number|null",
+            "help": "Prozess-Zykluseffizienz als Anteil 0–1; null ohne Lead Time"
+          }
+        }
+      },
+      "invalidTimes": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "TimeIssue",
+        "keys": {
+          "stepId": {
+            "type": "string",
+            "help": "id des Schritts"
+          },
+          "field": {
+            "type": "'processTime'|'waitTime'",
+            "help": "welches Zeitfeld"
+          }
+        }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
+      "collapsed",
       "settingsOpen"
+    ],
+    "settable": [
+      "title",
+      "roles",
+      "steps",
+      "mudaCategories",
+      "timeUnits"
+    ],
+    "invariants": [
+      "uniqueIds",
+      "mudaNotEmpty",
+      "unitsNotEmpty",
+      "knownRefs",
+      "knownCollapsed"
     ]
   },
   "model-data-generator": {

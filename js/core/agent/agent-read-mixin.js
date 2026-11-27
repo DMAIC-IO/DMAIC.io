@@ -37,7 +37,6 @@ import { AGENT_REGISTRY } from './agent-registry.generated.js';
  * @type {readonly string[]}
  */
 export const MIXIN_READ_MODULES = Object.freeze([
-  'makigami',
   'process-map',
 ]);
 

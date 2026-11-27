@@ -85,21 +85,20 @@ if (unmapped.length) {
 // ── Glyphen-Lint: kein Icon darf am Icon-System vorbei gezeichnet werden. ──
 
 /**
- * Dateien, die ein Icon berechtigt selbst zeichnen: die vier
+ * Dateien, die ein Icon berechtigt selbst zeichnen: die drei
  * SVG-Export-Generatoren erzeugen Dateien, in denen es keine CSS-Maske gibt,
  * und das Diagramm von triz-sufield zeichnet sein
  * Dreieck samt Pfeilspitze.
  *
  * Für eine HTML-Vorlage deckt die Ausnahme nur den `<svg>`-Scan; der
  * Glyphen-Scan läuft weiter (`scanHtml`). Für die JS-Dateien entfällt der
- * Glyphen-Scan weiterhin ganz: zwei von ihnen (process-map-export.js,
- * makigami.js) tragen Glyphen in Export-Texten und Meldungen, die weder in
- * der Baseline stehen noch zu dieser Ausnahme gehören — offener Rückstand.
+ * Glyphen-Scan weiterhin ganz: eine von ihnen (process-map-export.js) trägt
+ * Glyphen in Export-Texten und Meldungen, die weder in der Baseline stehen
+ * noch zu dieser Ausnahme gehören — offener Rückstand.
  */
 const GLYPH_EXEMPT = [
   'js/core/export-utils.js',
   'js/modules/process-map/process-map-export.js',
-  'js/modules/makigami/makigami.js',
   'js/modules/response-optimization/response-optimization.js',
   'js/modules/triz-sufield/resources/view.html',
 ];

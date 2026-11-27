@@ -147,13 +147,6 @@ export const ANCHOR_EXEMPTIONS = {
   'triz-sufield': [
     { match: 'triz-sf__filter-label', reason: 'Optionsfeld-Paar: nur das letzte trägt den Anker (ein Kreis je Gruppe)', count: 1 },
   ],
-  makigami: [
-    { match: "t('colCode')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
-    { match: "t('colLabel')", reason: 'Einstellungen, Eingabetabellen (Verschwendungsarten, Zeiteinheiten)', count: 2 },
-    { match: "t('colColor')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
-    { match: "t('colFactor')", reason: 'Einstellungen, Eingabetabelle der Zeiteinheiten', count: 1 },
-    { match: 'makigami__matrix-step-head', reason: 'Kopf je Prozessschritt (Titel aus den Daten, editierbar)', count: 1 },
-  ],
   'doe-planner': [
     { match: 'doe__term-chip', reason: 'Schalter je Modellterm; die Termliste ist an setTerm verankert', count: 1 },
     { match: 'doe__forbidden-factor', reason: 'Auswahl je Faktor in der Eingabezeile; die verbotenen Ecken sind an addForbiddenVertex verankert', count: 1 },

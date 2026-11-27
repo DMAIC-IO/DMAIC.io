@@ -44,17 +44,6 @@ export default [
 
   // ─── Analyze ──────────────────────────────────────────────────
   {
-    id: 'makigami',
-    phase: 'analyze',
-    group: 'flowcharts',
-    load: () => import('./makigami/makigami.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze'   },
-      dmadv:  { phase: 'analyze'   },
-      eightd: { phase: 'rootcause' },
-    },
-  },
-  {
     id: 'activity-flowchart',
     phase: 'analyze',
     group: 'flowcharts',

@@ -135,6 +135,11 @@
     "description": "Strukturierte Dokumentation von Projekterkenntnissen",
     "whenToUse": "Wenn die Erfahrungen eines Projekts festgehalten werden sollen — was gut lief, was nicht, die Ursache und die Empfehlung samt Maßnahmen; nicht für die laufende Aufgabenverfolgung und nicht für eine Ursachenanalyse selbst, dafür sind die Aufgabenliste und die 5-Why-Analyse da."
   },
+  "makigami": {
+    "name": "Makigami-Matrix",
+    "description": "Swim-Lane-Prozessanalyse mit Bearbeitungs-/Wartezeiten und Verschwendungsanalyse",
+    "whenToUse": "Wenn ein abteilungsübergreifender Ablauf Schritt für Schritt mit Zuständigkeit, Bearbeitungszeit, Wartezeit und Verschwendungsarten aufgenommen werden soll, um Liegezeiten sichtbar zu machen; nicht für die reine Ablauflogik mit Entscheidungen und Verzweigungen, dafür ist ein Flussdiagramm da."
+  },
   "model-data-generator": {
     "name": "Modelldaten-Generator",
     "description": "Synthetische Datensätze aus konfigurierbaren Regressionsmodellen erzeugen",
