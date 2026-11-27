@@ -3,7 +3,11 @@
    Buttons, inputs, modals, tables, badges, toasts, etc.
    ============================================================ */
 
-/* ===== Buttons ===== */
+/* ===== Buttons =====
+   Rollen statt Farben (docs/THEMING.md „Knöpfe und Chips“): Fläche, Rahmen und
+   Schrift kommen nur von hier. `.btn` allein trägt die Sekundärrolle.
+   Hover-Regeln hängen `:where(:not(:disabled, .btn--disabled))` an — gesperrte
+   Knöpfe reagieren nicht, die Spezifität bleibt die der reinen `:hover`-Regel. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -14,7 +18,9 @@
   font-family: var(--font-family);
   font-weight: var(--font-weight-medium);
   border-radius: var(--border-radius);
-  border: var(--border-width) solid transparent;
+  border: var(--border-width) solid var(--btn-secondary-border);
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
   cursor: pointer;
   transition: background var(--transition-speed), color var(--transition-speed),
               border-color var(--transition-speed), box-shadow var(--transition-speed);
@@ -23,8 +29,23 @@
   outline: none;
 }
 
+/* Niedrige Spezifität: jede Variante unten überschreibt die Fläche. */
+.btn:where(:hover:not(:disabled, .btn--disabled)) {
+  background: var(--btn-secondary-bg-hover);
+}
+
 .btn:focus-visible {
   box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+.btn:disabled,
+.btn--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--disabled {
+  pointer-events: none;
 }
 
 .btn--primary {
@@ -33,19 +54,19 @@
   border-color: var(--color-accent);
 }
 
-.btn--primary:hover {
+.btn--primary:hover:where(:not(:disabled, .btn--disabled)) {
   background: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
 }
 
 .btn--secondary {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-primary);
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
 }
 
-.btn--secondary:hover {
-  background: var(--color-bg-tertiary);
+.btn--secondary:hover:where(:not(:disabled, .btn--disabled)) {
+  background: var(--btn-secondary-bg-hover);
 }
 
 .btn--ghost {
@@ -54,7 +75,7 @@
   border-color: transparent;
 }
 
-.btn--ghost:hover {
+.btn--ghost:hover:where(:not(:disabled, .btn--disabled)) {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
@@ -64,21 +85,15 @@
   color: var(--color-accent);
 }
 
-.btn--ghost.btn--disabled,
-.btn--icon.btn--disabled {
-  opacity: 0.4;
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
 .btn--danger {
-  background: var(--color-error);
-  color: var(--color-text-inverse);
-  border-color: var(--color-error);
+  background: var(--btn-danger-bg);
+  color: var(--btn-danger-text);
+  border-color: var(--btn-danger-bg);
 }
 
-.btn--danger:hover {
-  opacity: 0.85;
+.btn--danger:hover:where(:not(:disabled, .btn--disabled)) {
+  background: var(--btn-danger-bg-hover);
+  border-color: var(--btn-danger-bg-hover);
 }
 
 .btn--icon {
@@ -99,21 +114,21 @@
   border-radius: var(--border-radius-sm);
 }
 
-.btn--icon-sm:hover {
+.btn--icon-sm:hover:where(:not(:disabled, .btn--disabled)) {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
 
+/* Löschen in Zeilen/Karten: grau, rot erst beim Hover. */
 .btn--icon-sm.btn--danger {
   background: transparent;
   color: var(--color-text-tertiary);
   border-color: transparent;
 }
 
-.btn--icon-sm.btn--danger:hover {
+.btn--icon-sm.btn--danger:hover:where(:not(:disabled, .btn--disabled)) {
   background: transparent;
-  color: var(--color-error);
-  opacity: 1;
+  color: var(--btn-danger-bg);
 }
 
 .btn--sm {
@@ -151,7 +166,7 @@
   transition: background var(--transition-speed), color var(--transition-speed);
 }
 
-.btn--segment:hover {
+.btn--segment:hover:where(:not(:disabled, .btn--disabled)) {
   color: var(--color-text-primary);
 }
 
@@ -160,6 +175,71 @@
   color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
   box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+}
+
+/* ===== Chips =====
+   Filter, Auswahlmarken, Tags mit Klick: `<button class="chip">` mit
+   `aria-pressed` (Filter) bzw. `role="radio"` in einer Gruppe. Zusatzteile
+   `.chip__count`, `.chip__dot`; die Farbe des Punkts darf das Modul setzen
+   (Datenfarbe, kein Chip-Zustand). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed),
+              border-color var(--transition-speed), box-shadow var(--transition-speed);
+  user-select: none;
+  white-space: nowrap;
+  outline: none;
+}
+
+.chip:hover:where(:not(:disabled, .chip--disabled)) {
+  border-color: var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+
+.chip:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+.chip--active,
+.chip--active:hover:where(:not(:disabled, .chip--disabled)) {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--chip-active-text);
+}
+
+.chip:disabled,
+.chip--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.chip--disabled {
+  pointer-events: none;
+}
+
+.chip__count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.chip__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentcolor;
 }
 
 /* ===== Inline delete button =====

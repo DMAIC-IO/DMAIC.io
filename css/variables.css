@@ -90,6 +90,18 @@
   --color-accent-hover: #05a;
   --color-accent-light: #e5f0ff;
 
+  /* Knöpfe und Chips — Rollen statt Farben (docs/THEMING.md „Knöpfe und Chips“).
+     Sekundärfläche ist eine feste Stufe über der Karte; Gefahrknopf hat einen
+     eigenen Token (AA mit Weiß), --color-error bleibt für Meldungen. */
+  --btn-secondary-bg: var(--color-bg-primary);
+  --btn-secondary-bg-hover: var(--color-bg-tertiary);
+  --btn-secondary-border: var(--color-border-primary);
+  --btn-secondary-text: var(--color-text-primary);
+  --btn-danger-bg: #d70015;        /* Weiß darauf 5,38:1 */
+  --btn-danger-bg-hover: #b00012;  /* Weiß darauf 7,36:1 */
+  --btn-danger-text: var(--color-text-inverse);
+  --chip-active-text: var(--color-accent); /* auf --color-accent-light 4,83:1 */
+
   /* Phase Colors
      DMAIC: blue (Data) → red (D) → orange (M) → yellow (A) → lime (I) → green (C)
      DMADV adds: design (deep purple), verify (teal). extras: neutral grey.
@@ -293,6 +305,16 @@
   --color-accent: #4da3ff;
   --color-accent-hover: #6db5ff;
   --color-accent-light: #1a3a5c;
+
+  /* Knöpfe und Chips (dunkel) */
+  --btn-secondary-bg: var(--color-bg-tertiary);
+  --btn-secondary-bg-hover: var(--color-border-primary);
+  --btn-secondary-border: var(--color-border-primary);
+  --btn-secondary-text: var(--color-text-primary);
+  --btn-danger-bg: #ff3b30;        /* #1d1d1f darauf 4,74:1 */
+  --btn-danger-bg-hover: #ff6961;  /* #1d1d1f darauf 5,97:1 */
+  --btn-danger-text: var(--color-text-inverse);
+  --chip-active-text: var(--color-accent-hover); /* auf --color-accent-light 5,38:1 */
   --color-success-text: #a5d6a7;
   --color-readonly-bg: #3d3200;
   --color-readonly-text: #ffc107;
