@@ -50,6 +50,11 @@
     "description": "Read data from third-party formats (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) into a worksheet",
     "whenToUse": "When data from a third-party source is to be brought into a data collection; for an agent from CSV or JSON text, with profiles for common measuring-machine exports."
   },
+  "data-transformation": {
+    "name": "Data Transformation",
+    "description": "Transform data (Box-Cox, Johnson, Log, …) for normality",
+    "whenToUse": "When non-normal measurements should be transformed for a method that assumes normality — Box-Cox, Yeo-Johnson, Johnson, logarithm, square root, reciprocal, square — and the result is reused as a new column. Requires the measurements as a numeric column of a data collection (at least three values)."
+  },
   "distribution-fit": {
     "name": "Distribution Fit",
     "description": "Fit data to multiple distributions and rank by Goodness-of-Fit test",

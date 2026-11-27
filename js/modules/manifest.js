@@ -34,12 +34,6 @@ export default [
     group: 'collect',
     load: () => import('./model-data-generator/model-data-generator.js'),
   },
-  {
-    id: 'data-transformation',
-    phase: 'data',
-    group: 'process',
-    load: () => import('./data-transformation/data-transformation.js'),
-  },
 
   // ─── Define ───────────────────────────────────────────────────
   {

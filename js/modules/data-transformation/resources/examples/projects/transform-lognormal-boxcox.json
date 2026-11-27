@@ -1,0 +1,6 @@
+{
+  "_schema": { "version": "1.0" },
+  "currentTF": "boxcox",
+  "columnRef": { "instanceId": "__source__", "sheetId": "sheet-dist-lognormal", "columnId": "c-zykluszeit" },
+  "sourceWorksheetFile": "shared/worksheets/distribution-lognormal.json"
+}

@@ -31,12 +31,6 @@
     "count": 2,
     "reason": "Dateigröße auf der Dateikarte (KB mit einer, MB mit zwei Nachkommastellen) unverändert in der bisherigen Schreibweise"
   },
-  "js/modules/data-transformation/data-transformation.html": {
-    "count": 1
-  },
-  "js/modules/data-transformation/data-transformation.js": {
-    "count": 5
-  },
   "js/modules/data-transformation/io/export.js": {
     "count": 1,
     "reason": "Text des Exportkastens und der Zwischenablage: sechs Nachkommastellen mit Punkt, zeichengleich mit der Altform, weil ein fremdes Programm ihn beim Einfügen liest"

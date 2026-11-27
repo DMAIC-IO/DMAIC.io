@@ -50,6 +50,11 @@
     "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",
     "whenToUse": "Wenn Daten aus einer Fremdquelle in eine Datensammlung übernommen werden sollen; für einen Agenten aus CSV- oder JSON-Text, mit Profilen für gängige Messmaschinen-Exporte."
   },
+  "data-transformation": {
+    "name": "Datentransformation",
+    "description": "Daten transformieren (Box-Cox, Johnson, Log, …) für Normalverteilung",
+    "whenToUse": "Wenn nicht normalverteilte Messwerte für ein Verfahren mit Normalitätsannahme transformiert werden sollen — Box-Cox, Yeo-Johnson, Johnson, Logarithmus, Wurzel, Kehrwert, Quadrat — und das Ergebnis als neue Spalte weiterverwendet wird. Braucht die Messwerte als numerische Spalte (mindestens drei Werte) einer Datensammlung."
+  },
   "distribution-fit": {
     "name": "Verteilungstests",
     "description": "Datensatz auf verschiedene Verteilungsfunktionen testen und nach Güte ranken",

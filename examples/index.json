@@ -796,30 +796,6 @@
       ]
     },
     {
-      "id": "transform-lognormal-boxcox",
-      "type": "project",
-      "title": {
-        "de": "Box-Cox-Transformation: Lognormale Zykluszeiten",
-        "en": "Box-Cox transformation: lognormal cycle times"
-      },
-      "description": {
-        "de": "80 stark rechtsschiefe Lognormal-Zykluszeiten. Mit Box-Cox (optimales λ ≈ 0) werden die Werte annähernd normalverteilt.",
-        "en": "80 strongly right-skewed lognormal cycle times. Box-Cox (optimal λ ≈ 0) makes the values approximately normal."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=903",
-      "license": "public-domain",
-      "file": "projects/transform-lognormal-boxcox.json",
-      "format": "json",
-      "modules": [
-        "data-transformation"
-      ],
-      "tags": [
-        "data-transformation",
-        "box-cox",
-        "lognormal"
-      ]
-    },
-    {
       "id": "process-map-pizza-lieferung",
       "type": "project",
       "title": {

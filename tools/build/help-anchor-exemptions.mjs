@@ -121,6 +121,13 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.setStandardSelected', reason: 'die Oberfläche hakt das Kästchen an, verankert an fields.selected' },
     { name: 'actions.setExpandedClasses', reason: 'die Oberfläche klappt über die Klassenköpfe auf, verankert an fields.expandedClasses' },
   ],
+  'data-transformation': [
+    { name: 'actions.toWorksheet.cancel', reason: 'das Senden läuft ohne merkliche Wartezeit, die Oberfläche bietet keinen Abbrechen-Knopf' },
+    { name: 'fields.asyncTasks', reason: 'Laufzustand von Rechnung und Senden für den Agenten; die Oberfläche zeigt das Ergebnis in den Ausgabeabschnitten und den Sendezustand am Sendeknopf, verankert an asyncTasks.toWorksheet' },
+    { name: 'fields.effectiveTF', reason: 'nur für den Agenten; die Oberfläche markiert die gewählte Kachel und meldet den Rückfall in der Hinweiszeile, verankert am Titel der Transformationswahl' },
+    { name: 'fields.params', reason: 'kein eigenes Element; jeder Parameter ist einzeln an fields.params.<Transformation>.<Parameter> verankert' },
+    { name: 'fields.targetColumns', reason: 'Auswahlhilfe für den Agenten; die Oberfläche zeigt dieselben Ziele im Zielwähler, verankert an asyncTasks.toWorksheet.params.target' },
+  ],
   'random-generator': [
     { name: 'actions.removeAttribute', reason: 'Löschknopf × je Kategorienzeile; ein Fragezeichen je Zeile wäre Rauschen, verankert sind die Spaltenköpfe Name und Gewicht' },
     { name: 'actions.setAttribute', reason: 'nur für den Agenten; die Oberfläche schreibt Name und Gewicht direkt in den Zeilenfeldern, verankert an den Spaltenköpfen' },

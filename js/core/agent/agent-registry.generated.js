@@ -3308,6 +3308,7 @@ export const AGENT_REGISTRY = {
   "data-transformation": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -3323,299 +3324,146 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setColumn": {
+      "copyExport": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "slot",
-            "type": "'source'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Slot; dieses Modul führt nur `source`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Die Quellspalte setzen und sofort rechnen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'lambda'|'gamma'|'delta'|'xi'|'lambdaJ'",
-            "optional": false,
-            "help": "welcher Parameter; `activeParams` nennt die im aktuellen Zustand gültigen"
-          },
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "Zahl im Bereich aus `activeParams`; Textzahlen werden angenommen"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter der aktuellen Transformation setzen; die Rechnung folgt verzögert.",
-        "keysOf": "Params",
-        "keys": {
-          "lambda": {
-            "type": "number",
-            "help": "λ, Box-Cox und Yeo-Johnson",
-            "optional": true
-          },
-          "gamma": {
-            "type": "number",
-            "help": "γ, Johnson",
-            "optional": true
-          },
-          "delta": {
-            "type": "number",
-            "help": "δ, Johnson",
-            "optional": true
-          },
-          "xi": {
-            "type": "number",
-            "help": "ξ, Johnson",
-            "optional": true
-          },
-          "lambdaJ": {
-            "type": "number",
-            "help": "λ, Johnson",
-            "optional": true
-          }
-        }
-      },
-      "selectTF": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "eine der Transformationen aus `transforms`"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Transformation wählen und sofort rechnen."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet die Transformation mit der aktuellen Quelle und den aktuellen Parametern. Weniger als drei endliche Werte lassen `result` auf null — keine Absage."
+        "help": "",
+        "keysOf": "copyExport",
+        "keysHelp": "actions.copyExport.params",
+        "keys": {}
       },
       "toWorksheet": {
+        "target": "asyncTask",
         "params": [
           {
-            "name": "target",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`; columnId `'__new__'` hängt eine neue Spalte an das Blatt an"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<{ instanceId: string }|null>",
-        "help": "Die transformierte Spalte an einen neuen oder bestehenden Worksheet senden."
+        "returns": "any",
+        "help": "",
+        "keysOf": "toWorksheet",
+        "keysHelp": "asyncTasks.toWorksheet.params",
+        "keys": {
+          "target": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "toWorksheet",
+        "op": "start",
+        "helpKey": "asyncTasks.toWorksheet.help"
+      },
+      "toWorksheet.cancel": {
+        "target": "asyncTask",
+        "task": "toWorksheet",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.toWorksheet.cancel.help"
       }
     },
     "fields": {
       "currentTF": {
-        "type": "string",
-        "help": "the selected transformation, one of `transforms`",
-        "bulk": false,
-        "derived": true
-      },
-      "transforms": {
-        "type": "string[]",
-        "help": "all transformation ids",
-        "bulk": false,
-        "derived": true
+        "type": "'boxcox'|'yeojohnson'|'johnson_su'|'johnson_sb'|'log'|'log10'|'sqrt'|'inverse'|'square'",
+        "help": "",
+        "bulk": false
       },
       "columnRef": {
-        "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-        "help": "the source column",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:3"
+        ]
+      },
+      "params": {
+        "type": "{ boxcox: { lambda: number|null }, yeojohnson: { lambda: number|null }, johnson_su: { gamma: number, delta: number, xi: number, lambdaJ: number }, johnson_sb: { gamma: number, delta: number, xi: number, lambdaJ: number } }",
+        "help": "",
+        "bulk": false
+      },
+      "effectiveTF": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "params": {
-        "type": "Params",
-        "help": "the parameters of the current transformation by key",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "Params",
-        "keys": {
-          "lambda": {
-            "type": "number",
-            "help": "λ, Box-Cox und Yeo-Johnson",
-            "optional": true
-          },
-          "gamma": {
-            "type": "number",
-            "help": "γ, Johnson",
-            "optional": true
-          },
-          "delta": {
-            "type": "number",
-            "help": "δ, Johnson",
-            "optional": true
-          },
-          "xi": {
-            "type": "number",
-            "help": "ξ, Johnson",
-            "optional": true
-          },
-          "lambdaJ": {
-            "type": "number",
-            "help": "λ, Johnson",
-            "optional": true
-          }
-        }
-      },
       "activeParams": {
-        "type": "Array<{ key: string, min: number, max: number }>",
-        "help": "the keys `setParam` accepts now, with their range",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "targetColumns": {
-        "type": "Array<{ key: string, name: string }>",
-        "help": "the targets `toWorksheet` accepts: per sheet its columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet",
-        "bulk": false,
-        "derived": true
-      },
-      "result": {
-        "type": "Result|null",
-        "help": "descriptive statistics and Anderson-Darling p of both series, null without a result",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
-        "keysOf": "Result",
+        "keysOf": "TargetColumn",
         "keys": {
-          "n": {
-            "type": "number",
-            "help": "Werte"
-          },
-          "transform": {
+          "key": {
             "type": "string",
-            "help": "Transformation, mit der gerechnet wurde"
+            "help": "Ziel `instanceId|sheetId|columnId`"
           },
-          "params": {
-            "type": "object",
-            "help": "Kopie der Parameter dieser Rechnung (je Transformation andere Schlüssel)"
-          },
-          "original": {
-            "type": "Descriptives",
-            "help": "Kennwerte vorher",
-            "keysOf": "Descriptives",
-            "keys": {
-              "mean": {
-                "type": "number|null",
-                "help": "Mittelwert"
-              },
-              "std": {
-                "type": "number|null",
-                "help": "Standardabweichung"
-              },
-              "median": {
-                "type": "number|null",
-                "help": "Median"
-              },
-              "skewness": {
-                "type": "number|null",
-                "help": "Schiefe"
-              },
-              "kurtosis": {
-                "type": "number|null",
-                "help": "Exzess-Wölbung"
-              },
-              "min": {
-                "type": "number|null",
-                "help": "Minimum"
-              },
-              "max": {
-                "type": "number|null",
-                "help": "Maximum"
-              },
-              "adStatAdj": {
-                "type": "number|null",
-                "help": "korrigiertes A² (A²*) Anderson-Darling"
-              },
-              "adPValue": {
-                "type": "number|null",
-                "help": "p-Wert Anderson-Darling"
-              },
-              "normal": {
-                "type": "boolean|null",
-                "help": "Urteil: normal, wenn der p-Wert mindestens α ist"
-              }
-            }
-          },
-          "transformed": {
-            "type": "Descriptives",
-            "help": "Kennwerte nachher",
-            "keysOf": "Descriptives",
-            "keys": {
-              "mean": {
-                "type": "number|null",
-                "help": "Mittelwert"
-              },
-              "std": {
-                "type": "number|null",
-                "help": "Standardabweichung"
-              },
-              "median": {
-                "type": "number|null",
-                "help": "Median"
-              },
-              "skewness": {
-                "type": "number|null",
-                "help": "Schiefe"
-              },
-              "kurtosis": {
-                "type": "number|null",
-                "help": "Exzess-Wölbung"
-              },
-              "min": {
-                "type": "number|null",
-                "help": "Minimum"
-              },
-              "max": {
-                "type": "number|null",
-                "help": "Maximum"
-              },
-              "adStatAdj": {
-                "type": "number|null",
-                "help": "korrigiertes A² (A²*) Anderson-Darling"
-              },
-              "adPValue": {
-                "type": "number|null",
-                "help": "p-Wert Anderson-Darling"
-              },
-              "normal": {
-                "type": "boolean|null",
-                "help": "Urteil: normal, wenn der p-Wert mindestens α ist"
-              }
-            }
+          "name": {
+            "type": "string",
+            "help": "Spaltenname bzw. Blattname beim Eintrag „neue Spalte“"
           }
         }
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "the message the module shows, '' without error",
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "analysis",
+        "auto": true,
+        "params": []
+      },
+      {
+        "name": "toWorksheet",
+        "auto": false,
+        "params": [
+          "target"
+        ]
+      }
+    ],
+    "viewFields": [
+      "exampleWorksheetId",
+      "histOrigEdits",
+      "histTransEdits",
+      "ppOrigEdits",
+      "ppTransEdits"
+    ],
+    "settable": [
+      "currentTF",
+      "columnRef",
+      "params"
+    ],
+    "invariants": []
   },
   "deployment-flowchart": {
     "tagged": true,
