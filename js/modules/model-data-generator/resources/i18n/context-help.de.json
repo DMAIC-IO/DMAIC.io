@@ -42,6 +42,26 @@
     },
     "generated": {
       "help": "Zusammenfassung der erzeugten Y-Werte. Die Daten folgen jeder Änderung sofort und werden nicht gespeichert; die Karten zeigen die Kennzahlen mit vier Nachkommastellen."
+    },
+    "equation": {
+      "help": "Die Modellgleichung: Name der Zielgröße, Achsenabschnitt und je Term mit einem Koeffizienten ungleich 0 ein Teil; die Faktoren gehen auf 0 bis 1 normiert ein. Reine Anzeige."
+    },
+    "betaGroups": {
+      "help": "Die Eingabefelder der Koeffizienten, nach Ordnung gruppiert: Haupteffekte, Zweifach-, Dreifach-Wechselwirkungen. Reine Anzeige."
+    },
+    "statKpis": {
+      "help": "Die Kennzahlkarten der erzeugten Y-Werte mit vier Nachkommastellen, Beträge ab 10⁶ oder unter 0,001 in Exponentialschreibweise. Reine Anzeige."
+    },
+    "rowCountText": {
+      "help": "Die Zahl der erzeugten Zeilen über der Vorschau. Reine Anzeige."
+    },
+    "previewTable": {
+      "help": "Die Datenvorschau: alle erzeugten Zeilen, je Faktor und für Y eine Spalte mit vier Nachkommastellen. Sie folgt jeder Änderung sofort und ist nur lesbar; zum Bearbeiten öffnet der Knopf oben links die Daten in einer neuen Datensammlung, der Knopf daneben exportiert sie."
+    }
+  },
+  "state": {
+    "shown": {
+      "help": "Daten generieren: zeigt die Kennzahlen und die Vorschau der Daten aus dem aktuellen Modell. Danach folgen beide jeder Änderung sofort. Derselbe Seed mit denselben Einstellungen ergibt dieselben Daten."
     }
   },
   "actions": {
@@ -78,6 +98,18 @@
     "toWorksheet": {
       "params": {
         "command": "Der Lauf als ein leeres Objekt; er nimmt keine Angaben."
+      }
+    },
+    "gridExport": {
+      "help": "Lädt die Vorschau mit Kopfzeile als Datei herunter, wie der Exportknopf oben links im Raster: data.xlsx (Blatt Data), data.csv oder data.json. Ändert nichts.",
+      "params": {
+        "format": "Das Format: xlsx, csv oder json."
+      }
+    },
+    "gridOpenInWorksheet": {
+      "help": "Öffnet die erzeugten Daten in einer neuen Datensammlung und wechselt dorthin, wie der Knopf oben links im Raster.",
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
       }
     }
   },

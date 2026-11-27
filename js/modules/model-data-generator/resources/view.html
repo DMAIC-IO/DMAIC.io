@@ -1,0 +1,146 @@
+<div class="module-mdg" x-data="modelDataGenerator">
+  <div class="mdg-content">
+    <div class="module-mdg-split dmike-split">
+
+      <aside class="dmike-split__input mdg-input">
+        <div class="dmike-split__section-title" x-text="t('factorsTitle')"></div>
+        <div class="mdg-factor-grid mdg-factor-grid--header">
+          <span class="mdg-label" data-help-key="modules.model-data-generator.fields.factors.name.help" x-text="t('factorName')"></span>
+          <span class="mdg-label" data-help-key="modules.model-data-generator.fields.factors.min.help" x-text="t('min')"></span>
+          <span class="mdg-label" data-help-key="modules.model-data-generator.fields.factors.max.help" x-text="t('max')"></span>
+          <span></span>
+        </div>
+
+        <div data-ref="factor-list" data-role="factor-list">
+          <template x-for="(factor, i) in model.factors" :key="i">
+            <div class="mdg-factor-grid mdg-factor-grid--row">
+              <input class="field mdg-inp" type="text" data-field="name" :data-idx="i" x-model="factor.name">
+              <input class="field mdg-inp mdg-inp--center" data-field="min" :data-idx="i" data-help-key="" x-field="model.factors[i].min">
+              <input class="field mdg-inp mdg-inp--center" data-field="max" :data-idx="i" data-help-key="" x-field="model.factors[i].max">
+              <span class="mdg-factor-action">
+                <template x-if="canRemove">
+                  <button class="btn btn--icon-sm btn--danger mdg-btn-remove" type="button"
+                    data-help-key="modules.model-data-generator.actions.removeFactor.help"
+                    :data-idx="i" :title="t('remove')" :aria-label="t('remove')" data-confirm-delete
+                    x-command="removeFactor" :data-arg-index="i" x-text="removeGlyph"></button>
+                </template>
+              </span>
+            </div>
+          </template>
+        </div>
+        <div class="mdg-field-error" data-ref="factor-error-min" x-text="fieldError('model.factors[i].min')"></div>
+        <div class="mdg-field-error" data-ref="factor-error-max" x-text="fieldError('model.factors[i].max')"></div>
+
+        <button class="btn btn--secondary mdg-btn-add" data-ref="add-factor"
+          data-help-key="modules.model-data-generator.actions.addFactor.help"
+          type="button" x-command="addFactor">
+          <span x-text="addLabel"></span>
+        </button>
+
+        <div class="dmike-split__section-title"><span data-help-key="modules.model-data-generator.fields.yName.help" x-text="t('outputTitle')"></span></div>
+        <input class="field mdg-inp" type="text" data-ref="y-name" x-model="model.yName" placeholder="Y">
+
+        <div class="dmike-split__section-title" x-text="t('generateTitle')"></div>
+        <div class="mdg-control-group">
+          <label class="mdg-label" :for="fieldId('sampling')" data-help-key="modules.model-data-generator.fields.samplingMethod.help" x-text="t('samplingMethod')"></label>
+          <select class="field mdg-inp mdg-select" :id="fieldId('sampling')" data-ref="sampling" data-help-key="" x-field="model.samplingMethod">
+            <option value="random" x-text="t('methodRandom')"></option>
+            <option value="lhs" x-text="t('methodLHS')"></option>
+            <option value="fullfactorial" x-text="t('methodFullFactorial')"></option>
+          </select>
+        </div>
+        <div class="mdg-triple-grid">
+          <div class="mdg-control-group">
+            <label class="mdg-label" :for="fieldId('size')" data-help-key="modules.model-data-generator.fields.sampleSize.help" x-text="t('sampleSize')"></label>
+            <input class="field mdg-inp mdg-inp--center" :id="fieldId('size')" data-ref="sample-size" data-help-key="" x-field="model.sampleSize">
+          </div>
+          <div class="mdg-control-group">
+            <label class="mdg-label" :for="fieldId('noise')" data-help-key="modules.model-data-generator.fields.noiseStd.help" x-text="noiseLabel"></label>
+            <input class="field mdg-inp mdg-inp--center" :id="fieldId('noise')" data-ref="noise" data-help-key="" x-field="model.noiseStd">
+          </div>
+          <div class="mdg-control-group">
+            <label class="mdg-label" :for="fieldId('seed')" data-help-key="modules.model-data-generator.fields.seed.help" x-text="t('seed')"></label>
+            <input class="field mdg-inp mdg-inp--center" :id="fieldId('seed')" data-ref="seed" data-help-key="" x-field="model.seed">
+          </div>
+        </div>
+        <div class="mdg-field-error" x-text="fieldError('model.sampleSize')"></div>
+        <div class="mdg-field-error" x-text="fieldError('model.noiseStd')"></div>
+        <div class="mdg-field-error" x-text="fieldError('model.seed')"></div>
+
+        <button class="dmike-btn-run" data-ref="generate"
+          data-help-key="modules.model-data-generator.state.shown.help" type="button" @click="showResults()">
+          <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
+          <span x-text="t('generate')"></span>
+        </button>
+      </aside>
+
+      <main class="dmike-split__output mdg-output">
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('modelTitle')"></span></div>
+        <p class="mdg-section__desc" x-text="t('modelDesc')"></p>
+
+        <div class="mdg-equation" data-ref="equation" data-role="equation">
+          <span class="mdg-eq-y" x-text="equation.y"></span>
+          <span class="mdg-eq-op"> = </span>
+          <span class="mdg-eq-intercept" x-text="equation.intercept"></span>
+          <template x-for="(part, i) in equation.parts" :key="i">
+            <span x-text="part"></span>
+          </template>
+          <span class="mdg-eq-eps"> + ε</span>
+        </div>
+
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.model-data-generator.fields.betas.help" x-text="t('coefficients')"></span></div>
+
+        <div class="mdg-group-label" data-help-key="modules.model-data-generator.fields.intercept.help" x-text="t('intercept')"></div>
+        <div class="mdg-beta-grid">
+          <div class="mdg-beta-item">
+            <span class="mdg-beta-name" x-text="t('intercept')"></span>
+            <span class="mdg-beta-eq">β₀=</span>
+            <input class="field mdg-inp mdg-beta-inp" data-ref="intercept" data-help-key="" x-field="model.intercept">
+          </div>
+        </div>
+        <div class="mdg-field-error" x-text="fieldError('model.intercept')"></div>
+
+        <div data-ref="beta-editor" data-role="beta-editor">
+          <template x-for="group in betaGroups" :key="group.label">
+            <div>
+              <div class="mdg-group-label" x-text="group.label"></div>
+              <div class="mdg-beta-grid">
+                <template x-for="item in group.items" :key="item.idx">
+                  <div class="mdg-beta-item">
+                    <span class="mdg-beta-name" :title="item.label" x-text="item.label"></span>
+                    <span class="mdg-beta-eq">β=</span>
+                    <input class="field mdg-inp mdg-beta-inp" type="text" inputmode="decimal" :data-beta="item.idx"
+                      :value="item.value" @change="onBetaInput(item.idx, $event)">
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <template x-if="state.shown">
+          <div data-ref="results">
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
+            <div class="dmike-kpi-strip" data-ref="stats">
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="statKpis[0].value"></div><div class="dmike-kpi-label" data-help-key="modules.model-data-generator.types.Generated.n" x-text="statKpis[0].label"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="statKpis[1].value"></div><div class="dmike-kpi-label" data-help-key="modules.model-data-generator.types.Generated.mean" x-text="statKpis[1].label"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="statKpis[2].value"></div><div class="dmike-kpi-label" data-help-key="modules.model-data-generator.types.Generated.sd" x-text="statKpis[2].label"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="statKpis[3].value"></div><div class="dmike-kpi-label" data-help-key="modules.model-data-generator.types.Generated.min" x-text="statKpis[3].label"></div></div>
+              <div class="dmike-kpi"><div class="dmike-kpi-value" x-text="statKpis[4].value"></div><div class="dmike-kpi-label" data-help-key="modules.model-data-generator.types.Generated.max" x-text="statKpis[4].label"></div></div>
+            </div>
+
+            <div class="dmike-split__output-section">
+              <span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
+              <span data-help-key="modules.model-data-generator.fields.previewTable.help" x-text="t('previewTitle')"></span>
+              <span class="mdg-row-count" data-ref="row-count" x-text="rowCountText"></span>
+            </div>
+            <div class="dmike-embedded-grid dmike-embedded-grid--md mdg-preview-grid" data-ref="data-table" data-role="data-table"
+                 x-widget="datagrid" x-widget-table="previewTable.table" x-widget-columns="previewTable.columns"
+                 x-widget-rev="previewTable.rev" x-widget-config="previewConfig"></div>
+          </div>
+        </template>
+      </main>
+
+    </div>
+  </div>
+</div>

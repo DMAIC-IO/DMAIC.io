@@ -241,6 +241,7 @@ const SKIP = new Set([
   'modules/pairwise-comparison-view.test.js',
   'modules/random-generator-view.test.js',
   'modules/data-transformation-view.test.js',
+  'modules/model-data-generator-view.test.js',
   'modules/calculator-view.test.js',
   'modules/unit-converter-view.test.js',
   'modules/five-why-view.test.js',

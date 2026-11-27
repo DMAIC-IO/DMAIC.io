@@ -69,7 +69,7 @@ suite('model-data-generator Kontexthilfe in context-help.<lang>.json', () => {
     const commands = State.schema.commands;
     for (const lang of LANGS) {
       const { actions, asyncTasks } = await contextHelp(lang);
-      assertDeepEqual(Object.keys(actions), [...Object.keys(commands), 'toWorksheet'], lang);
+      assertDeepEqual(Object.keys(actions), [...Object.keys(commands), 'toWorksheet', 'gridExport', 'gridOpenInWorksheet'], lang);
       assertTrue(nonEmpty(actions.toWorksheet.params.command), `${lang} toWorksheet.params.command`);
       for (const [name, def] of Object.entries(commands)) {
         assertTrue(nonEmpty(actions[name].help), `${lang} ${name}.help`);

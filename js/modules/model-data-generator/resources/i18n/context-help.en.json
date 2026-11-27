@@ -42,6 +42,26 @@
     },
     "generated": {
       "help": "Summary of the generated Y values. The data follows every change at once and is not stored; the cards show the figures with four decimals."
+    },
+    "equation": {
+      "help": "The model equation: name of the response, intercept and one part per term with a coefficient other than 0; the factors enter normalized to 0 to 1. Display only."
+    },
+    "betaGroups": {
+      "help": "The input fields of the coefficients, grouped by order: main effects, two-way, three-way interactions. Display only."
+    },
+    "statKpis": {
+      "help": "The cards with the figures of the generated Y values, with four decimals, magnitudes from 10⁶ or below 0.001 in exponential notation. Display only."
+    },
+    "rowCountText": {
+      "help": "The number of generated rows above the preview. Display only."
+    },
+    "previewTable": {
+      "help": "The data preview: all generated rows, one column with four decimals per factor and for Y. It follows every change at once and is read-only; to edit, the button at the top left opens the data in a new data collection, the button next to it exports them."
+    }
+  },
+  "state": {
+    "shown": {
+      "help": "Generate data: shows the figures and the preview of the data from the current model. After that both follow every change at once. The same seed with the same settings gives the same data."
     }
   },
   "actions": {
@@ -78,6 +98,18 @@
     "toWorksheet": {
       "params": {
         "command": "The task as an empty object; it takes no arguments."
+      }
+    },
+    "gridExport": {
+      "help": "Downloads the preview with its head row as a file, like the export button at the top left of the grid: data.xlsx (sheet Data), data.csv or data.json. Changes nothing.",
+      "params": {
+        "format": "The format: xlsx, csv or json."
+      }
+    },
+    "gridOpenInWorksheet": {
+      "help": "Opens the generated data in a new data collection and switches to it, like the button at the top left of the grid.",
+      "params": {
+        "command": "The command as an empty object; it takes no arguments."
       }
     }
   },

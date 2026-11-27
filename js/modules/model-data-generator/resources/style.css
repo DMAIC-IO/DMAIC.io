@@ -1,0 +1,235 @@
+/* ═══════════════════════════════════════════════════════════════
+   D.Mike — Model Data Generator Module Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.module-mdg {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Content Area ── */
+
+.mdg-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  max-width: 1120px;
+}
+
+/* When the tab content is a split layout, no outer padding */
+.mdg-content:has(.module-mdg-split) {
+  padding: 0;
+  max-width: none;
+}
+
+/* ── Split Layout (Model tab) ── */
+
+.mdg-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.mdg-input .dmike-split__section-title {
+  margin-top: var(--spacing-sm);
+}
+
+.mdg-input .dmike-split__section-title:first-child {
+  margin-top: 0;
+}
+
+.mdg-output {
+  padding: var(--spacing-lg) var(--spacing-xl);
+}
+
+/* ── Sections ── */
+
+.mdg-section__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-md);
+}
+
+/* ── Labels & Inputs ── */
+
+.mdg-label {
+  color: var(--color-text-tertiary);
+  font-size: 10.5px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  display: block;
+  padding-left: var(--spacing-s);
+}
+
+.mdg-inp {
+  width: 100%;
+}
+
+.mdg-inp--center {
+  text-align: center;
+}
+
+/* ── Factor Grid ── */
+
+.mdg-factor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) 28px;
+  gap: var(--spacing-s);
+  align-items: center;
+}
+
+.mdg-factor-grid .mdg-inp {
+  padding: var(--spacing-s) var(--spacing-sm);
+  font-size: 12px;
+}
+
+.mdg-factor-grid--header {
+  margin-bottom: calc(-1 * var(--spacing-s));
+}
+
+.mdg-factor-grid--row {
+  padding: var(--spacing-xs) 0;
+}
+
+/* 4th grid cell — wraps the (conditionally rendered) remove button */
+.mdg-factor-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove button: global .btn--icon-sm .btn--danger with slightly larger size */
+.mdg-btn-remove {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+.mdg-btn-add {
+  margin-top: var(--spacing-sm);
+}
+
+/* ── Equation Box ── */
+
+.mdg-equation {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-accent-light);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-m) var(--spacing-ml);
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: var(--spacing-md);
+}
+
+.mdg-eq-y {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.mdg-eq-op {
+  color: var(--color-text-tertiary);
+}
+
+.mdg-eq-intercept {
+  color: var(--color-warning);
+}
+
+.mdg-eq-eps {
+  color: var(--color-text-tertiary);
+}
+
+/* ── Beta Editor ── */
+
+.mdg-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-warning);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-s);
+  margin-top: var(--spacing-md);
+}
+
+.mdg-group-label:first-child {
+  margin-top: 0;
+}
+
+.mdg-beta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-md);
+}
+
+.mdg-beta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-s) var(--spacing-m);
+  border: 1px solid var(--color-border-secondary);
+}
+
+.mdg-beta-name {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-primary);
+}
+
+.mdg-beta-eq {
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+}
+
+.mdg-beta-inp {
+  width: 72px !important;
+  text-align: right;
+  padding: var(--spacing-xs) var(--spacing-s) !important;
+  font-size: 12px !important;
+  font-family: var(--font-family-mono) !important;
+}
+
+.mdg-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.mdg-triple-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-s);
+}
+
+.mdg-triple-grid .mdg-inp {
+  padding: var(--spacing-s) var(--spacing-s);
+  font-size: 12px;
+}
+
+/* Data Table — uses shared .dmike-embedded-grid (components.css) */
+
+.mdg-row-count {
+  font-weight: 400;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-left: var(--spacing-m);
+}
+
+/* ── Meldung einer abgelehnten Eingabe (Text der Invariante) ── */
+
+.mdg-field-error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.mdg-field-error:empty { display: none; }
