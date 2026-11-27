@@ -214,7 +214,7 @@
   line-height: 1.4;
   border: var(--border-width) solid var(--chip-border);
   border-radius: 999px;
-  background: transparent;
+  background: var(--btn-secondary-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: background var(--transition-speed), color var(--transition-speed),

@@ -136,6 +136,15 @@ test('„+“-Knöpfe in Kopf und Karten: btn--secondary btn--icon-sm', () => {
   assert.deepEqual(wrong, []);
 });
 
+test('Chip: deckende Fläche des Sekundärknopfs, aktiver Chip und chip--danger unterscheidbar', () => {
+  const chip = /\.chip \{([^}]*)\}/.exec(COMPONENTS)?.[1] ?? '';
+  assert.match(chip, /background:\s*var\(--btn-secondary-bg\)/);
+  for (const [name, theme] of [['hell', LIGHT], ['dunkel', DARK]]) {
+    const bgs = ['--btn-secondary-bg', '--color-accent-light', '--chip-danger-bg'].map((t) => resolve(theme, `var(${t})`));
+    assert.equal(new Set(bgs).size, 3, `${name}: ${bgs.join(' / ')}`);
+  }
+});
+
 test('components.css: Sperrzustand, Chip und Gefahr-Tokens', () => {
   for (const sel of ['.btn:disabled', '.btn--disabled', '.chip {', '.chip--active', '.chip:disabled', '.chip__dot']) {
     assert.ok(COMPONENTS.includes(sel), `${sel} fehlt`);
