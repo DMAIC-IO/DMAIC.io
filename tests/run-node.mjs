@@ -225,6 +225,7 @@ const SKIP = new Set([
   'modules/correlation-view.test.js',
   'modules/kano/view.test.js',
   'modules/makigami/view.test.js',
+  'modules/rest-api/view.test.js',
   'modules/time-weighted-chart-view.test.js',
   'modules/rare-event-chart-view.test.js',
   'modules/short-run-chart-view.test.js',

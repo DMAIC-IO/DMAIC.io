@@ -1,0 +1,179 @@
+<div class="module-container rest-api" x-data="restApi">
+  <div class="dmike-split">
+    <!-- Links: Endpunktliste -->
+    <div class="rest-api__sidebar dmike-split__input">
+      <div class="rest-api__sidebar-header">
+        <span class="rest-api__sidebar-title" data-help-key="modules.rest-api.fields.endpoints.help" x-text="t('name')"></span>
+        <span class="rest-api__count" x-text="model.endpoints.length"></span>
+        <button class="rest-api__add-btn" type="button" :title="t('addEndpoint')" :aria-label="t('addEndpoint')" x-command="addEndpoint">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="rest-api__list">
+        <template x-for="ep in model.endpoints" :key="ep.id">
+          <div :class="itemClass(ep)" :data-id="ep.id" data-help-key="" data-confirm-delete="off"
+            x-command="selectEndpoint" :data-arg-endpoint-id="ep.id">
+            <template x-if="isRunning(ep)">
+              <span class="rest-api__schedule-dot" :title="t('scheduleActive')"></span>
+            </template>
+            <input class="rest-api__ep-name-input" :data-name-id="ep.id" x-model="ep.name"
+              :placeholder="t('namePlaceholder')" :aria-label="t('namePlaceholder')" @focus="focusEndpoint(ep)" @click.stop>
+            <button class="rest-api__item-del" type="button" :data-del="ep.id" :title="t('delete')" :aria-label="t('delete')"
+              x-command="removeEndpoint" :data-arg-endpoint-id="ep.id" @click.stop>
+              <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Rechts: Detail und Antwort -->
+    <div class="rest-api__detail dmike-split__output">
+      <template x-if="hasActive">
+        <div class="rest-api__detail-inner">
+          <!-- URL-Zeile mit Lauf -->
+          <div class="rest-api__url-bar" x-async-task="sendRequest">
+            <span class="rest-api__method-label" data-help-key="modules.rest-api.fields.endpoints.url.help" x-text="t('methodGet')"></span>
+            <input class="field rest-api__url-input" data-field="url" data-help-key="" :aria-label="t('urlPlaceholder')"
+              x-model="model.endpoints[activeIndex].url" :placeholder="t('urlPlaceholder')">
+            <button type="button" class="rest-api__send-btn dmike-btn-run" data-action="send"
+              x-async-task-start :data-arg-endpoint-id="model.activeId">
+              <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
+              <span x-text="t('send')"></span>
+            </button>
+            <button type="button" class="btn btn--secondary rest-api__cancel-btn" data-action="cancel"
+              x-async-task-cancel x-text="t('cancel')"></button>
+          </div>
+
+          <template x-if="hasSecretHint">
+            <div class="dmike-infobox dmike-infobox--warn rest-api__secret-hint" data-ref="secret-hint" x-text="secretHint"></div>
+          </template>
+
+          <!-- Kopfzeilen -->
+          <div class="rest-api__section">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label" data-help-key="modules.rest-api.fields.endpoints.headers.help" x-text="t('headers')"></span>
+              <button class="rest-api__add-header-btn" type="button" x-command="addHeader" :data-arg-endpoint-id="model.activeId">
+                <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+                <span x-text="t('addHeader')"></span>
+              </button>
+            </div>
+            <div class="rest-api__headers-list" data-ref="headers">
+              <template x-for="(h, i) in activeEndpoint.headers" :key="rowKey(i)">
+                <div class="rest-api__header-row" :data-idx="i">
+                  <input class="field rest-api__header-key" data-help-key="" x-model="h.key"
+                    :placeholder="t('headerKeyPlaceholder')" :aria-label="t('headerKeyPlaceholder')">
+                  <input class="field rest-api__header-val" data-help-key="" x-field="model.endpoints[activeIndex].headers[i].value"
+                    :placeholder="t('headerValuePlaceholder')" :aria-label="t('headerValuePlaceholder')">
+                  <button class="rest-api__header-del" type="button" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')"
+                    data-confirm-delete x-command="removeHeader" :data-arg-endpoint-id="model.activeId" :data-arg-index="i">&times;</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Spaltenzuordnung -->
+          <div class="rest-api__section">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label" data-help-key="modules.rest-api.fields.endpoints.mappings.help" x-text="t('columnMappings')"></span>
+              <button class="rest-api__add-mapping-btn" type="button" x-command="addMapping" :data-arg-endpoint-id="model.activeId">
+                <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+                <span x-text="t('addMapping')"></span>
+              </button>
+            </div>
+            <div class="rest-api__write-mode" role="radiogroup" :aria-label="t('columnMappings')" data-help-key=""
+              x-set="model.endpoints[activeIndex].writeMode">
+              <label class="rest-api__write-mode-option">
+                <input type="radio" value="replace">
+                <span data-help-key="modules.rest-api.fields.endpoints.writeMode.help" x-text="t('modeReplace')"></span>
+              </label>
+              <label class="rest-api__write-mode-option">
+                <input type="radio" value="append">
+                <span data-help-key="modules.rest-api.fields.endpoints.writeMode.help" x-text="t('modeAppend')"></span>
+              </label>
+              <label class="rest-api__write-mode-option">
+                <input type="radio" value="prepend">
+                <span data-help-key="modules.rest-api.fields.endpoints.writeMode.help" x-text="t('modePrepend')"></span>
+              </label>
+            </div>
+            <div class="rest-api__mappings-list" data-ref="mappings">
+              <template x-for="(m, i) in activeEndpoint.mappings" :key="rowKey(i)">
+                <div class="rest-api__mapping-row" :data-midx="i">
+                  <input class="field rest-api__mapping-path" data-help-key="" x-model="m.jsonPath"
+                    :placeholder="t('jsonPathPlaceholder')" :aria-label="t('jsonPathPlaceholder')">
+                  <span class="rest-api__mapping-arrow">&rarr;</span>
+                  <div class="rest-api__mapping-picker" :data-picker-idx="i" data-help-key=""
+                    x-field="model.endpoints[activeIndex].mappings[i].columnRef"></div>
+                  <button class="rest-api__mapping-del" type="button" :data-map-del="i" :title="t('delete')" :aria-label="t('delete')"
+                    data-confirm-delete x-command="removeMapping" :data-arg-endpoint-id="model.activeId" :data-arg-index="i">&times;</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Zeitplan -->
+          <div class="rest-api__section rest-api__schedule">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label">
+                <span class="icon icon--sm" data-icon="status.time" aria-hidden="true"></span>
+                <span data-help-key="modules.rest-api.fields.endpoints.schedule.help" x-text="t('schedule')"></span>
+              </span>
+              <span :class="badgeClass" x-text="badgeText"></span>
+            </div>
+            <div class="rest-api__schedule-controls">
+              <label class="rest-api__schedule-toggle" data-help-key="modules.rest-api.fields.endpoints.schedule.enabled.help">
+                <input type="checkbox" data-action="schedule-toggle" x-model="model.endpoints[activeIndex].schedule.enabled">
+                <span x-text="t('scheduleEnabled')"></span>
+              </label>
+              <div class="rest-api__schedule-interval-group">
+                <span class="rest-api__schedule-interval-label" data-help-key="modules.rest-api.fields.endpoints.schedule.intervalValue.help" x-text="intervalLabel"></span>
+                <input type="number" class="field rest-api__schedule-interval-value" data-action="schedule-value" data-help-key=""
+                  min="1" max="999" :aria-label="t('scheduleInterval')"
+                  x-field="model.endpoints[activeIndex].schedule.intervalValue" :disabled="intervalDisabled">
+                <select class="field rest-api__schedule-interval-unit" data-action="schedule-unit" data-help-key=""
+                  :aria-label="t('scheduleInterval')"
+                  x-field="model.endpoints[activeIndex].schedule.intervalUnit" :disabled="intervalDisabled">
+                  <option value="minutes" x-text="t('scheduleUnit_minutes')"></option>
+                  <option value="hours" x-text="t('scheduleUnit_hours')"></option>
+                </select>
+              </div>
+            </div>
+            <template x-if="activeRunning">
+              <div class="rest-api__schedule-status">
+                <span class="rest-api__schedule-status-item">
+                  <span x-text="lastRunLabel"></span><strong data-ref="schedule-last" x-text="lastRunText"></strong>
+                </span>
+                <span class="rest-api__schedule-status-item">
+                  <span x-text="nextRunLabel"></span><strong data-ref="schedule-next" x-text="nextRunText"></strong>
+                </span>
+              </div>
+            </template>
+          </div>
+
+          <!-- Antwort -->
+          <div class="rest-api__section">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label" data-help-key="modules.rest-api.types.Response.body" x-text="t('response')"></span>
+              <template x-if="hasResponse">
+                <span :class="statusClass" data-help-key="modules.rest-api.types.Response.status" x-text="responseStatus"></span>
+              </template>
+              <template x-if="hasResponse">
+                <button class="rest-api__copy-btn" type="button" data-action="copy-response" data-help-key="" :title="t('copyResponse')" :aria-label="t('copyResponse')" @click="copyResponse()">
+                  <span class="icon icon--sm" data-icon="action.copy" aria-hidden="true"></span>
+                </button>
+              </template>
+            </div>
+            <div class="rest-api__response" data-ref="response">
+              <template x-if="activeLoading">
+                <div class="rest-api__loading" x-text="t('loading')"></div>
+              </template>
+              <template x-if="showResponse">
+                <pre class="rest-api__response-body" x-text="responseBody"></pre>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
