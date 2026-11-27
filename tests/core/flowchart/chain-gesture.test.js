@@ -150,6 +150,65 @@ suite('flowchart/interaction — Kettengeste', () => {
   });
 });
 
+/** Kette mit Bändern aus dem DOM (Bahnen L1, L2, L3), Kommando mit `laneId`. */
+function setupDomChain(bands = ['L1', 'L2', 'L3'], steps = [['s1', 'L1'], ['s2', 'L2'], ['s3', 'L3']]) {
+  const root = renderChain(steps, bands);
+  const host = { state: { chainPreview: null } };
+  const calls = mount(root, chainGesture({ handle: '.grip', bands: 'dom', bandParam: 'laneId' }), host);
+  const grip = (id) => root.querySelector(`[data-step-id="${id}"] .grip`);
+  return { root, host, calls, grip };
+}
+
+suite('flowchart/interaction — Kettengeste mit Bändern aus dem DOM', () => {
+  afterEach(() => { while (cleanup.length) cleanup.pop()(); });
+
+  test('↓ Enter: nächste Bahn, Kommando mit laneId statt side', () => {
+    const { calls, grip } = setupDomChain();
+    keys(grip('s1'), ['Enter', 'ArrowDown', 'Enter']);
+    assertDeepEqual(calls, [['moveStep', { id: 's1', index: 0, laneId: 'L2' }]]);
+  });
+
+  test('eine zwischen zwei Gesten angelegte Bahn ist erreichbar', () => {
+    const { root, calls, grip } = setupDomChain();
+    keys(grip('s3'), ['Enter', 'ArrowDown', 'Enter']);
+    assertEqual(calls.length, 0, 'unterste Bahn: ↓ ändert nichts, kein Kommando');
+    for (const col of root.querySelectorAll('[data-step-id]')) {
+      col.append(el('div', { 'data-band': 'L4' }, 'height:33px;'));
+    }
+    keys(grip('s3'), ['Enter', 'ArrowDown', 'Enter']);
+    assertDeepEqual(calls, [['moveStep', { id: 's3', index: 2, laneId: 'L4' }]]);
+  });
+
+  test('↑ an der obersten und ↓ an der untersten Bahn ändern nichts', () => {
+    const { host, grip } = setupDomChain();
+    keys(grip('s1'), ['Enter', 'ArrowUp']);
+    assertDeepEqual(host.state.chainPreview, { id: 's1', index: 0, band: 'L1' });
+    key(grip('s1'), 'Escape');
+    keys(grip('s3'), ['Enter', 'ArrowDown']);
+    assertDeepEqual(host.state.chainPreview, { id: 's3', index: 2, band: 'L3' });
+    key(grip('s3'), 'Escape');
+  });
+
+  test('ohne Bandwechsel kein laneId', () => {
+    const { calls, grip } = setupDomChain();
+    keys(grip('s1'), ['Enter', 'ArrowRight', 'Enter']);
+    assertDeepEqual(calls, [['moveStep', { id: 's1', index: 1 }]]);
+  });
+
+  test('Zeiger in eine andere Bahn → laneId', () => {
+    const { calls, grip } = setupDomChain();
+    // Spalte 0, Slot L1 (0–33 px) → Spalte 1, Slot L3 (66–100 px)
+    drag(grip('s1'), 10, 10, 160, 90);
+    assertDeepEqual(calls, [['moveStep', { id: 's1', index: 1, laneId: 'L3' }]]);
+  });
+
+  test('ohne Bänder: Zeiger liefert nur id und index (Vertrag ohne Bandparameter)', () => {
+    const { calls, grip } = setupChain({ bands: [] });
+    drag(grip('s1'), 10, 10, 290, 90);
+    assertDeepEqual(calls, [['moveStep', { id: 's1', index: 2 }]]);
+  });
+});
+
 /** Zwei Schritte, je eine Gruppe mit Unterschritten (20 px hoch), Griff je Eintrag. */
 function setupSubsteps() {
   const root = document.createElement('div');
