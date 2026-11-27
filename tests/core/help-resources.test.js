@@ -28,12 +28,11 @@ function withResources(fn) {
 }
 
 suite('Registries: Module in neuer Form', () => {
-  test('ohne Verbindung kennt die Registry nur die alte Form', async () => {
+  test('ohne Verbindung kennt die Registry kein Modul der neuen Form', async () => {
     assertEqual(hasModuleHelp('neu'), false);
     assertEqual(await getModuleHelp('neu', 'de'), null);
     assertEqual(hasModuleReferences('neu'), false);
     assertDeepEqual(await getModuleReferences('neu'), []);
-    assertEqual(hasModuleHelp('regression'), true, 'alte Form');
   });
 
   test('hasModuleHelp/hasModuleReferences lesen die Liste; getModuleHelp reicht die Sprache durch', () => withResources(async (r) => {
@@ -49,11 +48,6 @@ suite('Registries: Module in neuer Form', () => {
   test('neue Form ohne Sprache: en', () => withResources(async (r) => {
     await getModuleHelp('neu');
     assertDeepEqual(r.asked, ['neu:en']);
-  }));
-
-  test('alte Form gewinnt und fragt ModuleResources nicht', () => withResources(async (r) => {
-    assertEqual((await getModuleHelp('regression', 'de')).moduleId, 'regression');
-    assertDeepEqual(r.asked, []);
   }));
 
   test('module.describe: Abschnittsliste und Prosa aus der Hilfe der aktiven Sprache', () => withResources(async () => {

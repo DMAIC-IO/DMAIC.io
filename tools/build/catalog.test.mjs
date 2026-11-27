@@ -79,7 +79,8 @@ test('catalogConflicts meldet Ids, die in manifest.js und CONVERTED_MODULES steh
 
 test('readLegacyIds liest die Ids aus manifest.js (ohne umgestellte)', async () => {
   const ids = await readLegacyIds(APP_DIR);
-  assert.ok(ids.includes('regression'));
+  // Seit Paket 3d ist kein Modul mehr in der alten Form.
+  assert.deepEqual(ids, []);
   assert.ok(!ids.includes('sipoc'));
   assert.ok(!ids.includes('dmaic-calendar'));
   assert.equal(new Set(ids).size, ids.length);

@@ -116,7 +116,7 @@
                     <span class="glm__quality-label" data-help-key="modules.glm-regression.fields.successClassInfo.help" x-text="t('successClass')"></span>
                     <span class="glm__quality-value">
                       <span data-ref="success-class" x-text="successText"></span>
-                      <button class="btn btn--xs" type="button" data-action="swap-success"
+                      <button class="btn btn--xs btn--secondary" type="button" data-action="swap-success"
                         data-help-key="modules.glm-regression.actions.swapSuccess.help"
                         :title="t('swapSuccessTitle')" x-command="swapSuccess" x-text="swapText"></button>
                     </span>
@@ -356,7 +356,7 @@
                 </template>
               </div>
 
-              <button class="btn btn--xs" type="button" data-action="predict" data-help-key="modules.glm-regression.actions.predict.help"
+              <button class="btn btn--xs btn--secondary" type="button" data-action="predict" data-help-key="modules.glm-regression.actions.predict.help"
                 @click="runPrediction" x-text="t('predictCalc')"></button>
               <div class="glm__predict-result" data-ref="predict-result" x-show="showPredictBox">
                 <template x-if="predictResult">
