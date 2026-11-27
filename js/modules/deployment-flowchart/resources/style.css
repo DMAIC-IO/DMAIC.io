@@ -50,6 +50,7 @@
   padding: 0;
 }
 .df__lane-name:focus { outline: none; }
+.df__lane-name:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
 .df__lane-name--fixed { color: var(--color-text-secondary); font-style: italic; }
 
 .df__lane-remove {

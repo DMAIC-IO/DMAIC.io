@@ -197,7 +197,7 @@ export default createModule({
      */
     async runImport() {
       const opt = this.state.importOptions.find((o) => o.instanceId === this.state.importPick);
-      if (!opt || !ctx.instances) return 0;
+      if (!opt) return 0;
       try {
         const steps = seedsFromRead(opt.moduleId, await ctx.instances.read(opt.instanceId));
         const n = this.model.appendSteps({ steps });
