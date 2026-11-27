@@ -149,7 +149,8 @@ export default createModule({
             const xChanged = now[0] !== before[0];
             const yChanged = now[1] !== before[1];
             const trialsChanged = now[2] !== before[2];
-            if ((!xChanged && !yChanged) || (trialsChanged && yChanged)) return;
+            if ((!xChanged && !yChanged && !trialsChanged) || (trialsChanged && yChanged)) return;
+            const trialsAlone = trialsChanged && !xChanged;
             const fix = () => {
               /** @type {Record<string, null>} */
               const out = {};
@@ -157,7 +158,10 @@ export default createModule({
               const y = keyOf(this.model.yRef);
               const tr = keyOf(this.model.trialsRef);
               if (xChanged && !yChanged && y && xs.includes(y)) out.yRef = null;
-              if (!trialsChanged && tr && (xs.includes(tr) || (tr === y && !('yRef' in out)))) out.trialsRef = null;
+              // Auch eine allein gesetzte Versuchszahl (Agent) auf Y oder unter
+              // den X: der Wähler bietet sie nicht an, die Rechnung nähme sie
+              // sonst als Gewichte.
+              if ((!trialsChanged || trialsAlone) && tr && (xs.includes(tr) || (tr === y && !('yRef' in out)))) out.trialsRef = null;
               return out;
             };
             if (Object.keys(fix()).length === 0) return;

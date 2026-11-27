@@ -229,6 +229,26 @@ suite('glm-regression: Viewmodel im Browser', () => {
     assertEqual(vm.model.colRefs.length, 2);
   });
 
+  test('Versuchszahl allein auf Y oder unter die X gesetzt (Agent): die Ansicht leert sie im selben Schritt', async () => {
+    const h = await mount(saved({ colRefs: [ref('x')], yRef: ref('share') }));
+    const vm = h.vm();
+    await settle();
+    // Der Wähler bietet Y nicht an; die Rechnung nähme Y sonst als Gewichte.
+    setFields(vm.model, { trialsRef: ref('share') });
+    await until(() => vm.model.trialsRef === null);
+    assertEqual(vm.model.trialsRef, null);
+    await settle();
+    setFields(vm.model, { trialsRef: ref('x') });
+    await until(() => vm.model.trialsRef === null);
+    assertEqual(vm.model.trialsRef, null);
+    await settle();
+    // Rückgängig nimmt Setzen und Leeren zusammen: zurück zum Stand ohne Versuchszahl.
+    assertTrue(mod.historyStep('undo'));
+    await settle();
+    assertEqual(vm.model.trialsRef, null);
+    assertDeepEqual(plain(vm.model.yRef), ref('share'));
+  });
+
   test('Verfahren als Knopfgruppe, automatische Wahl mit Hinweis, Fehlergrund', async () => {
     const h = await mount(saved({ colRefs: [ref('x')], yRef: ref('bin') }));
     const vm = h.vm();
