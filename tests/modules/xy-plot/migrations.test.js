@@ -54,7 +54,9 @@ suite('xy-plot: Migration', () => {
     assertDeepEqual(legacySeriesFrom([{ color: '', stroke: '', symbol: '', strokeWidth: 0 }]), [{ strokeWidth: 0 }]);
   });
   test('connectLine mit fremden Schlüsseln behält die gültigen', () => {
-    assertDeepEqual(legacySeriesFrom([{ connectLine: { show: true, width: 'breit', dash: 'dash', foreground: true } }]), [{ connectLine: { show: true, dash: 'dash' } }]);
+    assertDeepEqual(legacySeriesFrom([{ connectLine: { show: true, width: 'breit', dash: 'dash', glow: true } }]), [{ connectLine: { show: true, dash: 'dash' } }]);
+    // `foreground` kennt das scatter-chart-Schema seit correlation: er bleibt.
+    assertDeepEqual(legacySeriesFrom([{ connectLine: { show: true, foreground: true } }]), [{ connectLine: { show: true, foreground: true } }]);
     assertDeepEqual(legacySeriesFrom([{ connectLine: { width: 2 } }]), [{ connectLine: { show: false, width: 2 } }]);
   });
   test('Ansichtsfelder wie im alten fromJSON', () => {

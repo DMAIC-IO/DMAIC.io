@@ -320,54 +320,6 @@
       ]
     },
     {
-      "id": "correlation-pizza-delivery",
-      "type": "project",
-      "title": {
-        "de": "Pizza-Lieferzeit (Korrelationsmatrix)",
-        "en": "Pizza Delivery Time (correlation matrix)"
-      },
-      "description": {
-        "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — hier als Korrelationsmatrix über Entfernung, Verkehrslevel und Lieferzeit. Zeigt die starken paarweisen Pearson-Korrelationen.",
-        "en": "Same 30 pizza deliveries as the regression dataset — here as a correlation matrix over distance, traffic level and delivery time. Highlights the strong pairwise Pearson correlations."
-      },
-      "source": "Qprovement synthetisch, NumPy default_rng, Seed=2026",
-      "license": "public-domain",
-      "file": "projects/correlation-pizza-delivery.json",
-      "format": "json",
-      "modules": [
-        "correlation"
-      ],
-      "tags": [
-        "correlation",
-        "pearson",
-        "multivariate"
-      ]
-    },
-    {
-      "id": "correlation-oven-hardness",
-      "type": "project",
-      "title": {
-        "de": "Ofentemperatur und Härte (zwei Spalten)",
-        "en": "Oven temperature and hardness (two columns)"
-      },
-      "description": {
-        "de": "24 Aushärtungen bei Ofentemperaturen zwischen 160 und 200 °C mit der gemessenen Härte. Zeigt die paarweise Korrelation zweier Spalten: Pearson r = 0,82 (p < 0,001) mit Streudiagramm.",
-        "en": "24 curing runs at oven temperatures between 160 and 200 °C with the measured hardness. Shows the pairwise correlation of two columns: Pearson r = 0.82 (p < 0.001) with a scatter plot."
-      },
-      "source": "Qprovement synthetisch, Python random, Seed=1321",
-      "license": "public-domain",
-      "file": "projects/correlation-oven-hardness.json",
-      "format": "json",
-      "modules": [
-        "correlation"
-      ],
-      "tags": [
-        "correlation",
-        "pearson",
-        "scatter"
-      ]
-    },
-    {
       "id": "glm-logistic-yield",
       "type": "project",
       "title": {

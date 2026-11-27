@@ -35,6 +35,11 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.colRefs', reason: 'Sammelfeld der Spaltenbezüge; jeder Spaltenwähler trägt den Anker seiner Rolle (fields.colRefs.<rolle>)' },
     { name: 'fields.eventValueOptions', reason: 'Auswahlhilfe für den Agenten (welche Ereigniswerte es gibt); die Oberfläche zeigt sie als Optionen der Ereigniswert-Auswahl, deren Anker an fields.eventValue hängt' },
   ],
+  correlation: [
+    { name: 'fields.mode', reason: 'folgt aus der Zahl gewählter Spalten (paarweise oder Matrix); die Oberfläche zeigt je Modus einen eigenen Ergebnisbereich, dessen Titel und Kennzahlen verankert sind' },
+    { name: 'fields.error', reason: 'Grund ohne Ergebnis; die Oberfläche zeigt ihn als Meldung im Fehlerkasten, ohne Beschriftung' },
+    { name: 'fields.pairs', reason: 'gepaarte Rohwerte für den Agenten; die Oberfläche zeigt sie nur als Punkte der Streudiagramme' },
+  ],
   'sample-size': [
     { name: 'fields.effect', reason: 'Sammelfeld der Effektangaben aller Varianten; die Oberfläche zeigt nur die Felder der gewählten Variante, jedes mit eigenem Anker (fields.effect.<variante>.<angabe>)' },
   ],

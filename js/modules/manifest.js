@@ -96,17 +96,6 @@ export default [
       eightd: { phase: 'rootcause' },
     },
   },
-  {
-    id: 'correlation',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./correlation/correlation.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
 
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {

@@ -45,6 +45,11 @@
     "description": "SPC-Kontrollkarten für Prozesstabilität",
     "whenToUse": "Einen Prozess über die Zeit mit Shewhart-Grenzen überwachen: I-MR für Einzelwerte, X̄-R oder X̄-S für Untergruppen, mit Nelson-Regeln, Stufen, Anmerkungen und eingefrorenen Grenzen für Phase II."
   },
+  "correlation": {
+    "name": "Korrelationsanalyse",
+    "description": "Pearson-, Spearman- und Kendall-Korrelation zwischen Variablen",
+    "whenToUse": "Wenn zwei oder mehr numerische Größen zusammenhängen könnten: berechnet die Korrelation zweier Spalten (Pearson, Spearman und Kendall nebeneinander, mit Konfidenzintervall und Diagnose) oder dreier und mehr Spalten als Korrelationsmatrix; jede Spalte braucht mindestens 5 numerische Werte."
+  },
   "data-import": {
     "name": "Datenimport",
     "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",

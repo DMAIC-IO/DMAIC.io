@@ -45,6 +45,11 @@
     "description": "SPC control charts for process stability",
     "whenToUse": "Monitor a process over time with Shewhart limits: I-MR for single values, X̄-R or X̄-S for subgroups, with Nelson rules, stages, annotations and frozen Phase II limits."
   },
+  "correlation": {
+    "name": "Correlation Analysis",
+    "description": "Pearson, Spearman, and Kendall correlation between variables",
+    "whenToUse": "When two or more numeric variables may be related: computes the correlation of two columns (Pearson, Spearman and Kendall side by side, with confidence interval and diagnostics) or of three or more columns as a correlation matrix; each column needs at least 5 numeric values."
+  },
   "data-import": {
     "name": "Data Import",
     "description": "Read data from third-party formats (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) into a worksheet",

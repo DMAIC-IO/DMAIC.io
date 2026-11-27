@@ -2651,19 +2651,10 @@ export const AGENT_REGISTRY = {
   "correlation": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
-      "clearResults": {
-        "params": [],
-        "returns": "void",
-        "help": "Verwirft Ergebnis und Ansicht; die gewählten Spalten bleiben."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Rechnet mit den gewählten Spalten neu: bei zwei Spalten paarweise, ab drei als Matrix. Mit weniger als zwei Spalten geschieht nichts außer dem Löschen der Fehlermeldung; result und matrixResult bleiben, wie sie sind."
-      },
       "read": {
         "params": [
           {
@@ -2675,102 +2666,50 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'confidenceLevel'|'matrixMethod'",
-            "optional": false,
-            "help": "welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten, die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "number|string|null",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu bzw. die Matrix wird neu aufgebaut.",
-        "keysOf": "Params",
-        "keys": {
-          "confidenceLevel": {
-            "type": "number",
-            "help": "Konfidenzniveau als Anteil"
-          },
-          "matrixMethod": {
-            "type": "'pearson'|'spearman'|'kendall'",
-            "help": "Koeffizient der Matrix, nur ab drei Spalten",
-            "optional": true
-          }
-        }
-      },
-      "setColumns": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'columns'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `columns`"
-          },
-          {
-            "name": "refs",
-            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
-            "optional": false,
-            "help": "die Spaltenbezüge wählbarer Spalten in der gewünschten Reihenfolge; `[]` leert die Auswahl"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Spaltenauswahl ersetzen; die Reihenfolge zählt (die erste Spalte ist X, die zweite Y). Danach läuft die Analyse neu; mit weniger als zwei Spalten werden die Ergebnisse verworfen. Doppelte Einträge zählen einmal."
       }
     },
     "fields": {
       "colRefs": {
-        "type": "object[]",
-        "help": "the chosen columns in order, each `{ instanceId, sheetId, columnId }`; the first is X, the second Y",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric,currency,percent,date,time",
+          "minCount:5"
+        ]
       },
       "confidenceLevel": {
         "type": "number",
-        "help": "confidence level as a fraction, for example 0.95",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "matrixMethod": {
         "type": "'pearson'|'spearman'|'kendall'",
-        "help": "the method the correlation matrix shows",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "activeMultiSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumns` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumns` accepts, each `{ key, name }`",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "mode": {
-        "type": "'pairwise'|'matrix'|'none'",
-        "help": "'pairwise' with two columns, 'matrix' from three, 'none' otherwise or while no result exists",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "result": {
-        "type": "PairResult|null",
-        "help": "the pairwise analysis (two columns) or null",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "PairResult",
@@ -3018,14 +2957,6 @@ export const AGENT_REGISTRY = {
               }
             }
           },
-          "_x": {
-            "type": "number[]",
-            "help": "gepaarte Werte X"
-          },
-          "_y": {
-            "type": "number[]",
-            "help": "gepaarte Werte Y"
-          },
           "_nameX": {
             "type": "string",
             "help": "Name X"
@@ -3037,8 +2968,8 @@ export const AGENT_REGISTRY = {
         }
       },
       "matrixResult": {
-        "type": "MatrixResult|null",
-        "help": "the correlation matrix (three or more columns) or null",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "MatrixResult",
@@ -3077,42 +3008,73 @@ export const AGENT_REGISTRY = {
           "nMatrix": {
             "type": "Array<number[]>",
             "help": "Paare je Zelle"
-          },
-          "pairs": {
-            "type": "MatrixPair[]",
-            "help": "Rohwerte je Spaltenpaar",
-            "keysOf": "MatrixPair",
-            "keys": {
-              "i": {
-                "type": "number",
-                "help": "erste Spalte"
-              },
-              "j": {
-                "type": "number",
-                "help": "zweite Spalte"
-              },
-              "x": {
-                "type": "number[]",
-                "help": "Werte der ersten"
-              },
-              "y": {
-                "type": "number[]",
-                "help": "Werte der zweiten"
-              }
-            }
           }
         }
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "why the analysis gave no result, or an empty string",
+      "pairs": {
+        "type": "object[]",
+        "help": "",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true,
+        "keysOf": "MatrixPair",
+        "keys": {
+          "i": {
+            "type": "number",
+            "help": "erste Spalte"
+          },
+          "j": {
+            "type": "number",
+            "help": "zweite Spalte"
+          },
+          "x": {
+            "type": "number[]",
+            "help": "Werte der ersten"
+          },
+          "y": {
+            "type": "number[]",
+            "help": "Werte der zweiten"
+          }
+        }
+      },
+      "error": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "CorrError",
+        "keys": {
+          "reason": {
+            "type": "'errMin4'|'errZeroVariance'|'errColumnMissing'",
+            "help": "Grund als Schlüssel"
+          },
+          "n": {
+            "type": "number",
+            "help": "Paare (nur bei zu wenigen Paaren)",
+            "optional": true
+          },
+          "message": {
+            "type": "string",
+            "help": "Grund als Text"
+          }
+        }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "filterMinR",
-      "filterMaxP"
+      "filterMaxP",
+      "exampleWorksheetId",
+      "pairEdits",
+      "matrixEdits"
+    ],
+    "settable": [
+      "colRefs",
+      "confidenceLevel",
+      "matrixMethod"
+    ],
+    "invariants": [
+      "uniqueColumnRefs"
     ]
   },
   "data-import": {
