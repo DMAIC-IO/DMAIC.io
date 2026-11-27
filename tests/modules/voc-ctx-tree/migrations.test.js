@@ -19,7 +19,7 @@ setModelName(State, 'voc-ctx-tree');
 
 const SCHEMA = { _schema: { name: 'voc-ctx-tree', version: '1.0' } };
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const EXAMPLES = new URL('../../../examples/projects/', import.meta.url);
+const KANO_EXAMPLES = new URL('../../../js/modules/kano/resources/examples/projects/', import.meta.url);
 const OWN_EXAMPLES = new URL('../../../js/modules/voc-ctx-tree/resources/examples/projects/', import.meta.url);
 const json = (v) => JSON.stringify(v);
 const plain = (v) => JSON.parse(JSON.stringify(v));
@@ -202,7 +202,7 @@ suite('voc-ctx-tree Migration 0→1.0 — Golden-Fixtures, Beispiele, Kano-Bäum
   });
   test('Kano-Beispielbäume (styles leer) laden streng, ids bleiben, Farben aus der Vorgabe', async () => {
     for (const f of ['kano-lieferservice.json', 'kano-hubschrauber-flyer.json']) {
-      const { tree } = await fetchJSON(new URL(f, EXAMPLES));
+      const { tree } = await fetchJSON(new URL(f, KANO_EXAMPLES));
       const m = State.fromJSON(plain(tree));
       assertDeepEqual(repaired(plain(tree)).fields, [], f);
       const oldIds = [];

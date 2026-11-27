@@ -120,6 +120,11 @@
     "description": "Root cause analysis with 6M categories and expert scoring",
     "whenToUse": "When possible causes of a problem are to be collected, ordered by 6M and rated by the team, so that the most likely ones get tested with experiments; states can be kept as snapshots and compared. For a single chain of causes by asking why, use 5-Why."
   },
+  "kano": {
+    "name": "Kano Model",
+    "description": "Classify and prioritize requirements from the VoC→CTx tree using the Kano method",
+    "whenToUse": "When features should be classified by how much their presence raises satisfaction and their absence lowers it — must-be, performance and delight features, surveyed with the functional and the dysfunctional question per respondent; not for weighting criteria against each other, that is what the pairwise comparison is for."
+  },
   "lessons-learned": {
     "name": "Lessons Learned",
     "description": "Structured documentation of project insights",

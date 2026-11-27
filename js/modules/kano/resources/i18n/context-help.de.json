@@ -97,6 +97,11 @@
         "value": "Die Antwort als ganze Zahl, auch als Zahlentext: f und d von 1 bis 5, w von 1 bis 9; leer setzt die Antwort zurück. Ein Wert neben der Skala wird abgelehnt.",
         "command": "Das Kommando als ein Objekt mit respondentId, itemId, field und value."
       }
+    },
+    "applySync": {
+      "params": {
+        "command": "Das Kommando als ein leeres Objekt; es nimmt keine Angaben."
+      }
     }
   },
   "asyncTasks": {

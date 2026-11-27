@@ -11,10 +11,10 @@ import { fileURLToPath } from 'node:url';
 
 const MODULES_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../js/modules');
 
-const CHART_RULE_MODULES = ['voc-ctx-tree', 'project-charter', 'triz-function-analysis', 'histogram'];
+const CHART_RULE_MODULES = ['voc-ctx-tree', 'kano', 'project-charter', 'triz-function-analysis', 'histogram'];
 
 /** Converted modules: charts only through chart widgets and `chartSVG`, never the chartManager itself. */
-const WIDGET_ONLY_MODULES = ['voc-ctx-tree', 'project-charter', 'triz-function-analysis', 'histogram'];
+const WIDGET_ONLY_MODULES = ['voc-ctx-tree', 'kano', 'project-charter', 'triz-function-analysis', 'histogram'];
 
 const FORBIDDEN = [
   { name: 'createElementNS', re: /createElementNS\s*\(/ },

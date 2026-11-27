@@ -120,6 +120,11 @@
     "description": "Ursachenanalyse mit 6M-Kategorien und Expertenbewertung",
     "whenToUse": "Wenn mögliche Ursachen eines Problems gesammelt, nach 6M geordnet und vom Team bewertet werden sollen, um die wahrscheinlichsten mit Experimenten zu prüfen; Stände lassen sich als Snapshot festhalten und vergleichen. Für eine einzelne Ursachenkette per Warum-Fragen ist 5-Why da."
   },
+  "kano": {
+    "name": "Kano-Modell",
+    "description": "Anforderungen aus dem VoC→CTx-Baum nach Kano klassifizieren und priorisieren",
+    "whenToUse": "Wenn Merkmale danach eingeordnet werden sollen, wie stark ihr Vorhandensein die Zufriedenheit hebt und ihr Fehlen sie senkt — Basis-, Leistungs- und Begeisterungsmerkmale, erhoben über die funktionale und die dysfunktionale Frage je Befragter; nicht für das Gewichten von Kriterien gegeneinander, dafür ist der Paarvergleich da."
+  },
   "lessons-learned": {
     "name": "Lessons Learned",
     "description": "Strukturierte Dokumentation von Projekterkenntnissen",

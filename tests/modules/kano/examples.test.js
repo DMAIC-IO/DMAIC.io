@@ -22,7 +22,7 @@ async function fetchJson(path) {
 suite('kano Beispiele', () => {
   for (const id of ['kano-lieferservice', 'kano-hubschrauber-flyer']) {
     test(`${id}: lädt ohne Reparatur, Auswertung wie die Altform`, async () => {
-      const ex = await fetchJson(`../../../examples/projects/${id}.json`);
+      const ex = await fetchJson(`../../../js/modules/kano/resources/examples/projects/${id}.json`);
       const old = (await fetchJson('./legacy-read.json'))[id];
       const repaired = [];
       const m = /** @type {any} */ (State.fromJSON(plain(ex.kano), { repair: true, onRepair: (f) => repaired.push(f) }));

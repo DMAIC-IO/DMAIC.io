@@ -16,9 +16,8 @@
  *
  * The hand-overs `toWorksheet`, `takeToVocTree` and `handOverToKano` send
  * one stack each through `instances.interact`: all or nothing. Kano is read
- * with a stack of its own, the other surveys before it with
- * `instances.read`. A stack may switch the view and tear this viewmodel
- * down, which cancels the run; it goes on regardless. So everything a run
+ * with a stack of its own, which leaves the view alone. A write stack may
+ * switch the view and tear this viewmodel down, which cancels the run; it goes on regardless. So everything a run
  * needs is read into locals before its first `await` — the model as plain
  * copies, the services, the own instance id, the texts — and nothing but the
  * stack writes afterwards: the marks the survey keeps (`setKanoTransfer`,

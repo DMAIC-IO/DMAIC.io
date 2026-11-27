@@ -76,7 +76,7 @@ suite('ExamplesRegistry scenarios', () => {
     const reg = makeRegistry();
     assertEqual(reg.hasExamples('histogram'), true);
     assertEqual(reg.hasExamples('sipoc'), true);
-    assertEqual(reg.hasExamples('kano'), false);
+    assertEqual(reg.hasExamples('unit-converter'), false);
   });
 });
 

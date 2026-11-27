@@ -12,14 +12,15 @@ import { checkI18nCopies } from './i18n-copies.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const OWN = 'js/modules/survey-builder/resources/i18n';
+const KANO = 'js/modules/kano/resources/i18n';
 
-/** Testkopie mit den Texten des Moduls und seiner Quelle (Altform von kano). */
+/** Testkopie mit den Texten des Moduls und seiner Quelle (`ui.<lang>.json` von kano). */
 function treeCopy() {
   const root = mkdtempSync(join(tmpdir(), 'sb-copies-'));
   mkdirSync(join(root, OWN), { recursive: true });
-  mkdirSync(join(root, 'i18n'), { recursive: true });
+  mkdirSync(join(root, KANO), { recursive: true });
   for (const f of ['copies.json', 'ui.de.json', 'ui.en.json']) cpSync(join(ROOT, OWN, f), join(root, OWN, f));
-  for (const l of ['de', 'en']) cpSync(join(ROOT, 'i18n', `${l}.json`), join(root, 'i18n', `${l}.json`));
+  for (const l of ['de', 'en']) cpSync(join(ROOT, KANO, `ui.${l}.json`), join(root, KANO, `ui.${l}.json`));
   return root;
 }
 

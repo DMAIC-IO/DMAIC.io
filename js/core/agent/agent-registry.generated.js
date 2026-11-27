@@ -8254,6 +8254,7 @@ export const AGENT_REGISTRY = {
   "kano": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -8270,199 +8271,283 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setSourceTree": {
+        "target": "model",
         "params": [
           {
-            "name": "instanceId",
-            "type": "string|null",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Instanz des Baum-Moduls, oder `null` für keine Verknüpfung"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Verknüpft die Merkmale mit einer Instanz des VoC-CTx-Baum-Moduls."
+        "help": "",
+        "keysOf": "setSourceTree",
+        "keysHelp": "actions.setSourceTree.params",
+        "keys": {
+          "instanceId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
       },
       "setSourceLevel": {
+        "target": "model",
         "params": [
           {
-            "name": "level",
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setSourceLevel",
+        "keysHelp": "actions.setSourceLevel.params",
+        "keys": {
+          "level": {
             "type": "'need'|'driver'|'req'",
-            "optional": false,
-            "help": "die Ebene des Baums"
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Setzt die Ebene des Baums, aus der die Merkmale kommen. Die Merkmalliste und alle erfassten Antworten werden dabei verworfen — sie gehören zur alten Ebene."
+        }
       },
-      "setImportance": {
+      "syncItems": {
+        "target": "model",
         "params": [
           {
-            "name": "enabled",
-            "type": "boolean",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "true erfasst die Wichtigkeit mit, false lässt die Frage weg"
-          }
-        ],
-        "returns": "void",
-        "help": "Schaltet die dritte Frage nach der Wichtigkeit ein oder aus."
-      },
-      "applySync": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Übernimmt die Merkmale der eingestellten Ebene aus dem verknüpften Baum: neue kommen hinzu, umbenannte werden nachgezogen, im Baum nicht mehr vorhandene werden als fehlend markiert. Gelöscht wird nie."
-      },
-      "setItems": {
-        "params": [
-          {
-            "name": "items",
-            "type": "Array<object>",
-            "optional": false,
-            "help": "die Merkmale; je Merkmal `id` (nötig und eindeutig), und wahlweise `label`, `path`, `nodeId` und `missing`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Ersetzt die Liste der zu bewertenden Merkmale."
-      },
-      "addRespondent": {
-        "params": [
-          {
-            "name": "name",
-            "type": "string",
-            "optional": true,
-            "help": "der Name der neuen Befragten; leer oder weggelassen verwendet den Vorgabenamen"
-          }
-        ],
-        "returns": "string",
-        "help": "Legt eine Befragte an — mit dem angegebenen Namen, oder, wenn er leer ist oder fehlt, mit einem laufenden Vorgabenamen. Die erste Befragte wird dabei ausgewählt."
-      },
-      "renameRespondent": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id der Befragten"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "der neue Name"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Benennt eine Befragte um."
-      },
-      "removeRespondent": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id der Befragten"
-          }
-        ],
-        "returns": "void",
-        "help": "Entfernt eine Befragte samt allen ihren Antworten. War sie ausgewählt, rückt die erste verbleibende nach."
-      },
-      "setAnswer": {
-        "params": [
-          {
-            "name": "respondentId",
-            "type": "string",
-            "optional": false,
-            "help": "id der Befragten"
-          },
-          {
-            "name": "itemId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Merkmals"
-          },
-          {
-            "name": "field",
-            "type": "'f'|'d'|'w'",
-            "optional": false,
-            "help": "welche Frage"
-          },
-          {
-            "name": "value",
-            "type": "number|null",
-            "optional": false,
-            "help": "der Wert, eine ganze Zahl (auch als Zahlentext); Bereich je Frage siehe `AnswerField`"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt eine einzelne Antwort einer Befragten zu einem Merkmal.",
-        "keysOf": "AnswerField",
+        "help": "",
+        "keysOf": "syncItems",
+        "keysHelp": "actions.syncItems.params",
         "keys": {
-          "f": {
-            "type": "number|null",
-            "help": "funktionale Frage, 1–5"
+          "instanceId": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "nonEmpty"
+            ]
           },
-          "d": {
-            "type": "number|null",
-            "help": "dysfunktionale Frage, 1–5"
-          },
-          "w": {
-            "type": "number|null",
-            "help": "Wichtigkeit, 1–9"
+          "candidates": {
+            "type": "{ nodeId: string, label: string, path: string }[]",
+            "help": ""
+          }
+        }
+      },
+      "setItems": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "setItems",
+        "keysHelp": "actions.setItems.params",
+        "keys": {
+          "items": {
+            "type": "Array<{ id: string, nodeId?: string|null, label?: string, path?: string, missing?: boolean }>",
+            "help": ""
           }
         }
       },
       "removeItem": {
+        "target": "model",
         "params": [
           {
-            "name": "id",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id des Merkmals"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Entfernt ein Merkmal samt allen Antworten dazu."
+        "help": "",
+        "keysOf": "removeItem",
+        "keysHelp": "actions.removeItem.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addRespondent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addRespondent",
+        "keysHelp": "actions.addRespondent.params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "renameRespondent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "renameRespondent",
+        "keysHelp": "actions.renameRespondent.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "removeRespondent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeRespondent",
+        "keysHelp": "actions.removeRespondent.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setAnswer": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setAnswer",
+        "keysHelp": "actions.setAnswer.params",
+        "keys": {
+          "respondentId": {
+            "type": "string",
+            "help": ""
+          },
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'f'|'d'|'w'",
+            "help": ""
+          },
+          "value": {
+            "type": "number|null",
+            "help": ""
+          }
+        }
+      },
+      "applySync": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "applySync",
+        "keysHelp": "asyncTasks.applySync.params",
+        "keys": {},
+        "task": "applySync",
+        "op": "start",
+        "helpKey": "asyncTasks.applySync.help"
+      },
+      "applySync.cancel": {
+        "target": "asyncTask",
+        "task": "applySync",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.applySync.cancel.help"
       }
     },
     "fields": {
       "source": {
-        "type": "object",
-        "help": "origin of the items: `{ instanceId, level }`",
-        "bulk": false,
-        "derived": true
+        "type": "{ instanceId: string|null, level: 'need'|'driver'|'req' }",
+        "help": "",
+        "bulk": false
       },
       "options": {
-        "type": "object",
-        "help": "the capture options (`importance`)",
-        "bulk": false,
-        "derived": true
+        "type": "{ importance: boolean }",
+        "help": "",
+        "bulk": false
       },
       "items": {
-        "type": "object[]",
-        "help": "the items to rate, in capture order",
-        "bulk": true,
-        "bulkKind": "table",
-        "derived": true
+        "type": "Array<{ id: string, nodeId: string|null, label: string, path: string, missing: boolean }>",
+        "help": "",
+        "bulk": true
       },
       "respondents": {
-        "type": "object[]",
-        "help": "the respondents in creation order",
-        "bulk": false,
-        "derived": true
+        "type": "{ id: string, name: string }[]",
+        "help": "",
+        "bulk": false
       },
       "answers": {
-        "type": "object",
-        "help": "the answers by respondent and item",
-        "bulk": false,
-        "derived": true
-      },
-      "treeList": {
-        "type": "Array<{instanceId: string, name: string}>",
-        "help": "the VoC-CTx trees `setSourceTree` accepts",
-        "bulk": false,
-        "derived": true
+        "type": "Record<string, Record<string, { f: number|null, d: number|null, w: number|null }>>",
+        "help": "",
+        "bulk": false
       },
       "evaluation": {
-        "type": "KanoEvaluation",
-        "help": "the evaluation per item and in total, each item described under keys",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "KanoEvaluation",
@@ -8525,7 +8610,7 @@ export const AGENT_REGISTRY = {
               },
               "unanswered": {
                 "type": "number",
-                "help": "nicht klassifizierbare Antworten (fehlend oder außerhalb 1–5)"
+                "help": "nicht klassifizierbare Antworten"
               },
               "category": {
                 "type": "'M'|'O'|'A'|'I'|'R'|'Q'|null",
@@ -8577,10 +8662,38 @@ export const AGENT_REGISTRY = {
             }
           }
         }
+      },
+      "sourceHint": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
     },
+    "asyncTasks": [
+      {
+        "name": "applySync",
+        "auto": false,
+        "params": []
+      }
+    ],
     "viewFields": [
-      "activeRespondentId"
+      "activeRespondentId",
+      "scatterEdits"
+    ],
+    "settable": [
+      "options"
+    ],
+    "invariants": [
+      "uniqueItemIds",
+      "uniqueRespondentIds",
+      "knownActive"
     ]
   },
   "lessons-learned": {

@@ -1660,40 +1660,6 @@ body.dev-area-open .dmaic-tiles {
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* Kano tile */
-.dashboard-kano {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  height: 100%;
-  min-height: 0;
-}
-
-.dashboard-kano__totals {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-xs);
-}
-
-/* Long German labels ("Vollständigkeit") must not widen a narrow tile. */
-.dashboard-kano__totals .dashboard-spc__stat {
-  min-width: 0;
-}
-
-.dashboard-kano__totals .dashboard-spc__stat-label {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dashboard-kano__warn {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-warning);
-}
-
-
 .dashboard-area__title {
   font-size: var(--font-size-xl);
   font-weight: 600;

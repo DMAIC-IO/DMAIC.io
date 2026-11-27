@@ -97,6 +97,11 @@
         "value": "The answer as a whole number, also as numeric text: f and d from 1 to 5, w from 1 to 9; empty resets the answer. A value off the scale is rejected.",
         "command": "The command as one object with respondentId, itemId, field and value."
       }
+    },
+    "applySync": {
+      "params": {
+        "command": "The command as an empty object; it takes no input."
+      }
     }
   },
   "asyncTasks": {

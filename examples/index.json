@@ -151,31 +151,6 @@
       ]
     },
     {
-      "id": "kano-lieferservice",
-      "type": "project",
-      "title": {
-        "de": "Kano: Lieferservice",
-        "en": "Kano: delivery service"
-      },
-      "description": {
-        "de": "Sechs Kundenbedürfnisse eines Lieferservice, von drei Kunden nach Kano bewertet — inklusive Wichtigkeitsfrage und einem Gleichstand.",
-        "en": "Six customer needs of a delivery service, rated by three customers using Kano — including the importance question and one tie."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/kano-lieferservice.json",
-      "format": "json",
-      "modules": [
-        "kano"
-      ],
-      "tags": [
-        "kano",
-        "voc",
-        "define",
-        "priorisierung"
-      ]
-    },
-    {
       "id": "regression-collinear",
       "type": "project",
       "title": {
@@ -869,30 +844,6 @@
         "regression",
         "optimization",
         "desirability"
-      ]
-    },
-    {
-      "id": "kano-hubschrauber-flyer",
-      "type": "project",
-      "title": {
-        "de": "Papier-Hubschrauber — Kano",
-        "en": "Paper Helicopter — Kano"
-      },
-      "description": {
-        "de": "Kano-Klassifizierung dreier Hubschrauber-Merkmale: Basis „fliegt überhaupt“, Leistung „Flugzeit“, Begeisterung „Autorotation (eleganter Trudel, weiche Landung)“. Bringt eine eigene VoC/CTQ-Baum-Instanz mit (identisch zum Beispiel „Papier-Hubschrauber — VoC/CTQ“).",
-        "en": "Kano classification of three helicopter characteristics: must-be \"flies at all\", performance \"flight time\", attractive \"autorotation (elegant spin, soft landing)\". Ships its own VoC/CTQ tree instance (identical to the \"Paper Helicopter — VoC/CTQ\" example)."
-      },
-      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
-      "license": "public-domain",
-      "file": "projects/kano-hubschrauber-flyer.json",
-      "format": "json",
-      "modules": [
-        "kano"
-      ],
-      "tags": [
-        "helicopter",
-        "doe-training",
-        "sequential-blocks"
       ]
     },
     {

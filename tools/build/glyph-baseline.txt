@@ -43,5 +43,4 @@ js/core/chart/chart-editor.js:★:{ value: 'star',          glyph: '★', label:
 js/core/cycles/cycles.js:⊞:data:   { id: 'data',   letter: '⊞', i18nKey: 'phases.data',   virtual: true, position: 'l
 js/core/migrations.js:→:const [from, to] = step.split('→');
 js/modules/kano/domain/link.js:▸:export const SEP = ' ▸ ';
-js/modules/kano/kano-link.js:▸:const SEP = ' ▸ ';
 js/modules/process-map/process-map.js:→:if (ti !== -1) parts.push(`→ ${_t('csvStep')} ${String(ti + 1).padStart(2, '0')}`);

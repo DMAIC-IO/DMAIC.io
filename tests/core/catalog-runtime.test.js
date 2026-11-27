@@ -4,7 +4,8 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { MODULES, CONVERTED, MODULE_ORDER } from '../../js/modules/catalog.generated.js';
 import manifest from '../../js/modules/manifest.js';
-import { treePhaseForCycle } from '../../js/modules/kano/kano-tree-phase.js';
+import { defaultPhaseFor } from '../../js/core/router/instance-ops.js';
+import { CYCLES } from '../../js/core/cycles/cycles.js';
 
 suite('Katalog zur Laufzeit', () => {
   test('MODULES = manifest.js-Einträge plus je umgestelltem Modul einer mit form: module, in MODULE_ORDER', () => {
@@ -19,8 +20,10 @@ suite('Katalog zur Laufzeit', () => {
     assertEqual(new Set(ids).size, ids.length);
   });
 
-  test('voc-ctx-tree liest seine Phase aus dem Katalog', () => {
+  test('voc-ctx-tree: Vorgabephase je Zyklus aus dem Katalog', () => {
     const def = MODULES.find((m) => m.id === 'voc-ctx-tree');
-    assertEqual(treePhaseForCycle('dmaic'), def.cycles?.dmaic?.phase || def.phase || 'define');
+    for (const cycle of Object.keys(CYCLES)) {
+      assertEqual(defaultPhaseFor(def, cycle), def.cycles?.[cycle]?.phase || def.phase, cycle);
+    }
   });
 });

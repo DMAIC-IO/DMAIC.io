@@ -168,7 +168,7 @@ suite('kano: Beispiel mit Baum (Stapel)', () => {
 
 suite('kano: Beispiel mit Baum (drei Lagen)', () => {
   test('Lage 1, kano-lieferservice: Baum entsteht, Merkmale hängen an den neuen Bedürfnissen', async () => {
-    const data = await fetchJson('../../../examples/projects/kano-lieferservice.json');
+    const data = await fetchJson('../../../js/modules/kano/resources/examples/projects/kano-lieferservice.json');
     const w = world();
     const h = host(w);
     const out = await beforeLoadExample.call(h, data);
@@ -186,7 +186,7 @@ suite('kano: Beispiel mit Baum (drei Lagen)', () => {
   });
 
   test('Lage 2, kano-hubschrauber-flyer in leeren Baum: Ebene driver, d1–d3 umgehängt, k1 bleibt ohne Bezug', async () => {
-    const data = await fetchJson('../../../examples/projects/kano-hubschrauber-flyer.json');
+    const data = await fetchJson('../../../js/modules/kano/resources/examples/projects/kano-hubschrauber-flyer.json');
     const w = world({ t1: new Tree().toJSON() });
     const out = await beforeLoadExample.call(host(w), data);
     assertEqual(w.stacks[0].some((s) => s.op === 'module.add'), false);
@@ -206,7 +206,7 @@ suite('kano: Beispiel mit Baum (drei Lagen)', () => {
   });
 
   test('Lage 3: Rückfrage; Ja überschreibt, Nein und ausgehängt laden ohne Baumbezug', async () => {
-    const data = await fetchJson('../../../examples/projects/kano-lieferservice.json');
+    const data = await fetchJson('../../../js/modules/kano/resources/examples/projects/kano-lieferservice.json');
     const full = () => {
       const t = new Tree();
       t.addVoc({ text: 'Alt' });
@@ -238,7 +238,7 @@ suite('kano: Beispiel mit Baum (drei Lagen)', () => {
   });
 
   test('Lage 1 ausgehängt (Szenario): Baum entsteht, keine Ansicht wird geöffnet', async () => {
-    const data = await fetchJson('../../../examples/projects/kano-lieferservice.json');
+    const data = await fetchJson('../../../js/modules/kano/resources/examples/projects/kano-lieferservice.json');
     const w = world();
     const out = await beforeLoadExample.call(host(w, { detached: true }), data);
     assertEqual(w.stacks[0][0].op, 'module.add');

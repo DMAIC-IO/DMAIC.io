@@ -29,20 +29,6 @@ export default [
     load: () => import('./rest-api/rest-api.js'),
   },
 
-  // ─── Define ───────────────────────────────────────────────────
-  {
-    id: 'kano',
-    phase: 'define',
-    group: 'customer',
-    allowedPhases: ['define'],
-    load: () => import('./kano/kano.js'),
-    loadTile: () => import('./kano/kano.tile.js'),
-    cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
-    },
-  },
-
   // ─── Measure ──────────────────────────────────────────────────
   {
     id: 'process-map',

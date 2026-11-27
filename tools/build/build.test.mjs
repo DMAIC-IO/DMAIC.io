@@ -357,8 +357,8 @@ test('runBuild lässt keine .tmp-Datei zurück, wenn das Umbenennen scheitert', 
 });
 
 test('isWatchedSource picks up templates, stylesheets and JSON that esbuild does not track', () => {
-  for (const p of ['js/modules/kano/kano.html', 'index.dist.html', 'css/layout.css',
-    'js/modules/kano/kano.css', 'i18n/de.json', 'glossary/terms/kano.json',
+  for (const p of ['js/modules/kano/resources/view.html', 'index.dist.html', 'css/layout.css',
+    'js/modules/kano/resources/style.css', 'i18n/de.json', 'glossary/terms/kano.json',
     'tests/fixtures/capability/cpk.fixtures.json']) {
     assert.equal(isWatchedSource(p), true, p);
   }

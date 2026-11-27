@@ -3,20 +3,21 @@
  * the stacks the hand-overs send to the worksheet, the VoC tree and Kano.
  *
  * The Kano stacks run through a small interpreter that applies the steps to
- * a copy of what Kano reads, with the semantics of the kano actions
- * (`setItems` keeps only `id, nodeId, label, path, missing`, `removeItem`
- * takes the answers on the item along, `addRespondent` makes the first
- * respondent active, `setAnswer` creates the cell). The result is compared
- * with what the earlier hand-over wrote (`kanoStateFromSurvey`, frozen in
- * fixtures/legacy-oracles.json) up to ids, the `origin` marks of what was
- * handed over and `activeRespondentId`.
+ * a copy of what Kano reads, with the semantics of the kano commands (one
+ * object argument each; `setItems` keeps only `id, nodeId, label, path,
+ * missing`, `removeItem` takes the answers on the item along, `addRespondent`
+ * makes the first respondent active, `setAnswer` creates the cell) and of
+ * `instance.set` on `options`. The result is compared with what the earlier
+ * hand-over wrote (`kanoStateFromSurvey`, frozen in
+ * fixtures/legacy-oracles.json) up to ids, the `origin` marks and
+ * `activeRespondentId`. Kano keeps no `origin` marks any more: the earlier
+ * hand-overs stand in the survey's references (`byInstance`).
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../../test-utils.js';
 import { worksheetColumnsFor } from '../../../js/modules/survey-builder/domain/handover/worksheet.js';
 import { vocStack, openTexts } from '../../../js/modules/survey-builder/domain/handover/voc.js';
-import { kanoOwnEntries, kanoBackups, kanoStack } from '../../../js/modules/survey-builder/domain/handover/kano.js';
+import { kanoOwnEntries, kanoStack } from '../../../js/modules/survey-builder/domain/handover/kano.js';
 import { worksheetColumns } from '../../../js/modules/survey-builder/domain/stats.js';
-import { treePhaseForCycle } from '../../../js/modules/kano/kano-tree-phase.js';
 import { defaultPhaseFor } from '../../../js/core/router/instance-ops.js';
 import { CYCLES } from '../../../js/core/cycles/cycles.js';
 import { MODULES } from '../../../js/modules/catalog.generated.js';
@@ -55,20 +56,19 @@ function requireKnown(name, id, known) {
 }
 
 const KANO = {
-  setSourceTree(s, id) { s.source.instanceId = id; },
-  setImportance(s, on) { if (typeof on !== 'boolean') throw new Error('enabled'); s.options.importance = on; },
-  removeRespondent(s, id) {
+  setSourceTree(s, { instanceId }) { s.source.instanceId = instanceId; },
+  removeRespondent(s, { id }) {
     requireKnown('respondent', id, s.respondents.map((r) => r.id));
     s.respondents = s.respondents.filter((r) => r.id !== id);
     delete s.answers[id];
     if (s.activeRespondentId === id) s.activeRespondentId = s.respondents[0]?.id ?? null;
   },
-  removeItem(s, id) {
+  removeItem(s, { id }) {
     requireKnown('item', id, s.items.map((i) => i.id));
     s.items = s.items.filter((i) => i.id !== id);
     for (const byItem of Object.values(s.answers)) delete byItem[id];
   },
-  setItems(s, items) {
+  setItems(s, { items }) {
     const seen = new Set();
     s.items = items.map((raw) => {
       for (const k of Object.keys(raw)) if (!ITEM_FIELDS.includes(k)) throw new Error(`invalid item field ${k}`);
@@ -78,14 +78,14 @@ const KANO = {
     });
     return s.items.length;
   },
-  addRespondent(s, name) {
+  addRespondent(s, { name }) {
     if (typeof name !== 'string' || !name.trim()) throw new Error('the stack names every respondent');
     const id = freshId('resp');
     s.respondents.push({ id, name: name.trim() });
     if (!s.activeRespondentId) s.activeRespondentId = id;
     return id;
   },
-  setAnswer(s, rid, iid, field, value) {
+  setAnswer(s, { respondentId: rid, itemId: iid, field, value }) {
     requireKnown('respondent', rid, s.respondents.map((r) => r.id));
     requireKnown('item', iid, s.items.map((i) => i.id));
     if (!['f', 'd', 'w'].includes(field)) throw new Error('field');
@@ -127,7 +127,8 @@ function run(world, stack) {
       if (op.module === 'kano') {
         const s = w.kano[op.instance];
         if (!s) throw new Error(`no kano ${op.instance}`);
-        value = KANO[op.method](s, ...op.args);
+        if (op.args.length !== 1 || !op.args[0] || typeof op.args[0] !== 'object') throw new Error(`${op.method}: one object argument`);
+        value = KANO[op.method](s, op.args[0]);
       } else if (op.module === 'survey-builder') {
         const t = w.surveys[op.instance];
         if (!t) throw new Error(`no survey ${op.instance}`);
@@ -158,7 +159,17 @@ function run(world, stack) {
         value = id;
       }
       result = { instanceId: op.instance, method: op.method, value };
-    }
+    } else if (op.op === 'instance.set') {
+      if (op.module !== 'kano') throw new Error(`instance.set ${op.module}`);
+      const s = w.kano[op.instance];
+      if (!s) throw new Error(`no kano ${op.instance}`);
+      for (const [k, v] of Object.entries(op.values)) {
+        if (k !== 'options') throw new Error(`not settable: ${k}`);
+        if (typeof v?.importance !== 'boolean' || Object.keys(v).length !== 1) throw new Error('options');
+        s.options = copy(v);
+      }
+      result = { instanceId: op.instance, values: op.values };
+    } else throw new Error(`op ${op.op}`);
     if (raw.id) results.set(raw.id, result);
   }
   return { world: w, results };
@@ -180,22 +191,26 @@ const RESPONSES = [
   { id: 'resp-d', recipientId: 'rec-b', answers: { qA: 'kaputt' } },
 ];
 
-/** A kano instance with hand-made entries and earlier hand-overs of qA and qB from S1 (and qB from S2). */
+/**
+ * A kano instance with hand-made entries and earlier hand-overs of qA and qB
+ * from S1 (and qB from S2). The earlier form marked them with `origin`; the
+ * migration drops the marks, the survey remembers them (`OLD_REFS`).
+ */
 const OLD_KANO = Object.freeze({
   source: { instanceId: 'tree-x', level: 'driver' },
   options: { importance: false },
   items: [
     { id: 'm1', nodeId: 'n1', label: 'Von Hand', path: 'A › B', missing: true },
-    { id: 'oA1', nodeId: null, label: 'Chat alt', path: '', missing: false, origin: { surveyInstanceId: S1, questionId: 'qA' } },
-    { id: 'oB1', nodeId: null, label: 'Export alt', path: '', missing: false, origin: { surveyInstanceId: S1, questionId: 'qB' } },
+    { id: 'oA1', nodeId: null, label: 'Chat alt', path: '', missing: false },
+    { id: 'oB1', nodeId: null, label: 'Export alt', path: '', missing: false },
     { id: 'm2', nodeId: null, label: 'Auch von Hand', path: '', missing: false },
-    { id: 'o2B1', nodeId: null, label: 'Anderer Survey', path: '', missing: false, origin: { surveyInstanceId: S2, questionId: 'qB' } },
+    { id: 'o2B1', nodeId: null, label: 'Anderer Survey', path: '', missing: false },
   ],
   respondents: [
     { id: 'man1', name: 'Hand' },
-    { id: 'rA1', name: 'Alt A', origin: { surveyInstanceId: S1, questionId: 'qA' } },
-    { id: 'rB1', name: 'Alt B', origin: { surveyInstanceId: S1, questionId: 'qB' } },
-    { id: 'r2B1', name: 'Alt S2', origin: { surveyInstanceId: S2, questionId: 'qB' } },
+    { id: 'rA1', name: 'Alt A' },
+    { id: 'rB1', name: 'Alt B' },
+    { id: 'r2B1', name: 'Alt S2' },
   ],
   answers: {
     man1: { m1: { f: 1, d: 2, w: 3 }, oA1: { f: 2, d: 2, w: null }, oB1: { f: 4, d: 4, w: null } },
@@ -204,6 +219,13 @@ const OLD_KANO = Object.freeze({
     r2B1: { o2B1: { f: 2, d: 5, w: null } },
   },
   activeRespondentId: 'rA1',
+});
+
+/** The references of the earlier hand-overs in `OLD_KANO`, by `<surveyInstanceId>:<questionId>`. */
+const OLD_REFS = Object.freeze({
+  [`${S1}:qA`]: { itemIds: ['oA1'], respondentIds: ['rA1'] },
+  [`${S1}:qB`]: { itemIds: ['oB1'], respondentIds: ['rB1'] },
+  [`${S2}:qB`]: { itemIds: ['o2B1'], respondentIds: ['r2B1'] },
 });
 
 /** @param {object} q @param {boolean} [anonymous] @returns {object} input of kanoStateFromSurvey */
@@ -220,14 +242,14 @@ function legacyChain(key, start, inputs) {
 }
 
 /**
- * A kano state with ids replaced by their position, without `origin` on
- * items (setItems drops it) and on respondents of a handed-over origin,
- * without empty answer maps and without `activeRespondentId`. An answer of
- * a respondent or on an item that is gone fails the comparison: a missing
- * remove step must not hide behind the canonical form.
- * @param {any} s @param {string[]} handed `<surveyInstanceId>:<questionId>`
+ * A kano state with ids replaced by their position, without `origin` (the
+ * earlier form kept it, Kano drops it), without empty answer maps and without
+ * `activeRespondentId`. An answer of a respondent or on an item that is gone
+ * fails the comparison: a missing remove step must not hide behind the
+ * canonical form.
+ * @param {any} s
  */
-function canonKano(s, handed) {
+function canonKano(s) {
   const items = new Map(s.items.map((it, i) => [it.id, `i${i}`]));
   const resps = new Map(s.respondents.map((r, i) => [r.id, `p${i}`]));
   const answers = {};
@@ -241,18 +263,15 @@ function canonKano(s, handed) {
   return {
     source: s.source,
     options: s.options,
-    items: s.items.map(({ origin, ...it }) => ({ ...it, id: items.get(it.id) })),
-    respondents: s.respondents.map(({ origin, ...r }) => ({
-      ...r, id: resps.get(r.id),
-      ...(origin && !handed.includes(`${origin.surveyInstanceId}:${origin.questionId}`) ? { origin } : {}),
-    })),
+    items: s.items.map(({ origin: _origin, ...it }) => ({ ...it, id: items.get(it.id) })),
+    respondents: s.respondents.map(({ origin: _origin, ...r }) => ({ ...r, id: resps.get(r.id) })),
     answers,
   };
 }
 
 /**
  * One hand-over through the stack builders, as the task does it: read,
- * own entries, backups, stack — and run.
+ * own entries, stack — and run.
  * @param {any} world @param {{ survey: string, q: object, anonymous?: boolean }} h
  * @returns {{ world: any, stack: any[], kanoId: string }}
  */
@@ -260,13 +279,10 @@ function handOver(world, { survey, q, anonymous = false }) {
   const transfer = world.surveys[survey].kano[q.id];
   const kanoId = transfer?.instanceId && world.kano[transfer.instanceId] ? transfer.instanceId : null;
   const kanoRead = kanoId ? copy(world.kano[kanoId]) : null;
-  const surveys = Object.entries(world.surveys)
-    .map(([instanceId, t]) => ({ instanceId, transfers: { kano: t.kano }, kanoQuestionIds: t.kanoQuestionIds }));
-  const backups = kanoId ? kanoBackups(kanoRead, surveys, kanoId) : [];
-  const own = kanoId ? kanoOwnEntries(kanoRead, transfer.byInstance[kanoId], survey, q.id) : { itemIds: [], respondentIds: [] };
+  const own = kanoId ? kanoOwnEntries(kanoRead, transfer.byInstance[kanoId]) : { itemIds: [], respondentIds: [] };
   const stack = kanoStack({
     kanoId, phase: 'measure', kanoRead, question: q, responses: RESPONSES, recipients: RECIPIENTS,
-    anonymous, respondentLabel: label, surveyInstanceId: survey, backups, own,
+    anonymous, respondentLabel: label, surveyInstanceId: survey, own,
   });
   const out = run(world, stack).world;
   return { world: out, stack, kanoId: out.surveys[survey].kano[q.id].instanceId };
@@ -274,26 +290,32 @@ function handOver(world, { survey, q, anonymous = false }) {
 
 /** @param {Record<string, any>} kano @param {Record<string, any>} [surveys] */
 const worldOf = (kano, surveys = { [S1]: { kano: {}, vocTree: { responseKeys: [] }, kanoQuestionIds: ['qA', 'qB'] } }) => ({ kano, surveys, trees: {} });
-/** Targets on kano-1 without references for `pairs`; `kanoQuestionIds` the survey's Kano questions. */
-const linked = (pairs, kanoQuestionIds = ['qA', 'qB']) => ({
-  kano: Object.fromEntries(pairs.map((q) => [q, { instanceId: 'kano-1', byInstance: {} }])),
+/**
+ * Targets on kano-1 for `pairs`, with the references of the earlier
+ * hand-overs in `OLD_KANO` (`OLD_REFS`); `kanoQuestionIds` the survey's Kano
+ * questions, `survey` the survey instance.
+ */
+const linked = (pairs, kanoQuestionIds = ['qA', 'qB'], survey = S1) => ({
+  kano: Object.fromEntries(pairs.map((q) => {
+    const refs = OLD_REFS[`${survey}:${q}`];
+    return [q, { instanceId: 'kano-1', byInstance: refs ? { 'kano-1': copy(refs) } : {} }];
+  })),
   vocTree: { responseKeys: [] }, kanoQuestionIds,
 });
 
 suite('survey-builder handover — kanoStack gives the state of the earlier hand-over', () => {
   test('new instance', () => {
     const [want] = legacyChain('new', null, [input(QA)]);
-    const { world, kanoId, stack } = handOver(worldOf({}), { survey: S1, q: QA });
-    assertDeepEqual(canonKano(world.kano[kanoId], [`${S1}:qA`]), canonKano(want, [`${S1}:qA`]));
+    const { world, kanoId } = handOver(worldOf({}), { survey: S1, q: QA });
+    assertDeepEqual(canonKano(world.kano[kanoId]), canonKano(want));
     assertEqual(world.kano[kanoId].respondents.length, 2, 'resp-a and resp-b answered qA, resp-d is no map');
   });
 
-  test('new instance: module.add in the own phase, then setSourceTree(null) before anything else', () => {
+  test('new instance: module.add in the own phase, then setSourceTree without a tree before anything else', () => {
     const { stack } = handOver(worldOf({}), { survey: S1, q: QA });
     assertDeepEqual(stack[0], { op: 'module.add', id: 'kano', module: 'kano', phase: 'measure' });
-    assertDeepEqual(stack[1], { op: 'instance.call', module: 'kano', instance: { $from: 'kano', path: 'instanceId' }, method: 'setSourceTree', args: [null] });
-    assertDeepEqual(stack[2].args, [true]);
-    assertEqual(stack[2].method, 'setImportance');
+    assertDeepEqual(stack[1], { op: 'instance.call', module: 'kano', instance: { $from: 'kano', path: 'instanceId' }, method: 'setSourceTree', args: [{ instanceId: null }] });
+    assertDeepEqual(stack[2], { op: 'instance.set', module: 'kano', instance: { $from: 'kano', path: 'instanceId' }, values: { options: { importance: true } } });
     const [transfer, target] = stack.slice(-2);
     assertEqual(transfer.method, 'setKanoTransfer');
     assertEqual(transfer.instance, S1);
@@ -316,7 +338,7 @@ suite('survey-builder handover — kanoStack gives the state of the earlier hand
   test('existing instance with hand-made entries', () => {
     const [want] = legacyChain('existing', OLD_KANO, [input(QA)]);
     const { world } = handOver(worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qA']) }), { survey: S1, q: QA });
-    assertDeepEqual(canonKano(world.kano['kano-1'], [`${S1}:qA`]), canonKano(want, [`${S1}:qA`]));
+    assertDeepEqual(canonKano(world.kano['kano-1']), canonKano(want));
     assertEqual(world.kano['kano-1'].source.instanceId, 'tree-x', 'an existing source stays');
   });
 
@@ -325,7 +347,7 @@ suite('survey-builder handover — kanoStack gives the state of the earlier hand
     let w = worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qA']) });
     w = handOver(w, { survey: S1, q: QA }).world;
     w = handOver(w, { survey: S1, q: QA }).world;
-    assertDeepEqual(canonKano(w.kano['kano-1'], [`${S1}:qA`]), canonKano(want, [`${S1}:qA`]));
+    assertDeepEqual(canonKano(w.kano['kano-1']), canonKano(want));
   });
 
   test('importance: false keeps an existing instance as it is and switches a new one off', () => {
@@ -334,46 +356,43 @@ suite('survey-builder handover — kanoStack gives the state of the earlier hand
     const [wantOn] = legacyChain('importance false existing on', on, [input(QB)]);
     const [wantNew] = legacyChain('importance false new', null, [input(QB)]);
     const old = handOver(worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qB']) }), { survey: S1, q: QB });
-    assertTrue(!old.stack.some((op) => op.method === 'setImportance'), 'no setImportance for an existing instance');
-    assertDeepEqual(canonKano(old.world.kano['kano-1'], [`${S1}:qB`]), canonKano(wantOld, [`${S1}:qB`]));
+    assertTrue(!old.stack.some((op) => op.op === 'instance.set'), 'importance stays for an existing instance');
+    assertDeepEqual(canonKano(old.world.kano['kano-1']), canonKano(wantOld));
     const kept = handOver(worldOf({ 'kano-1': on }, { [S1]: linked(['qB']) }), { survey: S1, q: QB });
-    assertDeepEqual(canonKano(kept.world.kano['kano-1'], [`${S1}:qB`]), canonKano(wantOn, [`${S1}:qB`]));
+    assertDeepEqual(canonKano(kept.world.kano['kano-1']), canonKano(wantOn));
     const fresh = handOver(worldOf({}), { survey: S1, q: QB });
     assertEqual(fresh.world.kano[fresh.kanoId].options.importance, false);
-    assertDeepEqual(canonKano(fresh.world.kano[fresh.kanoId], [`${S1}:qB`]), canonKano(wantNew, [`${S1}:qB`]));
+    assertDeepEqual(canonKano(fresh.world.kano[fresh.kanoId]), canonKano(wantNew));
   });
 
   test('anonymous: respondents are "Befragte n" even with a recipient', () => {
     const [want] = legacyChain('anonymous', null, [input(QB, true)]);
     const { world, kanoId } = handOver(worldOf({}), { survey: S1, q: QB, anonymous: true });
     assertDeepEqual(world.kano[kanoId].respondents.map((r) => r.name), ['Befragte 1', 'Befragte 2']);
-    assertDeepEqual(canonKano(world.kano[kanoId], [`${S1}:qB`]), canonKano(want, [`${S1}:qB`]));
+    assertDeepEqual(canonKano(world.kano[kanoId]), canonKano(want));
   });
 
   test('a cell is written with all three fields, off-scale values as null', () => {
     const { stack } = handOver(worldOf({}), { survey: S1, q: QA });
-    const cells = stack.filter((op) => op.method === 'setAnswer' && op.args[0].$from === 'r1');
-    assertDeepEqual(cells.map((op) => [op.args[2], op.args[3]]), [['f', 3], ['d', null], ['w', null]]);
+    const cells = stack.filter((op) => op.method === 'setAnswer' && op.args[0].respondentId.$from === 'r1');
+    assertDeepEqual(cells.map((op) => [op.args[0].field, op.args[0].value]), [['f', 3], ['d', null], ['w', null]]);
   });
 });
 
-suite('survey-builder handover — two Kano questions, earlier marks', () => {
+suite('survey-builder handover — two Kano questions, earlier references', () => {
   test('one survey: A, B, A — no duplicates, hand-made entries and their answers stay', () => {
     const want = legacyChain('ABA one survey', OLD_KANO, [input(QA), input(QB), input(QA)]);
     let w = worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qA', 'qB']) });
     const first = handOver(w, { survey: S1, q: QA });
-    const backups = first.stack.slice(0, first.stack.findIndex((op) => op.module === 'kano'));
-    assertTrue(backups.every((op) => op.method === 'setKanoTransfer'), 'only backups before the first Kano step');
-    assertDeepEqual(backups.map((op) => op.args[0].questionId).sort(), ['qA', 'qB'], 'both questions backed up');
+    assertEqual(first.stack[0].module, 'kano', 'the stack starts at Kano, no backups');
     assertDeepEqual(first.world.surveys[S1].kano.qB, { instanceId: 'kano-1', byInstance: { 'kano-1': { itemIds: ['oB1'], respondentIds: ['rB1'] } } });
-    const handed = [`${S1}:qA`, `${S1}:qB`];
     w = first.world;
-    assertDeepEqual(canonKano(w.kano['kano-1'], handed), canonKano(want[0], handed));
+    assertDeepEqual(canonKano(w.kano['kano-1']), canonKano(want[0]));
     w = handOver(w, { survey: S1, q: QB }).world;
-    assertDeepEqual(canonKano(w.kano['kano-1'], handed), canonKano(want[1], handed));
+    assertDeepEqual(canonKano(w.kano['kano-1']), canonKano(want[1]));
     w = handOver(w, { survey: S1, q: QA }).world;
     const k = w.kano['kano-1'];
-    assertDeepEqual(canonKano(k, handed), canonKano(want[2], handed));
+    assertDeepEqual(canonKano(k), canonKano(want[2]));
     assertDeepEqual(k.items.map((i) => i.label), ['Von Hand', 'Auch von Hand', 'Anderer Survey', 'Export', 'Chat', 'Status']);
     assertDeepEqual(k.answers.man1.m1, { f: 1, d: 2, w: 3 });
     assertEqual(k.respondents.length, 2 + 2 + 2, 'man1, r2B1, two for qB, two for qA');
@@ -382,17 +401,16 @@ suite('survey-builder handover — two Kano questions, earlier marks', () => {
   test('two surveys at the same instance: A of S1, B of S2, A of S1', () => {
     const inputs = [input(QA, false, S1), input(QB, false, S2), input(QA, false, S1)];
     const want = legacyChain('ABA two surveys', OLD_KANO, inputs);
-    const surveys = { [S1]: linked(['qA', 'qB']), [S2]: linked(['qB']) };
+    const surveys = { [S1]: linked(['qA', 'qB']), [S2]: linked(['qB'], ['qB'], S2) };
     let w = worldOf({ 'kano-1': copy(OLD_KANO) }, surveys);
-    const handed = [`${S1}:qA`, `${S2}:qB`];
     const first = handOver(w, { survey: S1, q: QA });
     assertDeepEqual(first.world.surveys[S2].kano.qB, { instanceId: 'kano-1', byInstance: { 'kano-1': { itemIds: ['o2B1'], respondentIds: ['r2B1'] } } });
     w = first.world;
-    assertDeepEqual(canonKano(w.kano['kano-1'], handed), canonKano(want[0], handed));
+    assertDeepEqual(canonKano(w.kano['kano-1']), canonKano(want[0]));
     w = handOver(w, { survey: S2, q: QB }).world;
-    assertDeepEqual(canonKano(w.kano['kano-1'], handed), canonKano(want[1], handed));
+    assertDeepEqual(canonKano(w.kano['kano-1']), canonKano(want[1]));
     w = handOver(w, { survey: S1, q: QA }).world;
-    assertDeepEqual(canonKano(w.kano['kano-1'], handed), canonKano(want[2], handed));
+    assertDeepEqual(canonKano(w.kano['kano-1']), canonKano(want[2]));
     assertEqual(w.kano['kano-1'].items.filter((i) => i.label === 'Chat').length, 1);
   });
 });
@@ -432,7 +450,7 @@ suite('survey-builder handover — one question, two Kano instances', () => {
       assertDeepEqual(k.items.map((i) => i.label), ['Von Hand', 'Chat', 'Status'], `${id}: no duplicate`);
       assertEqual(k.respondents.length, 1 + 2, `${id}: Hand and the two who answered qA`);
       assertDeepEqual(k.answers.hr1, { h1: { f: 1, d: 2, w: 3 } }, `${id}: hand-made answer stays`);
-      assertDeepEqual(canonKano(k, [`${S1}:qA`]), canonKano(before, [`${S1}:qA`]), `${id}: same as after its first hand-over`);
+      assertDeepEqual(canonKano(k), canonKano(before), `${id}: same as after its first hand-over`);
     }
     const t = w.surveys[S1].kano.qA;
     assertEqual(t.instanceId, 'kano-1');
@@ -453,69 +471,29 @@ suite('survey-builder handover — one question, two Kano instances', () => {
   });
 });
 
-suite('survey-builder handover — kanoOwnEntries and kanoBackups', () => {
-  test('remembered ids that still occur; the origin marks only when none are remembered', () => {
+suite('survey-builder handover — kanoOwnEntries', () => {
+  test('remembered ids that still occur; nothing remembered gives no own entries', () => {
     const read = copy(OLD_KANO);
-    assertDeepEqual(kanoOwnEntries(read, { itemIds: ['m2', 'weg'], respondentIds: ['weg'] }, S1, 'qA'),
+    assertDeepEqual(kanoOwnEntries(read, { itemIds: ['m2', 'weg'], respondentIds: ['weg'] }),
       { itemIds: ['m2'], respondentIds: [] });
-    assertDeepEqual(kanoOwnEntries(read, { itemIds: [], respondentIds: [] }, S1, 'qA'),
-      { itemIds: ['oA1'], respondentIds: ['rA1'] });
-    assertDeepEqual(kanoOwnEntries(read, undefined, S2, 'qB'), { itemIds: ['o2B1'], respondentIds: ['r2B1'] });
+    assertDeepEqual(kanoOwnEntries(read, { itemIds: [], respondentIds: [] }), { itemIds: [], respondentIds: [] });
+    assertDeepEqual(kanoOwnEntries(read, undefined), { itemIds: [], respondentIds: [] });
   });
 
-  test('skips survey instances that are gone and origins with filled lists', () => {
-    const read = copy(OLD_KANO);
-    const surveys = [{ instanceId: S1, kanoQuestionIds: ['qA', 'qB'], transfers: { kano: {
-      qA: { instanceId: 'kano-1', byInstance: { 'kano-2': { itemIds: ['y'], respondentIds: [] } } },
-      qB: { instanceId: 'kano-1', byInstance: { 'kano-1': { itemIds: ['x'], respondentIds: [] } } },
-    } } }];
-    assertDeepEqual(kanoBackups(read, surveys, 'kano-1'), [
-      { instance: S1, questionId: 'qA', instanceId: 'kano-1', itemIds: ['oA1'], respondentIds: ['rA1'] },
-    ], 'references for another instance do not count');
+  test('an earlier hand-over without references is added to, not replaced (A9)', () => {
+    const w = worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: { ...linked([]), kano: { qA: { instanceId: 'kano-1', byInstance: {} } } } });
+    const { world, stack } = handOver(w, { survey: S1, q: QA });
+    assertTrue(!stack.some((op) => op.method === 'removeItem' || op.method === 'removeRespondent'), 'nothing is removed');
+    const k = world.kano['kano-1'];
+    assertDeepEqual(k.items.map((i) => i.label), [...OLD_KANO.items.map((i) => i.label), 'Chat', 'Status']);
+    assertEqual(k.respondents.length, OLD_KANO.respondents.length + 2);
+    assertDeepEqual(world.surveys[S1].kano.qA.byInstance['kano-1'].itemIds, k.items.slice(-2).map((i) => i.id));
   });
 
-  test('an empty reference list counts as missing', () => {
-    const read = copy(OLD_KANO);
-    const surveys = [{ instanceId: S2, kanoQuestionIds: ['qB'], transfers: { kano: {
-      qB: { instanceId: 'kano-1', byInstance: { 'kano-1': { itemIds: [], respondentIds: [] } } },
-    } } }];
-    assertDeepEqual(kanoBackups(read, surveys, 'kano-1'), [
-      { instance: S2, questionId: 'qB', instanceId: 'kano-1', itemIds: ['o2B1'], respondentIds: ['r2B1'] },
-    ]);
-  });
-
-  test('backs up an origin whose question targets another instance or none', () => {
-    const read = copy(OLD_KANO);
-    const surveys = [{ instanceId: S1, kanoQuestionIds: ['qA', 'qB'], transfers: { kano: {
-      qA: { instanceId: 'kano-2', byInstance: {} },
-    } } }];
-    assertDeepEqual(kanoBackups(read, surveys, 'kano-1'), [
-      { instance: S1, questionId: 'qA', instanceId: 'kano-1', itemIds: ['oA1'], respondentIds: ['rA1'] },
-      { instance: S1, questionId: 'qB', instanceId: 'kano-1', itemIds: ['oB1'], respondentIds: ['rB1'] },
-    ]);
-  });
-
-  test('an old project with origin marks and a target on another instance is backed up without changing the target', () => {
-    const s1 = { kano: { qA: { instanceId: 'kano-2', byInstance: {} }, qB: { instanceId: 'kano-1', byInstance: {} } },
-      vocTree: { responseKeys: [] }, kanoQuestionIds: ['qA', 'qB'] };
-    const w = worldOf({ 'kano-1': copy(OLD_KANO), 'kano-2': emptyKano() }, { [S1]: s1 });
-    const { world, stack } = handOver(w, { survey: S1, q: QB });
-    assertTrue(!stack.some((op) => op.method === 'setKanoTarget' && op.args[0].questionId === 'qA'), 'qA is not turned round');
-    assertDeepEqual(world.surveys[S1].kano.qA, { instanceId: 'kano-2', byInstance: { 'kano-1': { itemIds: ['oA1'], respondentIds: ['rA1'] } } });
-    assertEqual(world.surveys[S1].kano.qB.instanceId, 'kano-1');
-    assertDeepEqual(world.kano['kano-2'], emptyKano(), 'the other instance is not touched');
-  });
-
-  test('skips an origin whose question changed its type (marker kept, no Kano question any more)', () => {
-    const read = copy(OLD_KANO);
-    const surveys = [{ instanceId: S2, kanoQuestionIds: [], transfers: { kano: { qB: { instanceId: 'kano-1', byInstance: {} } } } }];
-    assertDeepEqual(kanoBackups(read, surveys, 'kano-1'), []);
-  });
-
-  test('an origin of a deleted question with its marker left behind: no backup, the own hand-over still works', () => {
+  test('a deleted question with its marker left behind: the marker stays, the own hand-over still works', () => {
     const w = worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qA', 'qB'], ['qA']) });
     const { world, stack } = handOver(w, { survey: S1, q: QA });
-    assertTrue(!stack.some((op) => op.method === 'setKanoTransfer' && op.args[0].questionId === 'qB'), 'no backup of qB');
+    assertTrue(!stack.some((op) => op.method === 'setKanoTransfer' && op.args[0].questionId === 'qB'), 'qB is not touched');
     assertEqual(world.surveys[S1].kano.qA.byInstance['kano-1'].itemIds.length, 2);
     assertDeepEqual(world.kano['kano-1'].items.filter((i) => i.label === 'Chat').length, 1);
   });
@@ -525,16 +503,16 @@ suite('survey-builder handover — kanoOwnEntries and kanoBackups', () => {
       kanoId: null, phase: 'measure', kanoRead: null, question: QA,
       responses: [{ recipientId: 'rec-w', answers: { qA: { k1: { f: 1, d: 1, w: null } } } }],
       recipients: [{ id: 'rec-w', name: '   ' }], anonymous: false, respondentLabel: label, surveyInstanceId: S1,
-      backups: [], own: { itemIds: [], respondentIds: [] },
+      own: { itemIds: [], respondentIds: [] },
     });
-    assertDeepEqual(stack.filter((op) => op.method === 'addRespondent').map((op) => op.args), [['Befragte 1']]);
+    assertDeepEqual(stack.filter((op) => op.method === 'addRespondent').map((op) => op.args), [[{ name: 'Befragte 1' }]]);
   });
 
   test('a stack whose remove step names a vanished id fails as a whole', () => {
     const w = worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qA']) });
     const stack = kanoStack({
       kanoId: 'kano-1', phase: 'measure', kanoRead: copy(OLD_KANO), question: QA, responses: RESPONSES, recipients: RECIPIENTS,
-      anonymous: false, respondentLabel: label, surveyInstanceId: S1, backups: [], own: { itemIds: ['weg'], respondentIds: [] },
+      anonymous: false, respondentLabel: label, surveyInstanceId: S1, own: { itemIds: ['weg'], respondentIds: [] },
     });
     assertThrows(() => run(w, stack));
   });
@@ -612,9 +590,9 @@ suite('survey-builder handover — worksheetColumnsFor', () => {
 
 // ── Phase of a new tree ─────────────────────────────────────────────────
 
-suite('survey-builder handover — a new tree goes where treePhaseForCycle put it', () => {
+suite('survey-builder handover — a new tree goes into the phase the catalog gives it', () => {
   const def = MODULES.find((m) => m.id === 'voc-ctx-tree');
   for (const cycle of Object.keys(CYCLES)) {
-    test(cycle, () => assertEqual(defaultPhaseFor(def, cycle), treePhaseForCycle(cycle)));
+    test(cycle, () => assertEqual(defaultPhaseFor(def, cycle), def.cycles?.[cycle]?.phase || def.phase));
   }
 });

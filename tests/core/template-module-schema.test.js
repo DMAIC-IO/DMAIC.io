@@ -176,7 +176,7 @@ function sourcedModule({ answer }) {
     Model: Sourced,
     data: () => ({}),
     beforeLoadExample(data) {
-      log.hook.push(this._loadingExample);
+      log.hook.push('called');
       return { ...data, title: 'Beispiel' };
     },
   });
@@ -213,13 +213,12 @@ async function until(cond) {
 }
 
 suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
-  test('provisioniert, hängt Spaltenbezüge um, Hook im Ladefenster, eine Rückfrage', async () => {
+  test('provisioniert, hängt Spaltenbezüge um, Hook einmal, eine Rückfrage', async () => {
     const { mod, log, store, states } = sourcedModule({ answer: true });
     await mod.loadExample(sourcedPayload());
     const st = mod.getState();
     assertEqual(log.confirms, 1);
-    assertDeepEqual(log.hook, [true]);
-    assertEqual(mod._loadingExample, false);
+    assertDeepEqual(log.hook, ['called']);
     assertEqual(st.title, 'Beispiel');
     assertEqual(store.phases.data.length, 1);
     assertEqual(st.exampleWorksheetId, store.phases.data[0].instanceId);
@@ -227,23 +226,6 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
     assertEqual(states.me.src.instanceId, st.exampleWorksheetId);
     assertTrue(log.events.includes('module:added'));
     assertDeepEqual(log.notes, ['success']);
-  });
-
-  // Seit der Lader auf das lesbare Arbeitsblatt wartet (instances.read), reicht
-  // das Ladefenster bis setState über einen await hinweg: `_loadingExample`
-  // muss bis dahin stehen bleiben (kano.refreshTrees liest es).
-  test('Ladefenster bleibt offen, bis das Arbeitsblatt lesbar ist und setState lief', async () => {
-    const { mod } = sourcedModule({ answer: true });
-    let release;
-    mod._context.instances = { read: () => new Promise((r) => { release = r; }) };
-    const done = mod.loadExample(sourcedPayload());
-    await until(() => release !== undefined);
-    assertEqual(mod._loadingExample, true, 'während des Wartens');
-    assertEqual(mod.getState().title, 'alt', 'setState noch nicht gelaufen');
-    release({});
-    await done;
-    assertEqual(mod._loadingExample, false, 'danach');
-    assertEqual(mod.getState().title, 'Beispiel');
   });
 
   test('zweites Laden während des Wartens: das verwaiste Arbeitsblatt des ersten verschwindet', async () => {
@@ -260,24 +242,6 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
     await Promise.all([first, second]);
     assertEqual(store.phases.data.length, 1, `Arbeitsblätter: ${store.phases.data.length}`);
     assertEqual(mod.getState().exampleWorksheetId, store.phases.data[0].instanceId);
-  });
-
-  // Das Ende des überholten ersten Ladens darf das Fenster des zweiten nicht
-  // schließen: der zweite wartet noch, kano.refreshTrees liest das Flag.
-  test('zweites Laden: das Ende des ersten schließt das Ladefenster des zweiten nicht', async () => {
-    const { mod } = sourcedModule({ answer: true });
-    const releases = [];
-    mod._context.instances = { read: () => new Promise((r) => { releases.push(r); }) };
-    const first = mod.loadExample(sourcedPayload());
-    await until(() => releases.length === 1);
-    const second = mod.loadExample(sourcedPayload());
-    await until(() => releases.length === 2);
-    releases[0]({});
-    await first;
-    assertEqual(mod._loadingExample, true, 'zweites Laden wartet noch');
-    releases[1]({});
-    await second;
-    assertEqual(mod._loadingExample, false, 'nach dem zweiten');
   });
 
   test('abgelehnte Rückfrage: kein Hook, kein Arbeitsblatt, Stand unverändert', async () => {
@@ -331,7 +295,6 @@ suite('createModule: beforeLoadExample darf ein Promise liefern', () => {
     await done;
     assertEqual(mod.getState().title, 'neu 2');
     assertDeepEqual(log.notes.map((n) => n[1]), ['success']);
-    assertEqual(mod._loadingExample, false);
   });
 
   test('verwirft der Hook, bleibt der Stand und es kommt eine Fehlermeldung', async () => {
@@ -344,7 +307,6 @@ suite('createModule: beforeLoadExample darf ein Promise liefern', () => {
       assertEqual(mod.getState().title, 'alt');
       assertDeepEqual(log.notes, [['moduleHelp.exampleLoadError', 'error']]);
       assertEqual(warned, 1);
-      assertEqual(mod._loadingExample, false, 'Ladefenster geschlossen');
     } finally {
       console.warn = warn;
     }

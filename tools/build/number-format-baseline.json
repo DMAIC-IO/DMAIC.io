@@ -37,9 +37,6 @@
     "count": 1,
     "reason": "Bewertungsfeld je Ursache und Experte bleibt ein Zahlenfeld mit Pfeiltasten (Ganzzahl 0 bis 9, Trennzeichen gesperrt), wie bisher; der Handler begrenzt und schreibt über setRating"
   },
-  "js/modules/kano/kano.js": {
-    "count": 3
-  },
   "js/modules/makigami/makigami-duration.js": {
     "count": 3
   },

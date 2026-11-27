@@ -33,7 +33,7 @@ const cell = (s) => (/^-?\d+(\.\d+)?$/.test(s) ? Number(s) : s);
 
 suite('kano Export — Tabelle', () => {
   test('Kopf, Reihenfolge, Zählung und Rundung wie die Altform (Beispiel Lieferservice, de)', async () => {
-    const ex = await fetchJson('../../../examples/projects/kano-lieferservice.json');
+    const ex = await fetchJson('../../../js/modules/kano/resources/examples/projects/kano-lieferservice.json');
     const ui = await fetchJson('../../../js/modules/kano/resources/i18n/ui.de.json');
     const m = State.fromJSON(ex.kano);
     const rows = toRows(m, (k) => ui[k]);

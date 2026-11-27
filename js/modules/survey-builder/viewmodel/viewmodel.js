@@ -24,7 +24,7 @@ import { findQuestion } from '../domain/conditions.js';
 import { legacyResponses } from '../domain/answers.js';
 import { worksheetColumnsFor } from '../domain/handover/worksheet.js';
 import { vocStack, openTexts } from '../domain/handover/voc.js';
-import { kanoOwnEntries, kanoBackups, kanoStack } from '../domain/handover/kano.js';
+import { kanoOwnEntries, kanoStack } from '../domain/handover/kano.js';
 import {
   WS_KEYS, KANO_FIELDS, HTML_TYPE, plain, buildFile, failure, send, resultOf, kanoQuestionIds, snapshot, titleOf,
 } from './tasks.js';
@@ -166,8 +166,7 @@ export default createModule({
       /**
        * A Kano question with all responses, filter aside, to its chosen Kano
        * instance or to a new one in this phase. Only what came from this
-       * question is replaced. Order: the other surveys, then Kano, then the
-       * write stack.
+       * question is replaced. Order: Kano is read, then the write stack.
        * @param {{ questionId: string }} args @param {{ signal: AbortSignal }} ctl
        * @returns {Promise<{ instanceId: string|null }>}
        * @throws {Error} if the question is no Kano question
@@ -194,20 +193,8 @@ export default createModule({
           ? target : null;
 
         let kanoRead = null;
-        let backups = /** @type {any[]} */ ([]);
         let own = { itemIds: /** @type {string[]} */ ([]), respondentIds: /** @type {string[]} */ ([]) };
         if (kanoId) {
-          const known = [{ instanceId, transfers: data.transfers, kanoQuestionIds: ownKano }];
-          for (const other of surveys) {
-            if (other.instanceId === instanceId) continue;
-            try {
-              const r = /** @type {any} */ (await services.instances.read(other.instanceId, { fields: ['transfers', 'survey'] }));
-              known.push({ instanceId: other.instanceId, transfers: { kano: r?.transfers?.kano ?? {} }, kanoQuestionIds: kanoQuestionIds(r?.survey) });
-            } catch (err) {
-              // Gone since the list: it has no marks to keep. Anything else could lose its marks.
-              if (/** @type {any} */ (err)?.code !== 'unknown_instance') throw failure(failed, 'handOverToKano', err, notifyFail);
-            }
-          }
           const read = await send(services, [{
             op: 'instance.call', module: 'kano', instance: kanoId, method: 'read', args: [{ fields: KANO_FIELDS }],
           }], 'handOverToKano', failed, signal);
@@ -216,19 +203,13 @@ export default createModule({
             throw failure(failed, 'handOverToKano', new Error('kano read gave no items or respondents'), notifyFail);
           }
           kanoRead = value;
-          // The read stack has switched the view: the host no longer reports this run, a throw here must.
-          try {
-            backups = kanoBackups(value, known, kanoId);
-            own = kanoOwnEntries(value, remembered?.byInstance[kanoId], instanceId, questionId);
-          } catch (err) {
-            throw failure(failed, 'handOverToKano', err, notifyFail);
-          }
+          own = kanoOwnEntries(value, remembered?.byInstance[kanoId]);
         }
         let stack;
         try {
           stack = kanoStack({
             kanoId, phase, kanoRead, question, responses, recipients: data.recipients, anonymous: data.survey.anonymous,
-            respondentLabel: (n) => labels[n - 1] ?? '', surveyInstanceId: instanceId, backups, own,
+            respondentLabel: (n) => labels[n - 1] ?? '', surveyInstanceId: instanceId, own,
           });
         } catch (err) {
           throw failure(failed, 'handOverToKano', err, notifyFail);

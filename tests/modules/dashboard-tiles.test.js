@@ -33,7 +33,7 @@ import controlChartWidget from '../../js/widgets/control-chart/schema.js';
 import histogramWidget from '../../js/widgets/histogram-chart/schema.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 import sipocTile from '../../js/modules/sipoc/tile/tile.js';
-import kanoTile from '../../js/modules/kano/kano.tile.js';
+import kanoTile from '../../js/modules/kano/tile/tile.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
 
 const i18n = { t: (k) => k, getLanguage: () => 'en' };
@@ -1194,15 +1194,6 @@ function recordingChartManager() {
   };
 }
 
-/** Render an async chart tile like the host, with optional setting overrides. */
-async function renderChartTile(tile, state, overrides = {}, cm = recordingChartManager()) {
-  const host = document.createElement('div');
-  document.body.appendChild(host);
-  const settings = resolveSettings(validateSchema(tile.settings), overrides);
-  await mountTile(tile, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: cm, stateManager: null }, host);
-  return { host, cm };
-}
-
 const CAP_VALUES = [9.8, 10.1, 10.0, 9.9, 10.2, 10.05, 9.95, 10.1, 9.85, 10.0];
 const CAP_STATE = { embeddedValues: CAP_VALUES, params: { lsl: '9.5', usl: '10.5', target: '10' } };
 const CAP_COL = { instanceId: 'w', sheetId: 's', columnId: 'm' };
@@ -1844,29 +1835,27 @@ function kanoState(grid) {
 const KANO_STATE = kanoState({ r1: { i1: 'O', i2: 'M', i3: 'A' }, r2: { i1: 'O', i2: 'M', i3: 'A' } });
 
 suite('dashboard tiles: kano', () => {
-  test('declares the Kano prefix and refreshes on resize', async () => {
+  test('declares the Kano prefix, no refreshOn (template tile)', () => {
     assertEqual(kanoTile.titlePrefix, 'Kano');
-    assertDeepEqual(kanoTile.refreshOn, ['state:saved', 'resize']);
+    assertEqual(kanoTile.refreshOn, undefined);
+    assertEqual(vmOf(kanoTile, KANO_STATE)._templateTile, true);
   });
 
   test('empty without items, also for undefined state', async () => {
     for (const state of [{}, undefined]) {
-      const { host, cm } = await renderChartTile(kanoTile, state);
+      const host = await render(kanoTile, state);
       assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.kanoEmpty');
-      assertEqual(cm.made.length, 0);
-      host.remove();
+      assertEqual(host.querySelector('.dashboard-kano'), null);
     }
   });
 
   test('no data: items but no classified answer', async () => {
-    const { host, cm } = await renderChartTile(kanoTile, kanoState({ r1: { i1: null, i2: null } }));
+    const host = await render(kanoTile, kanoState({ r1: { i1: null, i2: null } }));
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.kanoNoData');
-    assertEqual(cm.made.length, 0);
-    host.remove();
   });
 
   test('bar and legend: one segment per present category in M, O, A order', async () => {
-    const { host } = await renderChartTile(kanoTile, KANO_STATE);
+    const host = await render(kanoTile, KANO_STATE);
     const segs = [...host.querySelectorAll('.dashboard-fmea__bar-seg')];
     assertDeepEqual(segs.map(s => s.dataset.cat), ['M', 'O', 'A']);
     assertTrue(segs[0].getAttribute('style').includes('var(--color-chart-1)'));
@@ -1875,121 +1864,31 @@ suite('dashboard tiles: kano', () => {
     assertDeepEqual(legend.map(l => l.dataset.cat), ['M', 'O', 'A']);
     assertTrue(legend[0].textContent.includes('modules.kano.catM'));
     assertTrue(legend[0].textContent.includes(': 1'));
-    host.remove();
   });
 
-  test('totals: completeness, items, respondents', async () => {
-    const { host } = await renderChartTile(kanoTile, kanoState({ r1: { i1: 'O', i2: 'M' }, r2: { i1: 'O', i2: null } }));
+  test('totals: completeness, items, respondents; the label carries its full text as title', async () => {
+    const host = await render(kanoTile, kanoState({ r1: { i1: 'O', i2: 'M' }, r2: { i1: 'O', i2: null } }));
     const values = [...host.querySelectorAll('.dashboard-kano__totals .dashboard-spc__stat-value')].map(e => e.textContent);
     assertDeepEqual(values, ['75 %', '2', '2']);
-    host.remove();
+    const label = host.querySelector('.dashboard-kano__totals .dashboard-spc__stat-label');
+    assertEqual(label.getAttribute('title'), 'dashboard.kanoCompleteness');
   });
 
   test('Q warning above 10 %, none at or below', async () => {
-    let { host } = await renderChartTile(kanoTile, kanoState({ r1: { i1: 'Q' }, r2: { i1: 'O' } }));
-    assertEqual(host.querySelector('.dashboard-kano__warn').textContent, 'modules.kano.warnQShare');
-    host.remove();
-    ({ host } = await renderChartTile(kanoTile, KANO_STATE));
+    let host = await render(kanoTile, kanoState({ r1: { i1: 'Q' }, r2: { i1: 'O' } }));
+    assertTrue(host.querySelector('.dashboard-kano__warn').textContent.startsWith('modules.kano.warnQShare'));
+    host = await render(kanoTile, KANO_STATE);
     assertEqual(host.querySelector('.dashboard-kano__warn'), null);
-    host.remove();
   });
 
-  test('scatter through the tile chart manager, every element hidden', async () => {
-    const { host, cm } = await renderChartTile(kanoTile, KANO_STATE);
-    assertEqual(cm.made.length, 1);
-    assertEqual(cm.made[0].type, 'scatter');
-    const cfg = cm.made[0].cfg;
-    assertEqual(cfg.series.length, 3);
-    assertEqual(cfg.moduleRefLines.length, 2);
-    for (const k of ['showTitle', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'showLegend']) {
-      assertEqual(cfg[k], false, k);
-    }
-    assertTrue(host.querySelector('.dashboard-kano__plot') !== null);
-    host.remove();
-  });
-
-  test('no chart when no row has cs and ds (only R/Q answers)', async () => {
-    const { host, cm } = await renderChartTile(kanoTile, kanoState({ r1: { i1: 'R', i2: 'Q' } }));
-    assertEqual(cm.made.length, 0);
+  test('scatter through the chart widget; none without cs/ds rows or with showChart off', async () => {
+    let host = await render(kanoTile, KANO_STATE);
+    assertEqual(host.querySelector('.dashboard-kano__plot')?.getAttribute('x-widget'), 'scatter-chart');
+    host = await render(kanoTile, kanoState({ r1: { i1: 'R', i2: 'Q' } }));
     assertEqual(host.querySelector('.dashboard-kano__plot'), null);
     assertTrue(host.querySelector('.dashboard-fmea__bar') !== null);
-    host.remove();
-  });
-
-  test('showChart off: figures only', async () => {
-    const { host, cm } = await renderChartTile(kanoTile, KANO_STATE, { showChart: false });
-    assertEqual(cm.made.length, 0);
+    host = await render(kanoTile, KANO_STATE, { showChart: false });
+    assertEqual(host.querySelector('.dashboard-kano__plot'), null);
     assertTrue(host.querySelector('.dashboard-kano__totals') !== null);
-    host.remove();
-  });
-
-  test('a second render and dispose destroy the previous chart', async () => {
-    const cm = recordingChartManager();
-    const { host } = await renderChartTile(kanoTile, KANO_STATE, {}, cm);
-    await mountTile(kanoTile, { tileId: 't', instanceId: 'i', state: KANO_STATE,
-      settings: resolveSettings(validateSchema(kanoTile.settings), {}), i18n, theme: 'light',
-      chartManager: cm, stateManager: null }, host);
-    assertDeepEqual(cm.destroyed, [cm.made[0]]);
-    kanoTile.dispose(host, { tileId: 't' });
-    assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
-    host.remove();
-  });
-
-  test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
-    const made = []; const destroyed = []; const pending = [];
-    const cm = {
-      create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
-      destroy: (c) => destroyed.push(c),
-    };
-    const host = document.createElement('div');
-    const args = { tileId: 't', instanceId: 'i', state: KANO_STATE,
-      settings: resolveSettings(validateSchema(kanoTile.settings), {}), i18n, theme: 'light',
-      chartManager: cm, stateManager: null };
-    const first = mountTile(kanoTile, args, host);
-    await waitFor(() => pending.length === 1);
-    const second = mountTile(kanoTile, args, host);
-    await waitFor(() => pending.length === 2);
-    pending[1](); await second;
-    pending[0](); await first;
-    assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
-    assertTrue(!destroyed.includes(made[1]), 'current chart kept');
-  });
-
-  test('viewModel: bar, legend, totals and chart config as display data', () => {
-    const vm = vmOf(kanoTile, KANO_STATE);
-    assertPlain({ ...vm, chart: null });
-    assertEqual(vm.empty, null);
-    assertDeepEqual(vm.bar.map(b => b.key), ['M', 'O', 'A']);
-    assertEqual(vm.bar[0].title, 'modules.kano.catM: 1');
-    assertTrue(vm.bar[0].style.endsWith(';background:var(--color-chart-1)'), vm.bar[0].style);
-    assertDeepEqual(vm.legend[0], { key: 'M', dot: 'background:var(--color-chart-1)', text: 'modules.kano.catM: 1' });
-    assertDeepEqual(vm.totals, [
-      { label: 'dashboard.kanoCompleteness', value: '100 %' },
-      { label: 'dashboard.kanoItems', value: '3' },
-      { label: 'dashboard.kanoRespondents', value: '2' },
-    ]);
-    assertEqual(vm.warn, null);
-    assertEqual(vm.chart.series.length, 3);
-    assertEqual(vm.chart.moduleRefLines.length, 2);
-    assertEqual(vm.chart.xLabel, 'modules.kano.chartX');
-    assertEqual(vm.chart.yLabel, 'modules.kano.chartY');
-    assertEqual(vm.chart.showLegend, false);
-  });
-
-  test('viewModel: no chart config with showChart off or without cs/ds rows', () => {
-    assertEqual(vmOf(kanoTile, KANO_STATE, { showChart: false }).chart, null);
-    assertEqual(vmOf(kanoTile, kanoState({ r1: { i1: 'R', i2: 'Q' } })).chart, null);
-  });
-
-  test('viewModel: empty and no-data states', () => {
-    assertEqual(vmOf(kanoTile, undefined).empty, 'dashboard.kanoEmpty');
-    assertEqual(vmOf(kanoTile, kanoState({ r1: { i1: null, i2: null } })).empty, 'dashboard.kanoNoData');
-  });
-
-  test('the totals label carries its full text as title', async () => {
-    const { host } = await renderChartTile(kanoTile, KANO_STATE);
-    const label = host.querySelector('.dashboard-kano__totals .dashboard-spc__stat-label');
-    assertEqual(label.getAttribute('title'), 'dashboard.kanoCompleteness');
-    host.remove();
   });
 });

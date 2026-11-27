@@ -1347,58 +1347,26 @@ export function createModule(base) {
       }
       const loadWorksheetExample = schema && exampleData?.sourceWorksheetData
         ? registry.loadWorksheetExample : null;
-      /** @type {Promise<void>|null} */
-      let loading = null;
-      // `_loadingExample` marks the window (up to `setState`, across the
-      // loader's await on the readable worksheet) in which a hook-driven
-      // side effect (e.g. examples-registry.js `provisionInstance`) may emit a
-      // global event (`module:added`) BEFORE `setState()` below has replaced
-      // this instance's own (about-to-be-destroyed) Alpine component. Modules
-      // that react to such events reactively (kano.js `refreshTrees`) can read
-      // this flag on `this`/`module` — the wrapper object is stable across the
-      // `setState()` destroy/rebuild — to skip a self-mutation that would
-      // otherwise flow through this OLD component's still-active persist
-      // $watch and silently overwrite the example's correct state once Alpine
-      // flushes its reactivity queue (a later microtask, after this function
-      // returns). Unused by modules without `beforeLoadExample` side effects —
-      // no behaviour change for them.
-      // Gezählt, nicht geschaltet: lädt ein zweites Beispiel, während das erste
-      // noch wartet, schließt erst das Ende des letzten das Fenster.
-      this._loadingExampleCount = (this._loadingExampleCount ?? 0) + 1;
-      this._loadingExample = true;
-      const endWindow = () => {
-        this._loadingExampleCount -= 1;
-        if (this._loadingExampleCount === 0) this._loadingExample = false;
-      };
-      try {
-        if (typeof beforeLoadExample === 'function') {
-          // Der Hook darf ein Promise liefern (er schreibt etwa über
-          // `ctx.instances.interact` in eine fremde Instanz). Wirft oder
-          // verwirft er, bricht das Laden ohne `setState` ab.
-          try {
-            exampleData = await beforeLoadExample.call(this, payload.data);
-          } catch (err) {
-            console.warn(`[createModule] ${id}: beforeLoadExample failed`, err);
-            this._context?.notify?.(this._context.i18n.t('moduleHelp.exampleLoadError'), 'error');
-            return;
-          }
+      if (typeof beforeLoadExample === 'function') {
+        // Der Hook darf ein Promise liefern (er schreibt etwa über
+        // `ctx.instances.interact` in eine fremde Instanz). Wirft oder
+        // verwirft er, bricht das Laden ohne `setState` ab.
+        try {
+          exampleData = await beforeLoadExample.call(this, payload.data);
+        } catch (err) {
+          console.warn(`[createModule] ${id}: beforeLoadExample failed`, err);
+          this._context?.notify?.(this._context.i18n.t('moduleHelp.exampleLoadError'), 'error');
+          return;
         }
-        if (loadWorksheetExample) {
-          // Der Lader wartet vor setState, bis das neue Arbeitsblatt lesbar
-          // ist (`instances.read`): das Fenster bleibt offen, bis `loading`
-          // erfüllt ist (siehe unten), nicht nur bis zum ersten await.
-          // `prevId` stammt aus dem vor dem Hook geladenen Stand: der Hook ersetzt ihn nicht.
-          loading = loadWorksheetExample(this, { ...payload, data: exampleData },
-            { Model, confirmed: true, prevId: model?.exampleWorksheetId ?? null });
-        } else {
-          this.setState(exampleData);
-        }
-      } finally {
-        if (!loading) endWindow();
       }
-      if (loading) {
-        return Promise.resolve(loading).finally(endWindow);
+      if (loadWorksheetExample) {
+        // Der Lader wartet vor setState, bis das neue Arbeitsblatt lesbar
+        // ist (`instances.read`), und meldet selbst.
+        // `prevId` stammt aus dem vor dem Hook geladenen Stand: der Hook ersetzt ihn nicht.
+        return loadWorksheetExample(this, { ...payload, data: exampleData },
+          { Model, confirmed: true, prevId: model?.exampleWorksheetId ?? null });
       }
+      this.setState(exampleData);
       const lang = this._context.i18n.getLanguage();
       const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
       this._context.notify?.(
