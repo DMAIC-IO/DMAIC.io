@@ -6,6 +6,11 @@
  * `formatNumber` mit den Stellen der Altform (R² und d drei, Werte vier).
  */
 import { formatNumber } from '../../../core/number-format.js';
+import { legendModel, gridRange } from '../../../core/chart/color-legend.js';
+import { CONTOUR_DEFAULTS } from '../../../core/chart/contour-defaults.js';
+
+/** Farbschema der Wirkungsfläche: blau → rot wie die Altform (`hsl(220 − 210·t, 70 %, 55 %)`). */
+export const CONTOUR_SCHEME = 'hue';
 
 /** @typedef {(key: string, params?: object) => string} T */
 /** @typedef {import('../domain/model.js').ModelRef} ModelRef */
@@ -113,9 +118,28 @@ export function contourChartConfig(c, modelName, t) {
     zLabel: modelName,
     points: c.point ? [c.point] : [],
     title: t('contourTitle'),
+    colorScheme: CONTOUR_SCHEME,
     xLabel: c.xId,
     yLabel: c.yId,
     fileName: 'response-optimization',
     ...(c.point ? { showDataPoints: true } : {}),
   };
+}
+
+/**
+ * Farblegende der Wirkungsfläche (Widget `color-legend`): dieselbe Skala wie
+ * das Diagramm (Editor-Wahl vor `hue`), Stufen wie die Konturlinien
+ * (höchstens zehn), Werte mit zwei Stellen wie die Altleiste; `null` ohne
+ * endlichen Wert.
+ * @param {Contour} c @param {string} modelName
+ * @param {{ colorScheme?: string, numLevels?: number }|undefined} edits
+ * @param {string} lang
+ * @returns {{ title: string, helpKey: string, items: { color: string, value: string }[] }|null}
+ */
+export function contourLegend(c, modelName, edits, lang) {
+  const r = gridRange(c.grid);
+  if (!r) return null;
+  const m = legendModel(r.zMin, r.zMax, edits?.numLevels ?? CONTOUR_DEFAULTS.numLevels,
+    edits?.colorScheme ?? CONTOUR_SCHEME, undefined, modelName, (v) => formatNumber(v, lang, { decimals: 2 }));
+  return { ...m, helpKey: 'modules.response-optimization.fields.contour.help' };
 }

@@ -24,7 +24,7 @@ import { optimize, contourOf } from '../domain/optimize.js';
 import { exampleParts } from '../domain/example.js';
 import { provisionInstance } from '../../../core/examples-registry.js';
 import { UiState } from './state.js';
-import { modelRows, dClass, optimumRows, predictionRows, contourChartConfig, fixed } from './present.js';
+import { modelRows, dClass, optimumRows, predictionRows, contourChartConfig, contourLegend, fixed } from './present.js';
 
 /** @typedef {import('../domain/model.js').ModelRef} ModelRef */
 /** @typedef {import('../domain/model.js').Spec} Spec */
@@ -269,6 +269,12 @@ export default createModule({
         const c = this.contourValue;
         if (!c) return { grid: [] };
         return contourChartConfig(c, this.resultValue?.modelNames?.[0] ?? '', this.t);
+      },
+      /** Farblegende der Wirkungsfläche; `null` ohne Fläche. */
+      get contourLegend() {
+        const c = this.contourValue;
+        if (!c) return null;
+        return contourLegend(c, this.resultValue?.modelNames?.[0] ?? '', this.model.contourEdits, lang());
       },
       /** Achsenwahl erst ab drei stetigen Faktoren. */
       get showAxisControls() { return (this.contourValue?.continuous.length ?? 0) > 2; },

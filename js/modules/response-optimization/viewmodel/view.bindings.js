@@ -3,4 +3,5 @@
 /** @type {NonNullable<typeof import('./viewmodel.js').default['__view']>} */ const vm = /** @type {any} */ (null);
 /** @type {NonNullable<typeof import('./viewmodel.js').default['__asyncTasks']>} */ const tasks = /** @type {any} */ (null);
 /** @type {WidgetProps['contour-chart']['config']} */ export const b0 = vm.contourChart; // resources/view.html:218 x-widget-config
-/** @type {import('../../../core/async-task.js').AsyncTaskDef} */ export const b1 = tasks.runOptimize; // resources/view.html:103 x-async-task
+/** @type {WidgetProps['color-legend']['legend']} */ export const b1 = vm.contourLegend; // resources/view.html:219 x-widget-legend
+/** @type {import('../../../core/async-task.js').AsyncTaskDef} */ export const b2 = tasks.runOptimize; // resources/view.html:103 x-async-task
