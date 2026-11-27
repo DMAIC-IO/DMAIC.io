@@ -58,6 +58,14 @@ suite('MSA Typ 6 Migration — Vorgaben und Robustheit', () => {
     assertEqual(params({ params: { alpha: 0.05 } }).alpha, 0.05);
     for (const v of ['0.1', '0,05', 0.2, null]) assertEqual(params({ params: { alpha: v } }).alpha, 0.05, String(v));
   });
+  test('α: Zahl auf zwei Stellen gerundet wie die Textform der Altform (toFixed)', () => {
+    for (const [v, want] of [[0.104, 0.1], [0.096, 0.1], [0.0149, 0.01], [0.051, 0.05], [0.0449, 0.05], [0.125, 0.05]]) {
+      assertEqual(params({ params: { alpha: v } }).alpha, want, String(v));
+      const legacy = ({ '0.01': 0.01, '0.05': 0.05, '0.10': 0.1 })[v.toFixed(2)] ?? 0.05;
+      assertEqual(want, legacy, `${v} wie toFixed`);
+    }
+    for (const v of [Number.NaN, Infinity, -0.05]) assertEqual(params({ params: { alpha: v } }).alpha, 0.05, String(v));
+  });
   test('Spaltenbezug nur vollständig, Werte als Text', () => {
     const m = load({ columns: { value: { instanceId: 'ws', sheetId: 's', columnId: 'c' }, timestamp: { instanceId: 'ws' }, subgroup: { instanceId: 1, sheetId: 2, columnId: 3 } } });
     assertDeepEqual(m.columns.value, REF);

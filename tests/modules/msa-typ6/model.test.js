@@ -128,13 +128,25 @@ suite('MSA Typ 6 Model — Kommandos', () => {
     assertEqual(m.params.mu0, 1);
     assertEqual(m.params.sigma0, 2);
   });
-  test('adoptTyp1 ohne μ₀/σ₀ lässt sie stehen; wirkt in jedem Grenzen-Modus', () => {
+  test('adoptTyp1 wirkt in jedem Grenzen-Modus', () => {
     const m = new State(CTX);
-    setP(m, { mu0: 5 });
-    m.adoptTyp1({ instanceId: 't2' });
+    m.adoptTyp1({ instanceId: 't2', mu0: 5, sigma0: 0.5 });
     assertEqual(m.sourceTyp1InstanceId, 't2');
     assertEqual(m.params.mu0, 5);
     assertEqual(m.params.limitsMode, 'from-study');
+  });
+  test('adoptTyp1 lehnt eine Quelle ohne μ₀ oder σ₀ ab und ändert nichts', () => {
+    for (const args of [{ instanceId: 't2' }, { instanceId: 't2', mu0: 5 }, { instanceId: 't2', sigma0: 0.5 },
+      { instanceId: 't2', mu0: null, sigma0: 0.5 }, { instanceId: 't2', mu0: 5, sigma0: null }]) {
+      const m = new State(CTX);
+      setP(m, { mu0: 1, sigma0: 2 });
+      let err;
+      try { m.adoptTyp1(/** @type {any} */ (args)); } catch (e) { err = e; }
+      assert(err, `abgelehnt: ${JSON.stringify(args)}`);
+      assertEqual(err.param, 'mu0' in args && args.mu0 !== null ? 'sigma0' : 'mu0', JSON.stringify(args));
+      assertEqual(m.sourceTyp1InstanceId, null);
+      assertDeepEqual([m.params.mu0, m.params.sigma0], [1, 2]);
+    }
   });
   test('sourceTyp1InstanceId ist für den Agenten nicht schreibbar', () => {
     assertEqual(State.schema.fields.sourceTyp1InstanceId.agentWrite, false);

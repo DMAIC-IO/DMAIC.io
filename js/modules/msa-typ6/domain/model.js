@@ -15,6 +15,7 @@
 import {
   defineModel, command, object, text, number, oneOf, list, boolean, columnRef,
 } from '../../../core/model.js';
+import { requireForm } from '../../../core/validate.js';
 import ControlChart from '../../../widgets/control-chart/schema.js';
 import ScatterChart from '../../../widgets/scatter-chart/schema.js';
 import { from0 } from './migrations.js';
@@ -249,12 +250,12 @@ export class State extends defineModel({
         sigma0: number({ nullable: true, optional: true }),
       },
       run({ instanceId, mu0, sigma0 }) {
-        this.sourceTyp1InstanceId = instanceId || null;
-        if (!instanceId) return;
-        const next = { ...this.params };
-        if (mu0 !== undefined) next.mu0 = mu0;
-        if (sigma0 !== undefined) next.sigma0 = sigma0;
-        this.params = next;
+        if (!instanceId) { this.sourceTyp1InstanceId = null; return; }
+        // Eine Quelle nur zusammen mit ihren Werten (Spec, Offene Frage 3).
+        requireForm('mu0', mu0, Number.isFinite(mu0), 'a finite number when instanceId is set');
+        requireForm('sigma0', sigma0, Number.isFinite(sigma0), 'a finite number when instanceId is set');
+        this.sourceTyp1InstanceId = instanceId;
+        this.params = { ...this.params, mu0, sigma0 };
       },
     }),
   },

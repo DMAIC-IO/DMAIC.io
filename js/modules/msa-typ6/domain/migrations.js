@@ -4,6 +4,7 @@
  * Reine Funktionen; jede beschreibt einen festen Formatstand und importiert
  * darum nichts aus model.js.
  */
+import { roundTo } from '../../../core/number-format.js';
 
 /**
  * Wert einer festen Liste, sonst die Vorgabe.
@@ -46,14 +47,14 @@ function rulesFrom(v) {
 }
 
 /**
- * α: Zahl über ihre Textform mit zwei Stellen, Text wörtlich; gilt nur
+ * α: Zahl auf zwei Stellen gerundet, Text wörtlich; gilt nur
  * '0.01', '0.05' oder '0.10', sonst 0,05.
  * @param {unknown} v @returns {number}
  */
 function alphaFrom(v) {
   if (v == null) return 0.05;
-  const s = typeof v === 'number' ? v.toFixed(2) : String(v);
-  return ({ '0.01': 0.01, '0.05': 0.05, '0.10': 0.1 })[s] ?? 0.05;
+  const n = typeof v === 'number' ? roundTo(v, 2) : ({ '0.01': 0.01, '0.05': 0.05, '0.10': 0.1 })[String(v)];
+  return [0.01, 0.05, 0.1].includes(n) ? n : 0.05;
 }
 
 /**

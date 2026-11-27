@@ -72,12 +72,12 @@
       }
     },
     "adoptTyp1": {
-      "help": "Takes μ₀ and σ₀ from a type 1 study in one step and remembers the study, like the choice “Adopt from Type 1 instance”. The type 1 instance supplies mean and standard deviation under columnStats. Without a study only the choice is reset, μ₀ and σ₀ stay.",
+      "help": "Takes μ₀ and σ₀ from a type 1 study in one step and remembers the study, like the choice “Adopt from Type 1 instance”. The type 1 instance supplies mean and standard deviation under columnStats; with a study both are required. Without a study only the choice is reset, μ₀ and σ₀ stay.",
       "params": {
         "instanceId": "The id of the type 1 instance, or null to reset the choice.",
-        "mu0": "The mean to adopt; when missing, μ₀ stays unchanged.",
-        "sigma0": "The standard deviation to adopt; when missing, σ₀ stays unchanged.",
-        "command": "The command as one object with instanceId and optionally mu0 and sigma0."
+        "mu0": "The mean to adopt; required as soon as instanceId is set.",
+        "sigma0": "The standard deviation to adopt; required as soon as instanceId is set.",
+        "command": "The command as one object with instanceId, mu0 and sigma0; to reset only instanceId: null."
       }
     }
   },

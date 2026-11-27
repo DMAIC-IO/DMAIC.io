@@ -101,7 +101,6 @@ export default createModule({
         if (!id) { this.model.adoptTyp1({ instanceId: null }); return; }
         const o = this.state.typ1Options.find((/** @type {any} */ x) => x.instanceId === id);
         if (o) this.model.adoptTyp1({ instanceId: id, mu0: o.mean, sigma0: o.stdDev });
-        else this.model.adoptTyp1({ instanceId: id });
       },
 
       // ─── Regeln ────────────────────────────────────────────

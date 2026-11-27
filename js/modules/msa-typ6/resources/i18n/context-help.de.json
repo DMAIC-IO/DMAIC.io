@@ -72,12 +72,12 @@
       }
     },
     "adoptTyp1": {
-      "help": "Übernimmt μ₀ und σ₀ aus einer Typ-1-Studie in einem Schritt und merkt sich die Studie, wie die Auswahl „Aus Typ-1-Instanz übernehmen“. Mittelwert und Standardabweichung liefert die Typ-1-Instanz unter columnStats. Ohne Studie wird nur die Auswahl zurückgesetzt, μ₀ und σ₀ bleiben.",
+      "help": "Übernimmt μ₀ und σ₀ aus einer Typ-1-Studie in einem Schritt und merkt sich die Studie, wie die Auswahl „Aus Typ-1-Instanz übernehmen“. Mittelwert und Standardabweichung liefert die Typ-1-Instanz unter columnStats; mit einer Studie sind beide Pflicht. Ohne Studie wird nur die Auswahl zurückgesetzt, μ₀ und σ₀ bleiben.",
       "params": {
         "instanceId": "Die id der Typ-1-Instanz, oder null zum Zurücksetzen der Auswahl.",
-        "mu0": "Der zu übernehmende Mittelwert; fehlt er, bleibt μ₀ unverändert.",
-        "sigma0": "Die zu übernehmende Standardabweichung; fehlt sie, bleibt σ₀ unverändert.",
-        "command": "Das Kommando als ein Objekt mit instanceId und optional mu0 und sigma0."
+        "mu0": "Der zu übernehmende Mittelwert; Pflicht, sobald instanceId gesetzt ist.",
+        "sigma0": "Die zu übernehmende Standardabweichung; Pflicht, sobald instanceId gesetzt ist.",
+        "command": "Das Kommando als ein Objekt mit instanceId, mu0 und sigma0; zum Zurücksetzen nur instanceId: null."
       }
     }
   },
