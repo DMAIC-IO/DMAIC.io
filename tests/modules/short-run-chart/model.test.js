@@ -3,7 +3,7 @@
  * Schreiben über `instance.set` (`setFields`), Invariante `chartKeys` und
  * Ableitungen.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows, assertDeepClose } from '../../test-utils.js';
 import { State, CHART_KEYS } from '../../../js/modules/short-run-chart/domain/model.js';
 import { engineRuns } from '../../../js/modules/short-run-chart/domain/analyze.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
@@ -144,12 +144,12 @@ suite('short-run-chart: Model — Invariante chartKeys', () => {
 
 suite('short-run-chart: Model — Ableitungen', () => {
   test('result: Altprojekt gleich dem Literal', () => {
-    assertDeepEqual(derived(legacy(), ['result'], LEGACY_SRC).result, LEGACY_RESULT);
+    assertDeepClose(derived(legacy(), ['result'], LEGACY_SRC).result, LEGACY_RESULT);
   });
 
   test('result: Beispiel und CSV gleich den Literalen', () => {
-    assertDeepEqual(derived(withRefs('messwert', 'setup'), ['result']).result, EXAMPLE_RESULT);
-    assertDeepEqual(derived(withRefs('value', 'part'), ['result']).result, CSV_RESULT);
+    assertDeepClose(derived(withRefs('messwert', 'setup'), ['result']).result, EXAMPLE_RESULT);
+    assertDeepClose(derived(withRefs('value', 'part'), ['result']).result, CSV_RESULT);
   });
 
   test('result: null ohne eine Spalte, bei gelöschter Spalte (je Spalte), unter vier Paaren; die Bezüge bleiben', () => {

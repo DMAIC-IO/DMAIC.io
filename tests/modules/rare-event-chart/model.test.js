@@ -2,7 +2,7 @@
  * Regelkarte seltener Ereignisse: Model (domain/model.js) — Schema, Vorgaben,
  * Schreiben über `instance.set` (`setFields`) und Ableitungen.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertDeepClose, assertThrows } from '../../test-utils.js';
 import { State, CHART_TYPE_IDS } from '../../../js/modules/rare-event-chart/domain/model.js';
 import { ENGINES, engineRuns } from '../../../js/modules/rare-event-chart/domain/analyze.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
@@ -114,16 +114,16 @@ suite('rare-event-chart: Model — instance.set', () => {
 
 suite('rare-event-chart: Model — Ableitungen', () => {
   test('result: Altprojekt gleich dem Literal', () => {
-    assertDeepEqual(derived(legacy(), ['result'], LEGACY_SRC).result, LEGACY_RESULT);
+    assertDeepClose(derived(legacy(), ['result'], LEGACY_SRC).result, LEGACY_RESULT);
   });
 
   test('result: Beispiel (t) und „Counts“ (g) gleich den Literalen', () => {
     const e = new State();
     setFields(e, { chartTypeId: 't', columnRef: ref('seit') });
-    assertDeepEqual(derived(e, ['result']).result, EXAMPLE_RESULT);
+    assertDeepClose(derived(e, ['result']).result, EXAMPLE_RESULT);
     const c = new State();
     setFields(c, { columnRef: ref('counts') });
-    assertDeepEqual(derived(c, ['result']).result, COUNTS_RESULT);
+    assertDeepClose(derived(c, ['result']).result, COUNTS_RESULT);
   });
 
   test('result: null ohne Spalte, bei gelöschter Spalte, unter zwei (positiven) Werten; der Bezug bleibt', () => {

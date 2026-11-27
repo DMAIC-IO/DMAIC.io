@@ -2,7 +2,7 @@
  * Multivariate Regelkarte: Model (domain/model.js) — Schema, Vorgaben,
  * Invariante und Ableitungen.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows, assertDeepClose } from '../../test-utils.js';
 import { State, ALPHA_DEFAULT } from '../../../js/modules/multivariate-control-chart/domain/model.js';
 import { inputRows, optionsOf, analyze, resultOf, engineRuns } from '../../../js/modules/multivariate-control-chart/domain/analyze.js';
 import { computeHotellingT2 } from '../../../js/engines/multivariate-chart-engine.js';
@@ -174,8 +174,8 @@ suite('multivariate-control-chart: Model — Ableitungen', () => {
     assertEqual(result.n, 30);
     assertEqual(result.p, 3);
     assertEqual(result.m, 20);
-    assertEqual(result.cl, 3.3529411764705883);
-    assertEqual(result.ucl, 18.254249708826574);
+    assertDeepClose(result.cl, 3.3529411764705883);
+    assertDeepClose(result.ucl, 18.254249708826574);
     assertDeepEqual(result.signals, [24]);
   });
 

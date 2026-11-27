@@ -6,7 +6,7 @@
  * L 2,7; KPIs wie im E2E „Legacy project“ aus Task 0) und die Beispiele
  * `spc-time-weighted-ewma` und `spc-time-weighted-cusum` (§1 der Spec).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   MIN_VALUES, CHART_TYPES, inputValues, inputsOf, analyze, analyzeWith, resultOf, pointsOf, errorOf, engineRuns,
 } from '../../../js/modules/time-weighted-chart/domain/analyze.js';
@@ -338,29 +338,29 @@ suite('time-weighted-chart: Merker', () => {
 
 suite('time-weighted-chart: resultOf gleich der Altform', () => {
   test('Altprojekt (CUSUM, sd, Phase I 20, Ziel 25, h 5)', () => {
-    assertDeepEqual(resultOf(run(LEGACY_MODEL), LEGACY_MODEL), LEGACY_RESULT);
+    assertDeepClose(resultOf(run(LEGACY_MODEL), LEGACY_MODEL), LEGACY_RESULT);
   });
 
   test('Altprojekt nach Wechsel auf EWMA (λ 0,1, L 2,7)', () => {
     const m = { ...LEGACY_MODEL, chartTypeId: 'ewma' };
-    assertDeepEqual(resultOf(run(m), m), LEGACY_EWMA_RESULT);
+    assertDeepClose(resultOf(run(m), m), LEGACY_EWMA_RESULT);
   });
 
   test('Beispiel EWMA (alle Werte Phase I, mr)', () => {
-    assertDeepEqual(resultOf(run(EX_EWMA_MODEL), EX_EWMA_MODEL), EXAMPLE_EWMA_RESULT);
+    assertDeepClose(resultOf(run(EX_EWMA_MODEL), EX_EWMA_MODEL), EXAMPLE_EWMA_RESULT);
   });
 
   test('Beispiel CUSUM (Phase I 30, mr)', () => {
-    assertDeepEqual(resultOf(run(EX_CUSUM_MODEL), EX_CUSUM_MODEL), EXAMPLE_CUSUM_RESULT);
+    assertDeepClose(resultOf(run(EX_CUSUM_MODEL), EX_CUSUM_MODEL), EXAMPLE_CUSUM_RESULT);
   });
 
   test('gegengerechnet wie `_runAnalysis` der Altform (Engine direkt)', () => {
     const p1 = DURCHMESSER.slice(0, 20);
     const r = computeCUSUM(DURCHMESSER, 25, estimateSigma(p1, 'sd'), 0.5, 5);
-    assertDeepEqual([r.h, r.k, r.signalsHi, r.signalsLo], [LEGACY_RESULT.h, LEGACY_RESULT.k, LEGACY_RESULT.signalsHigh, []]);
+    assertDeepClose([r.h, r.k, r.signalsHi, r.signalsLo], [LEGACY_RESULT.h, LEGACY_RESULT.k, LEGACY_RESULT.signalsHigh, []]);
     const mean = WERT.reduce((s, x) => s + x, 0) / WERT.length;
     const e = computeEWMA(WERT, mean, estimateSigma(WERT, 'mr'), 0.2, 3);
-    assertDeepEqual([e.cl, e.sigmaSteady, e.signals], [EXAMPLE_EWMA_RESULT.cl, EXAMPLE_EWMA_RESULT.sigmaSteady, EXAMPLE_EWMA_RESULT.signals]);
+    assertDeepClose([e.cl, e.sigmaSteady, e.signals], [EXAMPLE_EWMA_RESULT.cl, EXAMPLE_EWMA_RESULT.sigmaSteady, EXAMPLE_EWMA_RESULT.signals]);
   });
 
   test('KPI-Literale aus Task 0 (vier Stellen)', () => {

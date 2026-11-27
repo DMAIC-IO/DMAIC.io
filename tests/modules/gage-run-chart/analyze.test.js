@@ -3,7 +3,7 @@
  * Die Literale stammen aus dem Altmodul (`_runAnalysis`, `read().result`)
  * für die Altprojekt-Fixture und das Beispiel `msa-gage-run-chart-attributiv`.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertDeepClose } from '../../test-utils.js';
 import {
   inputColumns, analyze, engineRuns, resolveRefValue, stripRows, resultOf, pointsOf, noDataOf,
 } from '../../../js/modules/gage-run-chart/domain/analyze.js';
@@ -141,22 +141,22 @@ suite('gage-run-chart: resultOf — gegen die Altrechnung', () => {
   const a = () => analyze(inputColumns(legacyModel, READ));
 
   test('Altprojekt: Literal des Altmoduls (Bezugswert 10,5)', () => {
-    assertDeepEqual(plain(resultOf(a(), { refValue: 10.5 })), LEGACY_RESULT);
+    assertDeepClose(plain(resultOf(a(), { refValue: 10.5 })), LEGACY_RESULT);
   });
 
   test('Altprojekt: ohne Bezugswert das Gesamtmittel', () => {
-    assertEqual(resultOf(a(), { refValue: null }).refValue, LEGACY_RESULT.grandMean);
+    assertDeepClose(resultOf(a(), { refValue: null }).refValue, LEGACY_RESULT.grandMean);
   });
 
   test('Altprojekt ohne Prüferspalte', () => {
     const r = resultOf(analyze(inputColumns({ ...legacyModel, operator: null }, READ)), { refValue: 10.5 });
-    assertDeepEqual(plain(r), LEGACY_RESULT_NO_OP);
+    assertDeepClose(plain(r), LEGACY_RESULT_NO_OP);
   });
 
   test('Beispiel: Literal des Altmoduls, Bezugswert null und 0,5', () => {
     const ex = analyze({ parts: EX_PART, operators: EX_OP, measurements: EX_RESULT });
-    assertDeepEqual(plain(resultOf(ex, { refValue: null })), EXAMPLE_RESULT);
-    assertDeepEqual(plain(resultOf(ex, { refValue: 0.5 })), { ...EXAMPLE_RESULT, refValue: 0.5 });
+    assertDeepClose(plain(resultOf(ex, { refValue: null })), EXAMPLE_RESULT);
+    assertDeepClose(plain(resultOf(ex, { refValue: 0.5 })), { ...EXAMPLE_RESULT, refValue: 0.5 });
     assertEqual(stripRows(ex, 7).length, 2, 'zwei Streifen');
   });
 

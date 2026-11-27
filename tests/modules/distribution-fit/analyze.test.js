@@ -3,7 +3,7 @@
  * Die Literale stammen aus dem Altmodul (runAnalysis, read().result über den
  * JSON-Weg der alten Lesefläche).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose, assertTrue } from '../../test-utils.js';
 import {
   DATA_TYPES, ALGO_LAB_IDS, MIN_VALUES, inputValues, analyze, buildResult, engineRuns,
 } from '../../../js/modules/distribution-fit/domain/analyze.js';
@@ -110,7 +110,7 @@ suite('distribution-fit: analyze', () => {
 suite('distribution-fit: buildResult', () => {
   test('Altprojekt: gleich dem read().result der Altform', () => {
     const r = buildResult(analyze(FEHLER, 'discrete'), 'discrete');
-    assertDeepEqual(r, LEGACY_RESULT);
+    assertDeepClose(r, LEGACY_RESULT);
     assertEqual(r.results[0].params['λ'].toFixed(4), '3.8667');
     assertEqual(r.results[0].chi2.chi2.toFixed(4), '0.8995');
     assertEqual(r.results[0].chi2.p.toFixed(4), '0.9703');
@@ -119,7 +119,7 @@ suite('distribution-fit: buildResult', () => {
 
   test('ohne Funktionen, NaN wird null (tooSmall)', () => {
     const r = buildResult(analyze(SMALL, 'continuous'), 'continuous');
-    assertDeepEqual(r.normalityTests, SMALL_NORMALITY);
+    assertDeepClose(r.normalityTests, SMALL_NORMALITY);
     for (const f of r.results) {
       for (const k of ['cdf', 'pdf', 'pmf']) assertEqual(k in f, false, `${f.name}.${k}`);
     }

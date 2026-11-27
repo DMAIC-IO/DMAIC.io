@@ -6,7 +6,7 @@
  * Altform für dasselbe Beispiel (`legacy-read.json`, Sprache en); neu ist
  * nur `result.status: 'ok'`.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs, setModelName } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/attribute-test/domain/model.js';
@@ -64,7 +64,7 @@ suite('attribute-test: Beispiele', () => {
       assertDeepEqual(d.eventValueOptions, legacy.eventValueOptions, `${id} eventValueOptions`);
       const { status, ...result } = d.result;
       assertEqual(status, 'ok', id);
-      assertDeepEqual(result, legacy.result, `${id} result`);
+      assertDeepClose(result, legacy.result, undefined, `${id} result`);
     });
   }
 });

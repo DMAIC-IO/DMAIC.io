@@ -11,7 +11,7 @@
  * gelöscht“ und das Altprojekt mit der Übernahme alter chartEdits je
  * Teilkarte.
  */
-import { suite, test, assert, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assert, assertEqual, assertTrue, assertDeepEqual, assertDeepClose } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/control-chart/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/control-chart/domain/model.js';
@@ -284,7 +284,7 @@ suite('control-chart: Viewmodel im Browser', () => {
     const vm = h.vm();
     assertTrue(vm.hasResult, 'kein Ergebnis');
     assertEqual(vm.errorText, '');
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertEqual(vm.read({ fields: ['points'] }).points.length, 30);
     // KPI-Leiste: feste Zellen mit festen Ankern, Zahlen mit Dezimalkomma.
     assertEqual(vm.kpi, vm.kpi, 'KPI-Leiste bei gleicher Rechnung neu gebaut');
@@ -364,7 +364,7 @@ suite('control-chart: Viewmodel im Browser', () => {
   test('Altprojekt X̄-R mit Stufen: Warnung, Zusatz der Stufe, Teilkarten { xbar, r }, keine Verletzungen', async () => {
     const h = await mount(State.fromJSON(LEGACY_XBAR(), { repair: true }).toJSON());
     const vm = h.vm();
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_XBAR_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_XBAR_RESULT);
     assertEqual(vm.stagesWarning, tr('stagesSplitSubgroup', { stages: '22', n: 5 }));
     assertEqual(text(h.q('[data-ref="stages-warning"]')), vm.stagesWarning);
     assertEqual(h.q('[data-ref="stages-warning"]').style.display, '');
@@ -697,7 +697,7 @@ suite('control-chart: Viewmodel im Browser', () => {
     assertDeepEqual(plain(vm.model.columnRef), ref('dm'));
     assertEqual(vm.model.baselineCount, 20);
     assertDeepEqual(plain(vm.model.enabledRules), [1, 2, 5, 6]);
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertDeepEqual(plain(vm.model.charts.i), { title: 'Legacy I', showTitle: true, bgColor: '#eef6ff', yLabel: 'Durchmesser (Legacy)' });
     assertDeepEqual(plain(vm.model.charts.mr), { title: 'Legacy MR', showTitle: true });
     assertEqual(Object.keys(h.chartEdits[INST].i).length, 0, 'Alteintrag i nicht gelöscht');

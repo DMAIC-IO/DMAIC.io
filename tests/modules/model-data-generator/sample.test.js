@@ -4,7 +4,7 @@
  * (`State.generate` in `model-data-generator-model.js`, Referenzzeilen dort
  * erzeugt), dazu der Merker.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   buildTerms, termLabel, outputNames, rowsOf, summaryOf, mulberry32,
 } from '../../../js/modules/model-data-generator/domain/sample.js';
@@ -58,15 +58,15 @@ suite('model-data-generator sample — Daten wie die Altform', () => {
   test('zufällig (Monte Carlo)', () => {
     const r = ends({ ...BASE, betas: { 0: 1.5, 1: -0.8 } });
     assertEqual(r.n, 100);
-    assertDeepEqual(r.first, { Temperatur: 210.11037519201636, Druck: 5.034615030977875, Zeit: 51.88561864197254, Y: 51.50095579913541 });
-    assertDeepEqual(r.last, { Temperatur: 221.48488785605878, Druck: 6.355641823029146, Zeit: 57.00697217602283, Y: 49.53363068444743 });
+    assertDeepClose(r.first, { Temperatur: 210.11037519201636, Druck: 5.034615030977875, Zeit: 51.88561864197254, Y: 51.50095579913541 });
+    assertDeepClose(r.last, { Temperatur: 221.48488785605878, Druck: 6.355641823029146, Zeit: 57.00697217602283, Y: 49.53363068444743 });
   });
 
   test('Latin Hypercube', () => {
     const r = ends({ ...BASE, samplingMethod: 'lhs', betas: { 0: 2, 4: 0.5, 2: 0.1 }, sampleSize: 37, seed: 9 });
     assertEqual(r.n, 37);
-    assertDeepEqual(r.first, { Temperatur: 174.8016144318909, Druck: 1.5331043828014486, Zeit: 29.212839159158033, Y: 51.273581702856134 });
-    assertDeepEqual(r.last, { Temperatur: 170.03161562103276, Druck: 5.437081912526156, Zeit: 57.74122742813307, Y: 51.41671880084426 });
+    assertDeepClose(r.first, { Temperatur: 174.8016144318909, Druck: 1.5331043828014486, Zeit: 29.212839159158033, Y: 51.273581702856134 });
+    assertDeepClose(r.last, { Temperatur: 170.03161562103276, Druck: 5.437081912526156, Zeit: 57.74122742813307, Y: 51.41671880084426 });
   });
 
   test('vollfaktoriell: 3 Stufen bis 4 Faktoren, Wiederholungen gerundet', () => {
@@ -80,8 +80,8 @@ suite('model-data-generator sample — Daten wie die Altform', () => {
     const factors = [1, 2, 3, 4, 5].map((i) => ({ name: `F${i}`, min: 0, max: i }));
     const r = ends({ ...BASE, samplingMethod: 'fullfactorial', factors, sampleSize: 10, seed: -5, betas: { 0: 1 } });
     assertEqual(r.n, 32);
-    assertDeepEqual(r.first, { F1: 0, F2: 0, F3: 0, F4: 0, F5: 0, Y: 52.27772151969936 });
-    assertDeepEqual(r.last, { F1: 1, F2: 2, F3: 3, F4: 4, F5: 5, Y: 52.00161603783258 });
+    assertDeepClose(r.first, { F1: 0, F2: 0, F3: 0, F4: 0, F5: 0, Y: 52.27772151969936 });
+    assertDeepClose(r.last, { F1: 1, F2: 2, F3: 3, F4: 4, F5: 5, Y: 52.00161603783258 });
   });
 
   test('doppelte Namen behalten alle Spalten (Altform: weniger Spalten)', () => {

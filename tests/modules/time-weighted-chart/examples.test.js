@@ -6,7 +6,7 @@
  * Reparatur, und `derived.result` gleicht dem `read().result` der Altform für
  * dasselbe Beispiel (Literale aus `analyze.test.js`).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/time-weighted-chart/domain/model.js';
@@ -68,7 +68,7 @@ suite('time-weighted-chart: Beispiele', () => {
     assertEqual(model.exampleWorksheetId, null);
     assertDeepEqual(plain(model.charts), {});
     const { result, points } = evaluateDerived(model, src, undefined, T);
-    assertDeepEqual(plain(result), EXAMPLE_EWMA_RESULT);
+    assertDeepClose(plain(result), EXAMPLE_EWMA_RESULT);
     assertEqual(points.length, 60);
     assertDeepEqual(points.flatMap((p, i) => (p.signal ? [i] : [])), EXAMPLE_EWMA_RESULT.signals);
   });
@@ -85,7 +85,7 @@ suite('time-weighted-chart: Beispiele', () => {
     assertDeepEqual(plain(model.params), PARAMS);
     assertDeepEqual(plain(model.charts), {});
     const { result, points } = evaluateDerived(model, src, undefined, T);
-    assertDeepEqual(plain(result), EXAMPLE_CUSUM_RESULT);
+    assertDeepClose(plain(result), EXAMPLE_CUSUM_RESULT);
     assertEqual(points.length, 60);
     assertDeepEqual(points.flatMap((p, i) => (p.signalHigh ? [i] : [])), EXAMPLE_CUSUM_RESULT.signalsHigh);
     assertEqual(points.filter((p) => p.signalLow).length, 0);

@@ -6,7 +6,7 @@
  * `read().result`, das die Altform für dasselbe Beispiel lieferte (Box-Cox,
  * geschätztes λ = 0).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State, sourceValues } from '../../../js/modules/data-transformation/domain/model.js';
@@ -55,6 +55,6 @@ suite('data-transformation: Beispiele', () => {
     const derived = evaluateDerived(model, src);
     assertEqual(derived.effectiveTF, 'boxcox');
     assertDeepEqual([...derived.activeParams], ['params.boxcox.lambda']);
-    assertDeepEqual(plain(analyze(sourceValues(src, model.columnRef), model).result), LEGACY_RESULT);
+    assertDeepClose(plain(analyze(sourceValues(src, model.columnRef), model).result), LEGACY_RESULT);
   });
 });

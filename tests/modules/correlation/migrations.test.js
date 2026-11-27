@@ -3,7 +3,7 @@
  * alten `fromJSON`, fehlend gegen `null`, Altpaar `colRefX/Y` und die
  * Altinstanzen aus Task 0 gegen das `read()` der Altform.
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose } from '../../test-utils.js';
 import { from0 } from '../../../js/modules/correlation/domain/migrations.js';
 import { State } from '../../../js/modules/correlation/domain/model.js';
 import { setModelName } from '../../../js/core/model.js';
@@ -94,14 +94,14 @@ suite('correlation: Migration 0→1.0', () => {
 export function compareResults(id, d, old) {
   if (old.result) {
     const { _x, _y, ...rest } = old.result;
-    assertDeepEqual(d.result, rest, `${id} result`);
+    assertDeepClose(d.result, rest, undefined, `${id} result`);
     assertDeepEqual(d.pairs, [{ i: 0, j: 1, x: _x, y: _y }], `${id} pairs`);
   } else {
     assertEqual(d.result, null, `${id} result`);
   }
   if (old.matrixResult) {
     const { pairs, ...rest } = old.matrixResult;
-    assertDeepEqual(d.matrixResult, rest, `${id} matrixResult`);
+    assertDeepClose(d.matrixResult, rest, undefined, `${id} matrixResult`);
     assertDeepEqual(d.pairs, pairs, `${id} pairs`);
   } else {
     assertEqual(d.matrixResult, null, `${id} matrixResult`);

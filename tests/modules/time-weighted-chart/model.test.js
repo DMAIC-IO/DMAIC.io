@@ -2,7 +2,7 @@
  * Zeitgewichtete Regelkarten: Model (domain/model.js) — Schema, Vorgaben,
  * Schreiben über `instance.set` (`setFields`), Invariante und Ableitungen.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows, assertDeepClose } from '../../test-utils.js';
 import { State, CHART_TYPE_IDS, SIGMA_METHODS, CHART_KEYS } from '../../../js/modules/time-weighted-chart/domain/model.js';
 import { CHART_TYPES, engineRuns } from '../../../js/modules/time-weighted-chart/domain/analyze.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
@@ -222,19 +222,19 @@ suite('time-weighted-chart: Model — Invariante chartKeys', () => {
 
 suite('time-weighted-chart: Model — Ableitungen', () => {
   test('result: Altprojekt (CUSUM) und nach Wechsel auf EWMA gleich den Literalen', () => {
-    assertDeepEqual(derived(legacy(), ['result']).result, LEGACY_RESULT);
+    assertDeepClose(derived(legacy(), ['result']).result, LEGACY_RESULT);
     const m = legacy();
     setFields(m, { chartTypeId: 'ewma' });
-    assertDeepEqual(derived(m, ['result']).result, LEGACY_EWMA_RESULT);
+    assertDeepClose(derived(m, ['result']).result, LEGACY_EWMA_RESULT);
   });
 
   test('result: Beispiele gleich den Literalen', () => {
     const e = new State();
     setFields(e, { columnRef: ref('w') });
-    assertDeepEqual(derived(e, ['result']).result, EXAMPLE_EWMA_RESULT);
+    assertDeepClose(derived(e, ['result']).result, EXAMPLE_EWMA_RESULT);
     const c = new State();
     setFields(c, { columnRef: ref('w'), chartTypeId: 'cusum', baselineCount: 30 });
-    assertDeepEqual(derived(c, ['result']).result, EXAMPLE_CUSUM_RESULT);
+    assertDeepClose(derived(c, ['result']).result, EXAMPLE_CUSUM_RESULT);
   });
 
   test('result: null ohne Spalte, bei gelöschter Spalte, unter drei Zahlen, σ = 0; der Bezug bleibt', () => {

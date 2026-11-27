@@ -10,7 +10,7 @@
  * Spalte) und das Altprojekt mit der Übernahme alter chartEdits je Teilkarte
  * beim Einhängen.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertDeepClose } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/short-run-chart/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/short-run-chart/domain/model.js';
@@ -255,7 +255,7 @@ suite('short-run-chart: Viewmodel im Browser', () => {
     ]);
     // Lesefläche.
     const out = vm.read({ fields: DERIVED });
-    assertDeepEqual(plain(out.result), LEGACY_RESULT);
+    assertDeepClose(plain(out.result), LEGACY_RESULT);
     assertEqual(out.points.length, 20);
     assertEqual(out.points[0].mr, null);
     assertTrue(out.points[16].signalZ && out.points[16].signalMR && out.points[17].signalMR, 'Signale in den Punkten');
@@ -292,8 +292,8 @@ suite('short-run-chart: Viewmodel im Browser', () => {
     const mr = h.in('mr')[0].config;
     assertEqual(mr.values.length, 20);
     assertEqual(mr.values[0], null);
-    assertEqual(mr.cl, LEGACY_RESULT.mr.cl);
-    assertEqual(mr.ucl, LEGACY_RESULT.mr.ucl);
+    assertDeepClose(mr.cl, LEGACY_RESULT.mr.cl);
+    assertDeepClose(mr.ucl, LEGACY_RESULT.mr.ucl);
     assertEqual(mr.lcl, 0);
     assertDeepEqual([...mr.violationIndices], [16, 17]);
     assertEqual(mr.showZones, false);
@@ -312,7 +312,7 @@ suite('short-run-chart: Viewmodel im Browser', () => {
   test('Beispiel (Setup/Messwert): Ergebnis wie die Altform, MR-Karte stabil, kein Hinweis', async () => {
     const h = await mount(stored({ valuesRef: ref('messwert'), groupsRef: ref('setup') }));
     const vm = h.vm();
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
     assertEqual(vm.warningText, '');
     assertEqual(vm.read({ fields: ['warningMsg'] }).warningMsg, null);
     assertEqual(h.q('.src__warning'), null);
@@ -379,11 +379,11 @@ suite('short-run-chart: Viewmodel im Browser', () => {
     assertEqual(vm.chartViews.z.title, 'Z-Karte — Messwert');
     assertEqual(await runsOf(vm, () => choose(pickerSelect(h, 'grp-picker'), pickerValue(h, 'grp-picker', 'Setup'))), 1, 'Teilespalte über den Wähler');
     assertDeepEqual(plain(vm.model.groupsRef), ref('setup'));
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
     assertEqual(await runsOf(vm, () => choose(pickerSelect(h, 'val-picker'), pickerValue(h, 'val-picker', 'Mass'))), 1, 'Messwertspalte über den Wähler');
     assertDeepEqual(plain(vm.model.valuesRef), ref('mass'));
     assertEqual(await runsOf(vm, () => setFields(vm.model, { groupsRef: ref('teil') })), 1, 'Teilespalte über die Senke');
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     // Werte im Arbeitsblatt: die eigenen Spalten rechnen neu, eine fremde nicht.
     const mass2 = MASS.map((v, i) => (i === 0 ? 10.05 : v));
     assertEqual(await runsOf(vm, () => {
@@ -434,7 +434,7 @@ suite('short-run-chart: Viewmodel im Browser', () => {
     await settle();
     assertDeepEqual(plain(vm.model.valuesRef), ref('mass'));
     assertEqual(pickerSelect(h, 'val-picker').value, pickerValue(h, 'val-picker', 'Mass'));
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertEqual(h.live().length, 2);
     assertEqual(mod.historyCan('undo'), false, 'mehr als ein Schritt');
     assertTrue(mod.historyCan('redo'), 'kein Schritt zum Wiederholen');
@@ -461,7 +461,7 @@ suite('short-run-chart: Viewmodel im Browser', () => {
     assertDeepEqual(plain(vm.model.valuesRef), ref('mass'));
     assertDeepEqual(plain(vm.model.groupsRef), ref('teil'));
     assertEqual(vm.model.exampleWorksheetId, null);
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertDeepEqual(plain(vm.model.charts.z), { title: 'Legacy Z', showTitle: true, bgColor: '#eef6ff', yLabel: 'z (Legacy)' });
     assertDeepEqual(plain(vm.model.charts.mr), { title: 'Legacy MR', showTitle: true });
     assertEqual(Object.keys(h.chartEdits[INST].z).length, 0, 'Alteintrag z nicht gelöscht');

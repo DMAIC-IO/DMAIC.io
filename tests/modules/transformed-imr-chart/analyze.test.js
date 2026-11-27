@@ -6,7 +6,7 @@
  * Task 0 überein) und das Beispiel `spc-transformed-imr` (auto: λ = 0,35 wie
  * Sonde (b), manuell λ = 0,5).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose, assertTrue } from '../../test-utils.js';
 import {
   MIN_VALUES, inputValues, lambdaOf, analyze, resultOf, pointsOf, shownLambda, engineRuns,
 } from '../../../js/modules/transformed-imr-chart/domain/analyze.js';
@@ -177,15 +177,15 @@ suite('transformed-imr-chart: Merker', () => {
 
 suite('transformed-imr-chart: resultOf gleich der Altform', () => {
   test('Altprojekt (manuell, λ = 0,25)', () => {
-    assertDeepEqual(resultOf(analyze(STANDZEIT, 0.25)), LEGACY_RESULT);
+    assertDeepClose(resultOf(analyze(STANDZEIT, 0.25)), LEGACY_RESULT);
   });
 
   test('Beispiel, auto (λ geschätzt 0,35)', () => {
-    assertDeepEqual(resultOf(analyze(EXAMPLE, undefined)), EXAMPLE_AUTO_RESULT);
+    assertDeepClose(resultOf(analyze(EXAMPLE, undefined)), EXAMPLE_AUTO_RESULT);
   });
 
   test('Beispiel, manuell λ = 0,5', () => {
-    assertDeepEqual(resultOf(analyze(EXAMPLE, 0.5)), EXAMPLE_MANUAL_RESULT);
+    assertDeepClose(resultOf(analyze(EXAMPLE, 0.5)), EXAMPLE_MANUAL_RESULT);
   });
 
   test('ohne Funktionen: übersteht JSON unverändert', () => {

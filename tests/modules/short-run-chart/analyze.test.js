@@ -5,7 +5,7 @@
  * Altprojekt (drei Teile, eines mit nur einem Wert, ein Ausreißer), das
  * Beispiel `spc-short-run-zmr` und `test_data_short_run.csv`.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   MIN_PAIRS, inputPairs, inputsOf, analyze, analyzeWith, stageBoundariesOf, resultOf, pointsOf, skippedOf,
   errorOf, engineRuns,
@@ -223,7 +223,7 @@ suite('short-run-chart: analyze', () => {
     assertEqual(a.status, 'ok');
     const r = resultOf(a);
     assertDeepEqual(r.groups[0], { group: 'A', count: 9, mean: null, sigma: null, mrBar: null });
-    assertDeepEqual(r.mr, LEGACY_RESULT.mr);
+    assertDeepClose(r.mr, LEGACY_RESULT.mr);
   });
 
   test('Überlauf: Werte um 1,7·10³⁰⁸ in einem Teil → errCompute', () => {
@@ -360,15 +360,15 @@ suite('short-run-chart: stageBoundariesOf', () => {
 
 suite('short-run-chart: resultOf gleich der Altform', () => {
   test('Altprojekt', () => {
-    assertDeepEqual(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
+    assertDeepClose(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
   });
 
   test('Beispiel spc-short-run-zmr', () => {
-    assertDeepEqual(resultOf(run(EXAMPLE_MODEL)), EXAMPLE_RESULT);
+    assertDeepClose(resultOf(run(EXAMPLE_MODEL)), EXAMPLE_RESULT);
   });
 
   test('test_data_short_run.csv', () => {
-    assertDeepEqual(resultOf(run(CSV_MODEL)), CSV_RESULT);
+    assertDeepClose(resultOf(run(CSV_MODEL)), CSV_RESULT);
   });
 
   test('Literale der Altform (KPIs und Tabelle auf drei Stellen)', () => {
@@ -388,7 +388,7 @@ suite('short-run-chart: resultOf gleich der Altform', () => {
 
   test('gegengerechnet wie `_runAnalysis` der Altform (Engine direkt)', () => {
     const r = computeZMR(MASS, TEIL);
-    assertDeepEqual([r.mrBarZ, r.uclMR, r.lclMR, r.skipped], [LEGACY_RESULT.mr.cl, LEGACY_RESULT.mr.ucl, 0, 1]);
+    assertDeepClose([r.mrBarZ, r.uclMR, r.lclMR, r.skipped], [LEGACY_RESULT.mr.cl, LEGACY_RESULT.mr.ucl, 0, 1]);
     assertDeepEqual([r.signalsZ, r.signalsMR], [LEGACY_RESULT.signalsZ, LEGACY_RESULT.signalsMR]);
   });
 

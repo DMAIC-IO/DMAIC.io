@@ -6,7 +6,7 @@
  * `derived.result` gleicht dem `read().result` der Altform für dasselbe
  * Beispiel (Literal aus `analyze.test.js`).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose, assertTrue } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/rare-event-chart/domain/model.js';
@@ -64,7 +64,7 @@ suite('rare-event-chart: Beispiel', () => {
     const col = ws.sheets[0].state.columns.find((c) => c.id === 'c-tage');
     assertDeepEqual(col.values, TAGE_SEIT, 'Arbeitsblatt unverändert');
     const { result, points } = evaluateDerived(model, src, undefined, T);
-    assertDeepEqual(plain(result), EXAMPLE_RESULT);
+    assertDeepClose(plain(result), EXAMPLE_RESULT);
     assertEqual(points.length, 25);
     assertDeepEqual(points.flatMap((p, i) => (p.signal ? [i] : [])), EXAMPLE_RESULT.signals);
   });

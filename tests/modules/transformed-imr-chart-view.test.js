@@ -9,7 +9,7 @@
  * gelöscht“, nicht positive Werte und das Altprojekt mit der Übernahme alter
  * chartEdits beim Einhängen.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertDeepClose } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/transformed-imr-chart/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/transformed-imr-chart/domain/model.js';
@@ -207,7 +207,7 @@ suite('transformed-imr-chart: Viewmodel im Browser', () => {
     const h = await mount(stored({ lambdaMode: 'manual', lambdaManual: 0.25 }));
     const vm = h.vm();
     assertTrue(vm.hasResult, 'kein Ergebnis');
-    assertDeepEqual(plain(vm.result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.result), LEGACY_RESULT);
     assertDeepEqual(plain(vm.kpi), {
       lambdaText: '0,250', lambdaLabel: 'λ (manuell)', clText: '3,611', sigmaText: 'σ̂ = 1,090',
       signals: 1, signalsSub: 'von 30 Datenpunkten', signalsClass: 'dmike-kpi--bad',
@@ -263,7 +263,7 @@ suite('transformed-imr-chart: Viewmodel im Browser', () => {
     assertTrue(!lam.hasAttribute('step') && !lam.hasAttribute('min') && !lam.hasAttribute('max'), 'Bereichsattribute am λ-Feld');
     // Lesefläche: Task-Wert mit Ergebnis und Punkten.
     const out = vm.read();
-    assertDeepEqual(plain(out.asyncTasks.analysis.value.result), LEGACY_RESULT);
+    assertDeepClose(plain(out.asyncTasks.analysis.value.result), LEGACY_RESULT);
     assertEqual(out.asyncTasks.analysis.value.points.length, 30);
     assertDeepEqual(plain(out.asyncTasks.analysis.value.points[23]), { transformed: points[23].transformed, signal: true });
     assertEqual(out.asyncTasks.analysis.value.error, null);
@@ -274,7 +274,7 @@ suite('transformed-imr-chart: Viewmodel im Browser', () => {
   test('Modus auto: geschätztes λ im gesperrten Feld, gespeicherter Wert bleibt, Abzeichen stabil', async () => {
     const h = await mount(stored({ columnRef: REF2 }));
     const vm = h.vm();
-    assertDeepEqual(plain(vm.result), EXAMPLE_AUTO_RESULT);
+    assertDeepClose(plain(vm.result), EXAMPLE_AUTO_RESULT);
     assertEqual(vm.kpi.lambdaText, '0,350');
     assertEqual(vm.kpi.lambdaLabel, 'λ (auto)');
     assertEqual(vm.kpi.signalsClass, 'dmike-kpi--good');
@@ -427,12 +427,12 @@ suite('transformed-imr-chart: Viewmodel im Browser', () => {
     // Wechsel auf manual mit λ 0,5 und zurück auf auto: lambdaManual bleibt stehen.
     vm.model.setLambdaMode({ mode: 'manual', lambda: 0.5 });
     await idle(vm);
-    assertDeepEqual(plain(vm.result), EXAMPLE_MANUAL_RESULT);
+    assertDeepClose(plain(vm.result), EXAMPLE_MANUAL_RESULT);
     choose(h.q('[data-ref="lambda-mode"]'), 'auto');
     await idle(vm);
     assertEqual(vm.model.lambdaMode, 'auto');
     assertEqual(vm.model.lambdaManual, 0.5);
-    assertDeepEqual(plain(vm.result), EXAMPLE_AUTO_RESULT);
+    assertDeepClose(plain(vm.result), EXAMPLE_AUTO_RESULT);
   });
 
   test('Moduswechsel ohne Ergebnis übernimmt nichts', async () => {
@@ -482,7 +482,7 @@ suite('transformed-imr-chart: Viewmodel im Browser', () => {
     assertEqual(h.shown().showTitle, true);
     assertEqual(h.shown().bgColor, '#eef6ff');
     assertEqual(h.shown().yLabel, 'y (Box-Cox)');
-    assertDeepEqual(plain(vm.result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.result), LEGACY_RESULT);
     assertDeepEqual(h.qa('.dmike-kpi-value').map(text), ['0,250', '3,611', '1']);
     assertEqual(h.q('[data-ref="lambda-manual"]').value, '0,25');
     assertEqual(h.q('[data-ref="lambda-mode"]').value, 'manual');

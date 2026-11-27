@@ -8,7 +8,7 @@
  * „referenzierte Spalte gelöscht“, doppelte Bezüge und das Altprojekt mit der
  * Übernahme alter chartEdits beim Einhängen.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertDeepClose } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/multivariate-control-chart/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/multivariate-control-chart/domain/model.js';
@@ -280,7 +280,7 @@ suite('multivariate-control-chart: Viewmodel im Browser', () => {
     assertDeepEqual(plain(vm.badge), { text: tr('unstable', { count: 1 }), cls: 'mvcc__badge--unstable', stable: false, unstable: true });
     assertEqual(vm.chartTitle, 'Hotelling T² — Druck, Temperatur, Dichte');
     const out = vm.read({ fields: ['result', 'points', 'error', 'message', 'activeParams', 'activeMultiSlots'] });
-    assertDeepEqual(plain(out.result), LEGACY_RESULT);
+    assertDeepClose(plain(out.result), LEGACY_RESULT);
     assertEqual(out.points.length, 30);
     assertEqual(out.points[24].signal, true);
     assertEqual(out.points.filter((p) => p.signal).length, 1);
@@ -338,7 +338,7 @@ suite('multivariate-control-chart: Viewmodel im Browser', () => {
   test('Beispiel: stabil, Abzeichen mit OK-Icon, Phase I leer heißt alle', async () => {
     const h = await mount(stored({ columnRefs: EXAMPLE_REFS, alpha: 0.0027, baselineCount: null }));
     const vm = h.vm();
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
     assertDeepEqual(plain(vm.kpi), {
       uclText: '14,598', alphaText: 'α = 0,0027', pText: '2', baselineText: 'm = 40 Baseline',
       signals: 0, ofText: 'von 40 Datenpunkten', signalsClass: 'dmike-kpi--good',
@@ -587,7 +587,7 @@ suite('multivariate-control-chart: Viewmodel im Browser', () => {
     assertEqual(h.shown().showTitle, true);
     assertEqual(h.shown().bgColor, '#eef6ff');
     assertEqual(h.shown().yLabel, 'T² (Legacy)');
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertDeepEqual(h.qa('.dmike-kpi-value').map(text), ['18,254', '3', '1']);
     assertEqual(h.q('[data-ref="alpha"]').value, '0,01');
     assertEqual(h.q('[data-ref="baseline-count"]').value, '20');

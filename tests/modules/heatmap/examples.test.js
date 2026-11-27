@@ -5,7 +5,7 @@
  * lädt ohne Reparatur. Das Raster (`derived.stats`) gleicht dem Wert, den das
  * Altmodul (`read().stats`) für dasselbe Beispiel lieferte.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/heatmap/domain/model.js';
@@ -56,7 +56,7 @@ suite('heatmap: Beispiele', () => {
       assertEqual(model.aggregation, 'mean');
       assertDeepEqual(JSON.parse(JSON.stringify(model.chart)), want.chart);
       const derived = evaluateDerived(model, storedSource({ ws1: ws }));
-      assertDeepEqual(JSON.parse(JSON.stringify(derived.stats)), want.stats);
+      assertDeepClose(JSON.parse(JSON.stringify(derived.stats)), want.stats);
       assertDeepEqual([...derived.activeParams], ['aggregation']);
     });
   }

@@ -8,7 +8,7 @@
  * Das geteilte CSV-Beispiel `capability-bolzendurchmesser` übersetzt
  * `fromExample` in ein Arbeitsblatt mit den Vorgaben des Models.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { csvPayloadToWorksheetState } from '../../../js/core/examples-registry.js';
@@ -80,7 +80,7 @@ suite('control-chart: Beispiele', () => {
       assertEqual(model.columnRef.instanceId, 'ws1');
       assertEqual(model.exampleWorksheetId, null);
       const { result, points } = evaluateDerived(model, storedSource({ ws1: ws }), ['result', 'points'], T);
-      assertDeepEqual(plain(result), expected);
+      assertDeepClose(plain(result), expected);
       assertEqual(points.length, expected.n);
     });
   }
@@ -99,7 +99,7 @@ suite('control-chart: Beispiele', () => {
     const model = State.fromJSON(rewriteColumnRefs(State, state, '__source__', 'ws1'));
     assertDeepEqual([model.chartTypeId, model.subgroupSize, model.usl, model.lsl], ['i-mr', 1, null, null], 'Vorgaben, keine Spezifikation');
     const { result } = evaluateDerived(model, storedSource({ ws1: sourceWorksheetData }), ['result'], T);
-    assertDeepEqual(plain(result), BOLZEN_CSV_RESULT);
+    assertDeepClose(plain(result), BOLZEN_CSV_RESULT);
   });
 
   test('CSV ohne Spalten: fromExample wirft (der Kern meldet den Ladefehler)', () => {

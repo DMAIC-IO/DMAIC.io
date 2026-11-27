@@ -5,7 +5,7 @@
  * wie im E2E „Legacy project“ aus Task 0) und das Beispiel
  * `spc-multivariate-t2` (α = 0,0027, alle Zeilen; Sonde (b)).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   MIN_VARIABLES, ENGINE_ERROR_CODES, inputRows, baselineEndOf, optionsOf, analyze, analyzeWith,
   resultOf, pointsOf, errorOf, engineRuns,
@@ -276,11 +276,11 @@ suite('multivariate-control-chart: Merker', () => {
 
 suite('multivariate-control-chart: resultOf gleich der Altform', () => {
   test('Altprojekt (α = 0,01, Phase I = 20)', () => {
-    assertDeepEqual(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
+    assertDeepClose(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
   });
 
   test('Beispiel (α = 0,0027, alle Zeilen)', () => {
-    assertDeepEqual(resultOf(run(EXAMPLE_MODEL)), EXAMPLE_RESULT);
+    assertDeepClose(resultOf(run(EXAMPLE_MODEL)), EXAMPLE_RESULT);
   });
 
   test('ohne Funktionen: übersteht JSON unverändert', () => {

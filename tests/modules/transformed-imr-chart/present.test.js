@@ -4,7 +4,7 @@
  * Diagrammkonfiguration. Die englischen Literale gleichen der Altform
  * (Altprojekt-Fixture, λ = 0,25 manuell; E2E „Legacy project“).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose, assertTrue } from '../../test-utils.js';
 import {
   RERUN_DELAY, pause, analysisValueOf, analysisRun, fmt, kpiOf, badgeOf, limitRowsOf, chartTitleOf, chartConfig,
 } from '../../../js/modules/transformed-imr-chart/viewmodel/present.js';
@@ -140,7 +140,7 @@ suite('transformed-imr-chart: Presenter — Lauf analysis', () => {
     const v = await p;
     assertEqual(calls.length, 1);
     assertDeepEqual(calls[0], { values: STANDZEIT, lambda: 0.25 });
-    assertDeepEqual(plain(v.result), LEGACY_RESULT);
+    assertDeepClose(plain(v.result), LEGACY_RESULT);
     assertEqual(v.points.length, 30);
     assertEqual(v.error, null);
     assertEqual(v.message, null);

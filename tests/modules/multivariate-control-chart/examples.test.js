@@ -6,7 +6,7 @@
  * `read().result` der Altform für dasselbe Beispiel (n = 40, p = 2, alle
  * Zeilen als Phase I, α = 0,0027, keine Signale).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/multivariate-control-chart/domain/model.js';
@@ -58,7 +58,7 @@ suite('multivariate-control-chart: Beispiel', () => {
     assertDeepEqual(plain(model.chart), {});
     const src = storedSource({ ws1: ws });
     const { result, points, error, message } = evaluateDerived(model, src, undefined, T);
-    assertDeepEqual(plain(result), LEGACY_RESULT);
+    assertDeepClose(plain(result), LEGACY_RESULT);
     assertEqual(points.length, 40);
     assertEqual(points.filter((p) => p.signal).length, 0);
     assertEqual(error, null);

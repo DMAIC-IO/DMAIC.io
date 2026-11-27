@@ -4,7 +4,7 @@
  * (`setFields`), Invarianten `subgroupRange` und `chartKeys`, Kommandos und
  * Ableitungen.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   State, SUBGROUP_RANGE, CHART_KEYS, clampSubgroup,
 } from '../../../js/modules/control-chart/domain/model.js';
@@ -366,16 +366,16 @@ suite('control-chart: Model — Form der eingefrorenen Grenzen', () => {
 
 suite('control-chart: Model — Ableitungen', () => {
   test('result: Altprojekte gleich den Literalen der Altform', () => {
-    assertDeepEqual(derived(load(LEGACY), ['result'], LEGACY_SRC).result, LEGACY_RESULT);
-    assertDeepEqual(derived(load(LEGACY_XBAR), ['result'], LEGACY_SRC).result, LEGACY_XBAR_RESULT);
+    assertDeepClose(derived(load(LEGACY), ['result'], LEGACY_SRC).result, LEGACY_RESULT);
+    assertDeepClose(derived(load(LEGACY_XBAR), ['result'], LEGACY_SRC).result, LEGACY_XBAR_RESULT);
   });
 
   test('result: test_data_control.csv (Vorgaben) und CSV-Beispiel gleich den Literalen', async () => {
-    assertDeepEqual(derived(make({ columnRef: ref('value') }), ['result']).result, TEST_DATA_CONTROL_RESULT);
+    assertDeepClose(derived(make({ columnRef: ref('value') }), ['result']).result, TEST_DATA_CONTROL_RESULT);
     const res = await fetch(new URL('../../../examples/data/capability-bolzendurchmesser.csv', import.meta.url), { cache: 'no-cache' });
     assertTrue(res.ok);
     const values = (await res.text()).trim().split(/\r?\n/).slice(1).map(Number);
-    assertDeepEqual(derived(make({ columnRef: ref('c-0') }), ['result'], sheetSource({ 'c-0': values })).result, BOLZEN_CSV_RESULT);
+    assertDeepClose(derived(make({ columnRef: ref('c-0') }), ['result'], sheetSource({ 'c-0': values })).result, BOLZEN_CSV_RESULT);
   });
 
   test('points: eine Zeile je Punkt der ersten Teilkarte (bulk)', () => {

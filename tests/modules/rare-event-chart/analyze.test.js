@@ -6,7 +6,7 @@
  * Altmodul), das Beispiel `spc-rare-event-t-chart` und die
  * CSV-Spalte „Counts“ (g) aus `test_data_rare_event.csv`.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertAlmostEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose, assertTrue, assertAlmostEqual } from '../../test-utils.js';
 import {
   MIN_VALUES, ENGINES, inputValues, inputsOf, analyze, analyzeWith, plottedOf, signalIndices, resultOf, pointsOf,
   errorOf, engineRuns,
@@ -200,7 +200,7 @@ suite('rare-event-chart: analyze', () => {
     const r = resultOf(a);
     assertEqual(r.ucl, null);
     assertEqual(r.cl, null);
-    assertEqual(r.plotted.ucl, LEGACY_RESULT.plotted.ucl);
+    assertDeepClose(r.plotted.ucl, LEGACY_RESULT.plotted.ucl);
   });
 
   test('T4: g-Karte mit Werten um 1e200 (ḡ(ḡ + 1) läuft über) → errCompute', () => {
@@ -319,13 +319,13 @@ suite('rare-event-chart: plottedOf', () => {
   test('g die Zählwerte, t die transformierten Werte mit null an den Lücken', () => {
     const g = plottedOf(run(COUNTS_MODEL));
     assertDeepEqual(g.values, [5, 10, 8, 12, 7, 9]);
-    assertDeepEqual([g.cl, g.ucl, g.lcl, g.sigma], [8.5, COUNTS_RESULT.ucl, 0, COUNTS_RESULT.sigma]);
+    assertDeepClose([g.cl, g.ucl, g.lcl, g.sigma], [8.5, COUNTS_RESULT.ucl, 0, COUNTS_RESULT.sigma]);
     const t = plottedOf(run(LEGACY_MODEL));
     assertEqual(t.values.length, 20);
     assertEqual(t.values[7], null);
     assertEqual(t.values[12], null);
     assertAlmostEqual(t.values[0], Math.pow(18.4, 1 / 3.6), 1e-12);
-    assertDeepEqual([t.cl, t.ucl, t.lcl, t.sigma], Object.values(LEGACY_RESULT.plotted));
+    assertDeepClose([t.cl, t.ucl, t.lcl, t.sigma], Object.values(LEGACY_RESULT.plotted));
   });
 
   test('null ohne Ergebnis oder bei Fehler', () => {
@@ -336,15 +336,15 @@ suite('rare-event-chart: plottedOf', () => {
 
 suite('rare-event-chart: resultOf gleich der Altform', () => {
   test('Altprojekt (t-Karte mit zwei Lücken)', () => {
-    assertDeepEqual(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
+    assertDeepClose(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
   });
 
   test('Beispiel spc-rare-event-t-chart', () => {
-    assertDeepEqual(resultOf(run(EXAMPLE_MODEL)), EXAMPLE_RESULT);
+    assertDeepClose(resultOf(run(EXAMPLE_MODEL)), EXAMPLE_RESULT);
   });
 
   test('CSV-Spalte „Counts“ (g-Karte)', () => {
-    assertDeepEqual(resultOf(run(COUNTS_MODEL)), COUNTS_RESULT);
+    assertDeepClose(resultOf(run(COUNTS_MODEL)), COUNTS_RESULT);
   });
 
   test('Literale der Altform (KPIs drei Stellen, Diagramm-Beschriftung)', () => {
@@ -359,11 +359,11 @@ suite('rare-event-chart: resultOf gleich der Altform', () => {
 
   test('gegengerechnet wie `_runAnalysis` der Altform (Engine direkt)', () => {
     const r = computeTChart(TAGE);
-    assertDeepEqual([r.clOriginal, r.uclOriginal, r.lclOriginal, r.sigma, r.cl, r.ucl, r.lcl],
+    assertDeepClose([r.clOriginal, r.uclOriginal, r.lclOriginal, r.sigma, r.cl, r.ucl, r.lcl],
       [LEGACY_RESULT.cl, LEGACY_RESULT.ucl, LEGACY_RESULT.lcl, LEGACY_RESULT.sigma,
         LEGACY_RESULT.plotted.cl, LEGACY_RESULT.plotted.ucl, LEGACY_RESULT.plotted.lcl]);
     const g = computeGChart([5, 10, 8, 12, 7, 9]);
-    assertDeepEqual([g.cl, g.ucl, g.lcl, g.sigma], [COUNTS_RESULT.cl, COUNTS_RESULT.ucl, 0, COUNTS_RESULT.sigma]);
+    assertDeepClose([g.cl, g.ucl, g.lcl, g.sigma], [COUNTS_RESULT.cl, COUNTS_RESULT.ucl, 0, COUNTS_RESULT.sigma]);
   });
 
   test('ohne Funktionen: übersteht JSON unverändert', () => {

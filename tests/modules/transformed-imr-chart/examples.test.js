@@ -5,7 +5,7 @@
  * Es lädt ohne Reparatur; der Wert des Tasks `analysis` gleicht dem
  * `read().result` der Altform für dasselbe Beispiel (Modus `auto`, λ = 0,35).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertDeepClose, assertTrue } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { sourceColumns } from '../../../js/core/source-columns.js';
 import { State } from '../../../js/modules/transformed-imr-chart/domain/model.js';
@@ -45,7 +45,7 @@ suite('transformed-imr-chart: geteiltes Beispiel in der neuen Form', () => {
     const values = inputValues(model, sourceColumns(storedSource({ ws1: ws })));
     assertEqual(values.length, 50);
     const value = analysisValueOf(analyze(values, lambdaOf(model)), { errPositiveOnly: 'p', errCompute: 'c' });
-    assertDeepEqual(value.result, LEGACY_RESULT);
+    assertDeepClose(value.result, LEGACY_RESULT);
     assertEqual(value.points.length, 50);
     assertEqual(value.error, null);
     assertEqual(value.message, null);

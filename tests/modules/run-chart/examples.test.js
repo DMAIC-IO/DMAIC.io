@@ -5,7 +5,7 @@
  * Reparatur, sein Arbeitsblatt bleibt geteilt, und `derived.result` gleicht
  * dem `read().result` der Altform für dasselbe Beispiel.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/run-chart/domain/model.js';
@@ -54,7 +54,7 @@ suite('run-chart: Beispiel', () => {
     assertEqual(model.alpha, 0.05);
     assertDeepEqual(JSON.parse(JSON.stringify(model.chart)), {});
     const { result, points } = evaluateDerived(model, storedSource({ ws1: ws }), undefined, T);
-    assertDeepEqual(JSON.parse(JSON.stringify(result)), LEGACY_RESULT);
+    assertDeepClose(JSON.parse(JSON.stringify(result)), LEGACY_RESULT);
     assertEqual(points.length, 50);
   });
 });

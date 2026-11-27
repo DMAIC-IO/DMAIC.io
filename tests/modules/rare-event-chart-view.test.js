@@ -9,7 +9,7 @@
  * Fehlerkasten bei Überlauf, den Fall „referenzierte Spalte gelöscht“ und das
  * Altprojekt mit der Übernahme alter chartEdits beim Einhängen.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertDeepClose } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/rare-event-chart/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/rare-event-chart/domain/model.js';
@@ -197,7 +197,7 @@ suite('rare-event-chart: Viewmodel im Browser', () => {
     });
     assertEqual(vm.kpi, vm.kpi, 'KPI-Leiste bei gleicher Rechnung neu gebaut');
     const out = vm.read({ fields: DERIVED });
-    assertDeepEqual(plain(out.result), LEGACY_RESULT);
+    assertDeepClose(plain(out.result), LEGACY_RESULT);
     assertEqual(out.points.length, 20);
     assertEqual(out.points[7].value, null);
     assertEqual(out.points[12].value, null);
@@ -229,10 +229,10 @@ suite('rare-event-chart: Viewmodel im Browser', () => {
     const c = plain(vm.plot);
     assertEqual(c.values.length, 20);
     assertEqual(c.values[7], null);
-    assertDeepEqual(c.cl, [LEGACY_RESULT.plotted.cl]);
-    assertDeepEqual(c.ucl, [LEGACY_RESULT.plotted.ucl]);
-    assertDeepEqual(c.lcl, [LEGACY_RESULT.plotted.lcl]);
-    assertDeepEqual(c.sigma, [LEGACY_RESULT.plotted.sigma]);
+    assertDeepClose(c.cl, [LEGACY_RESULT.plotted.cl]);
+    assertDeepClose(c.ucl, [LEGACY_RESULT.plotted.ucl]);
+    assertDeepClose(c.lcl, [LEGACY_RESULT.plotted.lcl]);
+    assertDeepClose(c.sigma, [LEGACY_RESULT.plotted.sigma]);
     assertDeepEqual(c.violationIndices, [15]);
     assertEqual(c.yLabel, tr('yLabel_t'));
     assertEqual(c.xLabel, tr('xLabelSample'));
@@ -256,7 +256,7 @@ suite('rare-event-chart: Viewmodel im Browser', () => {
   test('t-Karte (Beispiel): Ergebnis wie die Altform', async () => {
     const h = await mount(stored({ columnRef: ref('seit') }));
     const vm = h.vm();
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_RESULT);
     assertEqual(vm.chartTitle, 't-Karte — TageSeitLetztem');
     assertEqual(plain(vm.plot).values.length, 25);
     assertEqual(h.live().length, 1);
@@ -265,7 +265,7 @@ suite('rare-event-chart: Viewmodel im Browser', () => {
   test('g-Karte („Counts“): stabil, keine Originalskala, Zählwerte gezeichnet', async () => {
     const h = await mount(stored({ chartTypeId: 'g', columnRef: ref('counts') }));
     const vm = h.vm();
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), COUNTS_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), COUNTS_RESULT);
     assertDeepEqual(plain(vm.kpi), {
       clText: '8,500', sigmaText: 'σ̂ = 8,986', uclText: '35,458', lclText: '0,000', signals: 0,
       ofText: 'von 6 Datenpunkten', signalsClass: 'dmike-kpi--good', transformed: false,
@@ -395,7 +395,7 @@ suite('rare-event-chart: Viewmodel im Browser', () => {
     await settle();
     assertEqual(vm.model.chartTypeId, 't');
     assertEqual(h.q('[data-ref="chart-type"]').value, 't');
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertEqual(h.live().length, 1);
     assertEqual(mod.historyCan('undo'), false, 'mehr als ein Schritt');
     assertTrue(mod.historyCan('redo'), 'kein Schritt zum Wiederholen');
@@ -427,7 +427,7 @@ suite('rare-event-chart: Viewmodel im Browser', () => {
     assertEqual(vm.model.chartTypeId, 't');
     assertDeepEqual(plain(vm.model.columnRef), ref('tage'));
     assertEqual(vm.model.exampleWorksheetId, null);
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     assertDeepEqual(plain(vm.model.chart), { title: 'Legacy', showTitle: true, bgColor: '#eef6ff', yLabel: 'y (Legacy)' });
     assertEqual(Object.keys(h.chartEdits[INST]['control-chart']).length, 0, 'Alteintrag nicht gelöscht');
     assertEqual(mod.historyCan('undo'), false);

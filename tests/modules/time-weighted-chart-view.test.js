@@ -10,7 +10,7 @@
  * „referenzierte Spalte gelöscht“ und das Altprojekt mit der Übernahme alter
  * chartEdits je Teilkarte.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertDeepClose } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/time-weighted-chart/viewmodel/viewmodel.js';
 import { State } from '../../js/modules/time-weighted-chart/domain/model.js';
@@ -206,7 +206,7 @@ suite('time-weighted-chart: Viewmodel im Browser', () => {
       signalsClass: 'dmike-kpi--bad', hText: '0,2232', kText: 'k = 0,0223',
     });
     const out = vm.read({ fields: DERIVED });
-    assertDeepEqual(plain(out.result), LEGACY_RESULT);
+    assertDeepClose(plain(out.result), LEGACY_RESULT);
     assertEqual(out.points.length, 40);
     assertDeepEqual(plain(out.activeParams), ['chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride', 'params.cusum.kSigma', 'params.cusum.hSigma']);
     assertDeepEqual(plain(out.activeColumnSlots), ['columnRef']);
@@ -219,7 +219,7 @@ suite('time-weighted-chart: Viewmodel im Browser', () => {
     assertEqual(views.cusum_minus.title, 'CUSUM C⁻ — Durchmesser');
     assertDeepEqual(plain(views.cusum_plus.badge), { text: tr('unstable', { count: 12 }), cls: 'twc__badge--unstable', stable: false, unstable: true });
     assertDeepEqual(plain(views.cusum_minus.badge), { text: tr('stable'), cls: 'twc__badge--stable', stable: true, unstable: false });
-    assertDeepEqual(plain(views.cusum_plus.config.ucl), [LEGACY_RESULT.h]);
+    assertDeepClose(plain(views.cusum_plus.config.ucl), [LEGACY_RESULT.h]);
     assertDeepEqual(plain(views.cusum_plus.config.violationIndices), LEGACY_RESULT.signalsHigh);
     assertDeepEqual(plain(views.cusum_minus.config.violationIndices), []);
     assertEqual(views.cusum_plus.config.yLabel, tr('yLabel_cusumHigh'));
@@ -281,7 +281,7 @@ suite('time-weighted-chart: Viewmodel im Browser', () => {
   test('EWMA (Beispiel): eine Teilkarte, KPI-Satz der EWMA, λ-Felder sichtbar', async () => {
     const h = await mount(exampleEwma());
     const vm = h.vm();
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_EWMA_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), EXAMPLE_EWMA_RESULT);
     assertDeepEqual(plain(vm.kpi), {
       type: 'ewma', targetText: '10,0582', sigmaHatText: 'σ̂ = 0,0965', signals: 4, ofText: 'von 60 Datenpunkten',
       signalsClass: 'dmike-kpi--bad', sigmaSteadyText: '0,0322', lambdaText: 'λ = 0,2',
@@ -297,7 +297,7 @@ suite('time-weighted-chart: Viewmodel im Browser', () => {
     assertEqual(views.ewma.title, 'EWMA — Wert');
     const c = plain(views.ewma.config);
     assertEqual(c.values.length, 60);
-    assertDeepEqual(c.cl, [EXAMPLE_EWMA_RESULT.cl]);
+    assertDeepClose(c.cl, [EXAMPLE_EWMA_RESULT.cl]);
     assertEqual(c.ucl.length, 60);
     assertEqual(c.sigma.length, 60);
     assertDeepEqual(c.violationIndices, EXAMPLE_EWMA_RESULT.signals);
@@ -411,7 +411,7 @@ suite('time-weighted-chart: Viewmodel im Browser', () => {
     type(h.q('[data-ref="chart-type"]'), 'ewma');
     await settle();
     assertEqual(vm.model.chartTypeId, 'ewma');
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_EWMA_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_EWMA_RESULT);
     assertDeepEqual(h.qa('.twc__plot-wrap').map((el) => el.getAttribute('data-chart-host')), ['ewma']);
     assertEqual(h.in('ewma').length, 1);
     assertEqual(h.live().length, 1, 'alte Teilkarten leben weiter');
@@ -499,7 +499,7 @@ suite('time-weighted-chart: Viewmodel im Browser', () => {
     assertEqual(vm.model.targetOverride, 25);
     assertEqual(vm.model.sigmaOverride, null);
     assertDeepEqual(plain(vm.model.params), LEGACY_PARAMS);
-    assertDeepEqual(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
+    assertDeepClose(plain(vm.read({ fields: ['result'] }).result), LEGACY_RESULT);
     // Obere Teilkarte erbt 'cusum'; die untere hat keinen Alteintrag ('cusum#2' fehlt in der Fixture).
     assertDeepEqual(plain(vm.model.charts.cusum_plus), { title: 'Legacy', showTitle: true, bgColor: '#eef6ff', yLabel: 'C (Legacy)' });
     assertEqual(vm.model.charts.cusum_minus, undefined);

@@ -8,7 +8,7 @@
  * Phase II, Anmerkungen und Spezifikation; X̄-R mit Stufen). Die
  * Kachel-Literale stammen aus der Rechnung der Altkachel.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   MIN_VALUES, parseStages, activeStages, misalignedStages, excludedOf, sameColumn, frozenApplies, inputsOf,
   analyze, analyzeWith, computeChart, baselineEndOf, uniqueViolations, resultOf, pointsOf, freezeLimitsOf,
@@ -357,7 +357,7 @@ suite('control-chart: resultOf gleich der Altform', () => {
       const values = await exampleColumn(file, sheet, col);
       const m = model({ columnRef: ref(col, sheet), ...over });
       const a = run(m, { values: () => values });
-      assertDeepEqual(resultOf(a), expected);
+      assertDeepClose(resultOf(a), expected);
       assertEqual(pointsOf(a).length, expected.n);
     });
   }
@@ -366,19 +366,19 @@ suite('control-chart: resultOf gleich der Altform', () => {
     const csv = await fetchText('../../../examples/data/capability-bolzendurchmesser.csv');
     const values = csv.trim().split(/\r?\n/).slice(1).map(Number);
     assertEqual(values.length, 100);
-    assertDeepEqual(resultOf(run(model({ columnRef: ref('c-0') }), { values: () => values })), BOLZEN_CSV_RESULT);
+    assertDeepClose(resultOf(run(model({ columnRef: ref('c-0') }), { values: () => values })), BOLZEN_CSV_RESULT);
   });
 
   test('test_data_control.csv (Vorgaben)', () => {
-    assertDeepEqual(resultOf(run(model({ columnRef: ref('value') }))), TEST_DATA_CONTROL_RESULT);
+    assertDeepClose(resultOf(run(model({ columnRef: ref('value') }))), TEST_DATA_CONTROL_RESULT);
   });
 
   test('Altprojekt I-MR (Phase II, Anmerkungen, Spezifikation)', () => {
-    assertDeepEqual(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
+    assertDeepClose(resultOf(run(LEGACY_MODEL)), LEGACY_RESULT);
   });
 
   test('Altprojekt X̄-R (Stufen; Grenzen der letzten Stufe)', () => {
-    assertDeepEqual(resultOf(run(LEGACY_XBAR_MODEL)), LEGACY_XBAR_RESULT);
+    assertDeepClose(resultOf(run(LEGACY_XBAR_MODEL)), LEGACY_XBAR_RESULT);
   });
 
   test('Literale der Altform (KPI-Leiste am Altmodul, Sprache en)', () => {
@@ -481,7 +481,7 @@ suite('control-chart: analyze', () => {
     const a = fresh(model({ chartTypeId: 'xbar-r', subgroupSize: 5, columnRef: ref('durchmesser'), annotations: { 2: { comment: '', excluded: true } } }));
     assertEqual(a.fit.subcharts.xbar.cl, mean(means.slice(1)), 'Mittel ohne Untergruppe 1');
     assertTrue(a.fit.subcharts.xbar.cl !== mean(means.filter((_, k) => k !== 2)), 'Untergruppe 3 bleibt drin');
-    assertDeepEqual(resultOf(a).subcharts.xbar, { cl: 10.0424, ucl: 10.191266, lcl: 9.893534, sigma: 0.0496049473942344 });
+    assertDeepClose(resultOf(a).subcharts.xbar, { cl: 10.0424, ucl: 10.191266, lcl: 9.893534, sigma: 0.0496049473942344 });
   });
 
   test('Nelson: erste Teilkarte mit den angehakten Regeln, zweite nur mit den dort erlaubten (1–4)', () => {
@@ -494,7 +494,7 @@ suite('control-chart: analyze', () => {
 
   test('Fähigkeit aus der letzten Stufe; ohne Spezifikation null', () => {
     const a = fresh(LEGACY_XBAR_MODEL);
-    assertEqual(a.capability.cpk, LEGACY_XBAR_RESULT.capability.cpk);
+    assertDeepClose(a.capability.cpk, LEGACY_XBAR_RESULT.capability.cpk);
     assertEqual(fresh({ ...LEGACY_XBAR_MODEL, usl: null, lsl: null }).capability, null);
   });
 
@@ -519,7 +519,7 @@ suite('control-chart: analyze', () => {
     const r = resultOf(fresh(model({ chartTypeId: 'xbar-r', subgroupSize: 5, columnRef: ref('v') }), reader({ v: LAENGE.slice(0, 23) })));
     assertEqual(r.n, 4);
     assertEqual(r.baselineEnd, 20);
-    assertDeepEqual(r.subcharts.xbar, { cl: 10, ucl: 10.077895, lcl: 9.922105, sigma: 0.025956077124890207 });
+    assertDeepClose(r.subcharts.xbar, { cl: 10, ucl: 10.077895, lcl: 9.922105, sigma: 0.025956077124890207 });
   });
 
   test('X̄ mit weniger Werten als eine Untergruppe: errCompute (nichts zu zeichnen)', () => {
@@ -622,7 +622,7 @@ suite('control-chart: Grenzlisten mit Stufen und Rest am Ende', () => {
     const a = fresh(model({ ...M, stagesText: '20' }), READ);
     assertEqual(a.status, 'ok');
     assertDeepEqual(a.fit.segments, [{ start: 0, end: 4 }]);
-    assertDeepEqual(resultOf(a).subcharts.xbar, { cl: 10, ucl: 10.077895, lcl: 9.922105, sigma: 0.025956077124890207 });
+    assertDeepClose(resultOf(a).subcharts.xbar, { cl: 10, ucl: 10.077895, lcl: 9.922105, sigma: 0.025956077124890207 });
   });
 });
 
@@ -730,7 +730,7 @@ suite('control-chart: pointsOf', () => {
     assertEqual(p.length, 8);
     assertDeepEqual(Object.keys(p[0]), ['xbar', 'xbarCl', 'xbarUcl', 'xbarLcl', 'r', 'rCl', 'rUcl', 'rLcl', 'signal']);
     assertTrue(p[0].xbarCl !== p[7].xbarCl, 'Stufen haben eigene Grenzen');
-    assertEqual(p[7].xbarCl, LEGACY_XBAR_RESULT.subcharts.xbar.cl);
+    assertDeepClose(p[7].xbarCl, LEGACY_XBAR_RESULT.subcharts.xbar.cl);
   });
 
   test('leer ohne Ergebnis oder bei Fehler', () => {

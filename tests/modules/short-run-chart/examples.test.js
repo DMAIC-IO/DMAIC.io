@@ -6,7 +6,7 @@
  * `derived.result` gleicht dem `read().result` der Altform für dasselbe
  * Beispiel (Literal aus `analyze.test.js`).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { State } from '../../../js/modules/short-run-chart/domain/model.js';
@@ -66,7 +66,7 @@ suite('short-run-chart: Beispiel', () => {
     assertDeepEqual(cols.find((c) => c.id === 'c-messwert').values, MESSWERT, 'Arbeitsblatt unverändert (Messwert)');
     assertDeepEqual(cols.find((c) => c.id === 'c-setup').values, SETUP, 'Arbeitsblatt unverändert (Setup)');
     const { result, points, warningMsg } = evaluateDerived(model, src, undefined, T);
-    assertDeepEqual(plain(result), EXAMPLE_RESULT);
+    assertDeepClose(plain(result), EXAMPLE_RESULT);
     assertEqual(warningMsg, null);
     assertEqual(points.length, 24);
     assertEqual(points[0].mr, null, 'erste Zeile ohne gleitende Spannweite');

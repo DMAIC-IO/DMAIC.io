@@ -3,7 +3,7 @@
  * Die Literale stammen aus dem Altmodul (`_runAnalysis`, `read().result`)
  * für die Altprojekt-Fixture und das Beispiel `spc-run-chart-shift`.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   TEST_IDS, MIN_VALUES, inputValues, analyze, isFlagged, flaggedCount, resultOf, pointsOf, engineRuns,
 } from '../../../js/modules/run-chart/domain/analyze.js';
@@ -94,7 +94,7 @@ suite('run-chart: Bewertung gegen α', () => {
 suite('run-chart: resultOf', () => {
   test('Altprojekt: gleich dem read().result der Altform', () => {
     const r = resultOf(analyze(DURCHMESSER), 0.1);
-    assertDeepEqual(r, LEGACY_RESULT);
+    assertDeepClose(r, LEGACY_RESULT);
     assertDeepEqual(plain(r), r, 'JSON-fest, ohne Funktionen');
   });
 
@@ -103,7 +103,7 @@ suite('run-chart: resultOf', () => {
     const r = resultOf(a, 0.01);
     assertEqual(r.flagged, 1);
     assertDeepEqual(r.tests.map((t) => t.flagged), [true, false, false, false]);
-    assertEqual(r.median, LEGACY_RESULT.median);
+    assertDeepClose(r.median, LEGACY_RESULT.median);
   });
 
   test('nicht endliche Zahlen werden null', () => {
@@ -180,8 +180,8 @@ suite('run-chart: Beispiel gegen die Altrechnung', () => {
         { id: 'oscillation', p: 0.7527977028732717, observed: 31, flagged: false },
       ],
     };
-    assertDeepEqual(resultOf(a, 0.05), expected);
-    assertDeepEqual(resultOf(a, 0.01), expected);
+    assertDeepClose(resultOf(a, 0.05), expected);
+    assertDeepClose(resultOf(a, 0.01), expected);
     assertEqual(pointsOf(a).length, 50);
   });
 });

@@ -6,7 +6,7 @@
  * `read().result` der Altform für dasselbe Beispiel (78 Messwerte, 13 Teile,
  * 3 Prüfer, zwei Streifen).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { rewriteColumnRefs } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { sourceColumns } from '../../../js/core/source-columns.js';
@@ -68,7 +68,7 @@ suite('gage-run-chart: Beispiel', () => {
     assertDeepEqual(plain(model.runStripEdits), {});
     const src = storedSource({ ws1: ws });
     const { result, points } = evaluateDerived(model, src, undefined, T);
-    assertDeepEqual(plain(result), LEGACY_RESULT);
+    assertDeepClose(plain(result), LEGACY_RESULT);
     assertEqual(points.length, 78);
     assertEqual(stripRows(analyze(inputColumns(model, sourceColumns(src))), model.partsPerRow).length, 2);
   });

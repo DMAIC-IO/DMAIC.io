@@ -4,7 +4,7 @@
  * aus `chart-suggestion`. Die Fälle des alten `fromJSON` stammen aus dem
  * Unit-Test der Altform.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import { State } from '../../../js/modules/control-chart/domain/model.js';
 import { from0 } from '../../../js/modules/control-chart/domain/migrations.js';
 import { frozenApplies } from '../../../js/modules/control-chart/domain/analyze.js';
@@ -338,7 +338,7 @@ suite('control-chart: Migration — Beispiele', () => {
       const src = sheetSource({ [columnId]: values }, { instanceId: '__source__', sheetId });
       const m = load(old);
       const d = evaluateDerived(m, src, ['result', 'points'], T);
-      assertDeepEqual(d.result, expected);
+      assertDeepClose(d.result, expected);
       assertEqual(d.points.length, expected.n);
     });
   }

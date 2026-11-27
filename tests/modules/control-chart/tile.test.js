@@ -5,7 +5,7 @@
  * ohne Stufen, Ausschlüsse und eingefrorene Grenzen), den Fehlerfall ohne
  * Wurf, gelöschte Spalten, die Einstellungen und `enumerate`.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import tile from '../../../js/modules/control-chart/tile/tile.js';
 import { engineRuns } from '../../../js/modules/control-chart/domain/analyze.js';
 import { readSettings, checkValue } from '../../../js/core/model.js';
@@ -181,7 +181,7 @@ suite('control-chart Kachel: Zahlen wie die Altkachel', () => {
     assertEqual(vm.chart.values.length, 30);
     assertDeepEqual(vm.chart.violationIndices, [20, 24, 25, 26, 28]);
     assertDeepEqual([vm.chart.usl, vm.chart.lsl], [10.5, 9.4]);
-    assertDeepEqual(vm.chart.cl, [10.000000000000002], 'Livegrenze, nicht die eingefrorene CL 10');
+    assertDeepClose(vm.chart.cl, [10.000000000000002], undefined, 'Livegrenze, nicht die eingefrorene CL 10');
   });
 
   test('Altprojekt X̄-R: ohne Stufen, keine Trennlinie', async () => {

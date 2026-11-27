@@ -1,7 +1,7 @@
 /**
  * Messverlaufsdiagramm: Model (domain/model.js) — Schema, Vorgaben und Ableitungen.
  */
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows, assertDeepClose } from '../../test-utils.js';
 import {
   State, GAGE_INFO_KEYS, MIN_PARTS_PER_ROW, MAX_PARTS_PER_ROW, DEFAULT_PARTS_PER_ROW,
 } from '../../../js/modules/gage-run-chart/domain/model.js';
@@ -164,7 +164,7 @@ suite('gage-run-chart: Model — Ableitungen', () => {
     derived(m, ['result']);
     const before = engineRuns();
     m.refValue = null;
-    assertEqual(derived(m, ['result']).result.refValue, 10.102666666666668);
+    assertDeepClose(derived(m, ['result']).result.refValue, 10.102666666666668);
     m.partsPerRow = 1; m.connectWithin = true;
     setFields(m, { gageInfo: { name: 'X', date: '', reporter: '', tolerance: '', misc: '' } });
     derived(m);

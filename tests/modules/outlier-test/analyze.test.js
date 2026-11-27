@@ -2,7 +2,7 @@
  * Ausreißertest: die Rechnung (domain/analyze.js) gegen die Altrechnung.
  * Die Literale stammen aus dem Altmodul (runAnalysis/_buildResult).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertDeepClose } from '../../test-utils.js';
 import {
   ALL_METHODS, inputValues, analyze, buildResult, chartMethodOptions, effectiveChartMethod,
 } from '../../../js/modules/outlier-test/domain/analyze.js';
@@ -81,7 +81,7 @@ suite('outlier-test: analyze und buildResult gegen die Altrechnung', () => {
 
   test('Altprojekt-Fixture: G 4.1774, Gₜ 2.3853, obere Schranke 10.0850, Schwelle 2.50, markiert 10,45', () => {
     const res = buildResult(LEGACY_VALUES, analyze(LEGACY_VALUES, LEGACY_PARAMS));
-    assertDeepEqual(plain(res), LEGACY_RESULT);
+    assertDeepClose(plain(res), LEGACY_RESULT);
     assertEqual(LEGACY_VALUES[res.flaggedIdxs[0]], 10.45);
     assertEqual(res.methods[0].metrics.statistic.toFixed(4), '4.1774');
     assertEqual(res.methods[0].metrics.critical.toFixed(4), '2.3853');
@@ -90,7 +90,7 @@ suite('outlier-test: analyze und buildResult gegen die Altrechnung', () => {
   });
 
   test('Beispiel outlier-bolzen-grubbs: gleich der Altrechnung', () => {
-    assertDeepEqual(plain(buildResult(BOLZEN, analyze(BOLZEN, BOLZEN_PARAMS))), BOLZEN_RESULT);
+    assertDeepClose(plain(buildResult(BOLZEN, analyze(BOLZEN, BOLZEN_PARAMS))), BOLZEN_RESULT);
   });
 
   test('Reihenfolge der Verfahren nach ALL_METHODS, nicht nach enabled', () => {
@@ -168,6 +168,6 @@ suite('outlier-test: analyze rechnet je Eingabe nur einmal', () => {
     const x = plain(buildResult(LEGACY_VALUES, analyze(LEGACY_VALUES, LEGACY_PARAMS)));
     const y = plain(buildResult(BOLZEN, analyze(BOLZEN, BOLZEN_PARAMS)));
     assertDeepEqual(plain(buildResult(LEGACY_VALUES, analyze(LEGACY_VALUES, LEGACY_PARAMS))), x);
-    assertDeepEqual(y, BOLZEN_RESULT);
+    assertDeepClose(y, BOLZEN_RESULT);
   });
 });

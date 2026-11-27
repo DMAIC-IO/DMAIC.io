@@ -189,6 +189,57 @@ export function assertDeepEqual(actual, expected, message) {
 }
 
 /**
+ * Assert deep equality with a floating-point tolerance for finite numbers.
+ *
+ * For comparing computed results against stored literals (e.g. `read().result`
+ * captured from an earlier module form). `Math.pow/log/exp` differ in the last
+ * bits between runtime versions (V8 in Node 20 vs. 24): measured up to ~2e-15
+ * relative on identical code. That is the runtime's math library, not a change
+ * in the algorithm, so bit equality would make the test depend on the Node
+ * version. A finite number passes when |a − e| ≤ abs or |a − e| / |e| ≤ rel;
+ * everything else is exact: key sets, array lengths, types, strings, booleans,
+ * null, NaN and ±Infinity.
+ *
+ * @param {*} actual
+ * @param {*} expected
+ * @param {{rel?: number, abs?: number}} [options] tolerances (default rel 1e-12, abs 1e-15)
+ * @param {string} [message] prefix for the failure message
+ */
+export function assertDeepClose(actual, expected, { rel = 1e-12, abs = 1e-15 } = {}, message) {
+  const show = (v) => (typeof v === 'number' ? String(v) : JSON.stringify(v));
+  const bad = (path, why) => fail(`${message ? `${message}: ` : ''}${path || '(Wurzel)'}: ${why}`);
+  const walk = (a, e, path) => {
+    if (typeof a === 'number' && typeof e === 'number') {
+      if (Object.is(a, e) || a === e) return;
+      if (Number.isFinite(a) && Number.isFinite(e)) {
+        const d = Math.abs(a - e);
+        if (d <= abs || d / Math.abs(e) <= rel) return;
+      }
+      bad(path, `erwartet ${show(e)}, erhalten ${show(a)}`);
+    }
+    if (typeof a !== 'object' || a === null || typeof e !== 'object' || e === null) {
+      if (!Object.is(a, e)) bad(path, `erwartet ${show(e)}, erhalten ${show(a)}`);
+      return;
+    }
+    if (Array.isArray(a) !== Array.isArray(e)) bad(path, `erwartet ${show(e)}, erhalten ${show(a)}`);
+    if (Array.isArray(e)) {
+      if (a.length !== e.length) bad(path, `Länge erwartet ${e.length}, erhalten ${a.length}`);
+      e.forEach((v, i) => walk(a[i], v, `${path}[${i}]`));
+      return;
+    }
+    const aKeys = Object.keys(a);
+    const eKeys = Object.keys(e);
+    const missing = eKeys.filter((k) => !Object.hasOwn(a, k));
+    const extra = aKeys.filter((k) => !Object.hasOwn(e, k));
+    if (missing.length || extra.length) {
+      bad(path, `Schlüssel fehlen [${missing.join(', ')}], zusätzlich [${extra.join(', ')}]`);
+    }
+    for (const k of eKeys) walk(a[k], e[k], path ? `${path}.${k}` : k);
+  };
+  walk(actual, expected, '');
+}
+
+/**
  * Assert that a condition is truthy.
  * @param {*} condition
  * @param {string} [message]
