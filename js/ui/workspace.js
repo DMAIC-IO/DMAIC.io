@@ -146,6 +146,8 @@ export class Workspace {
      * @type {Map<string, Promise<void>>}
      */
     this._pending = new Map();
+    /** @type {Set<string>} Instanzen, deren Stand ein Import im Speicher ersetzte (`_discardLiveStates`) */
+    this._storeNewer = new Set();
     /** @type {object|null} router instance (set via setRouter) */
     this._router = null;
     /** @type {import('../core/instances.js').InstancesService|null} (set via setInstances) */
@@ -258,6 +260,7 @@ export class Workspace {
     this._instances.clear();
     this._containers.clear();
     this._pending.clear();
+    this._storeNewer?.clear();
     for (const dispose of this._actionEffectDisposers ?? []) {
       try { dispose(); } catch { /* ignore */ }
     }
@@ -719,6 +722,7 @@ export class Workspace {
     }
     this._instances.forEach((instance, id) => {
       if (!live.has(id)) return;
+      if (this._storeNewer?.has(id)) return; // ein Import ersetzte ihren Stand im Speicher
       try {
         // Entprellte Ansichten der Widgets (Raster) erst ins Model, solange das Projekt noch aktiv ist.
         instance.flushViews?.();
@@ -728,6 +732,24 @@ export class Workspace {
         this._stateManager.setModuleState(id, state);
       } catch { /* ignore */ }
     });
+  }
+
+  /**
+   * Ein Import ersetzt gleich den Stand im Speicher: jede eingehängte Instanz
+   * verwirft ihre ausstehende Speicherung und gilt bis zum Aushängen
+   * (`reset`) als „Speicher ist neuer“ — `_persistAllModuleStates` schreibt
+   * sie nicht zurück. Sonst überdeckte der Unload-Haken nach dem Import (die
+   * Seite lädt danach neu) bei gleichen Instanz-ids den Import mit dem alten
+   * lebenden Stand.
+   */
+  _discardLiveStates() {
+    const storeNewer = (this._storeNewer ??= new Set());
+    this._instances.forEach((instance, id) => {
+      try { instance.cancelPersist?.(); } catch { /* ignore */ }
+      storeNewer.add(id);
+    });
+    // Eine laufende Einhängung kann den Stand noch vor dem Import gelesen haben.
+    for (const id of this._pending?.keys() ?? []) storeNewer.add(id);
   }
 
   /**
@@ -1323,6 +1345,7 @@ export class Workspace {
     this._eventBus.on('project:before-export', () => {
       this._persistAllModuleStates();
     });
+    this._eventBus.on('project:before-import', () => this._discardLiveStates());
     this._eventBus.on('state:remote-changed', ({ instanceIds, metaChanged }) => {
       for (const instanceId of instanceIds) {
         const inst = this._instances.get(instanceId);

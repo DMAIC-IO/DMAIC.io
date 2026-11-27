@@ -945,6 +945,11 @@ export class StateManager {
     let data = JSON.parse(jsonString);
     _assertNotFutureMajor(data.appVersion);
     data = migrateToLatest(data, VERSION);
+    // Ab hier ist der Speicher neuer als die eingehängten Instanzen: sie
+    // verwerfen ihre ausstehende Speicherung und werden nicht mehr
+    // zurückgeschrieben (Unload, Projektwechsel) — sonst überdeckte ihr alter
+    // Stand den Import derselben Instanz-ids.
+    this._eventBus.emit('project:before-import');
     this._state.settings                 = data.settings                 ?? this._defaultState().settings;
     this._state.projectMeta              = data.projectMeta              ?? this._defaultState().projectMeta;
     this._state.phases                   = data.phases                    ?? this._defaultState().phases;

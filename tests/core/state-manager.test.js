@@ -443,6 +443,34 @@ function baseDoc() {
   };
 }
 
+suite('StateManager: Import in das offene Projekt', () => {
+  test('importJSON meldet project:before-import, bevor es den Cache ersetzt', async () => {
+    const bus = new EventBus();
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(bus, adapter);
+    await sm.load();
+    const seen = [];
+    bus.on('project:before-import', () => seen.push(sm.getModuleState('i1')));
+    const file = { ...baseDoc(), appVersion: VERSION, moduleStates: { i1: { columns: [['importiert']] } } };
+    await sm.importJSON(JSON.stringify(file));
+    assertEqual(seen.length, 1, 'genau einmal gemeldet');
+    assertDeepEqual(seen[0], { columns: [['a']] }, 'zum Zeitpunkt der Meldung steht noch der alte Stand');
+    assertDeepEqual(sm.getModuleState('i1'), { columns: [['importiert']] });
+  });
+
+  test('ein ungültiger Import meldet project:before-import nicht', async () => {
+    const bus = new EventBus();
+    const sm = new StateManager(bus, makeFakeAdapter(baseDoc()));
+    await sm.load();
+    let fired = 0;
+    bus.on('project:before-import', () => { fired += 1; });
+    let threw = false;
+    try { await sm.importJSON('{ kein json'); } catch { threw = true; }
+    assertTrue(threw);
+    assertEqual(fired, 0);
+  });
+});
+
 suite('StateManager: Projektstatus', () => {
   // Module, die ihren Nur-Lese-Zustand reaktiv führen (Arbeitsblatt-Raster),
   // brauchen ein Ereignis: isCompleted() allein meldet keine Änderung.

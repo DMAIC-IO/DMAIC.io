@@ -12,6 +12,7 @@
  *   module:activated  { instanceId }
  *   data:changed      { source, key }
  *   project:exported  {}
+ *   project:before-import {}  (importJSON, vor dem Ersetzen des Stands)
  *   project:imported  { data }
  *   state:saved       {}
  */

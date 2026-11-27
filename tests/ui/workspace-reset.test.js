@@ -97,14 +97,19 @@ suite('Workspace — ausstehende Modulspeicherung', () => {
       isCompleted: () => false,
       registerPendingWork: (fn) => { hooks.push(fn); return () => { hooks.splice(hooks.indexOf(fn), 1); }; },
     };
+    const handlers = {};
+    const eventBus = {
+      on: (ev, fn) => { (handlers[ev] ??= []).push(fn); },
+      emit: (ev, payload) => { for (const fn of handlers[ev] ?? []) fn(payload); },
+    };
     const ws = new Workspace(container, {
       moduleRegistry: { instantiate: async () => ({}), get: () => ({ id: 'x' }) },
-      eventBus: { on: () => {}, emit: () => {} }, stateManager,
+      eventBus, stateManager,
       i18n: { t: (k) => k, getLanguage: () => 'de' },
       modal: () => {}, notify: () => {}, helpPanel: null, chartManager: null, examples: null, glossary: null,
     });
     ws.render();
-    return { ws, hooks, writes };
+    return { ws, hooks, writes, eventBus };
   }
 
   test('render meldet genau einen Haken an, ein zweites render ersetzt ihn', () => {
@@ -123,5 +128,27 @@ suite('Workspace — ausstehende Modulspeicherung', () => {
     assertEqual(writes.length, 1);
     assertEqual(writes[0][0], 'a');
     assertEqual(writes[0][1].n, 3);
+  });
+
+  test('nach einem Import schreibt der Haken eingehängte Instanzen nicht zurück (Speicher ist neuer)', () => {
+    const { ws, hooks, writes, eventBus } = makeWs();
+    let cancelled = 0;
+    ws._instances.set('a', { cancelPersist: () => { cancelled += 1; }, getState: () => ({ n: 'alt' }) });
+    eventBus.emit('project:before-import');
+    assertEqual(cancelled, 1, 'die entprellte Speicherung der Instanz ist verworfen');
+    hooks[0]();
+    ws._persistAllModuleStates();
+    assertEqual(writes.length, 0, 'kein Rückschreiben des alten Stands');
+  });
+
+  test('nach reset() schreibt der Haken neu eingehängte Instanzen wieder', async () => {
+    const { ws, hooks, writes, eventBus } = makeWs();
+    ws._instances.set('a', { getState: () => ({ n: 'alt' }) });
+    eventBus.emit('project:before-import');
+    await ws.reset();
+    ws._instances.set('a', { getState: () => ({ n: 'neu' }) });
+    hooks[0]();
+    assertEqual(writes.length, 1);
+    assertEqual(writes[0][1].n, 'neu');
   });
 });
