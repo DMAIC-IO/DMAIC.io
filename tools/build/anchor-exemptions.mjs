@@ -122,7 +122,8 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'class="pmap__sipoc-option" :class="importOptionClass(opt)"', reason: 'Auswahlzeile je SIPOC-Instanz im Importdialog; keine Agentenaktion', count: 1 },
   ],
   'activity-flowchart': [
-    { match: 'class="af__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
+    // count 2, solange Altvorlage und resources/view.html nebeneinander liegen; 2b setzt zurück auf 1.
+    { match: 'class="af__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 2 },
   ],
   'deployment-flowchart': [
     { match: 'class="df__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },

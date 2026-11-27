@@ -1,0 +1,565 @@
+/* Activity-Flowchart: Raster aus Bändern, Aktivitätskarten, Entscheidungsrauten,
+   Band-Enden mit Wiedereinstieg und das Auswahlformular des Imports. */
+
+/* ── Canvas / chain layout ─────────────────────────────────────────────
+   The canvas is a grid whose every item is placed explicitly: the row from a
+   step's band, the column from a packing pass that lets each band fill its
+   own columns (see layoutOf() in domain/layout.js). A column therefore
+   belongs to no single step — a diamond and the first card of the detour it
+   opens share one — which is what keeps the main path dense where a detour
+   runs beside it instead of tearing it open across it.
+
+   Because nothing is auto-placed any more, the rail can be a plain grid child
+   again; the earlier conflict (explicitly placed children are positioned
+   before auto-placed ones and stole the columns) cannot arise. */
+.af__canvas {
+  position: relative;
+  min-height: 200px;
+}
+
+/* No label column: leave room for the gap-0 rail left of the first card. */
+.af__canvas.af__canvas--plain {
+  padding-left: calc(var(--spacing-md) + var(--fc-chain-gap));
+}
+
+/* The label column is the only leftover that would be auto-placed; pin it so
+   it cannot land anywhere but first. */
+.af__canvas > .fc-swimlane-labels { grid-column: 1; }
+
+/* The re-entry marker: the chain arrow rotated a quarter turn so it points
+   up at the card the detour rejoins at. It carries fc-connector__arrow and
+   so takes its colour and size from the chain — one arrow tone across every
+   flowchart, nothing to keep in sync here. */
+.af__rejoin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  pointer-events: none;   /* the lane behind it still takes card drops */
+  z-index: 1;
+}
+
+/* Only the control takes clicks; the arrow above it stays transparent so a
+   card can still be dropped into the band underneath. */
+.af__rejoin .af__band-exit-group { pointer-events: auto; }
+
+.af__rejoin-arrow { transform: rotate(-90deg); }
+
+/* Turned around, not swapped for a « glyph: it is the same chevron, so it
+   keeps the size, weight and colour of every other arrow in the chart, and
+   the hover state that trades it for a + keeps working. */
+.af__connector-arrow--back { transform: rotate(180deg); }
+
+/* A band's lane: the full-width strip behind its cards. It exists to take the
+   drop that moves a card into this band — the per-column slots that used to
+   do that are gone with the packed layout — and to draw the band separator. */
+.af__lane {
+  border-bottom: var(--border-width) dashed var(--color-border-secondary);
+  z-index: 0;
+}
+.af__lane:last-of-type { border-bottom: none; }
+.af__lane.is-drop-target { background: var(--color-flowchart-step-accent-bg); }
+
+/* A band's tail: placeholder and exit, directly after that band's last card.
+   Centred on the rail, because unlike a card there is nothing here to align
+   along a header. */
+.af__tail {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  padding-left: var(--fc-chain-gap);
+  z-index: 1;
+}
+
+.af__empty-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md) 0;
+}
+
+/* Band label. One indent step per nesting level shows which band branches
+   off which — with two rows flush against the same left edge, the parentage
+   would not be readable. */
+.af__band-label {
+  color: var(--color-text-secondary);
+  padding-left: calc(var(--spacing-sm) * var(--af-band-depth, 0));
+}
+.af__band-label[data-depth="1"] { --af-band-depth: 1; }
+.af__band-label[data-depth="2"] { --af-band-depth: 2; }
+.af__band-label[data-depth="3"] { --af-band-depth: 3; }
+
+/* Placeholder at the end of a band: dashed, so it reads as an empty slot
+   rather than as a card. */
+.af__band-add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  align-items: stretch;
+  padding: var(--spacing-xs);
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.af__band-add button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+
+.af__band-add button:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* The exit at the end of a no-band: where the detour rejoins the main path.
+   This is where the branch's target is picked now, not at the diamond — see
+   the comment on `.af__branch` below. */
+.af__band-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  white-space: nowrap;
+}
+.af__band-exit:hover { background: var(--color-bg-tertiary); color: var(--color-text-primary); }
+.af__band-exit-arrow { color: var(--color-error); }
+
+/* Button and its ✕ side by side. */
+.af__band-exit-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+}
+
+/* The ✕ that drops a chosen re-entry, so the detour ends where its cards do
+   again — reachable without going through the picker first. */
+.af__band-exit-clear {
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  padding: var(--spacing-xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+.af__band-exit-clear:hover { color: var(--color-error); background: var(--color-bg-tertiary); }
+
+/* Doubled class on purpose: the rule that gives every exit the canvas colour
+   (so the rail does not strike through its label) sits further down, and a
+   single class would lose to it on source order — the chosen exit would look
+   like all the others. */
+.af__band-exit.af__band-exit--active {
+  background: var(--color-flowchart-step-accent-bg);
+  color: var(--color-flowchart-step-accent);
+  box-shadow: inset 0 0 0 1px var(--color-flowchart-step-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* While the picker is armed, the eligible cards invite the click and the rest
+   step back — the choice is made on the chart, so the chart has to say which
+   cards are choices. */
+.af__step--pickable { cursor: pointer; }
+
+.af__step--pickable .af__card,
+.af__step--pickable .af__diamond-shape {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 2px;
+}
+
+.af__step--dimmed { opacity: 0.45; }
+
+.af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
+
+
+
+/* The connector is absolutely positioned INTO the gap left of its step, so it
+   costs no layout space and two cards sit exactly --fc-chain-gap apart —
+   the same distance Process Map's table border-spacing produces. */
+.af__connector {
+  position: absolute;
+  left: calc(-1 * var(--fc-chain-gap));
+  top: 4px;
+  margin-top: var(--spacing-xs);
+  z-index: 1;
+}
+
+/* No exception for the diamond. Dropping its connector to the shape's middle
+   line did make the chevron meet the left vertex, but only the connector
+   BEFORE a diamond ever got that offset — the one after it sits beside a
+   card and stayed on the header line — so the row of arrows read as broken
+   rather than as aimed. One line for all of them. */
+
+
+/* The insert menu at an arrow. It hangs BELOW the arrow rather than over it,
+   so the two cards it would go between stay visible while choosing. */
+.af__insert-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-xs);
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.af__insert-menu button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  cursor: pointer;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+
+.af__insert-menu button:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Cards all sit at z-index 1, so the one after this arrow would paint over
+   the open menu — later sibling, same layer. Lift the card that carries it. */
+.af__step--menu-open { z-index: 10; }
+
+/* Gesture feedback: the step being moved (state.flowPreview). */
+.af__step.is-dragging { opacity: 0.5; }
+
+/* ── Connector between steps ────────────────────────────────────────────
+   Look comes from `.fc-connector` in js/core/flowchart/flowchart.css. */
+
+/* ── Activity card ──────────────────────────────────────────────────────
+   Surface, header, number badge, title and delete button come from the
+   shared `.fc-*` base in js/core/flowchart/flowchart.css — only the
+   module-specific sizing lives here. */
+.af__card { min-width: 220px; }
+
+/* Height/line-box come from textarea.fc-card__title; nothing module-specific
+   left to say about the title itself. */
+
+/* ── Decision diamond ───────────────────────────────────────────────────
+   The shape is CLIPPED, not rotated. A rotated square carried its own
+   problems: its bounding box is the diagonal (160px square → 226px box), so
+   it overflowed the canvas at the top and hung below the cards, and every
+   child had to be counter-rotated — which stacked label, delete button and
+   branches into one grid cell. Clipping keeps the box exactly as big as the
+   diamond and leaves the content in normal flow.
+
+   `.af__diamond` is the unclipped wrapper: everything that has to escape the
+   shape (delete button, branch popover) is a sibling of it, because clip-path
+   clips descendants too. */
+.af__diamond {
+  position: relative;
+  box-sizing: border-box;
+
+  /* A gutter on BOTH sides, though only the right one holds anything ("Ja"
+     at the right vertex). With the gutter on the right alone the shape sat
+     half a gutter left of its column's middle, off-centre between the two
+     arrows it connects. The left gutter stays empty and buys the symmetry. */
+  width: calc(var(--af-diamond-w) + 2 * var(--af-branch-gutter));
+  padding: 0 var(--af-branch-gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Wider than tall: a square diamond next to 220px cards would tower over the
+   chain, and the label only ever gets the width around the middle anyway. */
+.af {
+  --af-diamond-w: 200px;
+  --af-diamond-h: 120px;
+
+  /* Only wide enough for the word at the right vertex ("Ja" / "Yes"). It
+     used to hold a spelled-out target too and was 76px for it; since yes
+     simply flows on, the next step moves back in and the chain reads as one
+     line running to the right. */
+  --af-branch-gutter: 40px;
+
+  /* Shadow of a hovered diamond; a token mix instead of a fixed colour. */
+  --af-diamond-shadow: color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+}
+
+[data-theme="dark"] .af {
+  --af-diamond-shadow: color-mix(in srgb, var(--color-bg-primary) 70%, transparent);
+}
+
+.af__diamond-shape {
+  position: relative;
+  width: var(--af-diamond-w);
+  height: var(--af-diamond-h);
+  flex: 0 0 auto;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: var(--color-accent);
+  display: grid;
+  place-items: center;
+  transition: filter var(--transition-speed);
+}
+
+/* The accent ring. A clipped element cannot carry a border, so the shape's
+   own background IS the ring and this inner layer paints the fill on top.
+   The insets must keep the diamond's aspect ratio (200:120 → 5:3), otherwise
+   the two outlines are not parallel and the ring comes out thicker at the
+   left/right vertices than at the top/bottom ones. 2.4px × 4px gives a ring
+   ~2px thick measured perpendicular to the edge. */
+.af__diamond-shape::before {
+  content: '';
+  position: absolute;
+  inset: calc(2.4px * var(--af-diamond-ring, 1)) calc(4px * var(--af-diamond-ring, 1));
+  background: var(--color-bg-elevated);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* drop-shadow (not box-shadow) follows the clipped outline instead of the
+   element's rectangle. */
+.af__step--decision:hover .af__diamond-shape {
+  filter: drop-shadow(0 2px 6px var(--af-diamond-shadow));
+}
+
+/* Sits above ::before, and narrow enough to stay inside the sloped edges for
+   two lines. */
+.af__decision-label {
+  position: relative;
+  width: 116px;
+  min-height: 1.4em;
+  line-height: 1.4;
+  padding: 0;
+  resize: none;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  text-align: center;
+  overflow: hidden;
+}
+.af__decision-label::placeholder { color: var(--color-text-tertiary); }
+.af__decision-label:focus { outline: none; }
+
+/* ── Number badge / drag handle ─────────────────────────────────────────
+   The badge IS the grip of the flow gesture (`.af__grip`), so a diamond without one is the only step type that
+   cannot be reordered — and the visible numbering would skip it (01 → 03).
+   Parked in the box's top-left corner, mirroring the delete button at the
+   top-right: the diamond leaves both corners empty, so it never covers the
+   label. Sibling of the clipped shape, because clip-path clips descendants.
+   Offset by the gutter, like the delete button: since the gutter became
+   symmetric, `left: 0` is a column of empty space beside the shape, not the
+   shape's own corner. */
+.af__diamond .af__step-number {
+  position: absolute;
+  top: 0;
+  left: var(--af-branch-gutter);
+  z-index: 1;
+}
+
+/* ── Delete button ──────────────────────────────────────────────────────
+   Parked over the shape's top-right corner — beside its upper slope, where
+   the diamond leaves the box empty, so it never covers the label. Offset by
+   the gutter so it stays on the SHAPE and not out in the exit label's column.
+   Hidden until the step is hovered, like `.fc-card__actions`. */
+.af__diamond .af__delete {
+  position: absolute;
+  top: 0;
+  right: var(--af-branch-gutter);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  opacity: 0;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
+}
+
+/* The diamond's delete is a sibling of the clipped shape, so it never gets
+   `.fc-card__delete` — size its trash glyph like the card ones anyway. */
+.af__diamond .af__delete .icon { font-size: 13px; }
+
+.af__step--decision:hover .af__delete,
+.af__diamond .af__delete:focus-visible { opacity: 1; }
+.af__diamond .af__delete:hover { color: var(--color-error); background: transparent; }
+
+/* ── Decision exits (Yes/No) ────────────────────────────────────────────
+   A flowchart labels the EDGE leaving a vertex, not a list under the shape:
+   "Yes" beside the right vertex, where the chain flows on to the next card,
+   "No" under the bottom one. Two words at two corners are readable without
+   explanation; a stack of two lines under the diamond is not.
+
+   Both are plain labels here, not controls: "Yes" is the flow on to the
+   right, and "No" only names the vertex — its target is picked at the end
+   of the band now (`.af__band-exit` below), where the detour rejoins the
+   main path, not at the diamond.
+
+   The gutter is the room the right-hand word needs. It is part of the
+   wrapper (not of the chain gap), so the label can never land under the
+   connector chevron of the following step. */
+.af__branch {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+}
+
+.af__branch-word { font-weight: var(--font-weight-semibold); }
+
+/* Centred on the diamond's middle line — the same line the connector to the
+   next step sits on, so shape, label and arrow read as one edge. */
+.af__branch--yes {
+  position: absolute;
+  right: 0;
+  top: calc(var(--af-diamond-h) / 2);
+  transform: translateY(-50%);
+  width: var(--af-branch-gutter);
+  align-items: flex-start;
+  text-align: left;
+  padding-left: var(--spacing-xs);
+
+  /* One word, never broken across two lines — the gutter is measured for it. */
+  white-space: nowrap;
+  color: var(--color-success);
+}
+
+.af__branch--no {
+  max-width: 100%;
+  align-items: center;
+  text-align: center;
+  color: var(--color-error);
+}
+
+
+/* ── Import picker form (borrowed into the shared modal) ────────────── */
+
+/* Hidden inside the module container; the shared dialog borrows the node,
+   so it must become visible again once it sits in the dialog body
+   (mirrors .dialog__body .pmap__sipoc-form in process-map.css). */
+.af__import-form { display: none; }
+.dialog__body .af__import-form { display: block; }
+
+.af__import-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.af__import-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.af__import-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.af__import-option--selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.af__import-option-source {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.af__import-option-title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+/* A band that rejoins backwards runs right to left, and its arrows stay where
+   every other arrow in the chart is: left of their card. That is the side the
+   stream is heading for here, so each one marks the gap the card flows INTO.
+   Moving them to the right paired each arrow with the card it came from, which
+   is exact for every card but the first — the head's predecessor is the
+   diamond, and that stands ABOVE it in the same column, leaving the arrow to
+   claim a column nothing flows through.
+
+   The tail is the one thing that does change sides: in a right-to-left band it
+   stands left of the cards, so the gap that separates it from the last one
+   lies on its right. */
+.af__tail--back {
+  padding-left: 0;
+  padding-right: var(--fc-chain-gap);
+  justify-content: flex-end;
+}
+
+/* ── Griff: die Nummer der Karte bzw. Raute ─────────────────────────────
+   Ein <button> in der Optik von `.fc-step-number` (Fläche, Schrift, `grab`
+   aus flowchart.css); hier nur die Knopf-Grundwerte und der Fokusring. */
+.af__grip {
+  border: none;
+  font-family: var(--font-family-mono);
+  line-height: inherit;
+  touch-action: none;
+}
+.af__grip:active { cursor: grabbing; }
+
+.af__grip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* ✕ des Wiedereinstiegs als Icon. */
+.af__band-exit-clear { display: inline-flex; align-items: center; }
+
+/* ── Textfelder wachsen mit dem Inhalt ──────────────────────────────────
+   `field-sizing: content` statt Messung per JavaScript; ohne Unterstützung
+   bleibt die Grundhöhe und ein Scrollbalken statt abgeschnittenem Text.
+   Zwei Zeilen Grundhöhe wie die Altform (Textfeld ohne `rows`, Vorgabe 2,
+   die die alte Messung nie unterschritt). */
+.af textarea.af__step-title,
+.af textarea.af__step-description,
+.af textarea.af__decision-label {
+  field-sizing: content;
+  overflow-y: auto;
+}
+
+.af textarea.af__step-title,
+.af textarea.af__decision-label { min-height: 2.8em; }
+
+/* `field-sizing` gilt auch für die Breite: der Titel behielte sonst nicht die
+   Mindestbreite der Altform (Textfeld ohne `cols`: 161 px bei 14 px Schrift),
+   sondern wüchse mit dem Text in die Breite statt in die Höhe. */
+.af textarea.af__step-title { width: 11.5em; min-width: 11.5em; }
+.af textarea.af__step-description { min-height: 44px; }

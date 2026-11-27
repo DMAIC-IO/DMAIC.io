@@ -1,0 +1,218 @@
+<div class="module-container af" x-data="activityFlowchart" data-ref="root">
+  <div class="module-container__body">
+    <!-- A click on the canvas closes the insert menu and the picker; the
+         controls that must not close them stop the event. Escape does the
+         same, unless the gesture already took it (defaultPrevented). -->
+    <div class="af__canvas fc-swimlanes" data-ref="flow"
+         :class="canvasClass()"
+         :style="bandGridStyle()"
+         @click="closeOverlays($event)"
+         @keydown.escape.window="closeOverlays($event)">
+
+      <template x-if="model.steps.length === 0">
+        <p class="af__empty-hint" x-text="t('emptyHint')"></p>
+      </template>
+
+      <!-- Label column, only once there is a band besides the main path. -->
+      <template x-if="hasBands()">
+        <div class="fc-swimlane-labels">
+          <template x-for="band in bands" :key="'label-' + band.id">
+            <div class="af__band-label fc-swimlane-label" :data-band-id="band.id" :data-depth="band.depth">
+              <template x-if="isMainBand(band)">
+                <span data-help-key="modules.activity-flowchart.fields.bands.help" x-text="band.label"></span>
+              </template>
+              <template x-if="!isMainBand(band)">
+                <span data-help-key="" x-text="band.label"></span>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- One lane per band, behind the cards: the band target of the flow
+           gesture (also when the pointer is over a card of that row). -->
+      <template x-for="band in bands" :key="'lane-' + band.id">
+        <div class="af__lane" :class="laneClass(band.id)" :data-band-id="band.id" :style="laneStyle(band)"></div>
+      </template>
+
+      <!-- Steps, each placed explicitly: its band decides the row, the packed
+           column its position. -->
+      <template x-for="(step, i) in model.steps" :key="step.id">
+        <div class="af__step"
+             :class="stepClass(step, i)"
+             :style="stepStyle(step)"
+             :data-step-id="step.id"
+             :data-step-index="i"
+             :data-band-id="step.branchId"
+             :data-id="step.id"
+             @click="pickStep(step)">
+
+          <!-- Gap 0: rail in front of the first card, only while a step is moved. -->
+          <template x-if="showStartRail(i)">
+            <div class="af__connector fc-connector fc-connector--rail" :class="gapClass(0)" data-gap="0">
+              <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+            </div>
+          </template>
+
+          <!-- Gap i: click opens the insert menu (band of this card); it is
+               also the position target of the flow gesture. -->
+          <template x-if="i > 0">
+            <div class="af__connector fc-connector fc-connector--clickable"
+                 :class="gapClass(i)"
+                 data-action="insert-step" :data-idx="i" :data-gap="i" data-help-key=""
+                 :title="t('insertHere')"
+                 @click.stop="toggleInsertMenu(i, step.branchId)">
+              <span class="af__connector-arrow fc-connector__arrow" :class="arrowClass(i)">&raquo;</span>
+              <template x-if="isInsertMenuOpen(i)">
+                <div class="af__insert-menu" @click.stop="closeInsertMenu()">
+                  <button type="button" data-insert="activity" data-help-key=""
+                          x-command="addStep" :data-arg-index="i" :data-arg-band-id="step.branchId" data-arg-kind="activity">
+                    <span class="icon" data-icon="action.add" aria-hidden="true"></span>
+                    <span x-text="t('addStep')"></span>
+                  </button>
+                  <button type="button" data-insert="decision" data-help-key=""
+                          x-command="addStep" :data-arg-index="i" :data-arg-band-id="step.branchId" data-arg-kind="decision">
+                    <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
+                    <span x-text="t('addDecision')"></span>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- Activity card -->
+          <template x-if="!isDecision(step)">
+            <div class="af__card fc-card">
+              <div class="af__card-header fc-card__header">
+                <button type="button" class="af__grip af__step-number fc-step-number context-help-anchor--overlay"
+                        :aria-label="t('stepGrip')" x-text="stepNum(i)"
+                        data-help-key="modules.activity-flowchart.actions.moveStep.help"></button>
+                <textarea class="af__step-title fc-card__title" x-field="step.title"
+                          :placeholder="t('titlePlaceholder')"></textarea>
+                <div class="af__card-actions fc-card__actions">
+                  <button type="button" class="af__delete fc-card__delete" x-command="removeStep" :data-arg-id="step.id"
+                          data-help-key="" :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                    <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+              <div class="af__card-body fc-card__body">
+                <textarea class="field field--ghost af__step-description fc-card__description"
+                          data-field="description" :data-step-id="step.id" x-field="step.description"
+                          :placeholder="t('descriptionPlaceholder')"></textarea>
+              </div>
+              <!-- @include js/core/flowchart/substeps.view.part.html -->
+            </div>
+          </template>
+
+          <!-- Decision diamond. Everything that must escape the clipped shape
+               (grip, delete, branch words) is a sibling of it. -->
+          <template x-if="isDecision(step)">
+            <div class="af__diamond">
+              <button type="button" class="af__grip af__step-number fc-step-number context-help-anchor--overlay"
+                      :aria-label="t('stepGrip')" x-text="stepNum(i)"
+                      data-help-key="modules.activity-flowchart.actions.moveStep.help"></button>
+              <div class="af__diamond-shape">
+                <textarea class="af__decision-label" x-field="model.steps[i].decision.label"
+                          :placeholder="t('decisionPlaceholder')"></textarea>
+              </div>
+              <button type="button" class="af__delete" x-command="removeStep" :data-arg-id="step.id"
+                      data-help-key="" :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+              </button>
+              <span class="af__branch af__branch--yes">
+                <span class="af__branch-word" x-text="t('yes')"></span>
+              </span>
+              <span class="af__branch af__branch--no">
+                <span class="af__branch-word" data-help-key="modules.activity-flowchart.fields.steps.decision.help" x-text="t('no')"></span>
+              </span>
+            </div>
+          </template>
+
+          <!-- Gap n: rail behind the last card, only while a step is moved. -->
+          <template x-if="showEndRail(i)">
+            <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--end"
+                 :class="gapClassAfter(i)" :data-gap="i + 1">
+              <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Re-entry marker in the detour's row under the card it rejoins at:
+           the chain arrow turned up, the target's name and the ✕ that drops it. -->
+      <template x-for="marker in rejoinMarkers()" :key="'rejoin-' + marker.id">
+        <div class="af__rejoin" :data-band-id="marker.id" :style="marker.style">
+          <span class="af__rejoin-arrow fc-connector__arrow">&raquo;</span>
+          <div class="af__band-exit-group" :data-band-id="marker.id">
+            <button type="button" class="af__band-exit af__band-exit--active" data-exit="pick" data-help-key=""
+                    :data-band-id="marker.id"
+                    @click.stop="togglePick(marker.id)"
+                    :title="t('pickEntryTitle')">
+              <span class="af__band-exit-arrow">&#9673;</span>
+              <span class="af__band-exit-target" x-text="markerLabel(marker.id)"></span>
+            </button>
+            <button type="button" class="af__band-exit-clear" data-help-key=""
+                    x-command="setDecisionTarget" :data-arg-step-id="marker.ownerId" data-arg-target="end"
+                    @click.stop="cancelPick()"
+                    :title="t('clearRejoin')" :aria-label="t('clearRejoin')">
+              <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Each detour's tail, directly after its own last card: add an
+           activity or a decision to the band, and — while no re-entry is
+           chosen — the invitation to pick one on the chart. -->
+      <template x-for="band in bands" :key="'tail-' + band.id">
+        <template x-if="!isMainBand(band)">
+          <div class="af__tail" :class="tailClass(band)" :data-band-id="band.id" :style="tailStyle(band)">
+            <div class="af__band-add">
+              <button type="button" class="context-help-anchor--overlay" data-add="activity"
+                      data-help-key="modules.activity-flowchart.actions.addStep.help"
+                      x-command="addStep" :data-arg-band-id="band.id" data-arg-kind="activity"
+                      :title="t('addStepToBand')">
+                <span class="icon" data-icon="action.add" aria-hidden="true"></span>
+                <span x-text="t('addStep')"></span>
+              </button>
+              <button type="button" data-add="decision" data-help-key=""
+                      x-command="addStep" :data-arg-band-id="band.id" data-arg-kind="decision"
+                      :title="t('addDecisionToBand')">
+                <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
+                <span x-text="t('addDecision')"></span>
+              </button>
+            </div>
+            <template x-if="!hasRejoin(band)">
+              <div class="af__band-exit-group" :data-band-id="band.id">
+                <button type="button" class="af__band-exit context-help-anchor--overlay" data-exit="pick"
+                        data-help-key="modules.activity-flowchart.actions.setDecisionTarget.help"
+                        :data-band-id="band.id"
+                        @click.stop="togglePick(band.id)"
+                        :title="t('pickEntryTitle')">
+                  <span class="af__band-exit-arrow">&#9673;</span>
+                  <span class="af__band-exit-target" x-text="exitPickLabel(band)"></span>
+                </button>
+              </div>
+            </template>
+          </div>
+        </template>
+      </template>
+    </div>
+  </div>
+
+  <!-- Import picker, borrowed into the shared dialog by openImport(); hidden
+       here via CSS. The choice is read at the list (one delegated listener). -->
+  <div x-ref="importForm" class="af__import-form" :data-selected="state.importPick">
+    <p class="af__import-hint" x-text="t('importHint')"></p>
+    <div class="af__import-list" @change="pickImport($event)">
+      <template x-for="opt in state.importOptions" :key="opt.instanceId">
+        <label class="af__import-option" :class="importOptionClass(opt)" :data-instance-id="opt.instanceId">
+          <input type="radio" :name="fieldId('import-pick')" :value="opt.instanceId" :checked="isImportPicked(opt)">
+          <span class="af__import-option-source" x-text="sourceName(opt)"></span>
+          <span class="af__import-option-title" x-text="opt.label"></span>
+        </label>
+      </template>
+    </div>
+  </div>
+</div>
