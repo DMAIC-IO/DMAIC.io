@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "params": {
-      "help": "Die neun Eingaben der Studie: measurementName und unit frei, chartType (i-mr oder xbar-r), limitsMode (from-study oder given), baselineK als ganze Zahl ab 1, mu0 und sigma0 als Zahl oder leer, enabledRules als Liste der Regeln 1 bis 8, alpha als 0,01, 0,05 oder 0,1. Geschrieben wird das ganze Objekt; jeder Schlüssel ist unter keys beschrieben.",
+      "help": "Die neun Eingaben der Studie: measurementName und unit frei, chartType (i-mr oder xbar-r), limitsMode (from-study oder given), baselineK als ganze Zahl ab 1, mu0 und sigma0 als Zahl oder leer, enabledRules als Liste der Regeln 1 bis 8, alpha als 0,01, 0,05 oder 0,1. Geschrieben wird das ganze Objekt.",
       "chartType": {
         "help": "Der Kartentyp, Beschriftung „Kartentyp“: I-MR für Einzelwerte, x̄-R für Untergruppen."
       },
