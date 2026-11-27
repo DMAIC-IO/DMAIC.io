@@ -16362,6 +16362,7 @@ export const AGENT_REGISTRY = {
   "regression": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -16377,290 +16378,221 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setColumns": {
+      "importExperiment": {
+        "target": "model",
         "params": [
           {
-            "name": "slot",
-            "type": "'x'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Slot; dieses Modul führt nur `x`"
-          },
-          {
-            "name": "refs",
-            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
-            "optional": false,
-            "help": "die Spaltenbezüge wählbarer Spalten (`pickableColumns.x`); `[]` leert die Auswahl"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen einmal. Steht die Zielgröße Y unter den neuen X, wird Y geleert. Danach wird gerechnet; ohne X oder Y wird das Ergebnis verworfen."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'y'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `y`"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte (`pickableColumns.y`, ohne die X), oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Zielgröße Y setzen oder mit null leeren. Danach wird gerechnet; ohne X oder Y wird das Ergebnis verworfen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'regType'|'polyDegree'|'confLevel'|'alpha'",
-            "optional": false,
-            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen und neu rechnen.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "importExperiment",
+        "keysHelp": "actions.importExperiment.params",
         "keys": {
-          "regType": {
-            "type": "'polynomial'|'exponential'|'logarithmic'|'power'",
-            "help": "Modellform"
+          "colRefs": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+            "help": "",
+            "rules": [
+              "columnRef"
+            ]
           },
-          "polyDegree": {
-            "type": "1|2|3",
-            "help": "Polynomgrad, nur bei polynomial",
-            "optional": true
+          "yRef": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }",
+            "help": "",
+            "rules": [
+              "columnRef"
+            ]
           },
-          "confLevel": {
-            "type": "number",
-            "help": "Konfidenzniveau als Anteil"
+          "designTerms": {
+            "type": "string[]",
+            "help": ""
           },
-          "alpha": {
-            "type": "number",
-            "help": "Signifikanzniveau als Anteil"
+          "source": {
+            "type": "{ experimentId: string, sourceColumn: string, transform: 'identity'|'mean'|'lnvar' }",
+            "help": ""
           }
         }
       },
-      "setTerm": {
+      "releaseImport": {
+        "target": "model",
         "params": [
           {
-            "name": "term",
-            "type": "string",
-            "optional": false,
-            "help": "eine Term-id aus `terms`"
-          },
-          {
-            "name": "included",
-            "type": "boolean",
-            "optional": false,
-            "help": "true schließt den Term ein, false aus"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Term des Polynoms ein- oder ausschließen und neu rechnen."
-      },
-      "importExperiment": {
-        "params": [
-          {
-            "name": "key",
-            "type": "string|null",
-            "optional": false,
-            "help": "ein Schlüssel aus `experimentImports`, oder null"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Faktoren und Antwort eines DoE-Versuchs als X und Y übernehmen und rechnen; null löst die Übernahme und lässt die Spalten stehen. Liest die Versuche der Planer vorher frisch, damit ein eben angelegter Versuch gefunden wird."
-      },
-      "setActiveX": {
-        "params": [
-          {
-            "name": "key",
-            "type": "string",
-            "optional": false,
-            "help": "ein Schlüssel aus `perXKeys`"
-          }
-        ],
-        "returns": "void",
-        "help": "Bei Einzel-X-Modellen (exponentiell, logarithmisch, Potenz mit mehreren X) das Modell wählen, das `result` zeigt."
-      },
-      "predict": {
-        "params": [
-          {
-            "name": "values",
+            "name": "command",
             "type": "object",
             "optional": false,
-            "help": "je Prädiktor-id aus predictors ein Wert (Zahl, bei kategorialen Prädiktoren eine Stufe)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "{ yHat: number, piLow: number|null, piHigh: number|null }|null",
-        "help": "Die Zielgröße für Werte der Einflussgrößen vorhersagen."
-      },
-      "autoRun": {
-        "params": [],
         "returns": "void",
-        "help": "Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis."
+        "help": "",
+        "keysOf": "releaseImport",
+        "keysHelp": "actions.releaseImport.params",
+        "keys": {}
       },
-      "runAnalysis": {
-        "params": [],
+      "setTerm": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "void",
-        "help": "Das Modell mit den aktuellen Eingaben rechnen. Schlägt der Fit fehl, ist `result` null und `errorMsg` nennt den Grund; bei Aliasing nennt `terms` die Terme, die `setTerm` dann ausschließen kann."
+        "help": "",
+        "keysOf": "setTerm",
+        "keysHelp": "actions.setTerm.params",
+        "keys": {
+          "term": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "nonEmpty"
+            ]
+          },
+          "included": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "predict": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "predict",
+        "keysHelp": "actions.predict.params",
+        "keys": {
+          "values": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       },
       "saveAsModel": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "saveAsModel",
+        "keysHelp": "asyncTasks.saveAsModel.params",
+        "keys": {},
+        "task": "saveAsModel",
+        "op": "start",
+        "helpKey": "asyncTasks.saveAsModel.help"
+      },
+      "saveAsModel.cancel": {
+        "target": "asyncTask",
+        "task": "saveAsModel",
+        "op": "cancel",
         "params": [],
-        "returns": "Promise<string|null>",
-        "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`)."
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.saveAsModel.cancel.help"
       }
     },
     "fields": {
       "colRefs": {
-        "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
-        "help": "the predictor columns X, in order",
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric,currency,percent,date,time",
+          "minCount:1"
+        ]
       },
-      "yKey": {
-        "type": "string|null",
-        "help": "the response column Y as key `instanceId|sheetId|columnId`",
+      "yRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric,currency,percent,date,time",
+          "minCount:1"
+        ]
       },
       "regType": {
-        "type": "string",
-        "help": "one of `regTypes`",
-        "bulk": false,
-        "derived": true
-      },
-      "regTypes": {
-        "type": "string[]",
-        "help": "all regression types",
-        "bulk": false,
-        "derived": true
+        "type": "'polynomial'|'exponential'|'logarithmic'|'power'",
+        "help": "",
+        "bulk": false
       },
       "polyDegree": {
-        "type": "number",
-        "help": "polynomial degree",
-        "bulk": false,
-        "derived": true
-      },
-      "activeDegrees": {
-        "type": "number[]",
-        "help": "the degrees `setParam('polyDegree')` accepts now",
-        "bulk": false,
-        "derived": true
+        "type": "1|2|3",
+        "help": "",
+        "bulk": false
       },
       "confLevel": {
         "type": "number",
-        "help": "confidence level as a fraction",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "alpha": {
         "type": "number",
-        "help": "significance level as a fraction",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "excludedTerms": {
         "type": "string[]",
-        "help": "the terms left out of the polynomial",
-        "bulk": false,
-        "derived": true
-      },
-      "terms": {
-        "type": "string[]",
-        "help": "the term ids `setTerm` accepts now",
-        "bulk": false,
-        "derived": true
-      },
-      "experimentImports": {
-        "type": "Array<{ key: string, label: string }>",
-        "help": "the DoE responses `importExperiment` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "activeImportSource": {
-        "type": "{ experimentId: string, sourceColumn: string, transform: string }|null",
-        "help": "the DoE response the model came from",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "designNotice": {
-        "type": "DesignNotice|null",
-        "help": "the note left by a DoE preset, null without one",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "DesignNotice",
-        "keys": {
-          "aliased": {
-            "type": "AliasedTerm[]",
-            "help": "vermengte Terme",
-            "keysOf": "AliasedTerm",
-            "keys": {
-              "term": {
-                "type": "string",
-                "help": "Term"
-              },
-              "with": {
-                "type": "string[]",
-                "help": "vermengt mit"
-              }
-            }
-          },
-          "saturated": {
-            "type": "string[]",
-            "help": "Terme ohne Restfreiheitsgrad"
-          }
-        }
+        "type": "{ aliased: { term: string, with: string[] }[], saturated: string[], basis: string }|null",
+        "help": "",
+        "bulk": false
       },
-      "perXKeys": {
+      "activeImportSource": {
+        "type": "{ experimentId: string, sourceColumn: string, transform: 'identity'|'mean'|'lnvar' }|null",
+        "help": "",
+        "bulk": false
+      },
+      "pendingDesignTerms": {
         "type": "string[]",
-        "help": "the single-X models `setActiveX` accepts",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
-      "activeXKey": {
+      "savedModelId": {
         "type": "string|null",
-        "help": "the single-X model the result shows",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts now",
-        "bulk": false,
-        "derived": true
+      "savedModelName": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
+      "modelRecord": {
+        "type": "{ experimentId?: string|null, responseSpec?: { sourceColumn: string|null, transform: string, aggregateOver: string|null }, termSet?: string[], coef?: Array<number|null>|null, vcov?: Array<Array<number|null>>|null, sigma2?: number|null, df?: number|null, rSqAdj?: number|null, lofPValue?: number|null, factorSpec?: Array<{ name: string, low: number|null, high: number|null, kind?: string }>, spec?: { predictors: { id: string, kind: string, levels?: string[], reference?: string }[], terms: { id: string, factors: { id: string, degree: number }[] }[] }|null, dataSnapshot?: { X: Array<Array<number|null>>, y: Array<number|null>, factorSpec: Array<{ name: string, low: number|null, high: number|null, kind?: string }>, termSet: string[], trainedAt?: string, sourceFingerprint?: { experimentId: string|null, responseColumn: string|null, workbookHash: string|null } }|null, dataHash?: string|null, createdAt?: string, updatedAt?: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "activeMultiSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumns` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+        "omit": [
+          ""
+        ]
       },
       "result": {
-        "type": "Result|null",
-        "help": "the fitted model as numbers, null without X or Y or when the fit fails (errorMsg gives the reason)",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -16897,42 +16829,328 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "errorMsg": {
-        "type": "string",
-        "help": "the message the module shows, '' without error",
+      "error": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "FitError",
+        "keys": {
+          "reason": {
+            "type": "string",
+            "help": "Grund als Schlüssel"
+          },
+          "params": {
+            "type": "Record<string, any>|null",
+            "help": "Angaben zum Grund"
+          },
+          "perX": {
+            "type": "PerXError[]",
+            "help": "Gründe je X bei Einzelmodellen",
+            "keysOf": "PerXError",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Spalte X"
+              },
+              "reason": {
+                "type": "string",
+                "help": "Grund als Schlüssel"
+              },
+              "params": {
+                "type": "Record<string, any>|null",
+                "help": "Angaben zum Grund"
+              }
+            }
+          },
+          "message": {
+            "type": "string",
+            "help": "der Grund als Text in der App-Sprache"
+          }
+        }
+      },
+      "aliased": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "AliasedTerm",
+        "keys": {
+          "term": {
+            "type": "string",
+            "help": "Term"
+          },
+          "with": {
+            "type": "string[]",
+            "help": "vermengt mit"
+          }
+        }
+      },
+      "terms": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "perXKeys": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeX": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeDegrees": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "experimentImports": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "ImportChoice",
+        "keys": {
+          "key": {
+            "type": "string",
+            "help": "Schlüssel der Übernahme"
+          },
+          "label": {
+            "type": "string",
+            "help": "Versuch und Antwort"
+          },
+          "args": {
+            "type": "ImportArgs",
+            "help": "die Angaben für `importExperiment`",
+            "keysOf": "ImportArgs",
+            "keys": {
+              "colRefs": {
+                "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+                "help": "Faktorspalten als X"
+              },
+              "yRef": {
+                "type": "{ instanceId: string, sheetId: string, columnId: string }",
+                "help": "Antwortspalte als Y"
+              },
+              "designTerms": {
+                "type": "string[]",
+                "help": "geplante Terme (kanonische ids)"
+              },
+              "source": {
+                "type": "{ experimentId: string, sourceColumn: string, transform: 'identity'|'mean'|'lnvar' }",
+                "help": "Planer, Antwortspalte und Variante"
+              }
+            }
+          }
+        }
+      },
+      "importMissing": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "predictors": {
-        "type": "Array<{ id: string, label: string, kind: string, levels?: string[] }>",
-        "help": "the inputs `predict` takes",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "prediction": {
-        "type": "{ yHat: number, piLow: number|null, piHigh: number|null }|null",
-        "help": "the last prediction, null without one; piLow/piHigh are null where the model gives no prediction interval",
-        "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Predictor",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung der Eingabe"
+          },
+          "label": {
+            "type": "string",
+            "help": "Beschriftung"
+          },
+          "kind": {
+            "type": "'numeric'|'categorical'|'single'",
+            "help": "Art der Eingabe"
+          },
+          "levels": {
+            "type": "string[]",
+            "help": "Stufen, nur kategorial",
+            "optional": true
+          }
+        }
       },
       "canSaveModel": {
-        "type": "boolean",
-        "help": "saveAsModel would store a model now",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "savedModelId": {
-        "type": "string|null",
-        "help": "id of the model saved last in the project models",
+      "effectiveDesignNotice": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DesignNotice",
+        "keys": {
+          "aliased": {
+            "type": "AliasedTerm[]",
+            "help": "vermengte Terme",
+            "keysOf": "AliasedTerm",
+            "keys": {
+              "term": {
+                "type": "string",
+                "help": "Term"
+              },
+              "with": {
+                "type": "string[]",
+                "help": "vermengt mit"
+              }
+            }
+          },
+          "saturated": {
+            "type": "string[]",
+            "help": "Terme ohne Restfreiheitsgrad"
+          }
+        }
+      },
+      "savedModel": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "SavedModel",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung des Modells"
+          },
+          "name": {
+            "type": "string",
+            "help": "Name des Modells"
+          },
+          "experimentId": {
+            "type": "string|null",
+            "help": "Quellversuch",
+            "optional": true
+          },
+          "responseSpec": {
+            "type": "object|null",
+            "help": "Quelle der Zielgröße",
+            "optional": true
+          },
+          "termSet": {
+            "type": "string[]",
+            "help": "Terme",
+            "optional": true
+          },
+          "coef": {
+            "type": "Array<number|null>|null",
+            "help": "Koeffizienten",
+            "optional": true
+          },
+          "sigma2": {
+            "type": "number|null",
+            "help": "Fehlervarianz",
+            "optional": true
+          },
+          "df": {
+            "type": "number|null",
+            "help": "Restfreiheitsgrade",
+            "optional": true
+          },
+          "rSqAdj": {
+            "type": "number|null",
+            "help": "korrigiertes Bestimmtheitsmaß",
+            "optional": true
+          },
+          "lofPValue": {
+            "type": "number|null",
+            "help": "p-Wert des Lack-of-Fit-Tests",
+            "optional": true
+          },
+          "factorSpec": {
+            "type": "object[]",
+            "help": "Faktorbereiche",
+            "optional": true
+          },
+          "spec": {
+            "type": "object|null",
+            "help": "Modellspezifikation",
+            "optional": true
+          },
+          "dataSnapshot": {
+            "type": "object|null",
+            "help": "Trainingsdaten",
+            "optional": true
+          },
+          "dataHash": {
+            "type": "string|null",
+            "help": "Prüfsumme der Daten",
+            "optional": true
+          },
+          "createdAt": {
+            "type": "string",
+            "help": "angelegt",
+            "optional": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "help": "zuletzt gespeichert",
+            "optional": true
+          }
+        }
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
     },
+    "asyncTasks": [
+      {
+        "name": "saveAsModel",
+        "auto": false,
+        "params": []
+      }
+    ],
     "viewFields": [
       "activeTab",
+      "activeXKey",
       "coefSortByP",
       "showCI",
-      "showPI"
+      "showPI",
+      "exampleWorksheetId",
+      "scatterEdits",
+      "residualsEdits",
+      "orderEdits",
+      "qqEdits",
+      "histogramEdits",
+      "pieEdits",
+      "barEdits",
+      "mainEffectsEdits",
+      "interactionEdits"
+    ],
+    "settable": [
+      "colRefs",
+      "yRef",
+      "regType",
+      "polyDegree",
+      "confLevel",
+      "alpha",
+      "excludedTerms"
+    ],
+    "invariants": [
+      "pendingNeedsSource"
     ]
   },
   "resampling": {

@@ -99,5 +99,8 @@
   "saveBlocked": "No model to save: the polynomial type with a fitted result is needed.",
   "saveFailed": "The model could not be saved.",
   "importFailed": "The experiment could not be taken over.",
-  "importUnknown": "This experiment does not exist (any more)."
+  "importUnknown": "This experiment does not exist (any more).",
+  "invariants": {
+    "pendingNeedsSource": "An open experiment preset belongs to an imported experiment."
+  }
 }

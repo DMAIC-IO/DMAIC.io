@@ -42,15 +42,6 @@
     "count": 4,
     "reason": "Zielerreichung, Rahmen- und Linienbreite (Stil-Panel, Bearbeiten-Dialog) bleiben Zahlenfelder mit Pfeiltasten (Ganzzahlen), wie bisher; die Werte laufen über x-field bzw. x-param"
   },
-  "js/modules/regression/regression-model.js": {
-    "count": 1
-  },
-  "js/modules/regression/regression.html": {
-    "count": 2
-  },
-  "js/modules/regression/regression.js": {
-    "count": 12
-  },
   "js/modules/response-optimization/response-optimization.html": {
     "count": 4
   },

@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -6,7 +9,11 @@
       "columnId": "c-wdh"
     }
   ],
-  "yKey": "__source__|sheet-log|c-leist",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-log",
+    "columnId": "c-leist"
+  },
   "regType": "logarithmic",
   "polyDegree": 1,
   "showCI": true,

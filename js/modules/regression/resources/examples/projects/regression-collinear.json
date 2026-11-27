@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -11,7 +14,11 @@
       "columnId": "c-torque"
     }
   ],
-  "yKey": "__source__|sheet-collinear|c-power",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-collinear",
+    "columnId": "c-power"
+  },
   "regType": "polynomial",
   "polyDegree": 1,
   "showCI": true,

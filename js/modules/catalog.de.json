@@ -255,6 +255,11 @@
     "description": "g- und t-Karten für seltene Ereignisse",
     "whenToUse": "Seltene Ereignisse überwachen: die g-Karte zählt die Gelegenheiten zwischen Ereignissen, die t-Karte die Zeit zwischen Ereignissen."
   },
+  "regression": {
+    "name": "Regressionsanalyse",
+    "description": "Polynom-Regression (Grad 1–3, Wechselwirkungen), Exponentiell, Logarithmisch, Potenz",
+    "whenToUse": "Wenn der Zusammenhang einer stetigen Zielgröße mit einer oder mehreren Einflussgrößen als Gleichung beschrieben werden soll — linear, polynomial mit Wechselwirkungen, exponentiell, logarithmisch oder als Potenz —, um Einflüsse zu bewerten, vorherzusagen oder ein Modell für die Optimierung zu speichern."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",

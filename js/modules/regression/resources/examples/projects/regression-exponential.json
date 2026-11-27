@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -6,7 +9,11 @@
       "columnId": "c-zeit"
     }
   ],
-  "yKey": "__source__|sheet-expo|c-keime",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-expo",
+    "columnId": "c-keime"
+  },
   "regType": "exponential",
   "polyDegree": 1,
   "showCI": true,

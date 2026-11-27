@@ -99,5 +99,8 @@
   "saveBlocked": "Kein speicherbares Modell: Typ Polynom mit gerechnetem Ergebnis nötig.",
   "saveFailed": "Das Modell konnte nicht gespeichert werden.",
   "importFailed": "Der Versuchsplan konnte nicht übernommen werden.",
-  "importUnknown": "Diesen Versuchsplan gibt es nicht (mehr)."
+  "importUnknown": "Diesen Versuchsplan gibt es nicht (mehr).",
+  "invariants": {
+    "pendingNeedsSource": "Eine offene Versuchsvorgabe gehört zu einem übernommenen Versuchsplan."
+  }
 }

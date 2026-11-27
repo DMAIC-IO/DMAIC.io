@@ -23,17 +23,6 @@
 export default [
   // ─── Improve (DMAIC) / Design (DMADV) ────────────────────────
   {
-    id: 'regression',
-    phase: 'improve',
-    group: 'evaluate',
-    load: () => import('./regression/regression.js'),
-    cycles: {
-      dmaic:  { phase: 'improve' },
-      dmadv:  { phase: 'design',     allowedPhases: ['design', 'verify'] },
-      eightd: { phase: 'corrective', allowedPhases: ['rootcause', 'corrective'] },
-    },
-  },
-  {
     id: 'glm-regression',
     phase: 'improve',
     group: 'evaluate',

@@ -1,4 +1,7 @@
 {
+  "_schema": {
+    "version": "1.0"
+  },
   "colRefs": [
     {
       "instanceId": "__source__",
@@ -11,7 +14,11 @@
       "columnId": "c-verkehr"
     }
   ],
-  "yKey": "__source__|sheet-pizza|c-lieferzeit",
+  "yRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-pizza",
+    "columnId": "c-lieferzeit"
+  },
   "regType": "polynomial",
   "polyDegree": 1,
   "showCI": true,

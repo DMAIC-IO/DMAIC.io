@@ -146,7 +146,7 @@ const clampFraction = (v) => Math.min(0.9999, Math.max(0.0001, v));
  * @property {Array<{ instanceId: string, sheetId: string, columnId: string }>} colRefs  Faktorspalten als X
  * @property {{ instanceId: string, sheetId: string, columnId: string }} yRef  Antwortspalte als Y
  * @property {string[]} designTerms  geplante Terme (kanonische ids)
- * @property {{ experimentId: string, sourceColumn: string, transform: string }} source  Planer, Antwortspalte und Variante
+ * @property {{ experimentId: string, sourceColumn: string, transform: 'identity'|'mean'|'lnvar' }} source  Planer, Antwortspalte und Variante
  */
 
 /** @typedef {import('../../../core/source-reader.js').Source} Source */

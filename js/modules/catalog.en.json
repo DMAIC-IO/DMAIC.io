@@ -255,6 +255,11 @@
     "description": "g and t charts for rare events",
     "whenToUse": "Monitor rare events: the g chart counts opportunities between events, the t chart the time between events."
   },
+  "regression": {
+    "name": "Regression Analysis",
+    "description": "Polynomial regression (degree 1–3, interactions), Exponential, Logarithmic, Power",
+    "whenToUse": "When the relationship between a continuous response and one or more predictors is to be described as an equation — linear, polynomial with interactions, exponential, logarithmic or power — to assess effects, predict, or save a model for optimisation."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",
