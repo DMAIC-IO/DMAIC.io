@@ -472,6 +472,20 @@ suite('regression: Viewmodel im Browser', () => {
     assertEqual(vm.model.polyDegree, 1);
   });
 
+  test('offene Vorgabe entfällt, wenn X, Y oder Grad sich ändern, bevor sie aufgeht', async () => {
+    const h = await mount(saved({
+      colRefs: [ref('a'), ref('b')], yRef: ref('weg'), pendingDesignTerms: ['M0', 'M1', 'I0_1'],
+      activeImportSource: { experimentId: 'p1', sourceColumn: 'weg', transform: 'identity' },
+    }));
+    const vm = h.vm();
+    await settle();
+    assertDeepEqual(plain(vm.model.pendingDesignTerms), ['M0', 'M1', 'I0_1']);
+    setFields(vm.model, { polyDegree: 3 });
+    await until(() => vm.model.pendingDesignTerms.length === 0);
+    assertEqual(vm.model.polyDegree, 3);
+    assertDeepEqual(plain(vm.model.excludedTerms), []);
+  });
+
   test('zwei Instanzen: Typ, Reiter und Prognose bleiben je Instanz', async () => {
     const a = await mount(POLY, { inst: 'a' });
     const b = await mount(POLY, { inst: 'b', keep: true });

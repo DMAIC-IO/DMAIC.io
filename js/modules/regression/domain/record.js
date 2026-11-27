@@ -75,10 +75,12 @@ export function lofPValueOf(experimentId, experiments, r, y, originalToFiltered)
  * @param {any} r volles Polynomergebnis zum Stand
  * @param {PlannerExperiment[]} experiments
  * @param {string} now ISO-Zeitpunkt
+ * @param {any} [cols] die schon gelesenen Spalten (`readInputs`); ohne sie liest
+ *   der Datensatz jetzt — ein Lauf liest sie vor seinem ersten await, damit die
+ *   Momentaufnahme zum Ergebnis `r` passt
  * @returns {Record<string, any>|null}
  */
-export function buildRecord(m, src, r, experiments, now) {
-  const cols = readInputs(/** @type {any} */ (m), src);
+export function buildRecord(m, src, r, experiments, now, cols = readInputs(/** @type {any} */ (m), src)) {
   if (!cols) return null;
   const xCols = cols.xs.map(numericOf);
   const yRaw = numericOf(cols.y);

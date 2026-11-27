@@ -18,6 +18,14 @@ const numOrNull = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null
 const textOrNull = (v) => (isText(v) ? v : null);
 /** @param {unknown} v @returns {string[]} */
 const texts = (v) => (Array.isArray(v) ? v.filter(isText) : []);
+/**
+ * Stufen eines Faktors als Texte: die Altform schrieb sie ungewandelt, eine
+ * Textspalte mit Zahlen gab Zahlen (`record.js` wandelt mit `String`).
+ * @param {unknown} v @returns {string[]}
+ */
+const levelTexts = (v) => (Array.isArray(v) ? v.filter((x) => isText(x) || (typeof x === 'number' && Number.isFinite(x))).map(String) : []);
+/** @param {unknown} v @returns {string|null} die Referenzstufe als Text */
+const levelText = (v) => (isText(v) ? v : typeof v === 'number' && Number.isFinite(v) ? String(v) : null);
 
 /**
  * Ein Spaltenbezug mit drei Texten, sonst `null`.
@@ -68,8 +76,8 @@ function specOf(v) {
     predictors: v.predictors.filter((p) => isObj(p) && isText(p.id) && isText(p.kind)).map((p) => {
       /** @type {Record<string, any>} */
       const o = { id: p.id, kind: p.kind };
-      if (Array.isArray(p.levels)) o.levels = texts(p.levels);
-      if (isText(p.reference)) o.reference = p.reference;
+      if (Array.isArray(p.levels)) o.levels = levelTexts(p.levels);
+      if (levelText(p.reference) != null) o.reference = levelText(p.reference);
       return o;
     }),
     terms: v.terms.filter((t) => isObj(t) && isText(t.id) && Array.isArray(t.factors)).map((t) => ({

@@ -21,7 +21,7 @@ import { requireEnum } from '../../../core/validate.js';
 import { uid } from '../../../core/uid.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
-import { analyze, activeResultOf, degreeAvailability, predictAt, DEGREES } from '../domain/analyze.js';
+import { analyze, activeResultOf, degreeAvailability, predictAt, DEGREES, readInputs } from '../domain/analyze.js';
 import { refKey } from '../domain/columns.js';
 import { plannerExperiments, buildRecord } from '../domain/record.js';
 import { experimentOptions, importArgsOf, pendingPresetFields } from '../domain/design-preset.js';
@@ -136,6 +136,10 @@ export default createModule({
           colRefs: plain(model.colRefs), yRef: plain(model.yRef),
           activeImportSource: plain(model.activeImportSource), modelRecord: plain(model.modelRecord),
         };
+        // Die Spalten jetzt, zum Ergebnis `r`: ändert sich das Blatt, während
+        // der Planer lädt, passte die Momentaufnahme sonst nicht zu den Koeffizienten.
+        let cols;
+        try { cols = readInputs(/** @type {any} */ (inputs), src); } catch (err) { throw failure(failText, err); }
         const plannerId = inputs.activeImportSource?.experimentId;
         if (plannerId) {
           // Der Planer liefert den Lack-of-Fit; fehlt er, bleibt der Wert leer.
@@ -144,7 +148,7 @@ export default createModule({
         }
         let record;
         try {
-          record = buildRecord(inputs, src, r, plannerExperiments(src), new Date().toISOString());
+          record = buildRecord(inputs, src, r, plannerExperiments(src), new Date().toISOString(), cols);
         } catch (err) {
           throw failure(failText, err);
         }
@@ -221,6 +225,22 @@ export default createModule({
         const due = () => pendingPresetFields(this.model, ctx.source) != null;
         this.$watch(due, (now) => { if (now) queueMicrotask(apply); });
         if (due()) queueMicrotask(apply);
+        // Ändern X, Y, Typ oder Grad, während die Vorgabe noch offen ist, gilt
+        // sie nicht mehr (Altform `clearDesignPreset`): sonst überschriebe sie
+        // beim Aufgehen die Wahl des Nutzers. Ändert sie sich im selben
+        // Durchgang mit (Import, Rückgängig, Laden), bleibt sie.
+        this.$watch(
+          () => [this.model.colRefs.map(keyOf).join(','), keyOf(this.model.yRef), this.model.regType,
+            this.model.polyDegree, this.model.pendingDesignTerms.join(',')],
+          (now, before) => {
+            const inputsChanged = now.slice(0, 4).some((v, i) => v !== before[i]);
+            if (!inputsChanged || now[4] !== before[4] || now[4] === '') return;
+            queueMicrotask(() => {
+              if (this.model.pendingDesignTerms.length === 0) return;
+              ctx.history?.amend(() => setFields(this.model, { pendingDesignTerms: [] }));
+            });
+          },
+        );
       },
 
       /**
