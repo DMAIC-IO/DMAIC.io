@@ -120,6 +120,11 @@
     "description": "Structured documentation of project insights",
     "whenToUse": "When the experiences of a project are to be recorded — what went well, what did not, the root cause and the recommendation with its actions; not for day-to-day task tracking and not for a root-cause analysis itself, which is what the task list and the 5-Why analysis are for."
   },
+  "model-data-generator": {
+    "name": "Model Data Generator",
+    "description": "Generate synthetic datasets from configurable regression models",
+    "whenToUse": "When synthetic data from a known regression model is needed — to practise DOE analysis and regression, or to test methods against a known “true” model — with factors, coefficients, noise and a seed for reproducible results."
+  },
   "morphological-box": {
     "name": "Morphological Box",
     "description": "Combine solution concepts from parameters and options, check incompatibilities",

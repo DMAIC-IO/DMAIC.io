@@ -1,17 +1,11 @@
 /**
- * Zahlenfelder mit EINER Regel für Oberfläche und Agent.
+ * Ablehnungsmarken an Eingabefeldern und der Bereichstext eines Zahlenfelds.
  *
- * Ein Modul beschreibt seine Zahlenparameter einmal als `PARAM_SPEC`
- * (Grenzen im Format von `requireNumber`, dazu `step` und `nullable`). Der
- * Agent prüft über `numberCheck(spec)`, die Vorlage liest `paramMin/Max/Step`,
- * und `onParamInput` weist eine ungültige Eingabe ab, statt zu klemmen: das
- * Feld zeigt wieder den Modellwert und ist markiert, bis eine gültige
- * Eingabe kommt.
- *
- * Ein Spec-Eintrag darf auch eine Funktion `(vm) => ParamSpec` sein, wenn die
- * Grenzen vom Zustand des Moduls abhängen.
+ * `x-field`, `x-widget`, die Kommando-Direktiven und Knopfgruppen markieren
+ * eine abgewiesene Eingabe mit `markRejection` (Markierung, `aria-invalid`,
+ * Hinweis im Titel) und heben sie mit `clearRejection` wieder auf;
+ * `describeRange` beschreibt die Grenzen eines Zahlenfelds als kurzen Text.
  */
-import { requireNumber } from './agent/agent-argcheck.js';
 import { formatNumber } from './number-format.js';
 
 /**
@@ -24,25 +18,6 @@ import { formatNumber } from './number-format.js';
  * @property {number} [step]  Schrittweite des Eingabefelds (Vorgabe 1 bei integer, sonst 'any')
  * @property {boolean} [nullable]  leere Eingabe bedeutet null (z. B. „alle“)
  */
-
-function bounds(spec) {
-  const { step: _step, nullable: _nullable, ...rest } = spec;
-  return rest;
-}
-
-/**
- * Der Prüfer eines Zahlenparameters. Ist die Spec eine Funktion, wird sie mit
- * dem Viewmodel (zweites Argument) ausgewertet.
- * @param {ParamSpec|((vm: object) => ParamSpec)} spec
- * @returns {(raw: any, vm?: object) => number|null}
- */
-export function numberCheck(spec) {
-  return (raw, vm) => {
-    const s = typeof spec === 'function' ? spec(vm) : spec;
-    if (s.nullable && (raw === '' || raw === null || raw === undefined)) return null;
-    return requireNumber('value', raw, bounds(s));
-  };
-}
 
 /**
  * Der zulässige Bereich als kurzer Text (für den Hinweis an der Oberfläche).
@@ -87,100 +62,4 @@ export function markRejection(el, title) {
   el.setAttribute('aria-invalid', 'true');
   if (el.dataset && el.dataset.paramTitle === undefined) el.dataset.paramTitle = el.title ?? '';
   el.title = title;
-}
-
-/**
- * Mixin für Viewmodels mit Zahlenparametern.
- * @param {{ specs: Record<string, ParamSpec|((vm: object) => ParamSpec)>,
- *   checks: Record<string, Function>, root?: (vm: object) => object,
- *   t: Function, lang?: () => string }} opts
- * @returns {object}
- */
-export function paramInputMixin({ specs, checks, root = (vm) => vm.model, t, lang = () => 'de' }) {
-  const specOf = (vm, key) => {
-    const s = specs[key];
-    return (typeof s === 'function' ? s(vm) : s) ?? {};
-  };
-  return {
-    /**
-     * @noagent DOM event handler; der Agent nutzt setParam()
-     * @param {string} key
-     * @param {Event} event
-     * @param {{ live?: boolean }} [opts]  `live`: stille Prüfung beim Tippen. Eine
-     *   gültige Eingabe wird übernommen, eine ungültige oder halbfertige bleibt
-     *   ohne Marke, ohne Rücksetzen und ohne Schreiben.
-     */
-    onParamInput(key, event, { live = false } = {}) {
-      const el = event.target;
-      const raw = el.value;
-      const check = checks[key];
-      if (typeof check !== 'function') throw new Error(`paramInputMixin: no check for key ${JSON.stringify(key)}`);
-      const reject = () => {
-        el.value = String(this.paramValue(key) ?? '');
-        const range = describeRange(specOf(this, key), lang(), t);
-        markRejection(el, range ? t('common.inputRejected', { range }) : t('common.inputRejectedPlain'));
-      };
-      const fail = (err) => {
-        if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
-        if (!live) reject();
-        return undefined;
-      };
-      const accepted = (result) => {
-        // Der Wert ist gültig und übernommen: die Marken aller Parameterfelder
-        // der Komponente fallen weg, denn die anderen Felder zeigen Modellwerte.
-        clearRejection(el);
-        const root = el.closest?.('[x-data]');
-        if (root) for (const other of root.querySelectorAll('.field--error[aria-invalid="true"]')) clearRejection(other);
-        return result;
-      };
-      try {
-        check(raw, this);
-      } catch (err) {
-        return fail(err);
-      }
-      const value = specOf(this, key).nullable && raw === '' ? null : raw;
-      let result;
-      try {
-        result = this.setParam(key, value);
-      } catch (err) {
-        return fail(err);
-      }
-      if (result && typeof result.then === 'function') return result.then(accepted, fail);
-      return accepted(result);
-    },
-    /**
-     * @noagent DOM event handler; stille Prüfung beim Tippen, rechnet bei gültiger Eingabe sofort
-     * @param {string} key
-     * @param {Event} event
-     */
-    onParamLive(key, event) {
-      return this.onParamInput(key, event, { live: true });
-    },
-    /** @noagent view transform; Stand eines Parameters für das Eingabefeld */
-    paramValue(key) {
-      return key.split('.').reduce((o, k) => (o == null ? o : o[k]), root(this));
-    },
-    /**
-     * Untergrenze für das HTML-Attribut `min`. Eine offene Grenze
-     * (`exclusiveMin`) erscheint nur als Hinweis; die Prüfung bleibt beim Check.
-     * @noagent view transform
-     */
-    paramMin(key) {
-      const s = specOf(this, key);
-      return s.min ?? s.exclusiveMin ?? null;
-    },
-    /**
-     * Obergrenze für das HTML-Attribut `max` (offene Grenze nur als Hinweis).
-     * @noagent view transform
-     */
-    paramMax(key) {
-      const s = specOf(this, key);
-      return s.max ?? s.exclusiveMax ?? null;
-    },
-    /** @noagent view transform */
-    paramStep(key) {
-      const s = specOf(this, key);
-      return s.step ?? (s.integer ? 1 : 'any');
-    },
-  };
 }

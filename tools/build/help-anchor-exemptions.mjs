@@ -133,6 +133,17 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.params', reason: 'kein eigenes Element; jeder Parameter ist einzeln an fields.params.<Transformation>.<Parameter> verankert' },
     { name: 'fields.targetColumns', reason: 'Auswahlhilfe für den Agenten; die Oberfläche zeigt dieselben Ziele im Zielwähler, verankert an asyncTasks.toWorksheet.params.target' },
   ],
+  'model-data-generator': [
+    { name: 'actions.gridOpenInWorksheet', reason: 'Eckknopf „In Datensammlung öffnen“ im Kern-Raster der Vorschau; das Raster trägt kein Fragezeichen, der Knopf hat einen Titel' },
+    { name: 'actions.setBeta', reason: 'Eingabe je Koeffizient ohne eigene Beschriftung; ein Fragezeichen je Term wäre Rauschen, verankert ist der Titel „Koeffizienten“ an fields.betas' },
+    { name: 'actions.setFactor', reason: 'nur für den Agenten; die Oberfläche schreibt Name, Min und Max direkt in den Faktorzeilen, verankert an den Spaltenköpfen fields.factors.<angabe>' },
+    { name: 'actions.toWorksheet', reason: 'die Oberfläche startet das Senden über den Eckknopf des Vorschau-Rasters, der kein Fragezeichen trägt; der Agent liest die Hilfe unter asyncTasks.toWorksheet' },
+    { name: 'actions.toWorksheet.cancel', reason: 'das Senden läuft ohne Wartezeit, die Oberfläche bietet keinen Abbrechen-Knopf' },
+    { name: 'fields.asyncTasks', reason: 'Laufzustand des Sendens für den Agenten; die Oberfläche zeigt nur das neue Arbeitsblatt' },
+    { name: 'fields.factors', reason: 'die Faktorliste hat keine eigene Beschriftung; verankert sind die Spaltenköpfe Name, Min und Max und das Anlegen an addFactor' },
+    { name: 'fields.maxOrder', reason: 'ohne Bedienelement (wie in der Altform); die höchste Ordnung zeigen die Gruppen der Koeffizienten' },
+    { name: 'fields.terms', reason: 'Ableitung für den Agenten; die Oberfläche zeigt die Terme als Koeffizienten-Felder, verankert an fields.betas' },
+  ],
   'random-generator': [
     { name: 'actions.removeAttribute', reason: 'Löschknopf × je Kategorienzeile; ein Fragezeichen je Zeile wäre Rauschen, verankert sind die Spaltenköpfe Name und Gewicht' },
     { name: 'actions.setAttribute', reason: 'nur für den Agenten; die Oberfläche schreibt Name und Gewicht direkt in den Zeilenfeldern, verankert an den Spaltenköpfen' },

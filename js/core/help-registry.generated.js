@@ -5,11 +5,10 @@ import h2 from '../modules/doe-advisor/doe-advisor-help.js';
 import h3 from '../modules/glm-regression/glm-regression-help.js';
 import h4 from '../modules/kano/kano-help.js';
 import h5 from '../modules/makigami/makigami-help.js';
-import h6 from '../modules/model-data-generator/model-data-generator-help.js';
-import h7 from '../modules/process-map/process-map-help.js';
-import h8 from '../modules/regression/regression-help.js';
-import h9 from '../modules/response-optimization/response-optimization-help.js';
-import h10 from '../modules/rest-api/rest-api-help.js';
+import h6 from '../modules/process-map/process-map-help.js';
+import h7 from '../modules/regression/regression-help.js';
+import h8 from '../modules/response-optimization/response-optimization-help.js';
+import h9 from '../modules/rest-api/rest-api-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -18,9 +17,8 @@ export const HELP = {
   "glm-regression": h3,
   "kano": h4,
   "makigami": h5,
-  "model-data-generator": h6,
-  "process-map": h7,
-  "regression": h8,
-  "response-optimization": h9,
-  "rest-api": h10,
+  "process-map": h6,
+  "regression": h7,
+  "response-optimization": h8,
+  "rest-api": h9,
 };

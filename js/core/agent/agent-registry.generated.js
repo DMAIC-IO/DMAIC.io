@@ -9286,6 +9286,7 @@ export const AGENT_REGISTRY = {
   "model-data-generator": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -9302,226 +9303,215 @@ export const AGENT_REGISTRY = {
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addFactor": {
-        "params": [],
-        "returns": "number",
-        "help": "Einen Faktor mit Standardname und Bereich 0 bis 100 anhängen; ein erzeugtes Ergebnis und alle Koeffizienten werden zurückgesetzt."
-      },
-      "removeFactor": {
+        "target": "model",
         "params": [
           {
-            "name": "index",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Index eines Faktors aus `factors`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Einen Faktor entfernen; ein erzeugtes Ergebnis und alle Koeffizienten werden zurückgesetzt. Der letzte Faktor bleibt stehen."
+        "returns": "number",
+        "help": "",
+        "keysOf": "addFactor",
+        "keysHelp": "actions.addFactor.params",
+        "keys": {}
       },
-      "setFactor": {
+      "removeFactor": {
+        "target": "model",
         "params": [
           {
-            "name": "index",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Index eines Faktors aus `factors`"
-          },
-          {
-            "name": "key",
-            "type": "'name'|'min'|'max'",
-            "optional": false,
-            "help": "welches Feld"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Name (Text, nicht leer, kein anderer Faktor und nicht Y) oder die Grenze (Zahl, min ≤ max); Textzahlen werden angenommen"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Name oder Bereichsgrenze eines Faktors setzen; ein erzeugtes Ergebnis wird verworfen.",
-        "keysOf": "FactorFields",
+        "help": "",
+        "keysOf": "removeFactor",
+        "keysHelp": "actions.removeFactor.params",
         "keys": {
-          "name": {
-            "type": "string",
-            "help": "Name des Faktors, zugleich Spaltenname der Daten"
-          },
-          "min": {
+          "index": {
             "type": "number",
-            "help": "untere Grenze des Faktorbereichs"
-          },
-          "max": {
+            "help": ""
+          }
+        }
+      },
+      "setFactor": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setFactor",
+        "keysHelp": "actions.setFactor.params",
+        "keys": {
+          "index": {
             "type": "number",
-            "help": "obere Grenze des Faktorbereichs"
+            "help": ""
+          },
+          "key": {
+            "type": "'name'|'min'|'max'",
+            "help": ""
+          },
+          "value": {
+            "type": "any",
+            "help": ""
           }
         }
       },
       "setBeta": {
+        "target": "model",
         "params": [
           {
-            "name": "index",
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setBeta",
+        "keysHelp": "actions.setBeta.params",
+        "keys": {
+          "index": {
             "type": "number",
-            "optional": false,
-            "help": "Index eines Terms aus `terms`"
+            "help": ""
           },
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "endliche Zahl; Textzahlen werden angenommen"
+          "value": {
+            "type": "any",
+            "help": ""
           }
-        ],
-        "returns": "void",
-        "help": "Den Koeffizienten eines Terms setzen."
+        }
       },
-      "setIntercept": {
+      "gridOpenInWorksheet": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "value",
-            "type": "number|string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "endliche Zahl; Textzahlen werden angenommen"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Den Achsenabschnitt β₀ setzen."
-      },
-      "setYName": {
-        "params": [
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "Text, nicht leer und kein Faktorname"
-          }
-        ],
-        "returns": "void",
-        "help": "Den Namen der Y-Spalte setzen."
-      },
-      "setSamplingMethod": {
-        "params": [
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "eines der Verfahren aus `samplingMethods`"
-          }
-        ],
-        "returns": "void",
-        "help": "Das Stichprobenverfahren wählen."
-      },
-      "setSampleSize": {
-        "params": [
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "ganze Zahl von 10 bis 100000; Textzahlen werden angenommen"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Zahl der Zeilen setzen (beim Vollfaktorplan nur ein Richtwert)."
-      },
-      "setNoiseStd": {
-        "params": [
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "Zahl ab 0; Textzahlen werden angenommen"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Standardabweichung des Rauschens σε setzen."
-      },
-      "setSeed": {
-        "params": [
-          {
-            "name": "value",
-            "type": "number|string",
-            "optional": false,
-            "help": "ganze Zahl; Textzahlen werden angenommen"
-          }
-        ],
-        "returns": "void",
-        "help": "Den Startwert des Zufallsgenerators setzen."
-      },
-      "generate": {
-        "params": [],
-        "returns": "Generated",
-        "help": "Daten aus dem Modell erzeugen und in der Vorschau zeigen."
+        "help": "",
+        "keysOf": "gridOpenInWorksheet",
+        "keysHelp": "actions.gridOpenInWorksheet.params",
+        "keys": {}
       },
       "toWorksheet": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "toWorksheet",
+        "keysHelp": "asyncTasks.toWorksheet.params",
+        "keys": {},
+        "task": "toWorksheet",
+        "op": "start",
+        "helpKey": "asyncTasks.toWorksheet.help"
+      },
+      "toWorksheet.cancel": {
+        "target": "asyncTask",
+        "task": "toWorksheet",
+        "op": "cancel",
         "params": [],
-        "returns": "Promise<string>",
-        "help": "Die erzeugten Daten in einem neuen Worksheet öffnen und dorthin wechseln. Ohne erzeugte Daten wird zuerst generiert."
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.toWorksheet.cancel.help"
       }
     },
     "fields": {
       "factors": {
-        "type": "Array<{ index: number, name: string, min: number, max: number }>",
-        "help": "the factors; `index` addresses them in setFactor and removeFactor",
-        "bulk": false,
-        "derived": true
-      },
-      "terms": {
-        "type": "Array<{ index: number, label: string, order: number, beta: number }>",
-        "help": "all model terms with their coefficients; `index` addresses them in setBeta",
-        "bulk": false,
-        "derived": true
-      },
-      "intercept": {
-        "type": "number",
-        "help": "the intercept β₀",
-        "bulk": false,
-        "derived": true
-      },
-      "yName": {
-        "type": "string",
-        "help": "name of the response column",
-        "bulk": false,
-        "derived": true
-      },
-      "samplingMethod": {
-        "type": "string",
-        "help": "the sampling method, one of `samplingMethods`",
-        "bulk": false,
-        "derived": true
-      },
-      "samplingMethods": {
-        "type": "string[]",
-        "help": "the methods setSamplingMethod accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "sampleSize": {
-        "type": "number",
-        "help": "requested number of rows",
-        "bulk": false,
-        "derived": true
-      },
-      "noiseStd": {
-        "type": "number",
-        "help": "standard deviation of the noise",
-        "bulk": false,
-        "derived": true
-      },
-      "seed": {
-        "type": "number",
-        "help": "random seed",
-        "bulk": false,
-        "derived": true
+        "type": "{ name: string, min: number, max: number }[]",
+        "help": "",
+        "bulk": false
       },
       "maxOrder": {
         "type": "number",
-        "help": "highest interaction order of the terms",
+        "help": "",
+        "bulk": false
+      },
+      "betas": {
+        "type": "Record<string, number>",
+        "help": "",
+        "bulk": false
+      },
+      "intercept": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "yName": {
+        "type": "string",
+        "help": "",
+        "bulk": false
+      },
+      "samplingMethod": {
+        "type": "'random'|'lhs'|'fullfactorial'",
+        "help": "",
+        "bulk": false
+      },
+      "sampleSize": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "noiseStd": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "seed": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "terms": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Term",
+        "keys": {
+          "index": {
+            "type": "number",
+            "help": "Termindex, die Adresse für setBeta"
+          },
+          "label": {
+            "type": "string",
+            "help": "Name des Terms, z. B. „A × B“"
+          },
+          "order": {
+            "type": "number",
+            "help": "Ordnung (1 Haupteffekt, 2 Zweifach-Wechselwirkung, …)"
+          },
+          "beta": {
+            "type": "number",
+            "help": "Koeffizient β, 0 wenn nicht gesetzt"
+          }
+        }
       },
       "generated": {
-        "type": "Generated|null",
-        "help": "summary of the generated Y values, each item described under keys; null without data",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Generated",
@@ -9531,24 +9521,53 @@ export const AGENT_REGISTRY = {
             "help": "Zahl der erzeugten Zeilen"
           },
           "mean": {
-            "type": "number",
+            "type": "number|null",
             "help": "Mittelwert von Y"
           },
           "sd": {
-            "type": "number",
+            "type": "number|null",
             "help": "Standardabweichung von Y"
           },
           "min": {
-            "type": "number",
+            "type": "number|null",
             "help": "kleinster Y-Wert"
           },
           "max": {
-            "type": "number",
+            "type": "number|null",
             "help": "größter Y-Wert"
           }
         }
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "toWorksheet",
+        "auto": false,
+        "params": []
+      }
+    ],
+    "viewFields": [],
+    "settable": [
+      "factors",
+      "betas",
+      "intercept",
+      "yName",
+      "samplingMethod",
+      "sampleSize",
+      "noiseStd",
+      "seed"
+    ],
+    "invariants": [
+      "factorRange",
+      "factorCount",
+      "betaKeys"
+    ]
   },
   "morphological-box": {
     "tagged": true,

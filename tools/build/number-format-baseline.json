@@ -49,12 +49,6 @@
   "js/modules/makigami/makigami.js": {
     "count": 1
   },
-  "js/modules/model-data-generator/model-data-generator.html": {
-    "count": 7
-  },
-  "js/modules/model-data-generator/model-data-generator.js": {
-    "count": 1
-  },
   "js/modules/process-capability/domain/migrations.js": {
     "count": 1,
     "reason": "Migration alter Stände: Ganzzahltext der Untergruppengröße lesen wie das alte Model (parseFloat), wie bisher"

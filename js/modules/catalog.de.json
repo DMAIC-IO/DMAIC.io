@@ -120,6 +120,11 @@
     "description": "Strukturierte Dokumentation von Projekterkenntnissen",
     "whenToUse": "Wenn die Erfahrungen eines Projekts festgehalten werden sollen — was gut lief, was nicht, die Ursache und die Empfehlung samt Maßnahmen; nicht für die laufende Aufgabenverfolgung und nicht für eine Ursachenanalyse selbst, dafür sind die Aufgabenliste und die 5-Why-Analyse da."
   },
+  "model-data-generator": {
+    "name": "Modelldaten-Generator",
+    "description": "Synthetische Datensätze aus konfigurierbaren Regressionsmodellen erzeugen",
+    "whenToUse": "Wenn synthetische Daten aus einem bekannten Regressionsmodell gebraucht werden — zum Üben von DOE-Auswertung und Regression, zum Testen von Methoden an einem bekannten „wahren“ Modell — mit Faktoren, Koeffizienten, Rauschen und Seed für reproduzierbare Ergebnisse."
+  },
   "morphological-box": {
     "name": "Morphologischer Kasten",
     "description": "Lösungskonzepte aus Parametern und Ausprägungen kombinieren, Unverträglichkeiten prüfen",

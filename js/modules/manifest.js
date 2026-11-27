@@ -28,12 +28,6 @@ export default [
     group: 'collect',
     load: () => import('./rest-api/rest-api.js'),
   },
-  {
-    id: 'model-data-generator',
-    phase: 'data',
-    group: 'collect',
-    load: () => import('./model-data-generator/model-data-generator.js'),
-  },
 
   // ─── Define ───────────────────────────────────────────────────
   {
