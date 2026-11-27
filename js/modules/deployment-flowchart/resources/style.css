@@ -1,0 +1,177 @@
+/* Deployment-Flowchart: Bahnen-Seitenleiste, Bänder je Rolle, Schrittkarten
+   und das Auswahlformular des Imports. */
+
+/* ── Body split: lane sidebar | lane canvas ─────────────────────────── */
+.df__body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 100%;
+  min-height: 240px;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────── */
+.df__sidebar {
+  border-right: 1px solid var(--color-border-primary);
+  padding: var(--spacing-md);
+  overflow: auto;
+}
+
+.df__sidebar-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.df__sidebar-hint {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.df__lane-list { list-style: none; margin: 0; padding: 0; }
+
+.df__lane-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid transparent;
+}
+
+.df__lane-name {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  padding: 0;
+}
+.df__lane-name:focus { outline: none; }
+.df__lane-name--fixed { color: var(--color-text-secondary); font-style: italic; }
+
+.df__lane-remove {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  line-height: 1;
+  padding: 0;
+}
+.df__lane-remove:hover { color: var(--color-error); }
+
+/* ── Canvas / lane bands ────────────────────────────────────────────────
+   Layout comes from `.fc-swimlanes` in js/core/flowchart/flowchart.css;
+   the bands are pure read-out — a step's lane is changed by dragging its
+   card, never by selecting a band. */
+.df__canvas { min-height: 220px; }
+
+.df__empty-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-lg);
+}
+.df__band-label { border-radius: var(--border-radius-sm); }
+
+/* ── Step card ──────────────────────────────────────────────────────────
+   Surface, header, number badge, title and delete button come from the
+   shared `.fc-*` base in js/core/flowchart/flowchart.css — only the sizing
+   inside a lane band is module-specific. */
+.df__step {
+  min-width: 180px;
+  max-width: 260px;
+}
+
+/* Height/line-box come from textarea.fc-card__title. */
+
+/* ── Import picker form (borrowed into the shared modal) ────────────── */
+
+/* Hidden inside the module container; the shared dialog borrows the node,
+   so it must become visible again once it sits in the dialog body
+   (mirrors .dialog__body .pmap__sipoc-form in process-map.css). */
+.df__import-form { display: none; }
+.dialog__body .df__import-form { display: block; }
+
+.df__import-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.df__import-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.df__import-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.df__import-option--selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.df__import-option-source {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.df__import-option-title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+/* Connector sits in the column gap, at the card's header height. */
+.df__connector {
+  position: absolute;
+  left: calc(-1 * var(--fc-chain-gap));
+  top: var(--spacing-sm);
+  z-index: 3;
+}
+
+
+/* ── Griff: die Nummer der Karte ────────────────────────────────────────
+   Ein <button> in der Optik von `.fc-step-number` (Fläche, Schrift, `grab`
+   aus flowchart.css); hier nur die Knopf-Grundwerte und der Fokusring. */
+.df__grip {
+  border: none;
+  font-family: var(--font-family-mono);
+  line-height: inherit;
+  touch-action: none;
+}
+.df__grip:active { cursor: grabbing; }
+
+.df__grip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* ── Textfelder wachsen mit dem Inhalt ──────────────────────────────────
+   `field-sizing: content` statt Messung per JavaScript; ohne Unterstützung
+   bleibt die Grundhöhe und ein Scrollbalken statt abgeschnittenem Text. */
+.df textarea.df__step-title,
+.df textarea.df__step-description {
+  field-sizing: content;
+  overflow-y: auto;
+}
+.df textarea.df__step-title { min-height: 1.4em; }
+.df textarea.df__step-description { min-height: 44px; }
+
+/* Kopie aus flowchart.css (`.fc-remove-icon`), damit das Modul nicht an der
+   Regel des Altkerns hängt. */
+.df .fc-remove-icon { font-size: 12px; }

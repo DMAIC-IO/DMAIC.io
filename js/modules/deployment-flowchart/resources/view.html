@@ -1,0 +1,123 @@
+<div class="module-container df" x-data="deploymentFlowchart" data-ref="root">
+  <div class="module-container__body df__body">
+
+    <!-- Lane sidebar: rename and remove lanes. No data-band here — the chain
+         gesture reads the bands from the slots of the canvas only. -->
+    <aside class="df__sidebar">
+      <h4 class="df__sidebar-title">
+        <span data-help-key="modules.deployment-flowchart.fields.lanes.help" x-text="t('lanes')"></span>
+      </h4>
+      <ul class="df__lane-list">
+        <template x-for="lane in model.lanes" :key="lane.id">
+          <li class="df__lane-item" :data-lane-id="lane.id">
+            <template x-if="!isUnassigned(lane)">
+              <input class="df__lane-name" type="text" x-field="lane.name"
+                     :data-lane-id="lane.id" :placeholder="t('unnamedLane')" @click.stop>
+            </template>
+            <template x-if="isUnassigned(lane)">
+              <span class="df__lane-name df__lane-name--fixed"
+                    data-help-key="modules.deployment-flowchart.fields.steps.laneId.help" x-text="t('unassigned')"></span>
+            </template>
+            <template x-if="!isUnassigned(lane)">
+              <button type="button" class="df__lane-remove" x-command="removeLane" :data-arg-lane-id="lane.id"
+                      data-help-key="" :title="t('removeLane')" :aria-label="t('removeLane')">
+                <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+              </button>
+            </template>
+          </li>
+        </template>
+      </ul>
+      <p class="df__sidebar-hint" x-text="t('laneHint')"></p>
+    </aside>
+
+    <!-- Lane canvas: the chain runs left to right (one column per step), the
+         lane is the vertical position. Only the column carries
+         data-step-index; each slot carries its lane as data-band. -->
+    <div class="df__canvas fc-swimlanes" data-ref="flow" :style="laneCountStyle()">
+      <template x-if="model.lanes.length === 0">
+        <p class="df__empty-hint" x-text="t('emptyHint')"></p>
+      </template>
+
+      <div class="fc-swimlane-labels">
+        <template x-for="lane in model.lanes" :key="lane.id">
+          <div class="df__band-label fc-swimlane-label" :data-lane-id="lane.id" x-text="laneLabel(lane)"></div>
+        </template>
+      </div>
+
+      <template x-for="(step, i) in model.steps" :key="step.id">
+        <div class="df__col fc-swimlane-col" :data-step-id="step.id" :data-step-index="i" :data-id="step.id">
+
+          <template x-for="lane in model.lanes" :key="lane.id">
+            <div class="df__slot fc-swimlane-slot" :class="slotClass(lane.id)" :data-band="lane.id" :data-lane-id="lane.id">
+
+              <!-- Gap 0: rail in front of the first card, only while a step is moved. -->
+              <template x-if="showStartRail(i, lane.id)">
+                <div class="df__connector fc-connector fc-connector--rail" :class="gapClass(0)" data-gap="0">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
+
+              <!-- Gap i, left of the card in its lane: click inserts a step
+                   here, in this lane; it is also the gesture's target gap. -->
+              <template x-if="showGap(i, lane.id)">
+                <div class="df__connector fc-connector fc-connector--clickable" :class="gapClass(i)"
+                     data-action="insert-step" :data-idx="i" :data-gap="i"
+                     x-command="addStep" :data-arg-index="i" :data-arg-lane-id="lane.id" data-help-key=""
+                     :title="t('insertHere')">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
+
+              <template x-if="inLane(step, lane.id)">
+                <div class="df__step fc-card" :class="cardClass(step)">
+                  <div class="df__step-header fc-card__header">
+                    <button type="button" class="df__grip df__step-number fc-step-number context-help-anchor--overlay"
+                            :aria-label="t('stepGrip')" x-text="stepNum(i)"
+                            data-help-key="modules.deployment-flowchart.actions.moveStep.help"></button>
+                    <textarea class="df__step-title fc-card__title" rows="1" x-field="step.title"
+                              :placeholder="t('titlePlaceholder')"></textarea>
+                    <div class="df__step-actions fc-card__actions">
+                      <button type="button" class="df__delete fc-card__delete" x-command="removeStep" :data-arg-id="step.id"
+                              data-help-key="" :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                        <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="df__step-body fc-card__body">
+                    <textarea class="field field--ghost df__step-description fc-card__description" rows="1"
+                              data-field="description" :data-step-id="step.id" x-field="step.description"
+                              :placeholder="t('descriptionPlaceholder')"></textarea>
+                  </div>
+                  <!-- @include js/core/flowchart/substeps.view.part.html -->
+                </div>
+              </template>
+
+              <!-- Gap n: rail behind the last card, only while a step is moved. -->
+              <template x-if="showEndRail(i, lane.id)">
+                <div class="df__connector df__connector--end fc-connector fc-connector--rail fc-connector--end"
+                     :class="gapClassAfter(i)" :data-gap="i + 1">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Import picker, borrowed into the shared dialog by openImport(); hidden
+       here via CSS. The choice is read at the list (one delegated listener). -->
+  <div x-ref="importForm" class="df__import-form" :data-selected="state.importPick">
+    <p class="df__import-hint" x-text="t('importHint')"></p>
+    <div class="df__import-list" @change="pickImport($event)">
+      <template x-for="opt in state.importOptions" :key="opt.instanceId">
+        <label class="df__import-option" :class="importOptionClass(opt)" :data-instance-id="opt.instanceId">
+          <input type="radio" :name="fieldId('import-pick')" :value="opt.instanceId" :checked="isImportPicked(opt)">
+          <span class="df__import-option-source" x-text="sourceName(opt)"></span>
+          <span class="df__import-option-title" x-text="opt.label"></span>
+        </label>
+      </template>
+    </div>
+  </div>
+</div>

@@ -261,6 +261,7 @@ const SKIP = new Set([
   'modules/doe-planner/analysis-view.test.js',
   'modules/doe-planner/evop-view.test.js',
   'modules/opportunity-flowchart/viewmodel.test.js',
+  'modules/deployment-flowchart/viewmodel.test.js',
   'modules/survey-builder/draft-view.test.js',
   'modules/survey-builder/recipients-view.test.js',
   'modules/survey-builder/results-view.test.js',
