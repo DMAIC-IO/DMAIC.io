@@ -215,7 +215,7 @@ function attachComputedKeys(entry, text, file, returns) {
   if (returns.size === 0) return;
   // Die Rückgabetypen werden als Alias-Typedef an den Quelltext gehängt, so
   // lösen `typedefKeys` und `findTypedefImport` sie wie jede andere Typedef.
-  const alias = [...returns].map(([name, type], i) => `\n/** @typedef {${type}} __Returns${i} */\nexport {};`).join('');
+  const alias = [...returns].map(([, type], i) => `\n/** @typedef {${type}} __Returns${i} */\nexport {};`).join('');
   const sf = ts.createSourceFile(file, text + alias, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   [...returns].forEach(([name, type], i) => {
     const field = entry.fields[name];
@@ -358,10 +358,9 @@ function buildEntry(resolver, appDir, viewmodelFile, baseline) {
   // Meldung desselben Befunds unter neuem Namen, nicht ein zweiter Befund.
   const surface = [];
   if (violations.length === 0) {
-    // `read` zählt hier NICHT mit: seit es das geteilte `read()`-Mixin gibt,
-    // kostet eine Aktion eine Zeile (`...agentReadMixin(module)`) — ein
-    // befundfreies Modul wie `mosaic` wäre mit Tag plus Spread freigegeben,
-    // ohne einen einzigen Schreibweg. Genau der Fall, den diese Hürde
+    // `read` zählt hier NICHT mit: ein `read()` kostet kaum etwas (in der
+    // Zielform liefert es der Kern aus dem Schema) — ein befundfreies Modul
+    // wäre mit Tag plus `read()` freigegeben, ohne einen einzigen Schreibweg. Genau der Fall, den diese Hürde
     // ausschließen soll. Zählte `read` mit, wäre `no_read_action` unten die
     // stärkere Bedingung und diese Hürde ganz überflüssig.
     if (Object.keys(actions).filter(n => n !== 'read').length === 0) surface.push('module_tag_without_actions');

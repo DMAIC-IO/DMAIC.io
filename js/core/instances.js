@@ -209,7 +209,7 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
    * 3. Zielform ohne Mount: mit `readStored` und einem Stand der aktuellen
    *    Version ohne Model (`readStored`); sonst `loadDetached`, die
    *    normalisierte Form einmal zurückschreiben, `readDetached`.
-   * 4. Mixin, sonst `needs_mount`.
+   * 4. Sonst `needs_mount`.
    * @param {{ instanceId: string, moduleId: string }} record
    * @param {any} m geladenes Modulobjekt
    * @param {object|undefined} options

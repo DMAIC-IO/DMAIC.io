@@ -79,7 +79,7 @@ test('countHelpCoverage treats a key present in only ONE language as missing', a
 /* ── Der geteilte Rückfall ─────────────────────────────────────────────────
    `agent-catalog.js:contextHelp` löst in genau dieser Reihenfolge auf:
    Modulschlüssel → `modules.shared.<suffix>` → JSDoc-Prosa. Der geteilte
-   Schlüssel gehört zum geteilten `read()` aus `agent-read-mixin.js` — ohne
+   Schlüssel gehört zum geteilten `read()` (`core/agent/agent-schema.js`) — ohne
    ihn müsste jedes der 72 Module denselben Satz in beide Sprachbäume
    kopieren. Zählte die Abdeckung ihn nicht mit, wiese sie eine Lücke aus,
    die es für den Agenten gar nicht gibt, und träte damit genau zu der

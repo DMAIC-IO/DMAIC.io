@@ -1,21 +1,13 @@
 /**
- * Tests für core/agent/agent-read-mixin.js — das EINE read(), die Freigabe
- * an jedem Viewmodel verlangt. Einmal geschrieben statt
- * 72-mal: der Generator löst den Spread auf und sieht Marke und Schema des
- * Mixin-Mitglieds.
+ * Tests für core/agent/agent-read-mixin.js — `readAgentState()`, der
+ * Projektor hinter dem eigenen `read()` der Altform-Module.
  */
 import { suite, test, beforeAll, afterAll, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
-import { agentReadMixin, readAgentState } from '../../../js/core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../../js/core/agent/agent-read-mixin.js';
 import { AGENT_REGISTRY } from '../../../js/core/agent/agent-registry.generated.js';
 
-/** Eine Alpine-Komponente, soweit das Mixin sie braucht. */
-function componentFor(moduleId, modelJson) {
-  const mixin = agentReadMixin({ id: moduleId });
-  return { ...mixin, model: { toJSON: () => modelJson } };
-}
-
 // Zwei synthetische Registry-Einträge statt echter Module (die bei ihrer
-// Umstellung das Mixin verlassen): einer mit einem Baum-Massenfeld
+// Umstellung `readAgentState` verlassen): einer mit einem Baum-Massenfeld
 // (bulk: true, kind 'tree') neben einem gewöhnlichen Feld, und einer mit
 // Worksheet-Form (title/columns/rows), um readAgentState()s
 // TABELLEN-Optionen (fields, rows) real zu prüfen, statt sie nur zu
@@ -33,7 +25,7 @@ const BULK_SCHEMA = {
   rows: { type: 'any[][]', help: '', bulk: true },
 };
 
-suite('agent read mixin', () => {
+suite('readAgentState', () => {
   beforeAll(() => {
     AGENT_REGISTRY[BULK_MODULE_ID] = { fields: BULK_SCHEMA };
     AGENT_REGISTRY[TREE_MODULE_ID] = { fields: TREE_SCHEMA };
@@ -43,19 +35,17 @@ suite('agent read mixin', () => {
     delete AGENT_REGISTRY[TREE_MODULE_ID];
   });
 
-  test('read() projects the model JSON through the registry schema', () => {
+  test('projiziert den Stand durch das Registry-Schema', () => {
     // `vocs` ist ein Massenfeld (bulk tree) — ohne options.fields kommt nur
     // der Umfang, kein leeres Array.
-    const component = componentFor(TREE_MODULE_ID, { vocs: [], styles: { a: 1 }, _idCounter: 7 });
-    const state = component.read();
+    const state = readAgentState(TREE_MODULE_ID, { vocs: [], styles: { a: 1 }, _idCounter: 7 }, undefined);
     assertDeepEqual(state.styles, { a: 1 });
     assertDeepEqual(state.vocs, { $bulk: true, kind: 'tree', nodeCount: 0, depth: 0 });
     assertEqual('_idCounter' in state, false);
   });
 
-  test('read() of an unknown module id yields an empty object, it does not throw', () => {
-    const component = componentFor('does-not-exist', { a: 1 });
-    assertDeepEqual(component.read(), {});
+  test('eine unbekannte Modul-Id ergibt ein leeres Objekt und wirft nicht', () => {
+    assertDeepEqual(readAgentState('does-not-exist', { a: 1 }, undefined), {});
   });
 
   test('readAgentState without options replaces a bulk field with a descriptor', () => {
@@ -110,15 +100,11 @@ suite('agent read mixin', () => {
     assertEqual(live.vocs[0].id, 1);
   });
 
-  test('read() returns the empty-snapshot projection when the model has no toJSON', () => {
-    const mixin = agentReadMixin({ id: TREE_MODULE_ID });
-    const component = { ...mixin, model: null };
-    // Das Schema hat zwei Felder (vocs, styles); über einem
-    // LEEREN Snapshot projiziert FEHLT jedes von beiden. Vorher
-    // kamen sie als `undefined` durch — und genau das machte den
-    // Driftvergleich der Pilotmodule (Schlüssel von read() == erklärte
-    // Felder) unfällbar.
-    assertDeepEqual(component.read(), {});
-    assertEqual(Object.keys(component.read()).length, 0);
+  test('ein leerer Stand ergibt die leere Projektion, ohne undefined-Schlüssel', () => {
+    // Das Schema hat zwei Felder (vocs, styles); über einem LEEREN Stand
+    // projiziert FEHLT jedes von beiden. Kämen sie als `undefined` durch,
+    // wäre der Driftvergleich (Schlüssel von read() == erklärte Felder)
+    // unfällbar.
+    assertEqual(Object.keys(readAgentState(TREE_MODULE_ID, {}, undefined)).length, 0);
   });
 });

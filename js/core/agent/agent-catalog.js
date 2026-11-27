@@ -362,7 +362,7 @@ function describeKeys(i18n, moduleId, node, cycle) {
  * falsch zu schreiben.
  *
  * Der geteilte Schlüssel (`modules.shared.<suffix>`) gehört zum geteilten
- * `read()` aus `agent-read-mixin.js`: das Mixin zentralisiert den Code, nicht
+ * `read()` (`agent-schema.js`): der Kern zentralisiert den Code, nicht
  * den Text — ohne diesen Rückfall müsste jedes der 72 Module denselben
  * `actions.read.help` und `actions.read.params.options` in beide
  * Sprachdateien kopieren. Modulspezifische Schlüssel gewinnen weiterhin, wo

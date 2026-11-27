@@ -1,27 +1,16 @@
 /**
- * D.Mike — Das geteilte read() der Agentenfläche (agent-read-mixin.js)
+ * D.Mike — Lesezustand der Altform-Module (agent-read-mixin.js)
  *
- * Freigabe verlangt an jedem freigegebenen Viewmodel eine
- * `read()`-Aktion, die den vollständigen Lesezustand liefert. Für jedes Modul,
- * dessen Lesefläche die persistierte Model-Form IST, ist dieses
- * `read()` wortgleich — es steht deshalb genau hier und wird per Spread in die
- * `data()`-Funktion geholt:
+ * Freigabe verlangt an jedem freigegebenen Viewmodel eine `read()`-Aktion,
+ * die den vollständigen Lesezustand liefert. In der Zielform (`createModule`
+ * mit `defineModel`) liefert sie der Kern aus dem Schema
+ * (`agent-schema.js`). Die übrigen Altform-Module erklären ihre Lesefläche
+ * über `@typedef {object} AgentRead` und schreiben ihr eigenes `read()`, das
+ * `readAgentState()` hier aufruft.
  *
- *   data(module, _t) {
- *     return {
- *       ...agentReadMixin(module),
- *       …
- *     };
- *   }
- *
- * Der Generator löst den Spread auf (`tools/build/agent-resolve.mjs`) und liest
- * Marke und Schema am Mitglied dieser Datei. Eine Kopie pro Modul wäre 72-mal
- * dieselbe Methode — und 72 Gelegenheiten, sie unterschiedlich falsch zu
- * schreiben.
- *
- * Module, deren Lesefläche NICHT die persistierte Form ist, deklarieren sie
- * über `@typedef {object} AgentRead` und schreiben ihr eigenes `read()`; sie
- * benutzen dann `readAgentState()` direkt und spreaden das Mixin nicht.
+ * Das geteilte `agentReadMixin()` (`...agentReadMixin(module)` im
+ * `data()`-Literal) ist mit seinem letzten Nutzer `process-map` entfallen;
+ * der Dateiname bleibt, damit die Importe der Altform-Module gleich bleiben.
  *
  * Rein: kein DOM, kein `window`.
  */
@@ -52,33 +41,4 @@ export function readAgentState(moduleId, snapshot, options) {
   // zweiter daneben wäre toter Inhalt (kein Konsument liest ihn).
   if (out && typeof out.$invalidCall === 'string') throw new Error(out.$invalidCall);
   return out;
-}
-
-/**
- * Das geteilte `read()` für Module, deren Lesefläche die Model-Form ist.
- *
- * @param {{ id: string }} module  das Modulobjekt aus `createModule`
- * @returns {{ read: (options?: object) => object }}
- */
-export function agentReadMixin(module) {
-  return {
-    /**
-     * Den vollständigen Lesezustand dieser Instanz liefern.
-     *
-     * Ohne Parameter bleiben Massendaten draußen und erscheinen als
-     * Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table',
-     * rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree',
-     * nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt
-     * 5000 Zeilen durch sein Kontextfenster zu schieben.
-     *
-     * @agent
-     * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
-     *   — `fields` nennt die Massenfelder, die vollständig geliefert werden
-     *   sollen; `rows` schneidet jedes davon auf `[from, to)` zu.
-     * @returns {object} der Lesezustand
-     */
-    read(options) {
-      return readAgentState(module.id, this.model?.toJSON?.() ?? {}, options);
-    },
-  };
 }

@@ -97,7 +97,7 @@ export const STRUCTURE_JARGON = /[{}[\]`]|\bnull\b(?!\s+(?:deviance|hypothesis|m
  * Die Kandidatenschlüssel eines Hilfetextes, in Auflösungsreihenfolge.
  *
  * EINE Schablone, mit `shared` als Ersatz-Modulkennung: der geteilte
- * Rückfall gehört zum geteilten `read()` aus `agent-read-mixin.js`, und
+ * Rückfall gehört zum geteilten `read()` (`core/agent/agent-schema.js`), und
  * zwei verschiedene Schablonen wären zwei Gelegenheiten, sie
  * unterschiedlich falsch zu schreiben.
  *
@@ -165,7 +165,7 @@ export function typedefHelpSuffixes(entry) {
  *
  * Aufgelöst wird über dieselbe Kette wie `agent-catalog.js:contextHelp`:
  * Modulschlüssel → geteilter Schlüssel (`modules.shared.<suffix>`). Der
- * geteilte Rückfall gehört zum geteilten `read()` aus `agent-read-mixin.js`;
+ * geteilte Rückfall gehört zum geteilten `read()` (`core/agent/agent-schema.js`);
  * zählte die Abdeckung ihn nicht mit, wiese sie eine Lücke aus, die es für
  * den Agenten nicht gibt — und verlangte genau die Doppelpflege in 72
  * Modulen, die der Rückfall vermeidet.

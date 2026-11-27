@@ -50,7 +50,7 @@ export const VIOLATION_REMEDIES = Object.freeze({
   key_set_mismatch: 'Typedef-Schlüssel und requireEnum-Menge angleichen',
   key_value_mismatch: 'Prüffunktion des Schlüssels an den Typedef-Typ angleichen (requireText ↔ string, requireNumber ↔ number, requireEnum ↔ Literalvereinigung)',
   module_tag_without_actions: 'mindestens eine schreibende @agent-Aktion anbieten oder das Modul-Tag entfernen',
-  no_read_action: 'read() anbieten (…agentReadMixin(module))',
+  no_read_action: 'read() anbieten (Zielform: createModule mit Model; Altform: eigenes read() über readAgentState)',
   unresolvable_model_class: 'Model: im createModule({…})-Literal auf eine importierte Klasse setzen',
   unresolved_model_class: 'Model-Klasse statisch auflösbar importieren',
   ambiguous_model_class: 'Model-Klasse eindeutig benennen (nur eine Deklaration)',
