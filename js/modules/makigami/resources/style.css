@@ -453,6 +453,14 @@
   letter-spacing: 0.05em;
 }
 
+/* Die Chip-Überschriften sind `<span>` ohne Feld; als gestreckter Flex-Posten
+   der Spalte läge das Hilfe-Abzeichen (`left: 100%`) sonst am rechten Rand
+   der Karte statt neben dem Text (die globale Regel greift nur für `label`). */
+.makigami__field-label {
+  width: fit-content;
+  max-width: 100%;
+}
+
 .makigami__field-error {
   font-size: var(--font-size-xs);
   color: var(--color-error);
