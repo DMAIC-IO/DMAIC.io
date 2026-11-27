@@ -262,6 +262,8 @@ suite('correlation: Viewmodel im Browser', () => {
     const vm = h.vm();
     await until(() => h.q('.corr__matrix-table') !== null && h.qa('.corr__matrix-plot-card').length === 3);
     await until(() => h.charts.length === 3);
+    // Intervall in der Kopfzeile: „95% KI …“ wie die Altform, ohne Leerzeichen vor „%“.
+    assertTrue(/^95% KI /.test(text(h.qa('.corr__matrix-plot-meta').find((m) => /KI/.test(text(m))))));
     assertDeepEqual(h.qa('.corr__toggle-btn.btn--active').map((b) => b.dataset.method), ['pearson']);
     h.q('.corr__toggle-btn[data-method="kendall"]').click();
     await until(() => vm.model.matrixMethod === 'kendall');

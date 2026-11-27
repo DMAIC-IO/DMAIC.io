@@ -230,7 +230,7 @@ export default createModule({
        * Intervall in der Kopfzeile einer Karte.
        * @param {{ ciLabel: string }} pair @returns {string}
        */
-      pairCiText(pair) { return `${this.confDisplay} % ${this.t('ciShort')} ${pair.ciLabel}`; },
+      pairCiText(pair) { return `${this.confDisplay}% ${this.t('ciShort')} ${pair.ciLabel}`; },
       /**
        * p-Wert in der Kopfzeile einer Karte.
        * @param {{ pLabel: string }} pair @returns {string}
