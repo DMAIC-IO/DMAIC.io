@@ -125,8 +125,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'class="af__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
   ],
   'deployment-flowchart': [
-    // count 2, solange Altvorlage und resources/view.html nebeneinander liegen; 2b setzt zurück auf 1.
-    { match: 'class="df__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 2 },
+    { match: 'class="df__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
   ],
   ishikawa: [
     { match: 'class="ishikawa__col-nr">#</th>', reason: 'Spaltenkopf der laufenden Nummer (Ursachen, Fakten, Experimente), nur das Zeichen #; kein eigenes Feld', count: 3 },

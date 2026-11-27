@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "deployment-flowchart-auftragsdurchlauf",
+      "type": "project",
+      "title": {
+        "de": "Deployment Flowchart Auftragsdurchlauf",
+        "en": "Deployment Flowchart Order Flow"
+      },
+      "description": {
+        "de": "5 Schritte von der Bestellung bis zur Warenannahme, verteilt auf die drei Lanes Kunde, Vertrieb und Fertigung — vier Übergaben werden als Lane-Wechsel sichtbar.",
+        "en": "5 steps from order to goods receipt across three lanes — customer, sales, and production — with four hand-offs made visible as lane switches."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/deployment-flowchart-auftragsdurchlauf.json",
+      "format": "json",
+      "tags": [
+        "analyze",
+        "deployment-flowchart",
+        "swimlane"
+      ]
+    }
+  ]
+}

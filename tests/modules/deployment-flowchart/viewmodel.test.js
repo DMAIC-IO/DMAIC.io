@@ -495,7 +495,7 @@ suite('deployment-flowchart: Viewmodel im Browser', () => {
 
   test('Kartenhöhe wie die Altform: ein einzeiliger Titel hält zwei Zeilen Höhe, ein langer wächst (field-sizing)', async () => {
     // Die Altform hatte Titel-Textfelder ohne `rows` (Vorgabe zwei Zeilen), die
-    // `autoSize` nie darunter schrumpfte; die Kartenhöhe bleibt (Spec §11).
+    // `autoSize` nie darunter schrumpfte; die Kartenhöhe bleibt wie in der Altform.
     for (const [key, path] of [['flowchart', 'js/core/flowchart/flowchart.css'], [ID, `js/modules/${ID}/resources/style.css`]]) {
       if (document.querySelector(`style[data-test-css="${key}"]`)) continue;
       const css = document.createElement('style');

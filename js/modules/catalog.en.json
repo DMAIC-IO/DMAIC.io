@@ -60,6 +60,11 @@
     "description": "Transform data (Box-Cox, Johnson, Log, …) for normality",
     "whenToUse": "When non-normal measurements should be transformed for a method that assumes normality — Box-Cox, Yeo-Johnson, Johnson, logarithm, square root, reciprocal, square — and the result is reused as a new column. Requires the measurements as a numeric column of a data collection (at least three values)."
   },
+  "deployment-flowchart": {
+    "name": "Deployment Flowchart",
+    "description": "Process chain across role lanes — makes hand-offs visible",
+    "whenToUse": "When an existing chain needs to show which role owns which step and where the hand-offs are — not for capturing a new process without a role assignment yet."
+  },
   "distribution-fit": {
     "name": "Distribution Fit",
     "description": "Fit data to multiple distributions and rank by Goodness-of-Fit test",

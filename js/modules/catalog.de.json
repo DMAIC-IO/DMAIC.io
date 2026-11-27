@@ -60,6 +60,11 @@
     "description": "Daten transformieren (Box-Cox, Johnson, Log, …) für Normalverteilung",
     "whenToUse": "Wenn nicht normalverteilte Messwerte für ein Verfahren mit Normalitätsannahme transformiert werden sollen — Box-Cox, Yeo-Johnson, Johnson, Logarithmus, Wurzel, Kehrwert, Quadrat — und das Ergebnis als neue Spalte weiterverwendet wird. Braucht die Messwerte als numerische Spalte (mindestens drei Werte) einer Datensammlung."
   },
+  "deployment-flowchart": {
+    "name": "Deployment Flowchart",
+    "description": "Prozesskette über Rollen-Lanes — macht Übergaben sichtbar",
+    "whenToUse": "Wenn eine bestehende Kette zeigen soll, welche Rolle welchen Schritt verantwortet und wo die Übergaben liegen — nicht für eine neue Prozessaufnahme ohne Rollenzuordnung."
+  },
   "distribution-fit": {
     "name": "Verteilungstests",
     "description": "Datensatz auf verschiedene Verteilungsfunktionen testen und nach Güte ranken",

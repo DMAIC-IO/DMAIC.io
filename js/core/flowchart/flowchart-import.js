@@ -2,7 +2,7 @@
  * D.Mike — Flowchart generic import picker (flowchart-import.js)
  *
  * Registry of source→target step mappers. Each target flowchart module
- * (process-map, activity-flowchart, deployment-flowchart)
+ * (process-map, activity-flowchart)
  * registers one mapper per source module it wants to import from — e.g. PM
  * registers a SIPOC→PM mapper in `modules/process-map/process-map-sipoc-import.js`.
  *
