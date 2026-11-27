@@ -46,6 +46,7 @@
   "importFromSipocSteps": "{n} Prozessschritt(e)",
   "importFromSipocConfirm": "Übernehmen",
   "importFromSipocDone": "{n} Schritt(e) aus SIPOC übernommen",
+  "importFromSipocFailed": "SIPOC konnte nicht gelesen werden; es wurde nichts übernommen.",
   "stepGrip": "Schritt verschieben",
   "ioGrip": "Eintrag verschieben",
   "substepGrip": "Unter-Schritt verschieben",

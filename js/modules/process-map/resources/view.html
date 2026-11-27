@@ -1,0 +1,275 @@
+<div class="module-container pmap" x-data="processMap" data-ref="root">
+  <div class="module-container__body">
+    <div class="pmap__canvas">
+      <div class="pmap__flow" data-ref="flow" @click="noteClick($event)">
+
+        <!-- Empty state: no in-canvas add button (the toolbar covers it). With
+             a SIPOC in the project it offers the import instead of opening the
+             picker on its own (that would also trap agents adding an instance). -->
+        <template x-if="sipocOfferVisible">
+          <div class="pmap__empty">
+            <button type="button" class="btn btn--secondary pmap__sipoc-offer" data-action="import-from-sipoc"
+                    @click="openImport()">
+              <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span>
+              <span data-help-key="modules.process-map.actions.appendSteps.help" x-text="t('importFromSipoc')"></span>
+            </button>
+          </div>
+        </template>
+
+        <template x-if="model.steps.length > 0">
+          <table class="pmap__table">
+            <tbody>
+
+              <!-- Row 1: Inputs, one cell per step. Each list is a closed
+                   group of the io gesture; the cell carries data-step-id but
+                   never data-step-index (only the card cell does). -->
+              <tr class="pmap__row pmap__row--inputs">
+                <template x-for="step in model.steps" :key="'in-' + step.id">
+                  <td class="pmap__cell pmap__cell--io pmap__cell--io-input" :data-step-id="step.id">
+                    <div class="pmap__io-panel pmap__io-panel--input">
+                      <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="inputs"
+                           @click="addIOAt(step.id, 'inputs')">
+                        <span class="pmap__io-label-text pmap__io-label-text--input">
+                          <span class="pmap__io-dot pmap__io-dot--input"></span> <span data-help-key="modules.process-map.actions.addIO.help" x-text="ioLabelIn()"></span>
+                        </span>
+                      </div>
+                      <div class="pmap__io-list" :data-reorder-group="ioGroup(step, 'inputs')" data-reorder-closed
+                           :data-io-step="step.id" data-io-type="inputs">
+                        <template x-for="(io, j) in step.inputs" :key="io.id">
+                          <div class="pmap__io-item pmap__io-item--input" :class="ioItemClass(step, 'inputs', io, j)"
+                               :data-io-id="io.id" :data-reorder-index="j">
+                            <button type="button" class="pmap__io-dot pmap__io-dot--input pmap__io-grip context-help-anchor--overlay"
+                                    :aria-label="t('ioGrip')" data-help-key="modules.process-map.actions.moveIO.help"></button>
+                            <button type="button" class="pmap__input-type" :class="inputTypeClass(io)"
+                                    data-action="cycle-input-type" :data-step-id="step.id" :data-io-id="io.id"
+                                    x-command="cycleInputType" :data-arg-step-id="step.id" :data-arg-io-id="io.id"
+                                    :title="inputTypeTitle(io)" x-text="inputTypeLabel(io)"></button>
+                            <textarea class="pmap__io-name" rows="1" :placeholder="t('inputPlaceholder')"
+                                      :data-io-step="step.id" data-io-type="inputs" :data-io-id="io.id" x-field="io.name"></textarea>
+                            <button type="button" class="pmap__io-remove" data-action="remove-io"
+                                    :data-step-id="step.id" data-io-type="inputs" :data-io-id="io.id"
+                                    x-command="removeIO" :data-arg-step-id="step.id" data-arg-type="inputs" :data-arg-io-id="io.id"
+                                    data-help-key="" :title="t('common.delete')" :aria-label="t('common.delete')">
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </td>
+                </template>
+              </tr>
+
+              <!-- Row 2: Step cards (index i, as the substeps part expects). Only this cell carries data-step-index
+                   (the chain gesture's columns). Connectors are positioned
+                   absolutely and overflow into the horizontal border-spacing. -->
+              <tr class="pmap__row pmap__row--cards">
+                <template x-for="(step, i) in model.steps" :key="'card-' + step.id">
+                  <td class="pmap__cell pmap__cell--step pmap__step-row" :class="rowClass(step)"
+                      :data-step-id="step.id" :data-step-index="i" :data-id="step.id">
+
+                    <template x-if="isFirst(i)">
+                      <div class="pmap__connector pmap__connector--leading pmap__connector--clickable fc-connector fc-connector--clickable"
+                           :class="gapClass(0)" data-action="insert-step" data-idx="0" data-gap="0"
+                           :title="t('insertHere')" @click="addStepAt(0)">
+                        <span class="pmap__connector-arrow fc-connector__arrow"
+                              data-help-key="modules.process-map.actions.addStep.help">&raquo;</span>
+                      </div>
+                    </template>
+
+                    <div class="pmap__step-card fc-card" :class="cardClass(step)">
+                      <div class="pmap__step-header fc-card__header">
+                        <button type="button" class="pmap__step-number pmap__grip fc-step-number context-help-anchor--overlay"
+                                :aria-label="t('stepGrip')" x-text="stepNum(i)"
+                                data-help-key="modules.process-map.actions.moveStep.help"></button>
+                        <button type="button" class="pmap__value-badge" :class="valueBadgeClass(step)"
+                                data-action="cycle-value" :data-step-id="step.id" :data-arg-step-id="step.id"
+                                x-command="cycleValueType" :title="valueBadgeTitle(step)"
+                                x-text="valueBadgeLabel(step)"></button>
+                        <textarea class="pmap__step-title fc-card__title" rows="1"
+                                  :placeholder="t('stepNamePlaceholder')" data-field="title" :data-step-id="step.id"
+                                  x-field="step.title"></textarea>
+                        <div class="pmap__step-actions fc-card__actions">
+                          <button type="button" class="pmap__step-loop-toggle" :class="loopToggleClass(step)"
+                                  data-action="toggle-loop" :data-step-id="step.id" x-command="setLoop" :data-arg-step-id="step.id"
+                                  :data-arg-on="loopArg(step)" :aria-pressed="loopPressed(step)"
+                                  :title="t('loopLabel')" :aria-label="t('loopLabel')">
+                            <span class="icon icon--sm" data-icon="action.loop" aria-hidden="true"></span>
+                          </button>
+                          <button type="button" class="pmap__step-delete fc-card__delete" data-action="remove-step" :data-step-id="step.id"
+                                  x-command="removeStep" :data-arg-id="step.id" data-help-key=""
+                                  :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                            <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="pmap__step-body fc-card__body">
+                        <textarea class="field field--ghost pmap__step-description fc-card__description"
+                                  :placeholder="t('descriptionPlaceholder')" data-field="description" :data-step-id="step.id"
+                                  x-field="step.description"></textarea>
+                      </div>
+                      <!-- @include js/core/flowchart/substeps.view.part.html -->
+                    </div>
+
+                    <!-- Trailing connector (after every step, in the gap to the next column). -->
+                    <div class="pmap__connector pmap__connector--trailing pmap__connector--clickable fc-connector fc-connector--clickable"
+                         :class="gapClassAfter(i)" data-action="insert-step" :data-idx="gapAfter(i)" :data-gap="gapAfter(i)"
+                         :title="t('insertHere')" @click="addStepAt(gapAfter(i))">
+                      <span class="pmap__connector-arrow fc-connector__arrow"
+                            data-help-key="modules.process-map.actions.addStep.help">&raquo;</span>
+                    </div>
+                  </td>
+                </template>
+              </tr>
+
+              <!-- Row 3: Outputs, one cell per step. -->
+              <tr class="pmap__row pmap__row--outputs">
+                <template x-for="step in model.steps" :key="'out-' + step.id">
+                  <td class="pmap__cell pmap__cell--io pmap__cell--io-output" :data-step-id="step.id">
+                    <div class="pmap__io-panel pmap__io-panel--output">
+                      <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="outputs"
+                           @click="addIOAt(step.id, 'outputs')">
+                        <span class="pmap__io-label-text pmap__io-label-text--output">
+                          <span class="pmap__io-dot pmap__io-dot--output"></span> <span data-help-key="modules.process-map.actions.addIO.help" x-text="ioLabelOut()"></span>
+                        </span>
+                      </div>
+                      <div class="pmap__io-list" :data-reorder-group="ioGroup(step, 'outputs')" data-reorder-closed
+                           :data-io-step="step.id" data-io-type="outputs">
+                        <template x-for="(io, j) in step.outputs" :key="io.id">
+                          <div class="pmap__io-item pmap__io-item--output" :class="ioItemClass(step, 'outputs', io, j)"
+                               :data-io-id="io.id" :data-reorder-index="j">
+                            <button type="button" class="pmap__io-dot pmap__io-dot--output pmap__io-grip context-help-anchor--overlay"
+                                    :aria-label="t('ioGrip')" data-help-key="modules.process-map.actions.moveIO.help"></button>
+                            <textarea class="pmap__io-name" rows="1" :placeholder="t('outputPlaceholder')"
+                                      :data-io-step="step.id" data-io-type="outputs" :data-io-id="io.id" x-field="io.name"></textarea>
+                            <button type="button" class="pmap__io-remove" data-action="remove-io"
+                                    :data-step-id="step.id" data-io-type="outputs" :data-io-id="io.id"
+                                    x-command="removeIO" :data-arg-step-id="step.id" data-arg-type="outputs" :data-arg-io-id="io.id"
+                                    data-help-key="" :title="t('common.delete')" :aria-label="t('common.delete')">
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </td>
+                </template>
+              </tr>
+
+            </tbody>
+
+            <!-- Loop bands: one <tbody> per loop, in order of the source step.
+                 Rail row: per-column modifiers draw the return path in CSS.
+                 Body row: controls at the source column, rework chips running
+                 right to left. Columns a lower band's rail passes through get
+                 a cell of their own, so the line stays at the column centre. -->
+            <template x-for="(step, si) in model.steps" :key="'loop-' + step.id">
+              <template x-if="step.loop">
+                <tbody class="pmap__loop" :data-step-id="step.id">
+                  <tr class="pmap__loop-rail">
+                    <template x-for="(cell, ci) in railCells(step)" :key="ci">
+                      <td class="pmap__loop-rail-cell" :class="railCellClass(step, ci)"></td>
+                    </template>
+                  </tr>
+                  <tr class="pmap__loop-body">
+                    <template x-for="pc in preCols(step)" :key="colKey('pre', pc)">
+                      <td class="pmap__loop-col" :class="colClass(pc)"></td>
+                    </template>
+                    <td class="pmap__loop-band" :colspan="leadSpan(step)">
+                      <div class="pmap__loop-band-inner">
+                        <div class="pmap__loop-controls">
+                          <div class="pmap__loop-header">
+                            <span class="pmap__loop-icon">
+                              <span class="icon icon--sm" data-icon="action.loop" aria-hidden="true"></span>
+                            </span>
+                            <span class="pmap__loop-title" data-help-key="modules.process-map.fields.steps.loop.help"
+                                  x-text="t('loopLabel')"></span>
+                            <button type="button" class="pmap__loop-remove" data-action="remove-loop" :data-step-id="step.id"
+                                    x-command="removeLoop" :data-arg-step-id="step.id" data-help-key=""
+                                    :title="t('removeLoop')" :aria-label="t('removeLoop')">
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                          <div class="pmap__loop-field">
+                            <label class="pmap__loop-field-label" :for="fieldId('condition', step.id)">
+                              <span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span>
+                              <span data-help-key="modules.process-map.fields.steps.loop.condition.help" x-text="t('loopCondition')"></span>
+                            </label>
+                            <input class="field field--sm pmap__loop-condition" type="text" :id="fieldId('condition', step.id)"
+                                   :placeholder="t('loopConditionPlaceholder')" :data-step-id="step.id" data-help-key=""
+                                   x-field="model.steps[si].loop.condition">
+                          </div>
+                          <div class="pmap__loop-field">
+                            <label class="pmap__loop-field-label" :for="fieldId('target', step.id)">
+                              <span data-help-key="modules.process-map.actions.setLoopTarget.help" x-text="t('loopTarget')"></span>
+                            </label>
+                            <select class="field field--sm pmap__loop-target-select" :id="fieldId('target', step.id)"
+                                    :data-step-id="step.id" @change="loopTargetChanged(step, $event)">
+                              <option value="" :selected="noTarget(step)" x-text="t('loopSelectTarget')"></option>
+                              <template x-for="opt in targetOptions(si)" :key="opt.id">
+                                <option :value="opt.id" :selected="isTarget(step, opt)" x-text="opt.label"></option>
+                              </template>
+                            </select>
+                          </div>
+                        </div>
+                        <template x-for="(ls, li) in step.loop.steps" :key="ls.id">
+                          <div class="pmap__loop-step-item" :data-loop-step-id="ls.id" :data-parent-id="step.id">
+                            <span class="pmap__loop-step-number"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span></span>
+                            <input class="pmap__loop-step-title" type="text" :size="loopStepTitleSize(ls)"
+                                   :placeholder="t('loopStepPlaceholder')" :data-loop-step-id="ls.id" :data-parent-id="step.id"
+                                   x-field="model.steps[si].loop.steps[li].title">
+                            <button type="button" class="pmap__loop-step-remove" data-action="remove-loop-step"
+                                    :data-parent-id="step.id" :data-loop-step-id="ls.id"
+                                    x-command="removeLoopStep" :data-arg-step-id="step.id" :data-arg-loop-step-id="ls.id"
+                                    data-help-key="" :title="t('common.delete')" :aria-label="t('common.delete')">
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </template>
+                        <button type="button" class="pmap__loop-step-add" data-action="add-loop-step" :data-step-id="step.id"
+                                @click.stop="addLoopStepAt(step.id)">
+                          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+                          <span data-help-key="modules.process-map.actions.addLoopStep.help" x-text="t('addLoopStep')"></span>
+                        </button>
+                      </div>
+                    </td>
+                    <template x-for="tc in trailCols(step)" :key="colKey('trail', tc)">
+                      <td class="pmap__loop-col" :class="colClass(tc)"></td>
+                    </template>
+                  </tr>
+                </tbody>
+              </template>
+            </template>
+          </table>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import picker, borrowed into the shared dialog by openImport(); hidden
+       here via CSS. The choice is read at the list (one delegated listener). -->
+  <div x-ref="importForm" class="pmap__sipoc-form" :data-selected="state.importPick">
+    <p class="pmap__sipoc-hint" x-text="t('importFromSipocHint')"></p>
+    <div class="pmap__sipoc-list" @change="pickImport($event)">
+      <template x-for="opt in state.importOptions" :key="opt.instanceId">
+        <label class="pmap__sipoc-option" :class="importOptionClass(opt)" :data-sipoc-id="opt.instanceId">
+          <input type="radio" :name="fieldId('sipoc-pick')" :value="opt.instanceId"
+                 :checked="isImportPicked(opt)" :disabled="isImportEmpty(opt)">
+          <div class="pmap__sipoc-option-body">
+            <div class="pmap__sipoc-option-header">
+              <span class="pmap__sipoc-option-label" x-text="opt.label"></span>
+              <span class="pmap__sipoc-option-count" x-text="importCountText(opt)"></span>
+            </div>
+            <div class="pmap__sipoc-option-chips" x-show="opt.processPreview.length">
+              <template x-for="(chip, ci) in opt.processPreview" :key="ci">
+                <span class="pmap__sipoc-option-chip" x-text="chip"></span>
+              </template>
+              <span class="pmap__sipoc-option-chip pmap__sipoc-option-chip--more" x-show="hasMoreChips(opt)"
+                    x-text="moreChipText(opt)"></span>
+            </div>
+          </div>
+        </label>
+      </template>
+    </div>
+  </div>
+</div>

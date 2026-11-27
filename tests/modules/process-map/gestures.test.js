@@ -58,7 +58,7 @@ suite('process-map — Gesten', () => {
     const from = io.start(grip(g, 2));
     assertTrue(io.clamp({ group: 's1:inputs', index: 2 }, ctx, from) === from);
     assertTrue(io.clamp({ group: 's1:inputs', index: 5 }, ctx, from) === from);
-    assertDeepEqual(io.clamp({ group: 's1:inputs', index: 0 }, ctx, from), { group: 's1:inputs', index: 0, targetId: 'i1' });
+    assertDeepEqual(io.clamp({ group: 's1:inputs', index: 0 }, ctx, from), { group: 's1:inputs', index: 0, id: from.id, targetId: 'i1' });
     assertEqual(io.clamp({ group: 's1:outputs', index: 0 }, ctx, from), null);
   });
 
@@ -68,10 +68,10 @@ suite('process-map — Gesten', () => {
       ['moveIO', { stepId: 's1', type: 'inputs', ioId: 'i3', targetIoId: 'i1' }]);
   });
 
-  test('preview schreibt Gruppe und Index nach state.ioPreview, null räumt auf', () => {
+  test('preview schreibt Gruppe, Index und gezogene id nach state.ioPreview, null räumt auf', () => {
     const host = { state: { ioPreview: null } };
-    io.preview.call(host, { group: 's1:inputs', index: 1, targetId: 'i2' });
-    assertDeepEqual(host.state.ioPreview, { group: 's1:inputs', index: 1 });
+    io.preview.call(host, { group: 's1:inputs', index: 1, id: 'i3', targetId: 'i2' });
+    assertDeepEqual(host.state.ioPreview, { group: 's1:inputs', index: 1, id: 'i3' });
     io.preview.call(host, null);
     assertEqual(host.state.ioPreview, null);
   });

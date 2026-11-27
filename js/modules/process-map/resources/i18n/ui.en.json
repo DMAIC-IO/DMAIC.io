@@ -46,6 +46,7 @@
   "importFromSipocSteps": "{n} process step(s)",
   "importFromSipocConfirm": "Import",
   "importFromSipocDone": "Imported {n} step(s) from SIPOC",
+  "importFromSipocFailed": "The SIPOC could not be read; nothing was imported.",
   "stepGrip": "Move step",
   "ioGrip": "Move entry",
   "substepGrip": "Move sub-step",

@@ -19,7 +19,7 @@ export const substeps = substepGesture({ handle: '.fc-substep-grip' });
 /**
  * @typedef {{ group: string, index: number }} Pos
  * @typedef {Pos & { id: string, stepId: string, type: 'inputs'|'outputs' }} IoFrom
- * @typedef {Pos & { targetId?: string }} IoTo
+ * @typedef {Pos & { id?: string, targetId?: string }} IoTo
  */
 
 /**
@@ -61,7 +61,8 @@ export const io = defineGesture({
 
   /**
    * Bereich wie `reorder`; am Ausgangsplatz die Startposition selbst (kein
-   * Kommando), sonst mit der id des Eintrags am Zielplatz.
+   * Kommando), sonst mit der id des gezogenen Eintrags und der des Eintrags
+   * am Zielplatz.
    * @param {Pos} pos @param {{ root: Element }} ctx @param {IoFrom} from
    * @returns {IoTo|IoFrom|null}
    */
@@ -69,12 +70,12 @@ export const io = defineGesture({
     const p = reorder.clamp(pos, ctx, from);
     if (!p) return null;
     if (p.group === from.group && p.index === from.index) return from;
-    return { ...p, targetId: ioIdAt(ctx.root, p.group, p.index) };
+    return { ...p, id: from.id, targetId: ioIdAt(ctx.root, p.group, p.index) };
   },
 
-  /** @param {Pos|null} pos Vorschau, `null` räumt auf */
+  /** @param {(Pos & { id?: string })|null} pos Vorschau mit der id des gezogenen Eintrags, `null` räumt auf */
   preview(pos) {
-    this.state.ioPreview = pos ? { group: pos.group, index: pos.index } : null;
+    this.state.ioPreview = pos ? { group: pos.group, index: pos.index, id: pos.id ?? '' } : null;
   },
 
   /**

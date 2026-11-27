@@ -1,0 +1,881 @@
+/* Process Map: Kette aus Schrittkarten mit Inputs und Outputs (Tabelle),
+   Loop-Bänder darunter und das Auswahlformular der SIPOC-Übernahme.
+   BEM: .pmap__ prefix */
+
+/* ── Modulfarben (hell und dunkel gleich). Auch am Formular: es wird in den
+   Dialog außerhalb des Modulbehälters ausgeliehen. Der Bildexport liest sie
+   über `cssVars` (io/scene.js, SCENE_VARS) unaufgelöst: darum nur Hex- und
+   rgb()-Werte oder Verweise auf solche, kein color-mix(). ── */
+.pmap,
+.pmap__sipoc-form {
+  --pmap-input: #34c759;
+  --pmap-input-bg: rgb(52 199 89 / 10%);
+  --pmap-output: #ff9500;
+  --pmap-output-bg: rgb(255 149 0 / 10%);
+  --pmap-step-accent-bg: var(--color-flowchart-step-accent-bg);
+  --pmap-connector: var(--color-flowchart-connector);
+  --pmap-va: #34c759;
+  --pmap-va-bg: rgb(52 199 89 / 12%);
+  --pmap-bnva: #ff9f0a;
+  --pmap-bnva-bg: rgb(255 159 10 / 12%);
+  --pmap-nva: #ff3b30;
+  --pmap-nva-bg: rgb(255 59 48 / 12%);
+  --pmap-param: #007aff;
+  --pmap-param-bg: rgb(0 122 255 / 12%);
+  --pmap-noise: #af52de;
+  --pmap-noise-bg: rgb(175 82 222 / 12%);
+  --pmap-loop: #e67e22;
+  --pmap-loop-bg: rgb(230 126 34 / 8%);
+  --pmap-loop-border: rgb(230 126 34 / 30%);
+}
+
+[data-theme="dark"] .pmap,
+[data-theme="dark"] .pmap__sipoc-form {
+  --pmap-input: #34c759;
+  --pmap-input-bg: rgb(52 199 89 / 10%);
+  --pmap-output: #ff9500;
+  --pmap-output-bg: rgb(255 149 0 / 10%);
+  --pmap-step-accent-bg: var(--color-flowchart-step-accent-bg);
+  --pmap-connector: var(--color-flowchart-connector);
+  --pmap-va: #34c759;
+  --pmap-va-bg: rgb(52 199 89 / 12%);
+  --pmap-bnva: #ff9f0a;
+  --pmap-bnva-bg: rgb(255 159 10 / 12%);
+  --pmap-nva: #ff3b30;
+  --pmap-nva-bg: rgb(255 59 48 / 12%);
+  --pmap-param: #007aff;
+  --pmap-param-bg: rgb(0 122 255 / 12%);
+  --pmap-noise: #af52de;
+  --pmap-noise-bg: rgb(175 82 222 / 12%);
+  --pmap-loop: #e67e22;
+  --pmap-loop-bg: rgb(230 126 34 / 8%);
+  --pmap-loop-border: rgb(230 126 34 / 30%);
+}
+
+/* ===== Canvas =====
+   Horizontal L→R flow: scroll along the process axis when many steps
+   are present. The vertical axis is intrinsic to each step (Inputs top,
+   Card middle, Outputs bottom) — no vertical scroll on the canvas. */
+.pmap__canvas {
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  overflow: auto visible;
+}
+
+/* ===== Process Flow =====
+   Layout is a <table>: 3 rows (Inputs / Cards / Outputs) with one <td>
+   per step. Table-row cells share a common height across all columns,
+   which pins the graue Karte to the same Y across every step-row
+   regardless of how many inputs any single row has — the CSS-only
+   equivalent of subgrid, but with universal browser support. */
+.pmap__flow {
+  position: relative;
+  min-width: min-content;
+}
+
+/* Empty state: the SIPOC import offer (only shown while no step exists). */
+.pmap__empty {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl) 0;
+}
+
+.pmap__table {
+  border-collapse: separate;
+
+  /* 32 px horizontal gap between step columns — this is where the
+     connector arrows sit (absolute-positioned inside the card cells). */
+  border-spacing: var(--fc-chain-gap) 0;
+  table-layout: fixed;
+  margin: 0;
+}
+
+.pmap__row--inputs  .pmap__cell { vertical-align: bottom; }
+
+/* Cards are top-aligned so a tall card never pushes its neighbours off the
+   shared baseline — the chain reads across the card headers. */
+.pmap__row--cards   .pmap__cell { vertical-align: top; }
+.pmap__row--outputs .pmap__cell { vertical-align: top; }
+
+.pmap__cell {
+  width: 224px;
+  padding: 0;
+}
+
+.pmap__cell--io    { padding: 0; }
+
+/* Breathing room between the IO panels and the step card. The <tr> rows
+   share no vertical border-spacing, so without this the last input chip
+   (or the "Outputs" label) collides with the grey card edge. */
+.pmap__row--inputs  .pmap__cell--io { padding-bottom: var(--spacing-sm); }
+.pmap__row--outputs .pmap__cell--io { padding-top:    var(--spacing-sm); }
+
+.pmap__cell--step  {
+  position: relative;
+  padding: 0;
+}
+
+/* Kettengeste: die gezogene Karte (Vorschau `state.chainPreview`). */
+.pmap__step-row.is-dragging .pmap__step-card {
+  opacity: 0.45;
+  transform: scale(0.97);
+}
+
+/* ===== IO Panels =====
+   In horizontal flow the two panels stack vertically inside the
+   step-row: --input above the card, --output below. Both keep the same
+   internal rhythm (label → list).
+
+   Row 1/3 tracks of the flow grid stretch to the tallest panel across
+   ALL steps (so the cards land on a shared baseline), which would leave
+   empty space between the label and the card in step-rows with no IO.
+   Pinning the panel content to the card edge (inputs bottom-aligned,
+   outputs top-aligned) makes label + chips hug the card in every row,
+   whether the row has items or just the label. */
+.pmap__io-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.pmap__io-panel--input  { justify-content: flex-end; }
+.pmap__io-panel--output { justify-content: flex-start; }
+
+.pmap__io-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+  cursor: pointer;
+  transition: opacity var(--transition-speed);
+}
+
+.pmap__io-label:hover {
+  opacity: 0.7;
+}
+
+.pmap__io-label-text {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.pmap__io-label-text--input {
+  color: var(--pmap-input);
+}
+
+.pmap__io-label-text--output {
+  color: var(--pmap-output);
+}
+
+.pmap__io-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.pmap__io-dot--input {
+  background: var(--pmap-input);
+}
+
+.pmap__io-dot--output {
+  background: var(--pmap-output);
+}
+
+/* ===== IO List & Items ===== */
+.pmap__io-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.pmap__io-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-s) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  animation: pmap-fade-in 0.2s ease;
+}
+
+.pmap__io-item--input {
+  background: var(--pmap-input-bg);
+}
+
+.pmap__io-item--output {
+  background: var(--pmap-output-bg);
+}
+
+.pmap__io-item--dragging {
+  opacity: 0.4;
+}
+
+.pmap__io-item--drag-over {
+  box-shadow: 0 -2px 0 0 var(--color-accent);
+}
+
+/* Der gezogene Eintrag landet hinter dem Ziel: Linie darunter. */
+.pmap__io-item--drag-over-end {
+  box-shadow: 0 2px 0 0 var(--color-accent);
+}
+
+/* Griff der Geste io: ein <button> in der Optik des Punkts. */
+.pmap__io-grip {
+  padding: 0;
+  border: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.pmap__io-grip:active {
+  cursor: grabbing;
+}
+
+.pmap__io-grip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* ===== Input Type Badge (x = param, n = noise) ===== */
+.pmap__input-type {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+}
+
+.pmap__input-type--none {
+  background: transparent;
+  color: var(--color-text-tertiary);
+  opacity: 0.45;
+}
+
+.pmap__io-item:hover .pmap__input-type--none {
+  opacity: 1;
+}
+
+.pmap__input-type--none:hover {
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+
+.pmap__input-type--param {
+  background: var(--pmap-param-bg);
+  color: var(--pmap-param);
+}
+
+.pmap__input-type--param:hover {
+  opacity: 0.8;
+}
+
+.pmap__input-type--noise {
+  background: var(--pmap-noise-bg);
+  color: var(--pmap-noise);
+}
+
+.pmap__input-type--noise:hover {
+  opacity: 0.8;
+}
+
+.pmap__io-name {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  min-width: 0;
+  resize: none;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  padding: 0;
+}
+
+.pmap__io-name::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.pmap__io-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: var(--spacing-2xs);
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: all var(--transition-speed);
+}
+
+.pmap__io-item:hover .pmap__io-remove {
+  opacity: 1;
+}
+
+.pmap__io-remove:hover {
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+/* ===== Step Card ===== */
+
+/* Card shell, header, number badge, title, actions, delete button, body and
+   description all come from `.fc-*` in js/core/flowchart/flowchart.css —
+   Process Map's markup carries those classes alongside its own BEM names.
+   Only the PM-only pieces (value badge, loop toggle, substeps, IO) stay here. */
+
+/* Card status stripe — same mechanism as Opportunity's columns, see
+   `.fc-card--accent`. Only the colour is PM's. */
+.pmap__step-card--va   { --fc-card-accent: var(--pmap-va); }
+.pmap__step-card--bnva { --fc-card-accent: var(--pmap-bnva); }
+.pmap__step-card--nva  { --fc-card-accent: var(--pmap-nva); }
+
+/* ===== Value Type Badge ===== */
+.pmap__value-badge {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: all var(--transition-speed);
+  min-width: 28px;
+  text-align: center;
+}
+
+.pmap__value-badge--none {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+.pmap__value-badge--none:hover {
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+}
+
+.pmap__value-badge--va {
+  background: var(--pmap-va-bg);
+  color: var(--pmap-va);
+}
+
+.pmap__value-badge--va:hover {
+  opacity: 0.8;
+}
+
+.pmap__value-badge--bnva {
+  background: var(--pmap-bnva-bg);
+  color: var(--pmap-bnva);
+}
+
+.pmap__value-badge--bnva:hover {
+  opacity: 0.8;
+}
+
+.pmap__value-badge--nva {
+  background: var(--pmap-nva-bg);
+  color: var(--pmap-nva);
+}
+
+.pmap__value-badge--nva:hover {
+  opacity: 0.8;
+}
+
+
+/* ===== Horizontal Connector =====
+   Absolute-positioned inside the card cell (.pmap__cell--step). The
+   arrow overflows into the table's horizontal border-spacing (32px),
+   which is the empty gap between step columns. Trailing connector on
+   every card, leading connector only on the first (via x-if). */
+
+/* Look (size, arrow, hover-+) comes from `.fc-connector` in
+   js/core/flowchart/flowchart.css — PM only adds the absolute positioning
+   that drops the connector into the table's border-spacing. */
+.pmap__connector {
+  position: absolute;
+
+  /* Aligned with the card header, matching every other flowchart — see
+     .fc-connector--header-aligned. Centring on the card would place the arrow
+     at a different height for every card now that cards are top-aligned. */
+  top: 4px;
+  z-index: 1;
+}
+
+.pmap__connector--trailing { right: calc(-1 * var(--fc-chain-gap)); }
+.pmap__connector--leading  { left:  calc(-1 * var(--fc-chain-gap)); }
+
+/* Kundenrückmeldung: der Doppelchevron ("»") zwischen den Stages wirkt zu
+   dunkel. Er erbt --color-text-tertiary aus der geteilten Flowchart-Regel
+   (.fc-connector__arrow in js/core/flowchart/flowchart.css) — bei 35px
+   Schriftgröße liest sich das schwerer als anderswo. Über opacity
+   abgesenkt statt über einen anderen Farb-Token (gleiches Muster wie
+   .icon--muted in css/components.css), scoped auf .pmap, damit Makigami &
+   die anderen drei Flow-Module ihren Ton unverändert behalten. Volle
+   Deckkraft bleibt beim Hover-"+", das den Einfüge-Punkt markiert. */
+.pmap .fc-connector__arrow {
+  opacity: 0.6;
+}
+
+.pmap .fc-connector--clickable:hover .fc-connector__arrow {
+  opacity: 1;
+}
+
+/* ===== Substeps Toggle Bar (always visible at bottom of card) ===== */
+
+/* Substeps (disclosure bar + list) come from `.fc-substeps*` in
+   js/core/flowchart/flowchart.css, with the markup inlined from
+   js/core/flowchart/substeps.view.part.html. */
+
+/* ===== Loop Toggle Button (in step header) ===== */
+.pmap__step-loop-toggle {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pmap__step-loop-toggle:hover {
+  color: var(--pmap-loop);
+  background: var(--pmap-loop-bg);
+}
+
+.pmap__step-loop-toggle--active {
+  color: var(--pmap-loop);
+  background: var(--pmap-loop-bg);
+}
+
+/* ===== Loop band =====
+   One <tbody class="pmap__loop"> per loop below the outputs row. The rail row draws
+   the return path from per-column modifiers; horizontal segments reach
+   left across the column gap (border-spacing = --fc-chain-gap). The body
+   row holds the controls at the source column and the rework chips, which
+   run right → left and only wrap when no column is left to grow into. */
+.pmap__loop-rail-cell {
+  position: relative;
+  height: var(--spacing-lg);
+  padding: 0;
+}
+
+/* Vertical stub up from the rail at the column centre. */
+.pmap__loop-rail-cell--target,
+.pmap__loop-rail-cell--source,
+.pmap__loop-rail-cell--source-open {
+  background: linear-gradient(var(--pmap-loop), var(--pmap-loop))
+    center top / 2px 50% no-repeat;
+}
+
+/* A lower band's rail rising through this band: full-height line at the
+   column centre, in the rail row and in the band's own column cells. */
+.pmap__loop-rail-cell--pass,
+.pmap__loop-col--pass {
+  background: linear-gradient(var(--pmap-loop), var(--pmap-loop))
+    center / 2px 100% no-repeat;
+}
+
+/* Arrowhead into a target card — only the top band carries them, the
+   rails of lower bands reach it through the pass-through lines. */
+.pmap__loop-rail-cell--arrow::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: calc(50% - 5px);
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid var(--pmap-loop);
+  border-left: 5px solid transparent;
+}
+
+.pmap__loop-rail-cell--target::after,
+.pmap__loop-rail-cell--span::after,
+.pmap__loop-rail-cell--source::after,
+.pmap__loop-rail-cell--source-open::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  border-top: 2px solid var(--pmap-loop);
+}
+
+.pmap__loop-rail-cell--target::after { left: 50%; right: 0; }
+.pmap__loop-rail-cell--span::after   { left: calc(-1 * var(--fc-chain-gap)); right: 0; }
+.pmap__loop-rail-cell--source::after { left: calc(-1 * var(--fc-chain-gap)); right: 50%; }
+
+.pmap__loop-rail-cell--source-open::after {
+  left: 25%;
+  right: 50%;
+  border-top-style: dashed;
+}
+
+.pmap__loop-col {
+  padding: 0;
+}
+
+.pmap__loop-band {
+  padding: var(--spacing-xs) 0 var(--spacing-md);
+  vertical-align: top;
+  overflow: clip; /* hides the « of a wrapped line's first chip, see below */
+}
+
+/* The flex row reaches one chip margin past the cell's right edge. The
+   controls take that margin back, so they stay flush with the column; a
+   chip that starts a wrapped line ends exactly at the edge, and its «
+   (which has no right-hand neighbour there) falls into the clipped strip. */
+.pmap__loop-band-inner {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-right: calc(-1 * var(--spacing-md));
+}
+
+.pmap__loop-controls {
+  flex: 0 0 224px; /* one step column (.pmap__cell width) */
+  margin-right: var(--spacing-md); /* back to the cell edge, see band-inner */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: var(--border-width) solid var(--pmap-loop-border);
+  border-right: 3px solid var(--pmap-loop);
+  border-radius: var(--border-radius);
+  background: var(--pmap-loop-bg);
+  animation: pmap-fade-in 0.2s ease;
+}
+
+.pmap__loop-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pmap__loop-icon {
+  display: flex;
+  color: var(--pmap-loop);
+}
+
+.pmap__loop-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--pmap-loop);
+  flex: 1;
+}
+
+.pmap__loop-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: var(--spacing-2xs);
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-speed);
+}
+
+.pmap__loop-remove:hover {
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+.pmap__loop-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.pmap__loop-field-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pmap__loop-field-label .icon {
+  color: var(--pmap-loop);
+}
+
+/* .field .field--sm base; the loop accent on focus is what makes these
+   visually part of the loop band. */
+.pmap__loop-condition:focus,
+.pmap__loop-target-select:focus {
+  border-color: var(--pmap-loop);
+}
+
+/* ===== Rework chips ===== */
+.pmap__loop-step-item {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 160px;
+  max-width: calc(100% - var(--spacing-md)); /* never wider than the band */
+  margin-right: var(--spacing-md); /* room for the « to the controls/next chip */
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+  transition: background var(--transition-speed);
+}
+
+/* « between a chip and its right-hand neighbour — rework flows leftwards. */
+.pmap__loop-step-item::after {
+  content: '«';
+  position: absolute;
+  right: calc(-1 * var(--spacing-md) - var(--spacing-xs));
+  color: var(--pmap-loop);
+}
+
+.pmap__loop-step-item:hover {
+  background: var(--color-bg-primary);
+}
+
+.pmap__loop-step-number {
+  display: flex;
+  align-items: center;
+  color: var(--pmap-loop);
+  flex-shrink: 0;
+}
+
+.pmap__loop-step-title {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  min-width: 0;
+}
+
+.pmap__loop-step-title::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.pmap__loop-step-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: var(--spacing-2xs);
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: all var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.pmap__loop-step-item:hover .pmap__loop-step-remove {
+  opacity: 1;
+}
+
+.pmap__loop-step-remove:hover {
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+.pmap__loop-step-add {
+  width: auto;
+  margin-right: var(--spacing-md); /* may start a wrapped line, see band-inner */
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pmap__loop-step-add:hover {
+  color: var(--pmap-loop);
+  background: var(--pmap-loop-bg);
+}
+
+/* ===== Animation ===== */
+@keyframes pmap-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SIPOC import picker (rendered inside the shared dialog) =====
+   Hidden while the form node lives inside the module container; the shared
+   dialog borrows the node into .dialog__body which un-hides it. */
+.pmap__sipoc-form { display: none; }
+.dialog__body .pmap__sipoc-form { display: block; }
+
+.pmap__sipoc-hint {
+  margin: 0 0 var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.pmap__sipoc-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.pmap__sipoc-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: border-color var(--transition-speed), background var(--transition-speed);
+}
+
+.pmap__sipoc-option:hover {
+  border-color: var(--color-border-primary);
+  background: var(--color-bg-secondary);
+}
+
+.pmap__sipoc-option--selected {
+  border-color: var(--color-accent);
+  background: var(--pmap-step-accent-bg);
+}
+
+.pmap__sipoc-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pmap__sipoc-option--disabled:hover {
+  border-color: var(--color-border-secondary);
+  background: transparent;
+}
+
+.pmap__sipoc-option input[type="radio"] {
+  margin-top: var(--spacing-xs);
+  flex-shrink: 0;
+}
+.pmap__sipoc-option-body { flex: 1; min-width: 0; }
+
+.pmap__sipoc-option-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  align-items: baseline;
+}
+
+.pmap__sipoc-option-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.pmap__sipoc-option-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.pmap__sipoc-option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.pmap__sipoc-option-chip {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.pmap__sipoc-option-chip--more {
+  background: transparent;
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-2xs) 0;
+}
+
+/* Kundenrückmeldung (Pizza-Lieferung-Beispiel): die Icons wirken zu hell.
+   Sie erben --color-text-tertiary aus den geteilten Flowchart-Regeln
+   (js/core/flowchart/flowchart.css .fc-card__delete/.fc-remove-icon), das ist auch
+   für Makigami korrekt und bleibt dort unverändert — hier auf
+   --color-text-secondary angehoben, eine Stufe dunkler, ohne die Farbe
+   hart zu kodieren. */
+.pmap .fc-remove-icon,
+.pmap .fc-card__delete,
+.pmap__io-remove,
+.pmap__step-loop-toggle {
+  color: var(--color-text-secondary);
+}
+
+/* ── Griff der Kettengeste: die Schrittnummer ───────────────────────────
+   Ein <button> in der Optik von `.fc-step-number` (Fläche, Schrift, `grab`
+   aus flowchart.css); hier nur die Knopf-Grundwerte und der Fokusring. */
+.pmap__grip {
+  border: none;
+  font-family: var(--font-family-mono);
+  line-height: inherit;
+  touch-action: none;
+}
+
+.pmap__grip:active { cursor: grabbing; }
+
+.pmap__grip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* ── Textfelder wachsen mit dem Inhalt ──────────────────────────────────
+   `field-sizing: content` statt Messung per JavaScript; ohne Unterstützung
+   bleibt die Grundhöhe und ein Scrollbalken statt abgeschnittenem Text. */
+.pmap textarea.pmap__step-title,
+.pmap textarea.pmap__step-description,
+.pmap textarea.pmap__io-name {
+  field-sizing: content;
+  overflow-y: auto;
+}
+
+.pmap textarea.pmap__step-title { min-height: 1.4em; }
+.pmap textarea.pmap__step-description { min-height: 44px; }
+.pmap textarea.pmap__io-name { min-height: 1.4em; }
+
+/* Kopie aus flowchart.css (`.fc-remove-icon`), damit das Modul nicht an der
+   Regel des Altkerns hängt. */
+.pmap .fc-remove-icon { font-size: 12px; }

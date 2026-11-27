@@ -119,7 +119,8 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'class="ro__contour-fix"><span x-text="fix.id">', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
   ],
   'process-map': [
-    { match: 'class="pmap__sipoc-option"', reason: 'Auswahlzeile je SIPOC-Instanz im Importdialog; keine Agentenaktion', count: 1 },
+    { match: 'class="pmap__sipoc-option" :class="importOptionClass(opt)"', reason: 'Auswahlzeile je SIPOC-Instanz im Importdialog; keine Agentenaktion', count: 1 },
+    { match: 'class="pmap__sipoc-option"', reason: 'Auswahlzeile je SIPOC-Instanz im Importdialog (Altform); keine Agentenaktion', count: 1 },
   ],
   'activity-flowchart': [
     { match: 'class="af__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
