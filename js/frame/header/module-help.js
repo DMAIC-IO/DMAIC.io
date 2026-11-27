@@ -197,13 +197,25 @@ export function initModuleHelp(
 
   const glossaryGet = glossaryRegistry ? (termId) => glossaryRegistry.get(termId) : null;
 
+  /** Generation of the latest populatePanel call (see there). */
+  let populateGen = 0;
+  eventBus.on('overlay:opened', (id) => { if (id !== 'help-panel') populateGen++; });
+
   // Populate the panel for the CURRENT active module. Shared by the button
   // click and the module-switch subscription so both render identical content.
   // `preferredTab` (optional) keeps the user on their current tab across a
   // module switch; on first open it defaults to the help tab.
+  //
+  // Each call takes a generation; another overlay opening or the panel being
+  // closed starts a new one. After every `await` a superseded call stops —
+  // otherwise the handbook, arriving late, re-opened the panel over the
+  // dashboard (or after the user had closed it) and re-lit the button.
   async function populatePanel(preferredTab) {
+    const gen = ++populateGen;
+    const superseded = () => gen !== populateGen;
     const { info, hasHelp, examples, canLoadExample, glossary, scenarios, videos } = await _activeContext();
     const references = info?.instance?.references ? await info.instance.references() : [];
+    if (superseded()) return;
     const tabPref = preferredTab ? { preferredTab } : {};
 
     if (!info) {
@@ -246,6 +258,7 @@ export function initModuleHelp(
 
     try {
       const mod = await info.instance.help();
+      if (superseded()) return;
       const helpDef = mod?.default || mod;
       const node = renderModuleHelp(helpDef, i18n.getLanguage(), references, (k) => i18n.t(k));
       helpPanel.showWithTabs(moduleName, {
@@ -262,6 +275,7 @@ export function initModuleHelp(
         preferredTab: preferredTab || 'help',
       });
     } catch (err) {
+      if (superseded()) return;
       console.error('[ModuleHelp] Failed to load help for', info.moduleId, err);
       helpPanel.showWithTabs(moduleName, {
         helpNode: h('p', { style: 'color:var(--color-error)' }, `${i18n.t('moduleHelp.loadError')}: ${err.message}`),
@@ -296,6 +310,7 @@ export function initModuleHelp(
     const tab = helpPanel.getActiveTab?.();
     const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
     if (ownsPanel) {
+      populateGen++;
       helpPanel.hide();
       btn.classList.remove('btn--active');
       return;
@@ -326,6 +341,7 @@ export function initModuleHelp(
     const tab = helpPanel.getActiveTab?.();
     const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
     if (!ownsPanel) return;
+    populateGen++;
     helpPanel.hide();
     btn.classList.remove('btn--active');
   });
@@ -339,6 +355,9 @@ export function initModuleHelp(
       const tab = helpPanel.getActiveTab?.();
       const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
       btn.classList.toggle('btn--active', ownsPanel);
+      // Closed by any path (its own close button included): a populate still
+      // waiting for the handbook must not open it again.
+      if (!helpPanel.isVisible()) populateGen++;
     });
     observer.observe(helpEl, { attributes: true, attributeFilter: ['class', 'data-active-tab'] });
   }
