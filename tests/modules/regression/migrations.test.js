@@ -89,6 +89,23 @@ suite('regression: Migration 0→1.0', () => {
     assertDeepEqual(rec, { coef: [1, null], df: 3, dataHash: 'ab', spec: null });
     assertEqual(from0({}).modelRecord, null);
   });
+
+  // Die Engine las einen Faktor ohne `degree` mit Grad 1 (`tf.degree ?? 1`);
+  // ein kategorialer Term `{ id }` darf beim Laden nicht wegfallen.
+  test('Term-Faktor ohne degree: bleibt mit Grad 1, der Term behält seinen Faktor', () => {
+    const spec = {
+      predictors: [{ id: 'X1', kind: 'continuous' }, { id: 'Tool', kind: 'categorical', levels: ['A', 'B'], reference: 'A' }],
+      terms: [{ id: 'X1', factors: [{ id: 'X1', degree: 1 }] }, { id: 'Tool', factors: [{ id: 'Tool' }] }, { id: 'X1·Tool', factors: [{ id: 'X1', degree: 1 }, { id: 'Tool' }] }],
+    };
+    const rec = recordFromLegacy({ id: 'm', spec });
+    assertDeepEqual(rec.spec.terms, [
+      { id: 'X1', factors: [{ id: 'X1', degree: 1 }] },
+      { id: 'Tool', factors: [{ id: 'Tool', degree: 1 }] },
+      { id: 'X1·Tool', factors: [{ id: 'X1', degree: 1 }, { id: 'Tool', degree: 1 }] },
+    ]);
+    const m = State.fromJSON({ savedModelId: 'm', savedModel: { id: 'm', spec } }, { context: CTX });
+    assertDeepEqual(m.modelRecord.spec.terms[1], { id: 'Tool', factors: [{ id: 'Tool', degree: 1 }] });
+  });
 });
 
 suite('regression: Altinstanzen aus Task 0 gegen das read() der Altform', () => {

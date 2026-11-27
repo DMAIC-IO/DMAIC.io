@@ -67,6 +67,13 @@ function factorSpecOf(v) {
 }
 
 /**
+ * Grad eines Term-Faktors: die Engine las einen fehlenden Grad als 1
+ * (`tf.degree ?? 1`, bei kategorialen Faktoren ohne Wirkung); so auch hier.
+ * @param {unknown} v @returns {number}
+ */
+const degreeOf = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 1);
+
+/**
  * Die Modellspezifikation eines Datensatzes; `null` ohne lesbare Form.
  * @param {unknown} v @returns {Record<string, any>|null}
  */
@@ -82,7 +89,7 @@ function specOf(v) {
     }),
     terms: v.terms.filter((t) => isObj(t) && isText(t.id) && Array.isArray(t.factors)).map((t) => ({
       id: t.id,
-      factors: t.factors.filter((f) => isObj(f) && isText(f.id) && typeof f.degree === 'number').map((f) => ({ id: f.id, degree: f.degree })),
+      factors: t.factors.filter((f) => isObj(f) && isText(f.id)).map((f) => ({ id: f.id, degree: degreeOf(f.degree) })),
     })),
   };
 }

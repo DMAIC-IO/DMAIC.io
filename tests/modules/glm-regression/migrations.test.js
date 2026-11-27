@@ -85,6 +85,15 @@ suite('glm-regression: Migration 0→1.0', () => {
       [{ name: 'L', kind: 'categorical', levels: ['1', '2'], reference: '1' }]);
     assertEqual(from0({}).modelRecord, null);
   });
+
+  // Wie die Engine (`tf.degree ?? 1`): ein Term-Faktor ohne `degree` bleibt mit Grad 1.
+  test('Term-Faktor ohne degree: bleibt mit Grad 1', () => {
+    const rec = recordFromLegacy({ spec: {
+      predictors: [{ id: 'L', kind: 'categorical', levels: ['a', 'b'], reference: 'a' }],
+      terms: [{ id: 'L', factors: [{ id: 'L' }] }],
+    } });
+    assertDeepEqual(rec.spec.terms, [{ id: 'L', factors: [{ id: 'L', degree: 1 }] }]);
+  });
 });
 
 suite('glm-regression: Altinstanzen aus Task 0 gegen das read() der Altform', () => {
