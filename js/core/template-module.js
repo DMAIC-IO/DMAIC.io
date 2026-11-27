@@ -74,7 +74,7 @@ import { formatNumber } from './number-format.js';
  * @template M, S
  * @typedef {{ fileName?: string|(() => string),
  *   table?: () => ExportRows|Promise<ExportRows>,
- *   tables?: () => Record<string, ExportRows>|Promise<Record<string, ExportRows>>,
+ *   tables?: () => Record<string, ExportRows>|null|Promise<Record<string, ExportRows>|null>,
  *   tree?: () => unknown,
  *   image?: () => string|null|undefined|Promise<string|null|undefined>,
  *   document?: () => string|Promise<string> } & ThisType<Record<string, any> & ExportThis<M, S>>} ExportsDef

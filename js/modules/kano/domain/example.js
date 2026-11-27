@@ -14,7 +14,8 @@
  * @typedef {{ op: 'module.add', id: string, module: string }} AddOp
  * @typedef {{ op: 'instance.call', id?: string, module: string, instance: string|Ref, method: string, args: any[] }} CallOp
  * @typedef {{ op: 'instance.set', module: string, instance: string|Ref, values: Record<string, any> }} SetOp
- * @typedef {AddOp|CallOp|SetOp} StackOp
+ * @typedef {{ op: 'instance.open', instance: string }} OpenOp
+ * @typedef {AddOp|CallOp|SetOp|OpenOp} StackOp
  */
 
 const TREE = 'voc-ctx-tree';
@@ -42,13 +43,15 @@ export function hasOwnStyles(styles) {
 
 /**
  * Der Stapel, der den Beispielbaum anlegt bzw. in einen vorhandenen schreibt.
- * @param {{ tree: any, instanceId: string|null, clearVocIds?: ReadonlyArray<string> }} input
+ * @param {{ tree: any, instanceId: string|null, clearVocIds?: ReadonlyArray<string>, showAfter?: string|null }} input
  *   `instanceId` der vorhandene Baum oder `null` für einen neuen;
- *   `clearVocIds` die Kundenstimmen, die vorher entfallen
+ *   `clearVocIds` die Kundenstimmen, die vorher entfallen; `showAfter` die
+ *   Instanz, die nach einem neu angelegten Baum wieder angezeigt wird
+ *   (`module.add` zeigt den neuen Baum an)
  * @returns {{ stack: StackOp[], refs: Record<string, string> }} der Stapel und
  *   je alter Knoten-id die Referenz-id ihres Schritts
  */
-export function exampleTreeStack({ tree, instanceId, clearVocIds = [] }) {
+export function exampleTreeStack({ tree, instanceId, clearVocIds = [], showAfter = null }) {
   /** @type {StackOp[]} */
   const stack = [];
   /** @type {Record<string, string>} */
@@ -90,6 +93,7 @@ export function exampleTreeStack({ tree, instanceId, clearVocIds = [] }) {
   if (hasOwnStyles(tree?.styles)) {
     stack.push({ op: 'instance.set', module: TREE, instance, values: { styles: tree.styles } });
   }
+  if (instanceId === null && showAfter !== null) stack.push({ op: 'instance.open', instance: showAfter });
   return { stack, refs };
 }
 

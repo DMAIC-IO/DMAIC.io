@@ -26,7 +26,7 @@ import { Q_WARN } from '../../../engines/kano-engine.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { diff, flatten, effectiveSourceId } from '../domain/link.js';
-import { kanoScatterConfig } from '../domain/chart.js';
+import { kanoScatterConfig, exportSized } from '../domain/chart.js';
 import { toRows } from '../io/table.js';
 import { UiState } from './state.js';
 import { beforeLoadExample } from './example.js';
@@ -34,6 +34,9 @@ import { beforeLoadExample } from './example.js';
 /** @typedef {import('../domain/evaluate.js').KanoEvaluation} KanoEvaluation */
 /** @typedef {import('../domain/evaluate.js').KanoRow} KanoRow */
 /** @typedef {{ instanceId: string, name: string, vocs: any[] }} TreeEntry */
+
+/** Blattname der XLSX-Datei (wie die Altform, sprachunabhängig). */
+const XLSX_SHEET = 'Kano';
 
 /** Auswertung ohne Merkmale (auch wenn die Ableitung scheitert). */
 const EMPTY = Object.freeze({
@@ -72,11 +75,19 @@ export default createModule({
   exports: {
     fileName: 'kano',
     table() { return toRows(this.model, this.t); },
+    /** XLSX mit dem Blattnamen der Altform; ohne Merkmale keine Datei. */
+    tables() {
+      const rows = toRows(this.model, this.t);
+      return rows === null ? null : { [XLSX_SHEET]: rows };
+    },
+    /** Das Diagramm in der Größe des Editors, sonst in der Bildschirmgröße (wie die Altform). */
     image() {
       const cfg = this.chart;
       if (!cfg) return null;
       const edits = this.model.scatterEdits ?? {};
-      return this.chartSVG('scatter', toChart(applyEdits(cfg, edits, scatterChart.editable, ownedKeys(cfg))));
+      const rect = /** @type {HTMLElement|null} */ (this.$root?.querySelector('[data-ref="chart"] .dmike-chart-svg-wrap'))?.getBoundingClientRect();
+      const screen = rect ? { w: rect.width, h: rect.height } : null;
+      return this.chartSVG('scatter', toChart(exportSized(applyEdits(cfg, edits, scatterChart.editable, ownedKeys(cfg)), screen)));
     },
   },
   asyncTasks: {

@@ -3,7 +3,7 @@
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { bubbleSizes, kanoScatterConfig } from '../../../js/modules/kano/domain/chart.js';
+import { bubbleSizes, kanoScatterConfig, exportSized } from '../../../js/modules/kano/domain/chart.js';
 
 const row = (label, cs, ds, importanceMean = null) => ({ label, cs, ds, importanceMean });
 
@@ -57,5 +57,22 @@ suite('kano-chart — kanoScatterConfig', () => {
       { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
       { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
     ]);
+  });
+});
+
+suite('kano-chart — exportSized', () => {
+  test('ohne Editorgröße: Bildschirmgröße fest, nicht nur für den Export', () => {
+    assertDeepEqual(exportSized({ title: 'T' }, { w: 1104.4, h: 360 }),
+      { title: 'T', chartWidth: 1104, chartHeight: 360, sizeExportOnly: false });
+  });
+  test('Editorgröße (auch nur für den Export) gewinnt je Seite, die andere vom Bildschirm', () => {
+    assertDeepEqual(exportSized({ chartWidth: 1600, chartHeight: 900, sizeExportOnly: true }, { w: 1104, h: 360 }),
+      { chartWidth: 1600, chartHeight: 900, sizeExportOnly: false });
+    assertDeepEqual(exportSized({ chartWidth: '1600', chartHeight: null, sizeExportOnly: true }, { w: 1104, h: 360 }),
+      { chartWidth: 1600, chartHeight: 360, sizeExportOnly: false });
+  });
+  test('ohne messbaren Bildschirm (0 oder fehlend): Vorgabe 800 × 450', () => {
+    assertDeepEqual(exportSized({}, null), { chartWidth: 800, chartHeight: 450, sizeExportOnly: false });
+    assertDeepEqual(exportSized({ chartWidth: 'x' }, { w: 0, h: 0 }), { chartWidth: 800, chartHeight: 450, sizeExportOnly: false });
   });
 });

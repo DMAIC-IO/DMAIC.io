@@ -8,6 +8,8 @@
  *   3. ein Baum mit Inhalt — nach Rückfrage wird er überschrieben; ohne
  *      Zustimmung (und ausgehängt, beim Szenario-Laden, ohne Rückfrage) lädt
  *      das Beispiel ohne Baumbezug.
+ * Legt der Stapel den Baum an, zeigt er zum Schluss Kano wieder an
+ * (`module.add` wechselt die Ansicht auf den neuen Baum).
  * Geschrieben wird ganz oder gar nicht über `ctx.instances.interact`; danach
  * hängen die Merkmale an den neuen Knoten-ids (`domain/example.js`). Wirft
  * der Hook, bricht der Kern das Laden ab und meldet es.
@@ -42,7 +44,10 @@ export async function beforeLoadExample(data) {
       clearVocIds = vocs.map((/** @type {any} */ v) => v.id);
     }
   }
-  const { stack, refs } = exampleTreeStack({ tree: data.tree, instanceId: target, clearVocIds });
+  // `module.add` zeigt den neuen Baum an; eingehängt kehrt die Ansicht im
+  // selben Stapel zu Kano zurück (ausgehängt gibt es keine Ansicht).
+  const showAfter = ctx.detached ? null : (ctx.instanceId ?? null);
+  const { stack, refs } = exampleTreeStack({ tree: data.tree, instanceId: target, clearVocIds, showAfter });
   const res = /** @type {any} */ (await instances.interact(stack));
   if (res?.ok !== true) throw Object.assign(new Error('kano example: tree stack failed'), { cause: res });
   const instanceId = target ?? res.results?.find((/** @type {any} */ r) => r.id === 'tree')?.result?.instanceId ?? null;

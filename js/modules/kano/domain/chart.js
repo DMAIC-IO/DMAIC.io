@@ -57,3 +57,36 @@ export function kanoScatterConfig(rows, { importance, sizeLabel }) {
     ],
   };
 }
+
+/** Exportgröße, wenn sich das Diagramm auf dem Bildschirm nicht messen lässt. */
+const EXPORT_FALLBACK = Object.freeze({ w: 800, h: 450 });
+
+/** @param {unknown} v @returns {number|null} positive ganze Pixel, sonst `null` */
+const side = (v) => {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+
+/**
+ * Die Diagrammkonfiguration für den Export (PNG/SVG) in fester Größe: je
+ * Seite die Größe aus dem Editor (auch wenn sie nur für den Export gilt),
+ * sonst die gemessene Bildschirmgröße, sonst 800 × 450. Der Export zeichnet
+ * in einem unsichtbaren Wirt ohne eigene Größe; ohne feste Größe entstünde
+ * ein leeres Bild.
+ * @template {Record<string, any>} C
+ * @param {C} config
+ * @param {{ w: number, h: number }|null|undefined} screen
+ * @returns {C & { chartWidth: number, chartHeight: number, sizeExportOnly: false }}
+ */
+export function exportSized(config, screen) {
+  const sw = side(screen?.w);
+  const sh = side(screen?.h);
+  const fallback = sw === null || sh === null;
+  return {
+    ...config,
+    chartWidth: side(config.chartWidth) ?? (fallback ? EXPORT_FALLBACK.w : sw),
+    chartHeight: side(config.chartHeight) ?? (fallback ? EXPORT_FALLBACK.h : sh),
+    sizeExportOnly: false,
+  };
+}

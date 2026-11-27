@@ -19,6 +19,7 @@ import { WIDGETS } from '../../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../../widget-i18n.js';
 import { formatNumber } from '../../../js/core/number-format.js';
 import { withStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
+import { runExport } from '../../../js/core/exporter.js';
 import mod from '../../../js/modules/kano/viewmodel/viewmodel.js';
 
 const ID = 'kano';
@@ -427,6 +428,26 @@ suite('kano: Viewmodel im Browser', () => {
     assertEqual(vm.model.scatterEdits.title, 'Alt Kano');
     assertEqual(mod.historyCan('undo'), false);
     assertTrue(h.q('[data-ref="chart"]').classList.contains('kano__chart'));
+  });
+
+  test('XLSX: ein Blatt „Kano“ wie die Altform; ohne Merkmale keine Datei, keine Meldung', async () => {
+    const h = await mount(filled());
+    /** @type {any[]} */
+    const books = [];
+    const XLSX = {
+      utils: { book_new: () => ({ sheets: [] }), aoa_to_sheet: (rows) => rows, book_append_sheet: (wb, rows, name) => wb.sheets.push(name) },
+      writeFile: (wb, name) => books.push({ name, sheets: wb.sheets }),
+    };
+    const io = { downloadFile() {}, downloadBlob() {}, ensureXLSX: async () => XLSX };
+    await runExport(h.vm()._ui, 'xlsx', io);
+    assertDeepEqual(books, [{ name: 'kano.xlsx', sheets: ['Kano'] }]);
+    h.vm().model.setItems({ items: [] });
+    await settle();
+    const notes = h.notes.length;
+    await runExport(h.vm()._ui, 'xlsx', io);
+    assertEqual(books.length, 1);
+    assertEqual(h.notes.length, notes);
+    unmountAll();
   });
 
   test('zwei Instanzen: Reiter, Umbenennen und Bäume je Instanz', async () => {

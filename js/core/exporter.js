@@ -146,9 +146,9 @@ const DEFAULT_IO = { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob,
 
 /**
  * Eine Datei aus den Mappern eines Moduls bauen und herunterladen. Wirft
- * nie: Erfolg und Fehler gehen per `ui.notify`. Liefert `table()`, `tree()`
- * oder `image()` `null`, gibt es nichts zu exportieren: keine Datei, keine
- * Meldung.
+ * nie: Erfolg und Fehler gehen per `ui.notify`. Liefert `table()`, `tables()`,
+ * `tree()` oder `image()` `null`, gibt es nichts zu exportieren: keine Datei,
+ * keine Meldung.
  * @param {{ exports: Record<string, any>, component: object, moduleId: string,
  *   i18n: { t: (key: string, params?: object) => string, getLanguage: () => string },
  *   notify: (message: string, type?: string, titleKey?: string) => void }} ui
@@ -176,6 +176,7 @@ export async function runExport(ui, fmt, io = DEFAULT_IO) {
       let sheets;
       if (typeof def.tables === 'function') {
         sheets = await call('tables');
+        if (sheets === null) return;
       } else {
         const rows = await call('table');
         if (rows === null) return;

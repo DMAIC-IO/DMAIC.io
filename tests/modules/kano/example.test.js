@@ -61,7 +61,9 @@ function world(trees = {}) {
         try {
           for (const op of stack) {
             let result;
-            if (op.op === 'module.add') {
+            if (op.op === 'instance.open') {
+              result = { instanceId: op.instance, module: 'kano', phase: 'define' };
+            } else if (op.op === 'module.add') {
               seq += 1;
               const instanceId = `tree-new-${seq}`;
               next.set(instanceId, new Tree());
@@ -96,6 +98,7 @@ function host(w, { confirm = true, detached = false } = {}) {
   return {
     asked,
     _context: {
+      instanceId: 'kano-1',
       instances: w.instances,
       detached,
       dialog: { confirm: async (o) => { asked.push(o); return confirm; } },
@@ -121,6 +124,16 @@ suite('kano: Beispiel mit Baum (Stapel)', () => {
     });
     assertEqual(stack[3].args[0].type, 'ctd');
     assertDeepEqual(refs, { v1: 'voc:v1', n1: 'need:n1', d1: 'drv:d1', r1: 'req:r1' });
+  });
+
+  test('Stapel ohne Baum: zum Schluss die eigene Instanz wieder anzeigen (module.add wechselt die Ansicht)', () => {
+    const tree = { vocs: [{ id: 'v1', text: 'V', needs: [] }] };
+    const { stack } = exampleTreeStack({ tree, instanceId: null, showAfter: 'kano-1' });
+    assertDeepEqual(stack.at(-1), { op: 'instance.open', instance: 'kano-1' });
+    assertEqual(stack.filter((s) => s.op === 'instance.open').length, 1);
+    assertEqual(exampleTreeStack({ tree, instanceId: null }).stack.some((s) => s.op === 'instance.open'), false);
+    assertEqual(exampleTreeStack({ tree, instanceId: 't1', showAfter: 'kano-1' }).stack.some((s) => s.op === 'instance.open'), false,
+      'ohne module.add bleibt die Ansicht');
   });
 
   test('Stapel an vorhandenen Baum: kein module.add, zuerst removeVoc je alter Stimme', () => {
@@ -162,6 +175,7 @@ suite('kano: Beispiel mit Baum (drei Lagen)', () => {
     assertEqual(w.stacks.length, 1);
     assertEqual(w.stacks[0][0].op, 'module.add');
     assertEqual(w.stacks[0].some((s) => s.op === 'instance.set'), false, 'Vorgabe-Darstellung wird nicht geschrieben');
+    assertDeepEqual(w.stacks[0].at(-1), { op: 'instance.open', instance: 'kano-1' }, 'Ansicht zurück auf Kano');
     const [id] = [...w.models().keys()];
     assertEqual(out.source.instanceId, id);
     const tree = w.models().get(id);
@@ -221,6 +235,15 @@ suite('kano: Beispiel mit Baum (drei Lagen)', () => {
     assertEqual(hd.asked.length, 0);
     assertEqual(det.stacks.length, 0);
     assertEqual(outDet.source.instanceId, null);
+  });
+
+  test('Lage 1 ausgehängt (Szenario): Baum entsteht, keine Ansicht wird geöffnet', async () => {
+    const data = await fetchJson('../../../examples/projects/kano-lieferservice.json');
+    const w = world();
+    const out = await beforeLoadExample.call(host(w, { detached: true }), data);
+    assertEqual(w.stacks[0][0].op, 'module.add');
+    assertEqual(w.stacks[0].some((s) => s.op === 'instance.open'), false);
+    assertEqual(out.source.instanceId, [...w.models().keys()][0]);
   });
 
   test('scheitert der Stapel, wirft der Hook und der Baum bleibt', async () => {

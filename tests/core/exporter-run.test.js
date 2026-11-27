@@ -147,6 +147,17 @@ suite('runExport', () => {
     }
   });
 
+  test('tables() ohne Blätter (null): XLSX ohne Datei, ohne Meldung, SheetJS nicht geladen', async () => {
+    const { ui, io, log, files } = setup({ table() { return null; }, tables() { return null; } });
+    let loaded = false;
+    const ensure = io.ensureXLSX;
+    io.ensureXLSX = async () => { loaded = true; return ensure(); };
+    await runExport(ui, 'xlsx', io);
+    assertEqual(Object.keys(files).length, 0);
+    assertEqual(log.filter(([k]) => k === 'notify').length, 0);
+    assertEqual(loaded, false);
+  });
+
   test('tree() ohne Wert (null): JSON ohne Datei, ohne Meldung', async () => {
     const { ui, io, log, files } = setup({ tree() { return null; } });
     await runExport(ui, 'json', io);
