@@ -14,8 +14,9 @@
  * sichern die Invarianten — beim Laden repariert, beim Schreiben abgelehnt.
  * `moveStep.to` und `moveRole.to` sind ENDINDIZES. Auf- und Zuklappen der
  * Karten und des Einstellungsbereichs sind Kommandos nur der Oberfläche
- * (Parameter `agentWrite: false`); der Agent schreibt die Ansichtsfelder mit
- * `instance.set`.
+ * (Parameter `agentWrite: false`); der Agent schreibt die Ansichtsfelder
+ * nicht (A10). Die Farbe einer Art hat das Format `#rrggbb` (Invariante
+ * `mudaColorHex`).
  */
 import {
   defineModel, command, list, object, text, number, boolean, oneOf, idOf, index,
@@ -31,6 +32,17 @@ export { MUDA_LABEL_KEYS } from './defaults.js';
 
 /** @typedef {import('./kpi.js').MakigamiKpi} MakigamiKpi */
 /** @typedef {import('./kpi.js').TimeIssue} TimeIssue */
+
+/** Farbe einer Art ohne gültigen Wert (wie eine neu angelegte Art). */
+const FALLBACK_COLOR = '#888888';
+
+/**
+ * True für eine Farbe im Format `#rrggbb` (Groß- oder Kleinbuchstaben).
+ * @param {unknown} v @returns {boolean}
+ */
+function isHexColor(v) {
+  return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+}
 
 /**
  * True, wenn jede id nur einmal vorkommt.
@@ -217,6 +229,14 @@ export const State = defineModel({
         m._v.collapsed = m._v.collapsed.filter((/** @type {string} */ id) => ids.has(id));
       },
     },
+    mudaColorHex: {
+      fields: ['mudaCategories'],
+      test(m) { return m.mudaCategories.every((/** @type {{ color: string }} */ c) => isHexColor(c.color)); },
+      repair(m) {
+        m._v.mudaCategories = m._v.mudaCategories.map((/** @type {{ color: string }} */ c) => (
+          isHexColor(c.color) ? c : { ...c, color: FALLBACK_COLOR }));
+      },
+    },
   },
   commands: {
     addRole: command({
@@ -241,7 +261,7 @@ export const State = defineModel({
       returns: text(),
       run() {
         const id = `muda-${uid()}`;
-        this.mudaCategories.push({ id, code: '', label: '', color: '#888888' });
+        this.mudaCategories.push({ id, code: '', label: '', color: FALLBACK_COLOR });
         return id;
       },
     }),

@@ -96,7 +96,8 @@
             "Participating roles: same content as the matrix dots — chips toggle the same way.",
             "Processing / waiting time: free-text input (see below). Canonicalized on Tab/blur.",
             "Waste (Muda): multiple categories per step allowed. Colors and labels are customizable in settings.",
-            "Notes: anything that does not fit other fields — handover paths, bottlenecks, system breaks."
+            "Notes: anything that does not fit other fields — handover paths, bottlenecks, system breaks.",
+            "Collapse and expand: collapsing a card and opening the settings are steps of their own in the history (Ctrl+Z)."
           ]
         },
         {

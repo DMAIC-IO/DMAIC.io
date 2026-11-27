@@ -242,7 +242,7 @@
       }
     },
     "moveStep": {
-      "help": "Verschiebt einen Prozessschritt an eine andere Stelle der Kette; die übrigen rücken nach. In der Matrix zieht man dazu den Griff im Spaltenkopf oder nimmt die Pfeiltasten.",
+      "help": "Verschiebt einen Prozessschritt an eine andere Stelle der Kette; die übrigen rücken nach. In der Matrix zieht man dazu den Griff im Spaltenkopf, oder man fokussiert den Griff und drückt Alt+Pfeil bzw. Leertaste, Pfeil, Leertaste.",
       "params": {
         "stepId": "Die Kennung des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte Kennung ist ein Fehler.",
         "to": "Die Stelle, an der der Schritt danach steht, ab 0 gezählt; die letzte Stelle ist die Zahl der Schritte minus 1. Dieselbe Stelle lässt alles unverändert.",
@@ -250,7 +250,7 @@
       }
     },
     "moveRole": {
-      "help": "Verschiebt eine Rolle an eine andere Stelle; die übrigen rücken nach. In der Matrix zieht man dazu den Griff am Zeilenanfang oder nimmt die Pfeiltasten.",
+      "help": "Verschiebt eine Rolle an eine andere Stelle; die übrigen rücken nach. In der Matrix zieht man dazu den Griff am Zeilenanfang, oder man fokussiert den Griff und drückt Alt+Pfeil bzw. Leertaste, Pfeil, Leertaste.",
       "params": {
         "roleId": "Die Kennung der Rolle, wie read() sie unter roles führt. Eine unbekannte Kennung ist ein Fehler.",
         "to": "Die Stelle, an der die Rolle danach steht, ab 0 gezählt; die letzte Stelle ist die Zahl der Rollen minus 1. Dieselbe Stelle lässt alles unverändert.",

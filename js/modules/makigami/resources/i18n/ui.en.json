@@ -85,6 +85,7 @@
     "mudaNotEmpty": "There is always at least one waste category.",
     "unitsNotEmpty": "There is always at least one time unit.",
     "knownRefs": "A step only refers to existing roles and existing waste categories.",
-    "knownCollapsed": "Only the card of an existing step can be collapsed."
+    "knownCollapsed": "Only the card of an existing step can be collapsed.",
+    "mudaColorHex": "The colour of a waste category is a hex value in the format #rrggbb, such as #4a90e2."
   }
 }

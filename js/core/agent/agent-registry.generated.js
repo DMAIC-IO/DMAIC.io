@@ -9671,7 +9671,8 @@ export const AGENT_REGISTRY = {
       "mudaNotEmpty",
       "unitsNotEmpty",
       "knownRefs",
-      "knownCollapsed"
+      "knownCollapsed",
+      "mudaColorHex"
     ]
   },
   "model-data-generator": {

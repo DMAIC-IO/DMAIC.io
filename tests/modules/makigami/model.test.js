@@ -54,7 +54,7 @@ suite('makigami Model — Schema und Vorgaben', () => {
       'normalizeStepTime', 'setMudaCategory', 'setTimeUnit', 'removeStep', 'removeRole', 'removeMudaCategory',
       'removeTimeUnit', 'moveStep', 'moveRole', 'resetSettingsToDefaults', 'toggleStepCollapsed', 'setSettingsOpen',
     ]);
-    assertDeepEqual(Object.keys(State.schema.invariants), ['uniqueIds', 'mudaNotEmpty', 'unitsNotEmpty', 'knownRefs', 'knownCollapsed']);
+    assertDeepEqual(Object.keys(State.schema.invariants), ['uniqueIds', 'mudaNotEmpty', 'unitsNotEmpty', 'knownRefs', 'knownCollapsed', 'mudaColorHex']);
     assertDeepEqual(Object.keys(State.schema.derived), ['kpi', 'invalidTimes']);
   });
   test('Schema-Vorgaben gleichen defaults.js, labelKey-Liste gleicht MUDA_LABEL_KEYS', () => {
@@ -103,6 +103,29 @@ suite('makigami Model — Invarianten', () => {
   test('zugeklappte Karte ohne Schritt heilt still, auch streng', () => {
     const m = State.fromJSON({ ...SCHEMA, ...plain(BASE), collapsed: ['s2', 'weg'] });
     assertDeepEqual(plain(m.collapsed), ['s2']);
+  });
+  test('Farbe einer Art: nicht #rrggbb streng abgelehnt, mit Reparatur die Vorgabe #888888, gültige bleiben', () => {
+    const bad = { ...SCHEMA, ...plain(BASE), mudaCategories: [
+      ...createDefaultMudaCategories(), { id: 'm-x', code: 'X', label: 'Eigen', color: 'red' },
+      { id: 'm-y', code: 'Y', label: '', color: '#ABCDEF' },
+    ] };
+    assertEqual(thrown(() => State.fromJSON(plain(bad)))?.invariant, 'mudaColorHex');
+    const m = State.fromJSON(plain(bad), { repair: true });
+    assertDeepEqual(m.mudaCategories.slice(-2).map((c) => c.color), ['#888888', '#ABCDEF']);
+    assertEqual(json(m.mudaCategories.slice(0, -2)), json(createDefaultMudaCategories()));
+  });
+  test('Farbe einer Art: Schreiben mit ungültigem Format abgelehnt (Kommando und instance.set), alter Wert bleibt', () => {
+    const m = base();
+    const before = json(fieldsOf(m));
+    for (const color of ['', 'red', '#123', '#1234567', '123456', '#12345g', 'rgba(0,0,0,1)']) {
+      assertEqual(thrown(() => m.setMudaCategory({ mudaId: 'm-x', color }))?.invariant, 'mudaColorHex', color);
+    }
+    const cats = plain(m.mudaCategories);
+    cats[0].color = 'blau';
+    assertEqual(thrown(() => { m.mudaCategories = cats; })?.invariant, 'mudaColorHex');
+    assertEqual(json(fieldsOf(m)), before);
+    m.setMudaCategory({ mudaId: 'm-x', color: '#A0b1C2' });
+    assertEqual(m.mudaCategories.at(-1).color, '#A0b1C2');
   });
   test('Schreiben (instance.set): doppelte id, leere Liste, verwaiste Bezüge abgelehnt, alter Wert bleibt', () => {
     const m = base();
@@ -362,7 +385,7 @@ suite('makigami Model — Ableitungen und Agentenkatalog', () => {
     assertDeepEqual(Object.keys(entry.actions.setTimeUnit.keys), ['unitId', 'label', 'factorSeconds']);
     assertDeepEqual(entry.settable, ['title', 'roles', 'steps', 'mudaCategories', 'timeUnits']);
     assertDeepEqual(entry.viewFields, ['collapsed', 'settingsOpen']);
-    assertDeepEqual(entry.invariants, ['uniqueIds', 'mudaNotEmpty', 'unitsNotEmpty', 'knownRefs', 'knownCollapsed']);
+    assertDeepEqual(entry.invariants, ['uniqueIds', 'mudaNotEmpty', 'unitsNotEmpty', 'knownRefs', 'knownCollapsed', 'mudaColorHex']);
     assertEqual(entry.fields.kpi.derived, true);
     assertEqual(entry.fields.invalidTimes.derived, true);
     for (const old of ['setTitle', 'setStepExpanded', 'setSettingsOpen', 'toggleStepCollapsed', 'reorderSteps', 'reorderRoles']) {

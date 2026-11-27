@@ -85,6 +85,7 @@
     "mudaNotEmpty": "Es gibt immer mindestens eine Verschwendungsart.",
     "unitsNotEmpty": "Es gibt immer mindestens eine Zeiteinheit.",
     "knownRefs": "Ein Schritt nennt nur vorhandene Rollen und vorhandene Verschwendungsarten.",
-    "knownCollapsed": "Zugeklappt sein kann nur die Karte eines vorhandenen Schritts."
+    "knownCollapsed": "Zugeklappt sein kann nur die Karte eines vorhandenen Schritts.",
+    "mudaColorHex": "Die Farbe einer Verschwendungsart ist ein Hexwert im Format #rrggbb, etwa #4a90e2."
   }
 }

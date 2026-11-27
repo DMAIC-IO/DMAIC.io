@@ -242,7 +242,7 @@
       }
     },
     "moveStep": {
-      "help": "Moves a process step to another position in the chain; the others close up. In the matrix you drag the grip in the column header or use the arrow keys.",
+      "help": "Moves a process step to another position in the chain; the others close up. In the matrix you drag the grip in the column header, or focus the grip and press Alt+Arrow or Space, Arrow, Space.",
       "params": {
         "stepId": "The identifier of the process step as read() lists it under steps. An unknown identifier is an error.",
         "to": "The position the step takes afterwards, counted from 0; the last position is the number of steps minus 1. The same position changes nothing.",
@@ -250,7 +250,7 @@
       }
     },
     "moveRole": {
-      "help": "Moves a role to another position; the others close up. In the matrix you drag the grip at the start of the row or use the arrow keys.",
+      "help": "Moves a role to another position; the others close up. In the matrix you drag the grip at the start of the row, or focus the grip and press Alt+Arrow or Space, Arrow, Space.",
       "params": {
         "roleId": "The identifier of the role as read() lists it under roles. An unknown identifier is an error.",
         "to": "The position the role takes afterwards, counted from 0; the last position is the number of roles minus 1. The same position changes nothing.",
