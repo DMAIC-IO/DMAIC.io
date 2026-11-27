@@ -46,6 +46,7 @@ const PALETTE_SIZE = 8;
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   /** @type {import('../../../core/template-module.js').ViewFn<BoxModel, {}>} */
   view(ctx) {
     return {

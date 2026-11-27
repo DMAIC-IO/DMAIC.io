@@ -31,6 +31,7 @@ const CI_METHOD_LABEL_KEYS = { bca: 'ciBca', percentile: 'ciPercentile' };
 const mod = createModule({
   descriptor,
   Model: State,
+  history: true,
   asyncTasks: {
     compute: asyncTask({
       blocked() { return this.validationText || null; },

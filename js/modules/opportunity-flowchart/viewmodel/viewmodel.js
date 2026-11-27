@@ -73,6 +73,7 @@ function importOptionsOf(infos) {
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   State: UiState,
   gestures: [chain, substeps],
   config: {

@@ -27,6 +27,7 @@ import { experimentsView } from './experiments.js';
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   State: UiState,
   commands,
   forms,

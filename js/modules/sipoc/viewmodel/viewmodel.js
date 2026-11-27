@@ -24,6 +24,7 @@ const COLOR_VARS = { suppliers: '--color-sipoc-s', inputs: '--color-sipoc-i', pr
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   State: UiState,
   gestures: [reorder],
   /** @type {import('./state.types.js').SipocViewFn} */

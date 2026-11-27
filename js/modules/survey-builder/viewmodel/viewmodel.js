@@ -42,6 +42,7 @@ import { handoverView } from './handover.js';
 export default createModule({
   descriptor,
   Model: SurveyModel,
+  history: true,
   State: UiState,
   config: {
     actions: [

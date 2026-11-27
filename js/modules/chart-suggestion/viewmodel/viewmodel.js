@@ -54,6 +54,7 @@ const NO_PREVIEW = Object.freeze({ kind: 'none' });
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   fromExample,
   commands: {
     setColumns: command({

@@ -25,6 +25,7 @@ const MODEL_TYPE_LABEL = { quadratic: 'modelQuadratic', interaction: 'modelInter
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     return {

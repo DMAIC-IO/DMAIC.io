@@ -23,6 +23,7 @@ import {
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   State: UiState,
   fromExample,
   commands: {

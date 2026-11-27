@@ -250,6 +250,7 @@ function calendarView(ctx) {
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   State: UiState,
   forms,
   gestures: [draw, move, resize],

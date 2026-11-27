@@ -20,6 +20,7 @@ const hasSeriesKey = (s) => !!s && typeof s === 'object' && 'series' in s;
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   fromExample,
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {

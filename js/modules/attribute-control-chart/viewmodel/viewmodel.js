@@ -22,6 +22,7 @@ const nameOf = (src, ref) => columnName(src, ref);
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   State: UiState,
   /** @type {import('./state.types.js').AttributeControlChartViewFn} */
   view(ctx) {

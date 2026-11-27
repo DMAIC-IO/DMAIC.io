@@ -26,6 +26,7 @@ const TABLE_HEAD = ['tableTerm', 'tableDf', 'tableSs', 'tableMs', 'tableVariance
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   fromExample,
   State: UiState,
   gestures: [reorder],

@@ -21,6 +21,7 @@ const KPI_CLASS = { pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmi
 export default createModule({
   descriptor,
   Model: State,
+  history: true,
   fromExample,
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
