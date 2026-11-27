@@ -58,6 +58,8 @@ suite('correlation: Beispiele', () => {
       const src = storedSource({ ws1: await fetchJson(worksheetPath(sourceWorksheetFile)) });
       const d = plain(evaluateDerived(m, src, undefined, (k) => k));
       assertDeepEqual([d.mode, d.activeParams, d.error], [legacy.mode, legacy.activeParams, null], id);
+      // A9: das Lesefeld nennt den schreibbaren Pfad (Altform `['columns']`).
+      assertDeepEqual([legacy.activeMultiSlots, d.activeMultiSlots], [['columns'], ['colRefs']], id);
       assertDeepEqual(plain(m.colRefs).map((r) => r.columnId), legacy.colRefs.map((r) => r.columnId), id);
       compareResults(id, d, legacy);
     });

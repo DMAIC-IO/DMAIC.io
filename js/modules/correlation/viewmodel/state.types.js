@@ -6,7 +6,6 @@
  * @property {number} hoverRow
  * @property {number} hoverCol
  * @property {string|null} selectedPair
- * @property {string|null} selectedMethod
  * @property {string[]} collapsedPairs
  * @property {boolean} allCollapsed
  * @property {string} stateSig

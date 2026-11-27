@@ -10,7 +10,7 @@
  */
 import { defineModel, text, number, oneOf, list, map, columnRef } from '../../../core/model.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
-import { analyze } from './analyze.js';
+import { analyze, errorMessage } from './analyze.js';
 import { confFromSetting } from './confidence.js';
 import { from0 } from './migrations.js';
 
@@ -131,7 +131,7 @@ export class State extends defineModel({
     error(src, _d, t) {
       const e = analyze(this, src).error;
       if (!e) return null;
-      return { ...e, message: e.reason === 'errMin4' ? t(e.reason, { n: e.n }) : t(e.reason) };
+      return { ...e, message: errorMessage(e, t) };
     },
   },
   derivedBulk: ['pairs'],

@@ -14,15 +14,21 @@ import { markRejection, clearRejection } from '../../../core/param-input.js';
 import { columnOptions } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State, refKey } from '../domain/model.js';
-import { analyze, METHODS } from '../domain/analyze.js';
+import { analyze, errorMessage, METHODS } from '../domain/analyze.js';
 import { parseConfPercent, confInRange } from '../domain/confidence.js';
 import { UiState } from './state.js';
 import { pairView, matrixView, methodNames, scatterConfig, confPercent } from './present.js';
 
 /** @typedef {import('../domain/analyze.js').Analysis} Analysis */
 
-/** Filter der wählbaren Spalten (gleich dem Schema von `colRefs`). */
-const PICKABLE = Object.freeze({ types: ['numeric', 'currency', 'percent', 'date', 'time'], minCount: 5 });
+/**
+ * Filter der wählbaren Spalten, gelesen aus dem Schema von `colRefs` (eine
+ * Quelle für Wähler, Agent und Leerzustand; das Schema bleibt ein Literal).
+ */
+const PICKABLE = (() => {
+  const c = /** @type {{ types: readonly string[], minCount: number }} */ (State.schema.fields.colRefs.item);
+  return { types: [...c.types], minCount: c.minCount };
+})();
 
 /**
  * Signatur der Spaltenwahl; der UI-State gilt nur zu ihr.
@@ -41,14 +47,14 @@ export default createModule({
     const shown = new WeakMap();
     /**
      * Den UI-State auf die aktuelle Spaltenwahl heben; bei anderer Wahl
-     * beginnt er leer.
+     * beginnt er leer und bleibt es, auch wenn die Wahl zur alten zurückkehrt.
      * @param {any} vm
      */
     const touch = (vm) => {
       const sig = sigOf(vm.model);
       if (vm.state.stateSig === sig) return;
       Object.assign(vm.state, {
-        hoverRow: -1, hoverCol: -1, selectedPair: null, selectedMethod: null,
+        hoverRow: -1, hoverCol: -1, selectedPair: null,
         collapsedPairs: [], allCollapsed: false, stateSig: sig,
       });
     };
@@ -62,6 +68,16 @@ export default createModule({
       return { row: Number(el.dataset.row), col: Number(el.dataset.col), el };
     };
     return {
+      /**
+       * Andere Spaltenwahl leert den UI-State, ein Methodenwechsel die gewählte
+       * Zelle (Altform: `runMatrix` bzw. `_applyMethod`); Klappen bleibt beim
+       * Methodenwechsel.
+       */
+      init() {
+        this.state.stateSig = sigOf(this.model);
+        this.$watch(() => sigOf(this.model), () => touch(this));
+        this.$watch(() => this.model.matrixMethod, () => { this.state.selectedPair = null; });
+      },
       /** Die Rechnung zum Stand. @returns {Analysis} */
       get analysis() { return analyze(this.model, ctx.source); },
       /** Der UI-State gilt für die aktuelle Spaltenwahl. */
@@ -128,7 +144,7 @@ export default createModule({
       get errorText() {
         const e = this.analysis.error;
         if (!e) return '';
-        return e.reason === 'errMin4' ? this.t('errMin4', { n: e.n }) : this.t(e.reason);
+        return errorMessage(e, this.t);
       },
       /** Es gibt einen Grund ohne Ergebnis. */
       get hasError() { return this.analysis.error !== null; },
@@ -263,15 +279,10 @@ export default createModule({
         if (!this.hasPlots) return;
         touch(this);
         const key = `${Math.min(c.row, c.col)}-${Math.max(c.row, c.col)}`;
-        const same = this.selectedPair === key;
-        this.state.selectedPair = same ? null : key;
-        this.state.selectedMethod = same ? null : this.model.matrixMethod;
+        this.state.selectedPair = this.selectedPair === key ? null : key;
       },
-      /** Die gewählte Zelle, solange Spaltenwahl und Koeffizient gleich sind. */
-      get selectedPair() {
-        const s = this.state;
-        return this.uiValid && s.selectedMethod === this.model.matrixMethod ? s.selectedPair : null;
-      },
+      /** Die gewählte Zelle zur aktuellen Spaltenwahl. */
+      get selectedPair() { return this.uiValid ? this.state.selectedPair : null; },
       /**
        * Klasse der gewählten Zelle.
        * @param {number} i @param {number} j @returns {string}

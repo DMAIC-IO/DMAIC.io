@@ -152,6 +152,17 @@ export const MIN_PAIRS = 4;
  * @property {{ reason: 'errMin4'|'errZeroVariance'|'errColumnMissing', n?: number }|null} error
  */
 
+/**
+ * Der Grund ohne Ergebnis als Text; `derived.error` und das Viewmodel nutzen
+ * dieselbe Fassung.
+ * @param {{ reason: string, n?: number }} e Grund aus `analyze`
+ * @param {(key: string, params?: object) => string} t Übersetzer des Moduls
+ * @returns {string}
+ */
+export function errorMessage(e, t) {
+  return e.reason === 'errMin4' ? t(e.reason, { n: e.n }) : t(e.reason);
+}
+
 /** @type {Analysis} */
 const NONE = Object.freeze({ mode: 'none', result: null, matrixResult: null, pairs: [], error: null });
 
