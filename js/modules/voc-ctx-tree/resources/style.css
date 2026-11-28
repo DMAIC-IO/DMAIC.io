@@ -4,8 +4,10 @@
    ============================================================ */
 
 /* ===== Modul ===== */
+
 /* Farben und Randstärke setzt das Viewmodel als Variablen an die Wurzel
    und an die Formulare (styleVars). */
+
 /* Grundlayout aus .dmike-split (css/modules.css) */
 .vct__split {
   flex: 1;
@@ -79,6 +81,7 @@
 .vct__sidebar-body { scrollbar-width: thin; scrollbar-color: var(--color-border-secondary) transparent; }
 
 /* ── VoC Cards ── */
+
 /* Die Karte trägt Rahmen und Abstand; die Auswahl ist ein eigener Knopf über
    Text und Zählzeile, die Aktionsknöpfe liegen als Geschwister über der
    rechten Hälfte der Zählzeile (gleiches Bild wie vorher). */
@@ -519,9 +522,9 @@
 
 /* Farben der Treiberarten in Balken und Legende. */
 .vct-tile {
-  --vct-tile-ctq: rgba(39, 174, 96, 1);
-  --vct-tile-ctd: rgba(41, 128, 185, 1);
-  --vct-tile-ctc: rgba(231, 76, 139, 1);
+  --vct-tile-ctq: rgb(39 174 96 / 100%);
+  --vct-tile-ctd: rgb(41 128 185 / 100%);
+  --vct-tile-ctc: rgb(231 76 139 / 100%);
 }
 
 .dashboard-voc__summary {

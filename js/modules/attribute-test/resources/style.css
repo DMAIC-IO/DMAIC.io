@@ -115,5 +115,6 @@
 /* Die Eingabetafel teilt die Breite der Seitenleiste: ab drei Spalten ragte
    sie sonst über den Rand in die Ergebnisfläche. */
 .attrtest__edit-table { width: 100%; table-layout: fixed; }
+
 .attrtest__edit-table .attrtest__name,
 .attrtest__edit-table .attrtest__count { width: 100%; min-width: 0; box-sizing: border-box; }

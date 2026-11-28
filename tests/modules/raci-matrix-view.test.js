@@ -194,7 +194,7 @@ suite('raci-matrix: Viewmodel im Browser', () => {
     const h = await mount('rm-1', null);
     const legend = h.qa('.raci__legend-item');
     assertDeepEqual(legend.map((el) => el.textContent), ['R', 'A', 'C', 'I'].map((r) => `${r} = ${tr(`role${r}`)}`));
-    assertDeepEqual(legend.map((el) => el.className.trim()), ['R', 'A', 'C', 'I'].map((r) => `raci__legend-item raci__role--${r}`));
+    assertDeepEqual(legend.map((el) => el.className.trim()), ['R', 'A', 'C', 'I'].map((r) => `raci__legend-item raci__role--${r.toLowerCase()}`));
     assertEqual(h.input('activity').placeholder, tr('activityPlaceholder'));
     assertEqual(h.input('activity').getAttribute('aria-label'), tr('activityPlaceholder'));
     assertEqual(h.input('activity').maxLength, 200);
@@ -307,8 +307,8 @@ suite('raci-matrix: Viewmodel im Browser', () => {
       seen.push([cell().textContent, cell().className.trim()]);
     }
     assertDeepEqual(seen, [
-      ['R', 'raci__cell raci__role--R'], ['A', 'raci__cell raci__role--A'], ['C', 'raci__cell raci__role--C'],
-      ['I', 'raci__cell raci__role--I'], ['', 'raci__cell'],
+      ['R', 'raci__cell raci__role--r'], ['A', 'raci__cell raci__role--a'], ['C', 'raci__cell raci__role--c'],
+      ['I', 'raci__cell raci__role--i'], ['', 'raci__cell'],
     ]);
     assertEqual(h.saved().assignments['a3:s1'], undefined);
     cell().focus();
@@ -323,10 +323,10 @@ suite('raci-matrix: Viewmodel im Browser', () => {
     const vm = h.vm();
     vm.model.setRole({ activityId: 'a3', stakeholderId: 's2', role: 'A' });
     await until(() => h.cell(2, 1).textContent === 'A');
-    assertEqual(h.cell(2, 1).className.trim(), 'raci__cell raci__role--A');
+    assertEqual(h.cell(2, 1).className.trim(), 'raci__cell raci__role--a');
     vm.model.cycleRole({ activityId: 'a3', stakeholderId: 's2' });
     await until(() => h.cell(2, 1).textContent === 'C');
-    assertEqual(h.cell(2, 1).className.trim(), 'raci__cell raci__role--C');
+    assertEqual(h.cell(2, 1).className.trim(), 'raci__cell raci__role--c');
     vm.model.setRole({ activityId: 'a3', stakeholderId: 's2', role: '' });
     await until(() => h.cell(2, 1).textContent === '');
     assertEqual(h.cell(2, 1).className.trim(), 'raci__cell');

@@ -50,7 +50,7 @@ export default createModule({
       /** @param {string} r @returns {string} „R = Responsible (führt aus)“ */
       legendLabel(r) { return `${r} = ${this.t(`role${r}`)}`; },
       /** Farbklasse einer Rolle; ohne Rolle leer. @param {string} r @returns {string} */
-      roleClass(r) { return ROLES.includes(r) ? `raci__role--${r}` : ''; },
+      roleClass(r) { return ROLES.includes(r) ? `raci__role--${r.toLowerCase()}` : ''; },
       /** Rolle der Zelle oder leer. @param {Entry} act @param {Entry} sh @returns {string} */
       roleOf(act, sh) { return this.model.assignments[cellKey(act.id, sh.id)] ?? ''; },
       /** Schlüssel der Zelle (für `:key`). @param {Entry} act @param {Entry} sh @returns {string} */

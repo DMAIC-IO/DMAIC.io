@@ -330,6 +330,7 @@
   padding: 0 var(--spacing-m);
   font-family: var(--font-family-mono);
   font-size: 11px;
+
   /* Weiß ist für `difference` gewollt und themenunabhängig: es invertiert, was
      darunter liegt (Balken wie Hintergrund). Ein Token wie --color-text-inverse
      kippt im Dunkelmodus und bräche den Effekt. */

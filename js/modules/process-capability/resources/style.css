@@ -88,6 +88,7 @@
 }
 
 /* ─── Charts ─────────────────────────────────────────────── */
+
 /* Host of the histogram widget — fixed height so the chart gets a definite size. */
 .pc__chart-plot {
   width: 100%;

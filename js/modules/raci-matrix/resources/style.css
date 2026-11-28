@@ -8,6 +8,7 @@
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+
   /* Schrumpfbreit: der Hilfe-Anker sitzt rechts neben der letzten Rolle,
      nicht an der Kante des Moduls. */
   width: fit-content;
@@ -27,22 +28,22 @@
 
 /* ── Role colors (legend and cells) ─────────────────────── */
 
-.raci__role--R {
+.raci__role--r {
   background: color-mix(in srgb, var(--color-error) 12%, transparent);
   color: var(--color-error);
 }
 
-.raci__role--A {
+.raci__role--a {
   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
   color: var(--color-warning);
 }
 
-.raci__role--C {
+.raci__role--c {
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   color: var(--color-accent);
 }
 
-.raci__role--I {
+.raci__role--i {
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
   color: var(--color-success);
 }

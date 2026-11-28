@@ -387,6 +387,7 @@
   height: 100%;
   overflow-y: auto;
   padding: var(--spacing-md);
+
   /* Zugeklappt nicht erreichbar (Tab, Kontexthilfe); erst nach dem Einklappen verbergen. */
   visibility: hidden;
   transition: visibility 0s linear 0.32s;
@@ -494,6 +495,7 @@ button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
 .project-charter-tile {
   display: contents;
 }
+
 .pc-tile__goals {
   list-style: decimal;
   padding-left: var(--spacing-md);

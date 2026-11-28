@@ -622,8 +622,8 @@
   min-height: 0;
 }
 
-.sha__axis-labels--top { margin-bottom: 6px; }
-.sha__axis-labels--bottom { margin-top: 8px; }
+.sha__axis-labels--top { margin-bottom: var(--spacing-s); }
+.sha__axis-labels--bottom { margin-top: var(--spacing-sm); }
 
 .sha__avatar--sm {
   width: 28px;
