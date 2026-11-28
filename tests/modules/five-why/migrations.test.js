@@ -309,7 +309,7 @@ suite('five-why Migration 0→1.0 — Beispiele', () => {
       const { m, fields } = repaired(plain(old));
       assertDeepEqual(fields, []);
       const strip = (list) => list.map((n) => {
-        const { question, collapsed, children, ...rest } = n;
+        const { question: _question, collapsed: _collapsed, children, ...rest } = n;
         return n.level < 5 ? { ...rest, children: strip(children) } : rest;
       });
       assertEqual(json(m.nodes), json(strip(old.nodes)));

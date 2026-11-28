@@ -2,7 +2,7 @@
  * Tests for dmaic-calendar/domain (Model, Migrationen 0→1.1 und 1.0→1.1)
  * und viewmodel/forms.js (EventForm, TodoEventForm).
  */
-import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { setModelContext, confirmOf, currentOf } from '../../js/core/model.js';
 import { State } from '../../js/modules/dmaic-calendar/domain/model.js';
 import { from0, from10 } from '../../js/modules/dmaic-calendar/domain/migrations.js';

@@ -124,7 +124,7 @@ async function runShard(browser, origin, k) {
 const server = await serveRoot();
 
 let browser;
-let exitCode = 0;
+let exitCode;
 try {
   // Inside the try: a missing browser binary must still shut the server down.
   browser = await chromium.launch({ headless: !HEADED });

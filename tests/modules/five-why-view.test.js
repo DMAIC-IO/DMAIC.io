@@ -491,7 +491,7 @@ suite('five-why: Viewmodel im Browser', () => {
     const out = JSON.parse(files[0].text);
     assertDeepEqual(Object.keys(out), ['tool', 'timestamp', 'problem', 'nodes']);
     assertEqual(out.tool, '5-Why');
-    const strip = (o) => { const { timestamp, ...rest } = o; return rest; };
+    const strip = (o) => { const { timestamp: _timestamp, ...rest } = o; return rest; };
     // Wie die Altform: je Knoten question leer, children (Ebene 5 leer) und collapsed.
     assertEqual(JSON.stringify(strip(out)), JSON.stringify({ tool: '5-Why', problem: LEGACY.problem, nodes: LEGACY.nodes }));
     setFields(h.vm().model, { problem: '', nodes: [] });

@@ -377,7 +377,7 @@ export default class NodeDiagram extends ChartBase {
     if (!pv) return this.config;
     const links = (this.config.links || []).map((l) => {
       if (l.id !== pv.id) return l;
-      const { x1, y1, x2, y2, ...rest } = l;
+      const { x1: _x1, y1: _y1, x2: _x2, y2: _y2, ...rest } = l;
       return { ...rest, via: pv.via };
     });
     return { ...this.config, links };

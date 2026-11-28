@@ -75,7 +75,7 @@ suite('pairwise-comparison Export — toTree', () => {
   test('gleicht dem JSON-Download ohne timestamp, Zeitstempel aus dem Aufruf', () => {
     const tree = /** @type {any} */ (toTree(LEGACY, '2026-06-07T12:00:00.000Z'));
     assertEqual(tree.timestamp, '2026-06-07T12:00:00.000Z');
-    const { timestamp, ...rest } = tree;
+    const { timestamp: _timestamp, ...rest } = tree;
     assertEqual(JSON.stringify(rest), JSON.stringify(LEGACY_TREE));
     assertDeepEqual(Object.keys(tree), ['tool', 'timestamp', 'criteria', 'matrix', 'scores', 'ranking']);
   });

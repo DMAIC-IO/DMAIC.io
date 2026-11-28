@@ -706,7 +706,7 @@ suite('Diagramm-Widgets (chart-mount)', () => {
   });
 
   test('erscheint vor dem Feld eine Zeile, erhält kein anderes Feld den Fokus', async () => {
-    const { root, chart, all } = await openEditor();
+    const { root, chart } = await openEditor();
     const input = chart._editorInner.querySelector('input[type="text"]');
     input.focus();
     const build = chart._buildEditor.bind(chart);

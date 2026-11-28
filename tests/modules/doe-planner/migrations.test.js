@@ -269,7 +269,7 @@ suite('doe-planner Migration — Altformen', () => {
 
   test('Quellblatt eines Beispiels ohne bereitgestelltes Blatt: kein Quellblatt', async () => {
     const [example] = plannerStates(await fetchJSON(PROJECTS, 'doe-optimal-augment-3f.json'));
-    const { sourceWorksheetData, ...stored } = example;
+    const { sourceWorksheetData: _sourceWorksheetData, ...stored } = example;
     assertEqual(stored.sourceWorksheet.instanceId, '__source__');
     const { m } = load({ ...stored });
     assertEqual(m.sourceWorksheet, null);

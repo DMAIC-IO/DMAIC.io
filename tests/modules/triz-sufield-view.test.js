@@ -498,7 +498,6 @@ suite('triz-sufield: Viewmodel im Browser', () => {
     assertDeepEqual(h.open(), []);
     // Fremdstand in der laufenden Instanz (ohne Neueinhängen).
     h = await mount('sf-1', null);
-    vm = h.vm();
     h.inst.applyRemoteState({ ...plain(h.inst.getState()), expandedClasses: [3] });
     await settle();
     assertDeepEqual(h.open(), [3]);
@@ -667,7 +666,7 @@ suite('triz-sufield: Viewmodel im Browser', () => {
     assertTrue(h.std('4.2.1').classList.contains('is-selected'), 'Akzentrand an 4.2.1');
     assertEqual(h.inst.historyCan('undo'), false);
     assertDeepEqual(h.states['sf-1'], LEGACY, 'Einhängen änderte den gespeicherten Stand');
-    const { _schema, filterMode, expandedClasses, ...fields } = plain(LEGACY);
+    const { _schema, filterMode: _filterMode, expandedClasses: _expandedClasses, ...fields } = plain(LEGACY);
     const read = h.vm().read({ fields: ['s1', 's2', 'field', 'link', 'problemNote', 'notes', 'selected', 'diagnosis'] });
     const { standards: bulk, ...named } = read;
     assertDeepEqual(named, { ...fields, diagnosis: { situation: 'complete-excessive', suggestedClasses: [2, 5] } });

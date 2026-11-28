@@ -1,7 +1,7 @@
 /**
  * Tests for core/parser/column-types.js
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { detectColumnType } from '../../js/core/parser/column-types.js';
 
 suite('parser/column-types — detectColumnType', () => {

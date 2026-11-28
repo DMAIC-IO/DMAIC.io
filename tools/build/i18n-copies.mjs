@@ -63,7 +63,7 @@ export function checkI18nCopies(root) {
       for (const lang of LANGS) {
         const ownFile = `js/modules/${id}/resources/i18n/ui.${lang}.json`;
         let sourceFile = `i18n/${lang}.json`;
-        let sourceLookup = { found: false };
+        let sourceLookup;
         if (m) {
           const [, src, rest] = m;
           const target = `js/modules/${src}/resources/i18n/ui.${lang}.json`;

@@ -20,7 +20,7 @@ const BASE = '../../../js/modules/opportunity-flowchart/resources/';
 async function loadJson(rel) {
   const res = await fetch(new URL(`${BASE}${rel}`, import.meta.url));
   if (!res.ok) throw new Error(`${rel}: HTTP ${res.status}`);
-  const { $schema, ...file } = await res.json();
+  const { $schema: _schema, ...file } = await res.json();
   return file;
 }
 

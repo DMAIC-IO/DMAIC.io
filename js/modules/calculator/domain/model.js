@@ -135,7 +135,7 @@ export class State extends defineModel({
         if (this.lastResult !== null) {
           this.memory = this.lastResult;
         } else {
-          let v = 0;
+          let v;
           try { v = evalExpression(this.expression, this.angleMode); } catch { v = 0; }
           this.memory = finite(v) ?? 0;
         }

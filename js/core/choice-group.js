@@ -85,7 +85,7 @@ export function bindChoiceGroup(group, { spec, name, radioName, read, write, hin
   const render = () => {
     const current = read();
     for (const o of options()) {
-      let on = false;
+      let on;
       try { on = isOn(valueOf(o), current); } catch { on = false; }
       if (isRadio(o) || isCheckbox(o)) /** @type {HTMLInputElement} */ (o).checked = on;
       else if (isTab(o)) { o.setAttribute('aria-selected', String(on)); o.setAttribute('tabindex', on ? '0' : '-1'); }

@@ -9,7 +9,7 @@ import { suite, test, assert, assertEqual } from '../../test-utils.js';
 import { setFields } from '../../../js/core/model.js';
 import { configSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
-import { mount, ready, plan, threeFactors, settle, flush, outputBadges, de } from './view-harness.js';
+import { mount, ready, plan, threeFactors, flush, outputBadges, de } from './view-harness.js';
 
 suite('doe-planner evaluation: summary and placeholder', () => {
   test('an incomplete plan shows the placeholder, "?" runs and "incomplete"', async () => {

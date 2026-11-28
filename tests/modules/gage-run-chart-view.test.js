@@ -357,14 +357,14 @@ suite('gage-run-chart: Viewmodel im Browser', () => {
   test('Bezugswert: abc abgelehnt, 3,5 angenommen, leeres Feld nimmt das Gesamtmittel', async () => {
     const h = await mount(stored());
     const vm = h.vm();
-    let el = await h.type('[data-ref="inp-ref-value"]', 'abc');
+    const el = await h.type('[data-ref="inp-ref-value"]', 'abc');
     assertEqual(vm.model.refValue, 10.5);
     assertEqual(el.getAttribute('aria-invalid'), 'true');
     assertEqual(el.value, '10,5');
-    el = await h.type('[data-ref="inp-ref-value"]', '3,5');
+    await h.type('[data-ref="inp-ref-value"]', '3,5');
     assertEqual(vm.model.refValue, 3.5);
     assertEqual(text(h.qa('.dmike-kpi-value')[2]), '3,5000');
-    el = await h.type('[data-ref="inp-ref-value"]', '');
+    await h.type('[data-ref="inp-ref-value"]', '');
     assertEqual(vm.model.refValue, null);
     assertEqual(text(h.qa('.dmike-kpi-value')[2]), '10,1027');
     assertEqual(text(h.qa('.dmike-kpi-label')[2]), tr('refMean'));

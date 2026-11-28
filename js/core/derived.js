@@ -61,7 +61,7 @@ export function derivedReader(model, src, t = noT) {
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
       memo.set(name, { error });
-      throw new Error(error);
+      throw new Error(error, { cause: err });
     } finally {
       stack.pop();
     }

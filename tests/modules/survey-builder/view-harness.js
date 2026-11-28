@@ -65,7 +65,7 @@ function provideResources() {
     el.textContent = '{}';
     document.head.append(el);
   }
-  let list = {};
+  let list;
   try { list = JSON.parse(el.textContent || '{}'); } catch { list = {}; }
   list[ID] = { files: { 'i18n/ui.de.json': resourceUrl('i18n/ui.de.json'), 'i18n/ui.en.json': resourceUrl('i18n/ui.en.json') } };
   el.textContent = JSON.stringify(list);

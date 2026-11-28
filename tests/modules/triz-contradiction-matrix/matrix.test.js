@@ -10,8 +10,6 @@ import {
   MATRIX, PARAMETER_COUNT, PRINCIPLE_COUNT, lookup, recommendationOf,
 } from '../../../js/modules/triz-contradiction-matrix/domain/matrix.js';
 
-const plain = (v) => JSON.parse(JSON.stringify(v));
-
 suite('triz-contradiction-matrix Tabelle — Form', () => {
   test('39 Parameter, 40 Prinzipien, 39 Zeilen zu je 39 Zellen', () => {
     assertEqual(PARAMETER_COUNT, 39);

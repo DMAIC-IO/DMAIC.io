@@ -1,4 +1,4 @@
-import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { readModel, setFields } from '../../js/core/model.js';
 import { evaluateDerived } from '../../js/core/derived.js';
 import { State, VIEWS } from '../../js/modules/morphological-box/domain/model.js';

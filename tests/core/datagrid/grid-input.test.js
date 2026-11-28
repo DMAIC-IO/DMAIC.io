@@ -517,7 +517,7 @@ suite('GridInput — Block am Rand verschieben', () => {
   test('clamps the target into the grid', async () => {
     const s = await setup();
     try {
-      const open = mkCols().map(({ lock, reason, ...c }) => c);
+      const open = mkCols().map(({ lock: _lock, reason: _reason, ...c }) => c);
       s.input.setView({ table: s.table, columns: open, formulas: {}, colWidths: {}, selection: null, lang: 'en' });
       selectBlock(s, 0, 0, 1, 0);
       dragBorder(s, 0, 0, 2, 3);

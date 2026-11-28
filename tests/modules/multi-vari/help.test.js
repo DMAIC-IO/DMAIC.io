@@ -14,7 +14,7 @@ const BASE = '../../../js/modules/multi-vari/resources/i18n/';
 async function load(lang) {
   const res = await fetch(new URL(`${BASE}help.${lang}.json`, import.meta.url));
   if (!res.ok) throw new Error(`help.${lang}.json: HTTP ${res.status}`);
-  const { $schema, ...file } = await res.json();
+  const { $schema: _schema, ...file } = await res.json();
   return file;
 }
 

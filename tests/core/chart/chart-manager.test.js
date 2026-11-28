@@ -4,7 +4,7 @@
  * SVG-Text aus Typ und Konfiguration über einen kurzlebigen Host.
  */
 
-import { suite, test, assertEqual, assertTrue, assertThrows } from '../../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import ChartManager from '../../../js/core/chart/chart-manager.js';
 
 const i18n = { language: 'de', t: (k) => k };

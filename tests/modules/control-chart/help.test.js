@@ -12,7 +12,7 @@ const CONSTANT_KEYS = ['d2', 'D3', 'D4', 'A2', 'c4', 'A3', 'B3', 'B4'];
 async function load(lang) {
   const res = await fetch(new URL(`${BASE}help.${lang}.json`, import.meta.url), { cache: 'no-cache' });
   if (!res.ok) throw new Error(`help.${lang}.json: HTTP ${res.status}`);
-  const { $schema, ...file } = await res.json();
+  const { $schema: _schema, ...file } = await res.json();
   return file;
 }
 

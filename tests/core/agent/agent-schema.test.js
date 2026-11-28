@@ -317,7 +317,6 @@ suite('read() lässt Felder mit omitOnRead aus', () => {
 });
 
 suite('agentWrite: false sperrt Felder und Kommandos', () => {
-  const URL_ = 'data:image/png;base64,AAAA';
   const Doc = defineModel({
     fields: {
       note: text(),

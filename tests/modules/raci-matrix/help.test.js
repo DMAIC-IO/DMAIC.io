@@ -10,7 +10,7 @@ const BASE = '../../../js/modules/raci-matrix/resources/i18n/';
 async function load(lang) {
   const res = await fetch(new URL(`${BASE}help.${lang}.json`, import.meta.url), { cache: 'no-cache' });
   if (!res.ok) throw new Error(`help.${lang}.json: HTTP ${res.status}`);
-  const { $schema, ...file } = await res.json();
+  const { $schema: _schema, ...file } = await res.json();
   return file;
 }
 

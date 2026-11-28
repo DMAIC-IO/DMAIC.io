@@ -13,7 +13,6 @@ import { registerCommandDirectives } from '../../js/core/command-directives.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { registerTablistDirective } from '../../js/core/tablist.js';
 import mod from '../../js/modules/calculator/viewmodel/viewmodel.js';
-import { State } from '../../js/modules/calculator/domain/model.js';
 
 const ID = 'calculator';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;

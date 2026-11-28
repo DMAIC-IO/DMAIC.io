@@ -1,7 +1,7 @@
 /**
  * Einzelwertdiagramm: Punktgruppen aus den Datensätzen (domain/groups.js).
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertDeepEqual } from '../../test-utils.js';
 import { buildGroups } from '../../../js/modules/individual-value-plot/domain/groups.js';
 
 const REF = (id) => ({ instanceId: id, sheetId: 's1', columnId: id });

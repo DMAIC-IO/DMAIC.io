@@ -79,7 +79,7 @@ suite('probability-plot: Reihenbau', () => {
     assertDeepEqual(plainOut.series.map((s) => Object.keys(s).sort()), [['name', 'values', 'visible'], ['name', 'values', 'visible'], ['name', 'values', 'visible']]);
     assertDeepEqual(plainOut.series.map((s) => s.name), ['A — x', 'A — y', 'B']);
     const out = buildSeries({ datasets, legacySeries: [{ name: 'Linie Eins', color: '#aa3355' }, {}, { visible: false, lineColor: '#336699' }, { name: 'zu viel' }] }, R);
-    assertDeepEqual(out.series.map(({ values, ...s }) => s), [
+    assertDeepEqual(out.series.map(({ values: _values, ...s }) => s), [
       { name: 'Linie Eins', visible: true, color: '#aa3355' },
       { name: 'A — y', visible: true },
       { name: 'B', visible: false, lineColor: '#336699' },

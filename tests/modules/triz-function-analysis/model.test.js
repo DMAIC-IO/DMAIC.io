@@ -341,11 +341,11 @@ suite('triz-function-analysis Model — Ableitungen', () => {
   test('Felder und derived gleich der Lesefläche der Altform (Zahnbürste)', async () => {
     const res = await fetch(new URL('toothbrush-read.json', FIXTURES), { cache: 'no-cache' });
     const expected = await res.json();
-    const { openPairs, ranks, disadvantages, valueCost, ...stored } = expected;
+    const { openPairs: _openPairs, ranks: _ranks, disadvantages: _disadvantages, valueCost: _valueCost, ...stored } = expected;
     const fields = [];
     const m = State.fromJSON({ ...SCHEMA, ...stored }, { onRepair: (f) => fields.push(f) });
     assertDeepEqual(fields, []);
-    const { _schema, activeTab, ...read } = m.toJSON();
+    const { _schema, activeTab: _activeTab, ...read } = m.toJSON();
     assertDeepEqual({ ...read, ...evaluateDerived(m, NO_SOURCE) }, expected);
     assertDeepEqual(Object.keys(evaluateDerived(m, NO_SOURCE)),
       ['openPairs', 'ranks', 'disadvantages', 'valueCost']);
@@ -362,7 +362,7 @@ suite('triz-function-analysis Model — Ableitungen', () => {
     assertEqual(m.functions.length, raw.functions.length);
     assertEqual(m.components.length, 7);
     const { openPairs, ranks, disadvantages, valueCost, ...stored } = expected;
-    const { _schema, activeTab, ...read } = m.toJSON();
+    const { _schema, activeTab: _activeTab, ...read } = m.toJSON();
     assertDeepEqual(read, stored);
     assertDeepEqual(evaluateDerived(m, NO_SOURCE), { openPairs, ranks, disadvantages, valueCost });
   });

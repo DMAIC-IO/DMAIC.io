@@ -1512,7 +1512,7 @@ export function defineSettings(fields) {
       throw new Error(`defineSettings: ${name} needs finite min <= max`);
     }
     if (s.kind === 'oneOf' && !s.values.every((v) => typeof v === 'string')) throw new Error(`defineSettings: ${name} values must be strings`);
-    try { checkValue(s, name, defaultOf(s)); } catch (err) { throw new Error(`defineSettings: ${name} default — ${err.message}`); }
+    try { checkValue(s, name, defaultOf(s)); } catch (err) { throw new Error(`defineSettings: ${name} default — ${err.message}`, { cause: err }); }
   }
   const schema = Object.freeze({ fields: Object.freeze({ ...fields }) });
   SETTINGS_SCHEMAS.add(schema);

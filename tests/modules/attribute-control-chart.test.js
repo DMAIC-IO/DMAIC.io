@@ -8,7 +8,7 @@
  * The state model is covered by attribute-control-chart-model.test.js.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
 import {
   computeP, computeNP, computeC, computeU,
   evaluateAttributeRules, ATTR_DEFAULT_ENABLED_RULES,

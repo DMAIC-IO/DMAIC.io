@@ -78,7 +78,7 @@ export function chartMount(widget, toChart = (c) => c) {
     const plainConfig = () => {
       const c = props.config;
       if (!c || !roles.length) return c;
-      const { commands, commandArgs, ...rest } = c;
+      const { commands: _commands, commandArgs: _commandArgs, ...rest } = c;
       return rest;
     };
 

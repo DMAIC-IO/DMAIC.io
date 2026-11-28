@@ -5,7 +5,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { collectAgentData } from './agent-data.mjs';
-import { APP_DIR } from './build.mjs';
 import { countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes, readHelpTables } from './agent-report.mjs';
 
 /** Ein Minimal-App-Verzeichnis mit nur den i18n-Dateien. */
