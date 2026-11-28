@@ -230,7 +230,7 @@ textarea.sipoc__edit-text {
 .sipoc__grip {
   flex-shrink: 0;
   user-select: none;
-  touch-action: none;
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- Desktop only (ADR design/desktop-only): auf Desktop-Safari ohne Touch-Eingabe wirkungslos; verhindert nur auf Touchscreens das Scrollen beim Ziehen */
 }
 
 .sipoc__item:hover .sipoc__grip {

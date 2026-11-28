@@ -176,7 +176,7 @@
   color: var(--color-text-tertiary);
   cursor: grab;
   opacity: 0;
-  touch-action: none;
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- Desktop only (ADR design/desktop-only): auf Desktop-Safari ohne Touch-Eingabe wirkungslos; verhindert nur auf Touchscreens das Scrollen beim Ziehen */
   user-select: none;
   transition: opacity var(--transition-speed) ease, color var(--transition-speed) ease;
 }

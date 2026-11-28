@@ -236,7 +236,7 @@
   padding: 0;
   border: none;
   cursor: grab;
-  touch-action: none;
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- Desktop only (ADR design/desktop-only): auf Desktop-Safari ohne Touch-Eingabe wirkungslos; verhindert nur auf Touchscreens das Scrollen beim Ziehen */
 }
 
 .pmap__io-grip:active {
@@ -858,7 +858,7 @@
   border: none;
   font-family: var(--font-family-mono);
   line-height: inherit;
-  touch-action: none;
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- Desktop only (ADR design/desktop-only): auf Desktop-Safari ohne Touch-Eingabe wirkungslos; verhindert nur auf Touchscreens das Scrollen beim Ziehen */
 }
 
 .pmap__grip:active { cursor: grabbing; }
